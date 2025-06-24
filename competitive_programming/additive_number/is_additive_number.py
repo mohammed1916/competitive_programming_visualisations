@@ -58,8 +58,8 @@ class AdditiveNumberVisualization(Scene):
         rect2 = array_boxes[1].copy()
         num2 = array_numbers[1].copy()
         
-        target_pos1 = [-2, 0, 0]
-        target_pos2 = [-1, 0, 0]
+        target_pos1 = [-3, -1, 0]  # Position for the first rectangle: 2 units left of center, at y=0, z=0
+        target_pos2 = [-1, -1, 0]  # Position for the second rectangle: 1 unit left of center, at y=0, z=0
         
         var1_label = Text("first_num", font_size=20)
         var2_label = Text("second_num", font_size=20)
@@ -90,7 +90,7 @@ class AdditiveNumberVisualization(Scene):
             # Create sum rectangle
             rect_sum = Rectangle(height=rect_height, width=0.6*len(sum_val))
             rect_sum.set_fill(RED, opacity=0.3)
-            rect_sum.next_to(VGroup(rect1, rect2), DOWN, buff=0.5)
+            rect_sum.next_to(VGroup(rect1, rect2), DOWN, buff=1.5) 
             sum_text = Text(sum_val, font_size=30).move_to(rect_sum.get_center())
             sum_label = Text("sum", font_size=20).next_to(rect_sum, UP, buff=0.2)
             
@@ -140,10 +140,13 @@ class AdditiveNumberVisualization(Scene):
             current_pos += len(sum_val)
         
         success = Text("Valid Additive Sequence!", color=GREEN, font_size=36)
-        success.next_to(VGroup(rect1, rect2), DOWN, buff=1)
+        success.next_to(sum_label, RIGHT, buff=1)
+        self.play(FadeOut(sum_label))
         self.play(Write(success))
         
         self.wait(2)
 
 scene = AdditiveNumberVisualization()
 scene.render()
+
+
