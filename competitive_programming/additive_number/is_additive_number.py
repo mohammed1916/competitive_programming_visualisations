@@ -52,27 +52,29 @@ class AdditiveNumberVisualization(Scene):
         stack_vars = update_stack_vars(first_num, second_num, 2)
         self.play(Write(stack_vars))
         
-        # Create working rectangles
-        rect1 = Rectangle(height=rect_height, width=0.6*len(first_num))
-        rect1.set_fill(BLUE, opacity=0.3)
-        rect1.move_to([start_x, 0, 0])
-        num1 = Text(first_num, font_size=30).move_to(rect1.get_center())
-        var1_label = Text("first_num", font_size=20).next_to(rect1, UP, buff=0.2)
+        # Create working rectangles by copying from array
+        rect1 = array_boxes[0].copy()
+        num1 = array_numbers[0].copy()
+        rect2 = array_boxes[1].copy()
+        num2 = array_numbers[1].copy()
         
-        rect2 = Rectangle(height=rect_height, width=0.6*len(second_num))
-        rect2.set_fill(GREEN, opacity=0.3)
-        rect2.next_to(rect1, RIGHT, buff=0.2)
-        num2 = Text(second_num, font_size=30).move_to(rect2.get_center())
-        var2_label = Text("second_num", font_size=20).next_to(rect2, UP, buff=0.2)
+        target_pos1 = [-2, 0, 0]
+        target_pos2 = [-1, 0, 0]
         
-        initial_group = VGroup(rect1, rect2)
-        initial_group.move_to(ORIGIN)
+        var1_label = Text("first_num", font_size=20)
+        var2_label = Text("second_num", font_size=20)
         
         self.play(
-            Create(rect1),
-            Create(rect2),
-            Write(num1),
-            Write(num2),
+            rect1.animate.move_to(target_pos1),
+            num1.animate.move_to(target_pos1),
+            rect2.animate.move_to(target_pos2),
+            num2.animate.move_to(target_pos2)
+        )
+        
+        var1_label.next_to(rect1, UP, buff=0.2)
+        var2_label.next_to(rect2, UP, buff=0.2)
+        
+        self.play(
             Write(var1_label),
             Write(var2_label)
         )
@@ -81,10 +83,11 @@ class AdditiveNumberVisualization(Scene):
         while current_pos < len(example):
             sum_val = str(int(first_num) + int(second_num))
             
-            # Update stack visualization (only update numbers)
+            # Update stack visualization
             new_stack_vars = update_stack_vars(first_num, second_num, current_pos)
             self.play(Transform(stack_vars, new_stack_vars))
             
+            # Create sum rectangle
             rect_sum = Rectangle(height=rect_height, width=0.6*len(sum_val))
             rect_sum.set_fill(RED, opacity=0.3)
             rect_sum.next_to(VGroup(rect1, rect2), DOWN, buff=0.5)
@@ -97,15 +100,34 @@ class AdditiveNumberVisualization(Scene):
                 Write(sum_label)
             )
             
+            # Verify sum matches with array
+            array_segment = example[current_pos:current_pos+len(sum_val)]
+            if sum_val != array_segment:
+                error = Text("Invalid Sequence!", color=RED, font_size=36)
+                error.next_to(VGroup(rect1, rect2), DOWN, buff=1)
+                self.play(Write(error))
+                self.wait(2)
+                return
+            
+            # Move rectangles and update numbers
             self.play(
                 FadeOut(num1),
-                FadeOut(sum_label),
+                FadeOut(var1_label),
                 rect2.animate.move_to(rect1.get_center()),
                 num2.animate.move_to(rect1.get_center()),
                 var2_label.animate.move_to(var1_label.get_center()),
-                rect_sum.animate.move_to(rect2.get_center()),
-                sum_text.animate.move_to(rect2.get_center())
             )
+            
+            # Move sum to array position
+            target_array_pos = array_boxes[current_pos:current_pos+len(sum_val)]
+            for i, pos in enumerate(range(current_pos, current_pos+len(sum_val))):
+                if i == 0:  # Move to second position
+                    self.play(
+                        rect_sum.animate.move_to(rect2.get_center()),
+                        sum_text.animate.move_to(rect2.get_center())
+                    )
+                
+                array_boxes[pos].set_fill(YELLOW, opacity=0.3)
             
             first_num = second_num
             second_num = sum_val
@@ -116,11 +138,6 @@ class AdditiveNumberVisualization(Scene):
             var1_label = var2_label
             var2_label = sum_label
             current_pos += len(sum_val)
-            
-            # Highlight current position in array
-            self.play(
-                array_boxes[current_pos-1].animate.set_fill(YELLOW, opacity=0.3)
-            )
         
         success = Text("Valid Additive Sequence!", color=GREEN, font_size=36)
         success.next_to(VGroup(rect1, rect2), DOWN, buff=1)
