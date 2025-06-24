@@ -6,7 +6,6 @@ class AdditiveNumberVisualization(Scene):
         title.to_edge(UP)
         self.play(Write(title))
 
-        # Example input
         example = "199100199"
         string_text = Text(f"Input: {example}", font_size=36).next_to(title, DOWN, buff=0.5)
         self.play(Write(string_text))
@@ -24,30 +23,50 @@ class AdditiveNumberVisualization(Scene):
 
         self.play(Create(array_boxes), Write(array_numbers))
 
-        # Try to find valid additive prefix automatically
-        def find_additive_prefix(num_str):
-            n = len(num_str)
-            for i in range(1, n):
-                if num_str[0] == '0' and i > 1:
+        # Animate prefix-finding
+        found = False
+        n = len(example)
+        for i in range(1, n):
+            if example[0] == '0' and i > 1:
+                break
+            for j in range(i+1, n):
+                if example[i] == '0' and j - i > 1:
                     break
-                for j in range(i+1, n):
-                    if num_str[i] == '0' and j - i > 1:
-                        break
-                    first = num_str[:i]
-                    second = num_str[i:j]
-                    k = j
-                    while k < n:
-                        sum_val = str(int(first) + int(second))
-                        if not num_str.startswith(sum_val, k):
-                            break
-                        k += len(sum_val)
-                        first, second = second, sum_val
-                    if k == n:
-                        return num_str[:i], num_str[i:j]
-            return None, None
+                first_num = example[:i]
+                second_num = example[i:j]
 
-        first_num, second_num = find_additive_prefix(example)
-        if not first_num or not second_num:
+                temp1 = VGroup(*array_boxes[:i]).copy()
+                temp2 = VGroup(*array_boxes[i:j]).copy()
+                label1 = Text("first", font_size=20).next_to(temp1, UP)
+                label2 = Text("second", font_size=20).next_to(temp2, UP)
+                self.play(
+                    temp1.animate.set_fill(BLUE, opacity=0.3),
+                    temp2.animate.set_fill(ORANGE, opacity=0.3),
+                    Write(label1), Write(label2)
+                )
+
+                a, b = first_num, second_num
+                k = j
+                success = True
+                while k < n:
+                    s = str(int(a) + int(b))
+                    if not example.startswith(s, k):
+                        success = False
+                        break
+                    k += len(s)
+                    a, b = b, s
+
+                if success and k == n:
+                    self.play(FadeOut(temp1), FadeOut(temp2), FadeOut(label1), FadeOut(label2))
+                    found = True
+                    break
+
+                self.play(FadeOut(temp1), FadeOut(temp2), FadeOut(label1), FadeOut(label2))
+
+            if found:
+                break
+
+        if not found:
             fail = Text("No valid additive sequence found!", color=RED, font_size=32).next_to(string_text, DOWN, buff=1)
             self.play(Write(fail))
             self.wait(2)
@@ -55,7 +74,6 @@ class AdditiveNumberVisualization(Scene):
 
         current_pos = len(first_num) + len(second_num)
 
-        # Stack visualization
         stack_title = Text("Variables", font_size=30)
         stack_title.to_edge(RIGHT).shift(LEFT * 2 + UP * 2)
         self.play(Write(stack_title))
@@ -74,7 +92,6 @@ class AdditiveNumberVisualization(Scene):
         stack_vars = update_stack_vars(first_num, second_num, current_pos)
         self.play(Write(stack_vars))
 
-        # Visualize first and second number blocks
         rect1 = VGroup(*array_boxes[:len(first_num)]).copy()
         num1 = VGroup(*array_numbers[:len(first_num)]).copy()
         rect2 = VGroup(*array_boxes[len(first_num):current_pos]).copy()
@@ -98,7 +115,6 @@ class AdditiveNumberVisualization(Scene):
 
         self.play(Write(var1_label), Write(var2_label))
 
-        # Begin animation loop
         while current_pos < len(example):
             sum_val = str(int(first_num) + int(second_num))
             new_stack_vars = update_stack_vars(first_num, second_num, current_pos)
@@ -123,23 +139,19 @@ class AdditiveNumberVisualization(Scene):
             for i in range(current_pos, current_pos + len(sum_val)):
                 array_boxes[i].set_fill(YELLOW, opacity=0.3)
 
-            # Fade out old first number and its label
             self.play(FadeOut(rect1), FadeOut(num1), FadeOut(var1_label))
 
-            # Promote second number to first using Transform
             self.play(
                 Transform(rect2, rect2.copy().move_to(target_pos1)),
                 Transform(num2, num2.copy().move_to(target_pos1)),
                 Transform(var2_label, Text("first_num", font_size=20).next_to(rect2, UP, buff=0.2))
             )
 
-            # Move sum into second slot
             self.play(
                 Transform(rect_sum, rect_sum.copy().move_to(target_pos2)),
                 Transform(sum_text, sum_text.copy().move_to(target_pos2)),
                 Transform(sum_label, Text("second_num", font_size=20).next_to(rect_sum, UP, buff=0.2))
             )
-
 
             first_num = second_num
             second_num = sum_val
@@ -150,7 +162,6 @@ class AdditiveNumberVisualization(Scene):
             var1_label = var2_label
             var2_label = sum_label
             current_pos += len(sum_val)
-
 
         success = Text("Valid Additive Sequence!", color=GREEN, font_size=36)
         success.next_to(sum_label, RIGHT, buff=1)
