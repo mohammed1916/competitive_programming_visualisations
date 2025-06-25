@@ -4,7 +4,8 @@ import numpy as np
 class AdditiveNumberVisualization(Scene):
     def construct(self):
         # Example input string
-        numeric_string = "112358"  # Fibonacci sequence: 1+1=2, 1+2=3, 2+3=5, 3+5=8
+        # numeric_string = "112358"  # Fibonacci sequence: 1+1=2, 1+2=3, 2+3=5, 3+5=8
+        numeric_string = "112334"  
         
         # Title
         title = Text("Additive Number Algorithm Visualization", font_size=36)
@@ -19,6 +20,7 @@ class AdditiveNumberVisualization(Scene):
         
         # Hide input text to avoid overlap
         self.play(FadeOut(input_text))
+        self.play(FadeOut(title))
         
         # Create string visualization
         string_boxes = VGroup()
@@ -54,7 +56,7 @@ class AdditiveNumberVisualization(Scene):
         # Position arrows above the string - current_pos arrow higher for visibility
         arrow1.next_to(string_boxes[0], UP, buff=0.3)
         arrow2.next_to(string_boxes[1], UP, buff=0.3)
-        arrow3.next_to(string_boxes[2], UP, buff=0.7)  # Higher position for current_pos
+        arrow3.next_to(string_boxes[1], UP, buff=0.7)  # Higher position for current_pos
         
         # Arrow labels
         arrow1_label = Text("first_end", font_size=12, color=RED)
@@ -144,7 +146,7 @@ class AdditiveNumberVisualization(Scene):
                 self.play(FadeOut(current_braces))
             
             # Create brace for first number
-            first_brace = create_brace_with_label(0, end_idx_first, f"first_num", RED, DOWN)
+            first_brace = create_brace_with_label(0, end_idx_first, f"first\nnumber", RED, DOWN)
             current_braces = VGroup(first_brace)
             self.play(Create(first_brace))
             
@@ -175,13 +177,14 @@ class AdditiveNumberVisualization(Scene):
                     self.play(Transform(arrow2, target_arrow2), Transform(arrow2_label, target_label2))
                 
                 # Update braces - remove old second brace if exists
-                if len(current_braces) > 1:
-                    old_second_brace = current_braces[1]
-                    self.play(FadeOut(old_second_brace))
-                    current_braces.remove(old_second_brace)
-                
+                if len(current_braces) >= 1:
+                    self.play(FadeOut(current_braces))
+                    current_braces = VGroup()
                 # Create brace for second number
-                second_brace = create_brace_with_label(end_idx_first, end_idx_second, f"second_num", BLUE, DOWN)
+                first_brace = create_brace_with_label(0, end_idx_first, f"first", RED, DOWN)
+                current_braces.add(first_brace)
+                self.play(Create(first_brace))
+                second_brace = create_brace_with_label(end_idx_first, end_idx_second, f"second", BLUE, DOWN)
                 current_braces.add(second_brace)
                 self.play(Create(second_brace))
                 
@@ -282,6 +285,10 @@ class AdditiveNumberVisualization(Scene):
                     # Update variables
                     first_num = second_num
                     second_num = sum_val
+                    self.play(
+                        Transform(current_braces[0], create_brace_with_label(current_pos - len(first_num) - len(second_num), current_pos - len(second_num), f"first", RED, DOWN)),
+                        Transform(current_braces[1], create_brace_with_label(current_pos - len(second_num), current_pos, f"second", BLUE, DOWN))
+                    )
                     
                     # Update displays
                     new_var1 = Text(f"first_num: '{first_num}'", font_size=14, color=WHITE)
@@ -310,7 +317,7 @@ class AdditiveNumberVisualization(Scene):
                 if current_pos == total_length and sequence_valid:
                     success_text = Text("SUCCESS! Valid additive sequence found!", 
                                       font_size=20, color=GREEN)
-                    success_text.next_to(title, DOWN, buff=0.5)  # Position near title since input is hidden
+                    success_text.next_to(flag3_text, DOWN + RIGHT, buff=0.5)
                     self.play(Write(success_text))
                     
                     # Highlight the complete sequence with final braces
@@ -335,7 +342,7 @@ class AdditiveNumberVisualization(Scene):
         
         # If we get here, no valid sequence was found
         failure_text = Text("No valid additive sequence found", font_size=20, color=RED)
-        failure_text.next_to(title, DOWN, buff=0.5)  # Position near title since input is hidden
+        failure_text.next_to(flag3_text, DOWN + RIGHT, buff=0.5)  
         self.play(Write(failure_text))
         
         # Hide arrows
