@@ -42,6 +42,29 @@ class AdditiveNumberVisualization(Scene):
         
         self.play(Write(index_labels))
         
+        # Create animated arrows/pointers for flags
+        arrow1 = Arrow(start=UP*0.5, end=DOWN*0.5, color=RED, buff=0.1)
+        arrow2 = Arrow(start=UP*0.5, end=DOWN*0.5, color=BLUE, buff=0.1)
+        arrow3 = Arrow(start=UP*0.5, end=DOWN*0.5, color=GREEN, buff=0.1)
+        
+        # Position arrows above the string
+        arrow1.next_to(string_boxes[0], UP, buff=0.3)
+        arrow2.next_to(string_boxes[1], UP, buff=0.3)
+        arrow3.next_to(string_boxes[2], UP, buff=0.3)
+        
+        # Arrow labels
+        arrow1_label = Text("first_end", font_size=12, color=RED)
+        arrow2_label = Text("second_end", font_size=12, color=BLUE)
+        arrow3_label = Text("current_pos", font_size=12, color=GREEN)
+        
+        arrow1_label.next_to(arrow1, UP, buff=0.1)
+        arrow2_label.next_to(arrow2, UP, buff=0.1)
+        arrow3_label.next_to(arrow3, UP, buff=0.1)
+        
+        # Initially hide arrows
+        arrows_group = VGroup(arrow1, arrow2, arrow3)
+        labels_group = VGroup(arrow1_label, arrow2_label, arrow3_label)
+        
         # Flag indicators
         flag_display = VGroup()
         
@@ -57,6 +80,27 @@ class AdditiveNumberVisualization(Scene):
         flag_display.add(flag1_text, flag2_text, flag3_text)
         self.play(Write(flag_display))
         
+        # Function to create braces with labels
+        def create_brace_with_label(start_idx, end_idx, label_text, color, direction_=DOWN):
+            if start_idx >= end_idx:
+                return VGroup()
+            
+            boxes_to_brace = string_boxes[start_idx:end_idx]
+            if len(boxes_to_brace) == 0:
+                return VGroup()
+                
+            brace = Brace(boxes_to_brace, direction=direction_, color=color)
+            brace_label = Text(label_text, font_size=14, color=color)
+            # print(f"Creating brace from {start_idx} to {end_idx} with label '{label_text}'")
+            # print(f"direction_: {direction_}")
+            
+            if np.allclose(direction_, DOWN):
+                brace_label.next_to(brace, DOWN, buff=0.1)
+            else:
+                brace_label.next_to(brace, UP, buff=0.1)
+                
+            return VGroup(brace, brace_label)
+        
         # Stack/Heap display
         stack_title = Text("Stack/Heap State", font_size=20, color=YELLOW)
         stack_title.to_edge(RIGHT).shift(UP * 2)
@@ -70,6 +114,9 @@ class AdditiveNumberVisualization(Scene):
         # Algorithm simulation
         total_length = len(numeric_string)
         
+        # Initialize brace groups
+        current_braces = VGroup()
+        
         # Outer loop: end_index_of_first_number
         for end_idx_first in range(1, total_length):
             # Update flag display
@@ -77,9 +124,24 @@ class AdditiveNumberVisualization(Scene):
             new_flag1.move_to(flag1_text.get_center())
             self.play(Transform(flag1_text, new_flag1))
             
-            # Highlight first number
-            first_num_boxes = string_boxes[:end_idx_first]
-            self.play(*[box.animate.set_fill(RED, 0.3) for box in first_num_boxes])
+            # Animate arrow1 to current position
+            target_pos = string_boxes[end_idx_first-1].get_center() + UP * 1.1
+            arrow1.next_to(string_boxes[end_idx_first-1], UP, buff=0.3)
+            arrow1_label.next_to(arrow1, UP, buff=0.1)
+            
+            if end_idx_first == 1:  # First time showing arrow
+                self.play(GrowArrow(arrow1), Write(arrow1_label))
+            else:
+                self.play(arrow1.animate.next_to(string_boxes[end_idx_first-1], UP, buff=0.3), arrow1_label.animate.next_to(arrow1, UP, buff=0.1))
+            
+            # Clear previous braces
+            if len(current_braces) > 0:
+                self.play(FadeOut(current_braces))
+            
+            # Create brace for first number
+            first_brace = create_brace_with_label(0, end_idx_first, f"first_num", RED, DOWN)
+            current_braces = VGroup(first_brace)
+            self.play(Create(first_brace))
             
             # Check leading zero condition
             if numeric_string[0] == '0' and end_idx_first > 1:
@@ -97,9 +159,26 @@ class AdditiveNumberVisualization(Scene):
                 new_flag2.move_to(flag2_text.get_center())
                 self.play(Transform(flag2_text, new_flag2))
                 
-                # Highlight second number
-                second_num_boxes = string_boxes[end_idx_first:end_idx_second]
-                self.play(*[box.animate.set_fill(BLUE, 0.3) for box in second_num_boxes])
+                # Animate arrow2 to current position
+                arrow2.next_to(string_boxes[end_idx_second-1], UP, buff=0.3)
+                arrow2_label.next_to(arrow2, UP, buff=0.1)
+                
+                if end_idx_first == 1 and end_idx_second == 2:  # First time showing arrow2
+                    self.play(GrowArrow(arrow2), Write(arrow2_label))
+                else:
+                    self.play(arrow2.animate.next_to(string_boxes[end_idx_second-1], UP, buff=0.3),
+                             arrow2_label.animate.next_to(arrow2, UP, buff=0.1))
+                
+                # Update braces - remove old second brace if exists
+                if len(current_braces) > 1:
+                    old_second_brace = current_braces[1]
+                    self.play(FadeOut(old_second_brace))
+                    current_braces.remove(old_second_brace)
+                
+                # Create brace for second number
+                second_brace = create_brace_with_label(end_idx_first, end_idx_second, f"second_num", BLUE, DOWN)
+                current_braces.add(second_brace)
+                self.play(Create(second_brace))
                 
                 # Check leading zero for second number
                 if numeric_string[end_idx_first] == '0' and end_idx_second - end_idx_first > 1:
@@ -115,10 +194,20 @@ class AdditiveNumberVisualization(Scene):
                 second_num_str = numeric_string[end_idx_first:end_idx_second]
                 current_pos = end_idx_second
                 
+                # Show arrow3 for current position
+                arrow3.next_to(string_boxes[current_pos-1], UP, buff=0.3)
+                arrow3_label.next_to(arrow3, UP, buff=0.1)
+                
+                if end_idx_first == 1 and end_idx_second == 2:  # First time showing arrow3
+                    self.play(GrowArrow(arrow3), Write(arrow3_label))
+                else:
+                    self.play(arrow3.animate.next_to(string_boxes[current_pos-1], UP, buff=0.3),
+                             arrow3_label.animate.next_to(arrow3, UP, buff=0.1))
+                
                 # Update stack/heap display
                 stack_vars = VGroup()
-                var1 = Text(f"first_num: {first_num_str}", font_size=14, color=WHITE)
-                var2 = Text(f"second_num: {second_num_str}", font_size=14, color=WHITE)
+                var1 = Text(f"first_num: '{first_num_str}'", font_size=14, color=WHITE)
+                var2 = Text(f"second_num: '{second_num_str}'", font_size=14, color=WHITE)
                 var3 = Text(f"current_pos: {current_pos}", font_size=14, color=WHITE)
                 
                 var1.next_to(stack_bg.get_top(), DOWN, buff=0.1)
@@ -137,13 +226,14 @@ class AdditiveNumberVisualization(Scene):
                 sequence_valid = True
                 first_num = first_num_str
                 second_num = second_num_str
+                sum_brace = VGroup()  # To track sum brace
                 
                 while current_pos < total_length:
                     # Calculate sum
                     sum_val = str(int(first_num) + int(second_num))
                     
                     # Update stack display
-                    sum_text = Text(f"sum: {sum_val}", font_size=14, color=YELLOW)
+                    sum_text = Text(f"sum: '{sum_val}'", font_size=14, color=YELLOW)
                     sum_text.next_to(var3, DOWN, buff=0.1)
                     self.play(Write(sum_text))
                     
@@ -157,20 +247,28 @@ class AdditiveNumberVisualization(Scene):
                         self.play(FadeOut(error_text), FadeOut(sum_text))
                         break
                     
-                    # Highlight matching portion
-                    match_boxes = string_boxes[current_pos:current_pos + len(sum_val)]
-                    self.play(*[box.animate.set_fill(GREEN, 0.5) for box in match_boxes])
+                    # Remove old sum brace if exists
+                    if len(sum_brace) > 0:
+                        self.play(FadeOut(sum_brace))
                     
-                    # Update position
+                    # Create brace for sum
+                    sum_end_pos = current_pos + len(sum_val)
+                    sum_brace = create_brace_with_label(current_pos, sum_end_pos, f"sum='{sum_val}'", YELLOW, UP)
+                    self.play(Create(sum_brace))
+                    
+                    # Animate arrow3 to new position
                     current_pos += len(sum_val)
+                    if current_pos < len(string_boxes):
+                        self.play(arrow3.animate.next_to(string_boxes[current_pos-1], UP, buff=0.3),
+                                 arrow3_label.animate.next_to(arrow3, UP, buff=0.1))
                     
                     # Update variables
                     first_num = second_num
                     second_num = sum_val
                     
                     # Update displays
-                    new_var1 = Text(f"first_num: {first_num}", font_size=14, color=WHITE)
-                    new_var2 = Text(f"second_num: {second_num}", font_size=14, color=WHITE)
+                    new_var1 = Text(f"first_num: '{first_num}'", font_size=14, color=WHITE)
+                    new_var2 = Text(f"second_num: '{second_num}'", font_size=14, color=WHITE)
                     new_var3 = Text(f"current_pos: {current_pos}", font_size=14, color=WHITE)
                     
                     new_var1.move_to(var1.get_center())
@@ -197,24 +295,34 @@ class AdditiveNumberVisualization(Scene):
                                       font_size=20, color=GREEN)
                     success_text.next_to(input_text, DOWN, buff=0.5)
                     self.play(Write(success_text))
-                    self.wait(2)
+                    
+                    # Highlight the complete sequence with final braces
+                    if len(sum_brace) > 0:
+                        self.play(sum_brace.animate.set_color(GREEN))
+                    self.play(current_braces.animate.set_color(GREEN))
+                    
+                    self.wait(3)
                     return
                 
-                # Clear stack for next iteration
+                # Clear stack and braces for next iteration
                 self.play(FadeOut(stack_vars))
-                
-                # Reset box colors
-                self.play(*[box.animate.set_fill(WHITE, 0) for box in string_boxes])
+                if len(sum_brace) > 0:
+                    self.play(FadeOut(sum_brace))
                 
                 self.wait(0.5)
             
-            # Reset first number highlighting
-            self.play(*[box.animate.set_fill(WHITE, 0) for box in first_num_boxes])
+            # Clear first number brace before next iteration
+            if len(current_braces) > 0:
+                self.play(FadeOut(current_braces))
+                current_braces = VGroup()
         
         # If we get here, no valid sequence was found
         failure_text = Text("No valid additive sequence found", font_size=20, color=RED)
         failure_text.next_to(input_text, DOWN, buff=0.5)
         self.play(Write(failure_text))
+        
+        # Hide arrows
+        self.play(FadeOut(arrows_group), FadeOut(labels_group))
         self.wait(2)
 
 # Alternative example with a non-additive sequence
