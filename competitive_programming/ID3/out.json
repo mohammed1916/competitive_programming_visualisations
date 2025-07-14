@@ -1,0 +1,17 @@
+{
+    "Outlook": {
+        "Overcast": "Yes",
+        "Sunny": {
+            "Humidity": {
+                "Normal": "Yes",
+                "High": "No"
+            }
+        },
+        "Rain": {
+            "Wind": {
+                "Weak": "Yes",
+                "Strong": "No"
+            }
+        }
+    }
+}
