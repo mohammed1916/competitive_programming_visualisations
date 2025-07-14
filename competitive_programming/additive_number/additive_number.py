@@ -1,6 +1,6 @@
 from manim import *
 import numpy as np
-
+config.max_files_cached =150
 class AdditiveNumberVisualization(Scene):
     def construct(self):
         # Example input string
@@ -11,10 +11,22 @@ class AdditiveNumberVisualization(Scene):
         title = Text("Additive Number Algorithm Visualization", font_size=36)
         title.to_edge(UP)
         self.play(Write(title))
+        Def = VGroup(
+            Text("Each number (starting from the third) is the sum of the previous two numbers.", font_size=14, color=WHITE),
+            Text("Conditions:", font_size=32, color=BLUE).set_underline(True),
+            Text("1. The sequence must have at least three numbers.", font_size=24, color=YELLOW),
+            Text("2. Numbers can't have leading zeros, unless the number is exactly '0'.", font_size=24, color=YELLOW),
+            Text("3. The string must be fully consumed by valid sums.", font_size=24, color=YELLOW)
+        ).arrange(DOWN, aligned_edge=LEFT, buff=0.2)
+        Def.to_edge(LEFT).shift(DOWN * 0.5)
+        self.play(Write(Def))
+        self.wait(1)
+        self.play(FadeOut(Def))
+        
         
         # Input string display
         input_text = Text(f"Input: {numeric_string}", font_size=24)
-        input_text.next_to(title, DOWN, buff=0.5)
+        input_text.next_to(title, DOWN, buff=2)
         self.play(Write(input_text))
         self.wait(1)
         
@@ -28,7 +40,7 @@ class AdditiveNumberVisualization(Scene):
         
         for i, char in enumerate(numeric_string):
             box = Square(side_length=0.8, color=WHITE)
-            box.shift(RIGHT * (i - len(numeric_string)/2 + 0.5) * 0.9)
+            box.shift(RIGHT * (i - len(numeric_string)/2 + 0.5) * 1.5)
             label = Text(char, font_size=20)
             label.move_to(box.get_center())
             string_boxes.add(box)
@@ -49,21 +61,21 @@ class AdditiveNumberVisualization(Scene):
         self.play(Write(index_labels))
         
         # Create animated arrows/pointers for flags
-        arrow1 = Arrow(start=UP*0.5, end=DOWN*0.5, color=RED, buff=0.1)
-        arrow2 = Arrow(start=UP*0.5, end=DOWN*0.5, color=BLUE, buff=0.1)
+        arrow1 = Arrow(start=UP*0.3, end=DOWN*0.3, color=RED, buff=0.1)
+        arrow2 = Arrow(start=UP*0.7, end=DOWN*0.3, color=BLUE, buff=0.1)
         arrow3 = Arrow(start=UP*0.5, end=DOWN*0.5, color=GREEN, buff=0.1)
         
         # Position arrows above the string - current_pos arrow higher for visibility
         arrow1.next_to(string_boxes[0], UP, buff=0.3)
-        arrow2.next_to(string_boxes[1], UP, buff=0.3)
+        arrow2.next_to(string_boxes[1], UP, buff=0.5)
         arrow3.next_to(string_boxes[1], UP, buff=0.7)  # Higher position for current_pos
         
         # Arrow labels
-        arrow1_label = Text("first_end", font_size=12, color=RED)
-        arrow2_label = Text("second_end", font_size=12, color=BLUE)
+        arrow1_label = Text("If first subproblem's\nFirst number ended here", font_size=12, color=RED)
+        arrow2_label = Text("If first subproblem's\nSecond number ended here", font_size=12, color=BLUE)
         arrow3_label = Text("current_pos", font_size=12, color=GREEN)
         
-        arrow1_label.next_to(arrow1, UP, buff=0.1)
+        arrow1_label.next_to(arrow1, UP, buff=0.3)
         arrow2_label.next_to(arrow2, UP, buff=0.1)
         arrow3_label.next_to(arrow3, UP, buff=0.1)
         
@@ -77,13 +89,14 @@ class AdditiveNumberVisualization(Scene):
         # Create flag text displays
         flag1_text = Text("end_index_of_first_number: -", font_size=18, color=RED)
         flag2_text = Text("end_index_of_second_number: -", font_size=18, color=BLUE) 
-        flag3_text = Text("current_position_in_numeric_string: -", font_size=18, color=GREEN)
+        # flag3_text = Text("current_position_in_numeric_string: -", font_size=18, color=GREEN)
         
         flag1_text.to_edge(LEFT).shift(DOWN * 0.5)
         flag2_text.next_to(flag1_text, DOWN, buff=0.2)
-        flag3_text.next_to(flag2_text, DOWN, buff=0.2)
+        # flag3_text.next_to(flag2_text, DOWN, buff=0.2)
         
-        flag_display.add(flag1_text, flag2_text, flag3_text)
+        # flag_display.add(flag1_text, flag2_text, flag3_text)
+        flag_display.add(flag1_text, flag2_text)
         self.play(Write(flag_display))
         
         # Function to create braces with labels
@@ -106,11 +119,11 @@ class AdditiveNumberVisualization(Scene):
             return VGroup(brace, brace_label)
         
         # Stack/Heap display
-        stack_title = Text("Stack/Heap State", font_size=20, color=YELLOW)
-        stack_title.to_edge(RIGHT).shift(UP * 2)
+        stack_title = Text("Operations", font_size=20, color=YELLOW)
+        stack_title.to_edge(RIGHT).shift(LEFT * 2)
         
         stack_content = VGroup()
-        stack_bg = Rectangle(width=3, height=4, color=YELLOW, fill_opacity=0.1)
+        stack_bg = Rectangle(width=3, height=1.5, color=YELLOW, fill_opacity=0.1)
         stack_bg.next_to(stack_title, DOWN, buff=0.3)
         
         self.play(Write(stack_title), Create(stack_bg))
@@ -226,9 +239,9 @@ class AdditiveNumberVisualization(Scene):
                 self.play(Write(stack_vars))
                 
                 # Update current position flag
-                new_flag3 = Text(f"current_position_in_numeric_string: {current_pos}", font_size=18, color=GREEN)
-                new_flag3.move_to(flag3_text.get_center())
-                self.play(Transform(flag3_text, new_flag3))
+                # new_flag3 = Text(f"current_position_in_numeric_string: {current_pos}", font_size=18, color=GREEN)
+                # new_flag3.move_to(flag3_text.get_center())
+                # self.play(Transform(flag3_text, new_flag3))
                 
                 # While loop simulation
                 sequence_valid = True
@@ -307,17 +320,17 @@ class AdditiveNumberVisualization(Scene):
                     )
                     
                     # Update flag
-                    new_flag3 = Text(f"current_position_in_numeric_string: {current_pos}", font_size=18, color=GREEN)
-                    new_flag3.move_to(flag3_text.get_center())
-                    self.play(Transform(flag3_text, new_flag3))
+                    # new_flag3 = Text(f"current_position_in_numeric_string: {current_pos}", font_size=18, color=GREEN)
+                    # new_flag3.move_to(flag3_text.get_center())
+                    # self.play(Transform(flag3_text, new_flag3))
                     
                     self.wait(0.5)
                 
                 # Check if we've consumed the entire string
                 if current_pos == total_length and sequence_valid:
-                    success_text = Text("SUCCESS! Valid additive sequence found!", 
+                    success_text = Text("SUCCESS! \nValid additive sequence found!", 
                                       font_size=20, color=GREEN)
-                    success_text.next_to(flag3_text, DOWN + RIGHT, buff=0.5)
+                    success_text.next_to(flag2_text, DOWN + RIGHT, buff=0.5)
                     self.play(Write(success_text))
                     
                     # Highlight the complete sequence with final braces
@@ -342,25 +355,25 @@ class AdditiveNumberVisualization(Scene):
         
         # If we get here, no valid sequence was found
         failure_text = Text("No valid additive sequence found", font_size=20, color=RED)
-        failure_text.next_to(flag3_text, DOWN + RIGHT, buff=0.5)  
+        failure_text.next_to(flag2_text, DOWN + RIGHT, buff=0.5)  
         self.play(Write(failure_text))
         
         # Hide arrows
         self.play(FadeOut(arrows_group), FadeOut(labels_group))
         self.wait(2)
 
-# Alternative example with a non-additive sequence
-class AdditiveNumberFailureExample(Scene):
-    def construct(self):
-        # This will demonstrate the algorithm failing
-        numeric_string = "123"  # Not an additive sequence
+# # Alternative example with a non-additive sequence
+# class AdditiveNumberFailureExample(Scene):
+#     def construct(self):
+#         # This will demonstrate the algorithm failing
+#         numeric_string = "123"  # Not an additive sequence
         
-        title = Text("Non-Additive Example: '123'", font_size=36)
-        self.play(Write(title))
+#         title = Text("Non-Additive Example: '123'", font_size=36)
+#         self.play(Write(title))
         
-        explanation = Text("1+2=3, but we need at least 3 numbers in sequence", 
-                         font_size=18, color=YELLOW)
-        explanation.next_to(title, DOWN)
-        self.play(Write(explanation))
+#         explanation = Text("1+2=3, but we need at least 3 numbers in sequence", 
+#                          font_size=18, color=YELLOW)
+#         explanation.next_to(title, DOWN)
+#         self.play(Write(explanation))
         
-        self.wait(3)
+#         self.wait(3)
