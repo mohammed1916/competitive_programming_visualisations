@@ -1,0 +1,18 @@
+"""
+OUTPUT:
+
+
+$ pytest -v
+============================================================================================ test session starts =============================================================================================
+platform win32 -- Python 3.11.9, pytest-8.4.1, pluggy-1.6.0 -- C:\Users\abd\AppData\Local\Microsoft\WindowsApps\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\abd\d\vid\competitive_programming\560. Subarray Sum Equals K
+plugins: anyio-4.9.0, langsmith-0.4.12, typeguard-4.4.4
+collected 4 items                                                                                                                                                                                              
+
+test_solution.py::test_subarray_sum_basic PASSED                                                                                                                                                        [ 25%]
+test_solution.py::test_subarray_sum_with_zero PASSED                                                                                                                                                    [ 50%] 
+test_solution.py::test_subarray_sum_negative_numbers PASSED                                                                                                                                             [ 75%] 
+test_solution.py::test_subarray_sum_single_element PASSED                                                                                                                                               [100%] 
+
+"""
