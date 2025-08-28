@@ -20,7 +20,7 @@ class AdditiveNumberVisualization(Scene):
         ).arrange(DOWN, aligned_edge=LEFT, buff=0.2)
         Def.to_edge(LEFT).shift(DOWN * 0.5)
         self.play(Write(Def))
-        self.wait(1)
+        self.wait(5)
         self.play(FadeOut(Def))
         
         
