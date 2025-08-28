@@ -10,15 +10,15 @@ def main():
         n = int(input())
         a = list(map(int, input().split()))
         
-        counts = defaultdict(int)
+        dp = defaultdict(int)  # Tracks elements collected toward each block length
         ans = 0
         
         for x in a:
-            counts[x] += 1
-            if counts[x] == x:
+            dp[x] += 1
+            if dp[x] == x:
                 ans += x
-                counts[x] = 0  # reset for next block
-        
+                dp[x] = 0  # reset after completing a block
+
         print(ans)
 
 if __name__ == "__main__":
