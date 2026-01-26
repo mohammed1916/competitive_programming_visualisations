@@ -11,33 +11,27 @@ def solve():
         initial_array = list(map(int, input().split()))
         replacement_array = list(map(int, input().split()))
 
-        # Compute suffix maximum of replacement_array (b)
-        suffix_maximum_of_b = [0] * array_length
-        suffix_maximum_of_b[-1] = replacement_array[-1]
+        # best_possible_value[i] = max(a[i], b[i])
+        best_possible_value = [0] * array_length
 
-        for index in range(array_length - 2, -1, -1):
-            suffix_maximum_of_b[index] = max(
-                suffix_maximum_of_b[index + 1],
-                replacement_array[index]
+        for i in range(array_length):
+            best_possible_value[i] = max(
+                initial_array[i],
+                replacement_array[i]
             )
 
-        # Compute best possible value for each position
-        maximum_possible_array = [0] * array_length
-
-        for index in range(array_length):
-            maximum_possible_array[index] = max(
-                initial_array[index],
-                suffix_maximum_of_b[index]
+        # Build suffix maximum
+        for i in range(array_length - 2, -1, -1):
+            best_possible_value[i] = max(
+                best_possible_value[i],
+                best_possible_value[i + 1]
             )
 
-        # Build prefix sum for fast range queries
-        prefix_sum_of_max_array = [0] * (array_length + 1)
+        # Prefix sum
+        prefix_sum = [0] * (array_length + 1)
 
-        for index in range(array_length):
-            prefix_sum_of_max_array[index + 1] = (
-                prefix_sum_of_max_array[index]
-                + maximum_possible_array[index]
-            )
+        for i in range(array_length):
+            prefix_sum[i + 1] = prefix_sum[i] + best_possible_value[i]
 
         # Answer queries
         answers = []
@@ -45,16 +39,11 @@ def solve():
         for _ in range(number_of_queries):
             left, right = map(int, input().split())
 
-            # Convert to 0-based indexing
             left -= 1
             right -= 1
 
-            range_sum = (
-                prefix_sum_of_max_array[right + 1]
-                - prefix_sum_of_max_array[left]
-            )
-
-            answers.append(str(range_sum))
+            result = prefix_sum[right + 1] - prefix_sum[left]
+            answers.append(str(result))
 
         print(" ".join(answers))
 
