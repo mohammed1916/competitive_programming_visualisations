@@ -604,16 +604,18 @@ export default function PalindromeVisualizer() {
         )}
       </div>
 
-      <div className={`content-shell ${showCode ? 'split' : 'single'} code-width-${codeWidth}`}>
-        <div className="visual-column">
+      <div className={`content-shell ${showCode ? 'split' : 'single'} code-width-${codeWidth} ${n > 0 ? 'has-variables' : ''}`}>
 
-      {/* ── VARIABLE TRACKER ─────────────────────────────── */}
       {n > 0 && (
-        <div className="pv-card variable-shell">
-          <div className="section-label">Variable Tracker</div>
-          <VariablePanel step={currentStep} previousStep={previousStep} str={str} />
+        <div className="variable-column">
+          <div className="pv-card variable-shell">
+            <div className="section-label">Variable Tracker</div>
+            <VariablePanel step={currentStep} previousStep={previousStep} str={str} />
+          </div>
         </div>
       )}
+
+        <div className="visual-column">
 
       {/* ── STRING DISPLAY ────────────────────────────────── */}
       {n > 0 && (

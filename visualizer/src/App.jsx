@@ -159,7 +159,7 @@ function HomePage({ onSelect, layoutWidth, onLayoutChange }) {
 /* ── Root App ────────────────────────────────────────────────────────── */
 export default function App() {
   const [active, setActive] = useState(null)
-  const [layoutWidth, setLayoutWidth] = useState('wide')
+  const [layoutWidth, setLayoutWidth] = useState('full')
 
   return (
     <div className={`app layout-${layoutWidth}`}>

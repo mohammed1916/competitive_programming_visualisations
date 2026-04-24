@@ -203,16 +203,41 @@
   grid-template-columns: minmax(0, 1fr);
 }
 
+.content-shell.single.has-variables {
+  grid-template-columns: minmax(260px, 0.8fr) minmax(0, 1.7fr);
+}
+
 .content-shell.split {
   grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.95fr);
+}
+
+.content-shell.split.has-variables {
+  grid-template-columns: minmax(260px, 0.78fr) minmax(0, 1.45fr) minmax(320px, 0.95fr);
 }
 
 .content-shell.split.code-width-wide {
   grid-template-columns: minmax(0, 1.15fr) minmax(420px, 1.15fr);
 }
 
+.content-shell.split.code-width-wide.has-variables {
+  grid-template-columns: minmax(280px, 0.82fr) minmax(0, 1.1fr) minmax(420px, 1.15fr);
+}
+
 .content-shell.split.code-width-full {
   grid-template-columns: minmax(0, 0.9fr) minmax(540px, 1.6fr);
+}
+
+.content-shell.split.code-width-full.has-variables {
+  grid-template-columns: minmax(300px, 0.85fr) minmax(0, 0.95fr) minmax(540px, 1.6fr);
+}
+
+.variable-column {
+  min-width: 0;
+}
+
+.variable-column .variable-shell {
+  position: sticky;
+  top: 82px;
 }
 
 .visual-column {
@@ -725,10 +750,14 @@
 }
 
 @media (max-width: 980px) {
+  .content-shell.single.has-variables,
+  .content-shell.split.has-variables,
   .content-shell.split {
     grid-template-columns: minmax(0, 1fr);
   }
 
+  .content-shell.split.code-width-wide.has-variables,
+  .content-shell.split.code-width-full.has-variables,
   .content-shell.split.code-width-wide,
   .content-shell.split.code-width-full {
     grid-template-columns: minmax(0, 1fr);
@@ -738,6 +767,7 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
+  .variable-column .variable-shell,
   .code-panel {
     position: static;
   }

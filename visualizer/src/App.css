@@ -14,7 +14,7 @@
 
 .app.layout-full {
   --page-shell-max-width: none;
-  --page-shell-padding: 2rem;
+  --page-shell-padding: 1rem;
 }
 
 /* ── Home Page ─────────────────────────────── */
