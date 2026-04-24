@@ -347,6 +347,7 @@ export default function PalindromeVisualizer() {
   const [isPlaying, setIsPlaying] = useState(false)
   const [speed, setSpeed]        = useState(500) // ms per step
   const [showCode, setShowCode]  = useState(true)
+  const [codeWidth, setCodeWidth] = useState('normal')
   const intervalRef = useRef(null)
 
   const n = str.length
@@ -438,24 +439,52 @@ export default function PalindromeVisualizer() {
       </div>
 
       <div className="view-toggle-wrap">
-        <span className="view-toggle-label">View</span>
-        <div className="view-toggle-pill">
-          <button
-            className={`view-toggle-btn ${!showCode ? 'active' : ''}`}
-            onClick={() => setShowCode(false)}
-          >
-            Visual only
-          </button>
-          <button
-            className={`view-toggle-btn ${showCode ? 'active' : ''}`}
-            onClick={() => setShowCode(true)}
-          >
-            Visual + code
-          </button>
+        <div className="view-toggle-group">
+          <span className="view-toggle-label">View</span>
+          <div className="view-toggle-pill">
+            <button
+              className={`view-toggle-btn ${!showCode ? 'active' : ''}`}
+              onClick={() => setShowCode(false)}
+            >
+              Visual only
+            </button>
+            <button
+              className={`view-toggle-btn ${showCode ? 'active' : ''}`}
+              onClick={() => setShowCode(true)}
+            >
+              Visual + code
+            </button>
+          </div>
         </div>
+
+        {showCode && (
+          <div className="view-toggle-group">
+            <span className="view-toggle-label">Code width</span>
+            <div className="view-toggle-pill">
+              <button
+                className={`view-toggle-btn ${codeWidth === 'normal' ? 'active' : ''}`}
+                onClick={() => setCodeWidth('normal')}
+              >
+                Normal
+              </button>
+              <button
+                className={`view-toggle-btn ${codeWidth === 'wide' ? 'active' : ''}`}
+                onClick={() => setCodeWidth('wide')}
+              >
+                Wide
+              </button>
+              <button
+                className={`view-toggle-btn ${codeWidth === 'full' ? 'active' : ''}`}
+                onClick={() => setCodeWidth('full')}
+              >
+                Full
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className={`content-shell ${showCode ? 'split' : 'single'}`}>
+      <div className={`content-shell ${showCode ? 'split' : 'single'} code-width-${codeWidth}`}>
         <div className="visual-column">
 
       {/* ── STRING DISPLAY ────────────────────────────────── */}
