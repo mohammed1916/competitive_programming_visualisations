@@ -222,6 +222,86 @@
   min-width: 0;
 }
 
+/* ── Variable Tracker ───────────────────────── */
+.variable-shell {
+  border-color: rgba(56, 189, 248, 0.18);
+}
+
+.variable-panel-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.variable-card {
+  background: linear-gradient(180deg, rgba(23,23,46,0.9), rgba(15,15,36,0.95));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  min-width: 0;
+}
+
+.variable-card .section-label {
+  margin-bottom: 0.75rem;
+}
+
+.variable-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.variable-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.72rem 0.78rem;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.04);
+  min-width: 0;
+  transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.variable-item.wide {
+  grid-column: 1 / -1;
+}
+
+.variable-item.changed {
+  background: linear-gradient(135deg, rgba(56,189,248,0.12), rgba(14,165,233,0.05));
+  border-color: rgba(56,189,248,0.25);
+  box-shadow: 0 0 0 1px rgba(56,189,248,0.1) inset;
+}
+
+.variable-key {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+
+.variable-value {
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: var(--text);
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.tone-neutral {
+  color: var(--text);
+}
+
+.tone-success {
+  color: var(--success);
+}
+
+.tone-error {
+  color: var(--error);
+}
+
+.tone-warning {
+  color: var(--warning);
+}
+
 /* ── String / Char Boxes ───────────────────── */
 .chars-row {
   display: flex;
@@ -654,6 +734,10 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
+  .variable-panel-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .code-panel {
     position: static;
   }
@@ -678,6 +762,14 @@
   .view-toggle-btn {
     flex: 1;
     text-align: center;
+  }
+
+  .variable-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .variable-item.wide {
+    grid-column: auto;
   }
 
   .code-row {

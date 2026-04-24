@@ -152,6 +152,125 @@ function buildDesc(s, i, j, charsMatch, innerOk, isPalin, len) {
   return `s[${i}]='${s[i]}' = s[${j}]='${s[j]}' and inner "${s.slice(i+1,j)}" is a palindrome → ${sub} is a palindrome ✓`
 }
 
+function getVariableSections(step, previousStep, str) {
+  const fallback = {
+    n: str.length,
+    i: null,
+    j: null,
+    length: null,
+    start: 0,
+    maxLength: str.length > 0 ? 1 : 0,
+    charsMatch: null,
+    innerOk: null,
+    dpValue: null,
+    window: null,
+    innerWindow: null,
+  }
+
+  const current = step
+    ? {
+        n: str.length,
+        i: step.i,
+        j: step.j,
+        length: step.phase === 'init' ? 1 : step.len,
+        start: step.bestStart,
+        maxLength: step.bestLen,
+        charsMatch: step.phase === 'init' ? true : step.charsMatch,
+        innerOk: step.innerOk,
+        dpValue: step.isPalin,
+        window: step.outerLeft != null ? str.slice(step.outerLeft, step.outerRight + 1) : null,
+        innerWindow: step.inner ? str.slice(step.inner.l, step.inner.r + 1) : null,
+      }
+    : fallback
+
+  const previous = previousStep
+    ? {
+        i: previousStep.i,
+        j: previousStep.j,
+        length: previousStep.phase === 'init' ? 1 : previousStep.len,
+        start: previousStep.bestStart,
+        maxLength: previousStep.bestLen,
+        charsMatch: previousStep.phase === 'init' ? true : previousStep.charsMatch,
+        innerOk: previousStep.innerOk,
+        dpValue: previousStep.isPalin,
+        window: previousStep.outerLeft != null ? str.slice(previousStep.outerLeft, previousStep.outerRight + 1) : null,
+        innerWindow: previousStep.inner ? str.slice(previousStep.inner.l, previousStep.inner.r + 1) : null,
+      }
+    : null
+
+  const change = (key) => previous ? previous[key] !== current[key] : false
+
+  return [
+    {
+      title: 'Loop Variables',
+      items: [
+        { label: 'n', value: current.n, changed: false },
+        { label: 'i', value: current.i, changed: change('i') },
+        { label: 'j', value: current.j, changed: change('j') },
+        { label: 'length', value: current.length, changed: change('length') },
+      ],
+    },
+    {
+      title: 'State Variables',
+      items: [
+        { label: 'start', value: current.start, changed: change('start') },
+        { label: 'max_length', value: current.maxLength, changed: change('maxLength') },
+        { label: 'window', value: current.window ? `"${current.window}"` : null, changed: change('window'), wide: true },
+        { label: 'inner', value: current.innerWindow ? `"${current.innerWindow}"` : null, changed: change('innerWindow'), wide: true },
+      ],
+    },
+    {
+      title: 'Condition Checks',
+      items: [
+        { label: 'chars match', value: current.charsMatch, changed: change('charsMatch'), tone: current.charsMatch === true ? 'success' : current.charsMatch === false ? 'error' : 'neutral' },
+        { label: 'inner ok', value: current.innerOk, changed: change('innerOk'), tone: current.innerOk === true ? 'success' : current.innerOk === false ? 'error' : 'neutral' },
+        { label: 'dp[i][j]', value: current.dpValue, changed: change('dpValue'), tone: current.dpValue === true ? 'success' : current.dpValue === false ? 'error' : 'neutral' },
+        { label: 'best update', value: step?.updatesBest ?? false, changed: Boolean(step?.updatesBest), tone: step?.updatesBest ? 'warning' : 'neutral' },
+      ],
+    },
+  ]
+}
+
+function formatVariableValue(value) {
+  if (value === null || value === undefined) return '—'
+  if (value === true) return 'true'
+  if (value === false) return 'false'
+  return String(value)
+}
+
+function VariablePanel({ step, previousStep, str }) {
+  const sections = getVariableSections(step, previousStep, str)
+
+  return (
+    <div className="variable-panel-grid">
+      {sections.map((section) => (
+        <motion.div
+          key={section.title}
+          className="variable-card"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.18 }}
+        >
+          <div className="section-label">{section.title}</div>
+          <div className="variable-list">
+            {section.items.map((item) => (
+              <div
+                key={item.label}
+                className={`variable-item ${item.wide ? 'wide' : ''} ${item.changed ? 'changed' : ''}`}
+              >
+                <span className="variable-key mono">{item.label}</span>
+                <span className={`variable-value mono tone-${item.tone || 'neutral'}`}>
+                  {formatVariableValue(item.value)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      ))}
+    </div>
+  )
+}
+
 /* ═══════════════════════════════════════════════════════════════
    CHAR BOX
    ═══════════════════════════════════════════════════════════════ */
@@ -352,6 +471,7 @@ export default function PalindromeVisualizer() {
 
   const n = str.length
   const currentStep = stepIdx >= 0 ? steps[stepIdx] : null
+  const previousStep = stepIdx > 0 ? steps[stepIdx - 1] : null
   const dpTable = currentStep?.dp ?? null
   const bestStart = currentStep?.bestStart ?? 0
   const bestLen   = currentStep?.bestLen   ?? (n > 0 ? 1 : 0)
@@ -486,6 +606,14 @@ export default function PalindromeVisualizer() {
 
       <div className={`content-shell ${showCode ? 'split' : 'single'} code-width-${codeWidth}`}>
         <div className="visual-column">
+
+      {/* ── VARIABLE TRACKER ─────────────────────────────── */}
+      {n > 0 && (
+        <div className="pv-card variable-shell">
+          <div className="section-label">Variable Tracker</div>
+          <VariablePanel step={currentStep} previousStep={previousStep} str={str} />
+        </div>
+      )}
 
       {/* ── STRING DISPLAY ────────────────────────────────── */}
       {n > 0 && (
