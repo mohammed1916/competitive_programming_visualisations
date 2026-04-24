@@ -22,7 +22,35 @@ const PROBLEMS = [
 
 /* ── Sub-components ──────────────────────────────────────────────────── */
 
-function ProblemPage({ problem, onBack }) {
+function LayoutControls({ layoutWidth, onChange, compact = false }) {
+  return (
+    <div className={`layout-controls ${compact ? 'compact' : ''}`}>
+      <span className="layout-label">Layout</span>
+      <div className="layout-pill">
+        <button
+          className={`layout-btn ${layoutWidth === 'normal' ? 'active' : ''}`}
+          onClick={() => onChange('normal')}
+        >
+          Normal
+        </button>
+        <button
+          className={`layout-btn ${layoutWidth === 'wide' ? 'active' : ''}`}
+          onClick={() => onChange('wide')}
+        >
+          Wide
+        </button>
+        <button
+          className={`layout-btn ${layoutWidth === 'full' ? 'active' : ''}`}
+          onClick={() => onChange('full')}
+        >
+          Full
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function ProblemPage({ problem, onBack, layoutWidth, onLayoutChange }) {
   const Component = problem.component
   return (
     <motion.div
@@ -47,6 +75,7 @@ function ProblemPage({ problem, onBack }) {
         <span className={`difficulty badge difficulty-${problem.difficulty.toLowerCase()}`}>
           {problem.difficulty}
         </span>
+        <LayoutControls layoutWidth={layoutWidth} onChange={onLayoutChange} compact />
       </header>
       <div className="problem-content">
         <Component />
@@ -55,7 +84,7 @@ function ProblemPage({ problem, onBack }) {
   )
 }
 
-function HomePage({ onSelect }) {
+function HomePage({ onSelect, layoutWidth, onLayoutChange }) {
   return (
     <motion.div
       className="home-page"
@@ -64,18 +93,22 @@ function HomePage({ onSelect }) {
       exit={{ opacity: 0 }}
     >
       <header className="home-header">
-        <motion.div
-          className="brand"
-          initial={{ y: -18, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.08, type: 'spring', stiffness: 280 }}
-        >
-          <div className="brand-icon">⟨/⟩</div>
-          <div>
-            <h1>CP Visualizer</h1>
-            <p>Algorithms, step by step</p>
-          </div>
-        </motion.div>
+        <div className="home-header-row">
+          <motion.div
+            className="brand"
+            initial={{ y: -18, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.08, type: 'spring', stiffness: 280 }}
+          >
+            <div className="brand-icon">⟨/⟩</div>
+            <div>
+              <h1>CP Visualizer</h1>
+              <p>Algorithms, step by step</p>
+            </div>
+          </motion.div>
+
+          <LayoutControls layoutWidth={layoutWidth} onChange={onLayoutChange} />
+        </div>
       </header>
 
       <main className="cards-grid">
@@ -126,13 +159,14 @@ function HomePage({ onSelect }) {
 /* ── Root App ────────────────────────────────────────────────────────── */
 export default function App() {
   const [active, setActive] = useState(null)
+  const [layoutWidth, setLayoutWidth] = useState('wide')
 
   return (
-    <div className="app">
+    <div className={`app layout-${layoutWidth}`}>
       <AnimatePresence mode="wait">
         {active
-          ? <ProblemPage key="problem" problem={active} onBack={() => setActive(null)} />
-          : <HomePage    key="home"    onSelect={setActive} />
+          ? <ProblemPage key="problem" problem={active} onBack={() => setActive(null)} layoutWidth={layoutWidth} onLayoutChange={setLayoutWidth} />
+          : <HomePage    key="home"    onSelect={setActive} layoutWidth={layoutWidth} onLayoutChange={setLayoutWidth} />
         }
       </AnimatePresence>
     </div>
