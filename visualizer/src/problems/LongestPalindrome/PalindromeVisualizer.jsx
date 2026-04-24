@@ -200,32 +200,34 @@ function getVariableSections(step, previousStep, str) {
 
   const change = (key) => previous ? previous[key] !== current[key] : false
 
+  const makeItem = (config) => ({ ...config, id: config.label })
+
   return [
     {
       title: 'Loop Variables',
       items: [
-        { label: 'n', value: current.n, changed: false },
-        { label: 'i', value: current.i, changed: change('i') },
-        { label: 'j', value: current.j, changed: change('j') },
-        { label: 'length', value: current.length, changed: change('length') },
+        makeItem({ label: 'n', value: current.n, changed: false, explanation: `Total input length. Here n = ${current.n}.` }),
+        makeItem({ label: 'length', value: current.length, changed: change('length'), explanation: current.length == null ? 'Current substring length is not set yet.' : `Current outer loop length. The algorithm is checking substrings of length ${current.length}.` }),
+        makeItem({ label: 'i', value: current.i, changed: change('i'), explanation: current.i == null ? 'Left pointer is not set yet.' : `Left index of the current substring window. i = ${current.i}.` }),
+        makeItem({ label: 'j', value: current.j, changed: change('j'), explanation: current.j == null ? 'Right pointer is not set yet.' : `Right index of the current substring window. j = ${current.j}.` }),
       ],
     },
     {
       title: 'State Variables',
       items: [
-        { label: 'start', value: current.start, changed: change('start') },
-        { label: 'max_length', value: current.maxLength, changed: change('maxLength') },
-        { label: 'window', value: current.window ? `"${current.window}"` : null, changed: change('window'), wide: true },
-        { label: 'inner', value: current.innerWindow ? `"${current.innerWindow}"` : null, changed: change('innerWindow'), wide: true },
+        makeItem({ label: 'start', value: current.start, changed: change('start'), explanation: `Start index of the best palindrome found so far. Current start = ${current.start}.` }),
+        makeItem({ label: 'max_length', value: current.maxLength, changed: change('maxLength'), explanation: `Length of the best palindrome found so far. Current max_length = ${current.maxLength}.` }),
+        makeItem({ label: 'current window', value: current.window ? `"${current.window}"` : null, changed: change('window'), wide: true, explanation: current.window ? `This is the substring currently being tested: "${current.window}".` : 'No active substring window yet.' }),
+        makeItem({ label: 'inner substring', value: current.innerWindow ? `"${current.innerWindow}"` : null, changed: change('innerWindow'), wide: true, explanation: current.innerWindow ? `Inner substring used for the DP transition: "${current.innerWindow}".` : 'There is no inner substring for this step.' }),
       ],
     },
     {
       title: 'Condition Checks',
       items: [
-        { label: 'chars match', value: current.charsMatch, changed: change('charsMatch'), tone: current.charsMatch === true ? 'success' : current.charsMatch === false ? 'error' : 'neutral' },
-        { label: 'inner ok', value: current.innerOk, changed: change('innerOk'), tone: current.innerOk === true ? 'success' : current.innerOk === false ? 'error' : 'neutral' },
-        { label: 'dp[i][j]', value: current.dpValue, changed: change('dpValue'), tone: current.dpValue === true ? 'success' : current.dpValue === false ? 'error' : 'neutral' },
-        { label: 'best update', value: step?.updatesBest ?? false, changed: Boolean(step?.updatesBest), tone: step?.updatesBest ? 'warning' : 'neutral' },
+        makeItem({ label: 'end chars match', value: current.charsMatch, changed: change('charsMatch'), tone: current.charsMatch === true ? 'success' : current.charsMatch === false ? 'error' : 'neutral', explanation: current.charsMatch == null ? 'Character comparison has not started yet.' : current.charsMatch ? 'The left and right end characters are equal.' : 'The left and right end characters are different.' }),
+        makeItem({ label: 'inner is palindrome', value: current.innerOk, changed: change('innerOk'), tone: current.innerOk === true ? 'success' : current.innerOk === false ? 'error' : 'neutral', explanation: current.innerOk == null ? 'No inner DP check is needed for this step.' : current.innerOk ? 'The inner substring already has dp = true, so it is a palindrome.' : 'The inner substring has dp = false, so it breaks the palindrome.' }),
+        makeItem({ label: 'dp[i][j]', value: current.dpValue, changed: change('dpValue'), tone: current.dpValue === true ? 'success' : current.dpValue === false ? 'error' : 'neutral', explanation: current.dpValue == null ? 'This DP cell is not evaluated yet.' : current.dpValue ? 'The current substring is a palindrome, so dp[i][j] becomes true.' : 'The current substring is not a palindrome, so dp[i][j] becomes false.' }),
+        makeItem({ label: 'best updated', value: step?.updatesBest ?? false, changed: Boolean(step?.updatesBest), tone: step?.updatesBest ? 'warning' : 'neutral', explanation: step?.updatesBest ? 'This step found a longer palindrome, so start and max_length were updated.' : 'This step did not improve the best palindrome so far.' }),
       ],
     },
   ]
@@ -239,34 +241,62 @@ function formatVariableValue(value) {
 }
 
 function VariablePanel({ step, previousStep, str }) {
+  const [explainer, setExplainer] = useState(null)
   const sections = getVariableSections(step, previousStep, str)
 
+  useEffect(() => {
+    if (!explainer) return
+    const timer = setTimeout(() => setExplainer(null), 2200)
+    return () => clearTimeout(timer)
+  }, [explainer])
+
   return (
-    <div className="variable-panel-grid">
-      {sections.map((section) => (
-        <motion.div
-          key={section.title}
-          className="variable-card"
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.18 }}
-        >
-          <div className="section-label">{section.title}</div>
-          <div className="variable-list">
-            {section.items.map((item) => (
-              <div
-                key={item.label}
-                className={`variable-item ${item.wide ? 'wide' : ''} ${item.changed ? 'changed' : ''}`}
-              >
-                <span className="variable-key mono">{item.label}</span>
-                <span className={`variable-value mono tone-${item.tone || 'neutral'}`}>
-                  {formatVariableValue(item.value)}
-                </span>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-      ))}
+    <div className="variable-panel-wrap">
+      <AnimatePresence>
+        {explainer && (
+          <motion.div
+            key={explainer.id}
+            className="variable-explainer"
+            initial={{ opacity: 0, y: -8, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="variable-explainer-title mono">{explainer.label}</div>
+            <div className="variable-explainer-text">{explainer.explanation}</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="variable-panel-grid">
+        {sections.map((section) => (
+          <motion.div
+            key={section.title}
+            className="variable-card"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.18 }}
+          >
+            <div className="section-label">{section.title}</div>
+            <div className="variable-list">
+              {section.items.map((item) => (
+                <motion.button
+                  type="button"
+                  key={item.label}
+                  className={`variable-item ${item.wide ? 'wide' : ''} ${item.changed ? 'changed' : ''} ${explainer?.id === item.id ? 'active-explainer' : ''}`}
+                  onClick={() => setExplainer(item)}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <span className="variable-key mono">{item.label}</span>
+                  <span className={`variable-value mono tone-${item.tone || 'neutral'}`}>
+                    {formatVariableValue(item.value)}
+                  </span>
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
+        ))}
+      </div>
     </div>
   )
 }
