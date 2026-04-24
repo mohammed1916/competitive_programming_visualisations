@@ -1,6 +1,71 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { Fragment, useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import './PalindromeVisualizer.css'
+
+const SOLUTION_CODE = [
+  { line: 1, text: 'class Solution(object):' },
+  { line: 2, text: '    def longestPalindrome(self, s):' },
+  { line: 3, text: '        """' },
+  { line: 4, text: '        :type s: str' },
+  { line: 5, text: '        :rtype: str' },
+  { line: 6, text: '        """' },
+  { line: 7, text: '        n = len(s)' },
+  { line: 8, text: '        if n == 0:' },
+  { line: 9, text: '            return ""' },
+  { line: 10, text: '' },
+  { line: 11, text: '        start = 0' },
+  { line: 12, text: '        max_length = 1' },
+  { line: 13, text: '' },
+  { line: 14, text: '        dp = [[False] * n for _ in range(n)]' },
+  { line: 15, text: '' },
+  { line: 16, text: '        for i in range(n):' },
+  { line: 17, text: '            dp[i][i] = True  # Single characters are palindromes' },
+  { line: 18, text: '' },
+  { line: 19, text: '        for length in range(2, n + 1):' },
+  { line: 20, text: '            for i in range(n - length + 1):' },
+  { line: 21, text: '                j = i + length - 1' },
+  { line: 22, text: '' },
+  { line: 23, text: '                if s[i] == s[j]:' },
+  { line: 24, text: '                    if length == 2:' },
+  { line: 25, text: '                        dp[i][j] = True' },
+  { line: 26, text: '                    else:' },
+  { line: 27, text: '                        dp[i][j] = dp[i + 1][j - 1]' },
+  { line: 28, text: '' },
+  { line: 29, text: '                    if dp[i][j] and length > max_length:' },
+  { line: 30, text: '                        start = i' },
+  { line: 31, text: '                        max_length = length' },
+  { line: 32, text: '' },
+  { line: 33, text: '        return s[start:start + max_length]' },
+]
+
+function getCodeHighlight(stepMeta) {
+  if (stepMeta.phase === 'init') {
+    return {
+      activeLine: 17,
+      relatedLines: [16, 17],
+    }
+  }
+
+  const relatedLines = [19, 20, 21, 23]
+  let activeLine = 23
+
+  if (stepMeta.charsMatch) {
+    if (stepMeta.len === 2) {
+      relatedLines.push(24, 25)
+      activeLine = 25
+    } else {
+      relatedLines.push(26, 27)
+      activeLine = 27
+    }
+
+    if (stepMeta.updatesBest) {
+      relatedLines.push(29, 30, 31)
+      activeLine = 31
+    }
+  }
+
+  return { activeLine, relatedLines }
+}
 
 /* ═══════════════════════════════════════════════════════════════
    STEP GENERATOR
@@ -19,6 +84,7 @@ function generateSteps(s) {
   /* ── Phase 1: Diagonal – single characters ───────────────── */
   for (let i = 0; i < n; i++) {
     dp[i][i] = true
+    const code = getCodeHighlight({ phase: 'init' })
     steps.push({
       phase: 'init',
       i, j: i,
@@ -30,6 +96,8 @@ function generateSteps(s) {
       description: `'${s[i]}' at index ${i} — single character, always a palindrome`,
       dp: dp.map(r => [...r]),
       bestStart, bestLen,
+      activeLine: code.activeLine,
+      relatedLines: code.relatedLines,
     })
   }
 
@@ -40,13 +108,16 @@ function generateSteps(s) {
       const charsMatch = s[i] === s[j]
       const innerOk = len === 2 ? true : (dp[i + 1][j - 1] === true)
       const isPalin = charsMatch && innerOk
+      const updatesBest = isPalin && len > bestLen
 
       dp[i][j] = isPalin
 
-      if (isPalin && len > bestLen) {
+      if (updatesBest) {
         bestStart = i
         bestLen = len
       }
+
+      const code = getCodeHighlight({ phase: 'check', charsMatch, len, updatesBest })
 
       steps.push({
         phase: 'check',
@@ -57,6 +128,9 @@ function generateSteps(s) {
         description: buildDesc(s, i, j, charsMatch, innerOk, isPalin, len),
         dp: dp.map(r => [...r]),
         bestStart, bestLen,
+        updatesBest,
+        activeLine: code.activeLine,
+        relatedLines: code.relatedLines,
       })
     }
   }
@@ -110,7 +184,7 @@ function CharBox({ char, idx, step }) {
 /* ═══════════════════════════════════════════════════════════════
    DP CELL
    ═══════════════════════════════════════════════════════════════ */
-function DpCell({ i, j, dp, step, n }) {
+function DpCell({ i, j, dp, step }) {
   if (i > j) {
     return <div className="dp-cell lower">—</div>
   }
@@ -206,6 +280,60 @@ function StepDetail({ step, str }) {
   )
 }
 
+function CodePanel({ step }) {
+  const codeRef = useRef(null)
+
+  useEffect(() => {
+    if (!step?.activeLine || !codeRef.current) return
+
+    const activeLine = codeRef.current.querySelector(`[data-line="${step.activeLine}"]`)
+    activeLine?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+  }, [step])
+
+  return (
+    <motion.div
+      className="code-panel"
+      initial={{ opacity: 0, x: 12 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.22 }}
+    >
+      <div className="code-panel-head">
+        <div>
+          <div className="section-label">Solution Code</div>
+          <div className="code-panel-subtitle">
+            {step
+              ? <>Currently executing line <span className="mono code-line-chip">{step.activeLine}</span></>
+              : 'Press Play to start code tracking'}
+          </div>
+        </div>
+      </div>
+
+      <div className="code-scroll" ref={codeRef}>
+        {SOLUTION_CODE.map(({ line, text }) => {
+          const isActive = step?.activeLine === line
+          const isRelated = step?.relatedLines?.includes(line)
+
+          return (
+            <motion.div
+              key={line}
+              data-line={line}
+              className={`code-row ${isActive ? 'active' : ''} ${isRelated ? 'related' : ''}`}
+              animate={{
+                x: isActive ? 6 : 0,
+                opacity: isRelated || isActive || !step ? 1 : 0.58,
+              }}
+              transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+            >
+              <span className="code-line-no mono">{line}</span>
+              <code className="code-line-text">{text || ' '}</code>
+            </motion.div>
+          )
+        })}
+      </div>
+    </motion.div>
+  )
+}
+
 /* ═══════════════════════════════════════════════════════════════
    MAIN VISUALIZER
    ═══════════════════════════════════════════════════════════════ */
@@ -218,6 +346,7 @@ export default function PalindromeVisualizer() {
   const [stepIdx, setStepIdx]    = useState(-1)
   const [isPlaying, setIsPlaying] = useState(false)
   const [speed, setSpeed]        = useState(500) // ms per step
+  const [showCode, setShowCode]  = useState(true)
   const intervalRef = useRef(null)
 
   const n = str.length
@@ -308,6 +437,27 @@ export default function PalindromeVisualizer() {
             : `Step ${stepIdx + 1} / ${steps.length}`}
       </div>
 
+      <div className="view-toggle-wrap">
+        <span className="view-toggle-label">View</span>
+        <div className="view-toggle-pill">
+          <button
+            className={`view-toggle-btn ${!showCode ? 'active' : ''}`}
+            onClick={() => setShowCode(false)}
+          >
+            Visual only
+          </button>
+          <button
+            className={`view-toggle-btn ${showCode ? 'active' : ''}`}
+            onClick={() => setShowCode(true)}
+          >
+            Visual + code
+          </button>
+        </div>
+      </div>
+
+      <div className={`content-shell ${showCode ? 'split' : 'single'}`}>
+        <div className="visual-column">
+
       {/* ── STRING DISPLAY ────────────────────────────────── */}
       {n > 0 && (
         <div className="pv-card">
@@ -363,7 +513,7 @@ export default function PalindromeVisualizer() {
 
               {/* Rows */}
               {Array.from({ length: n }, (_, i) => (
-                <>
+                <Fragment key={`row-${i}`}>
                   <div
                     key={`rh-${i}`}
                     className={`dp-header row-header ${currentStep && currentStep.i === i ? 'hdr-active' : ''}`}
@@ -372,9 +522,9 @@ export default function PalindromeVisualizer() {
                     <span className="mono" style={{ color: 'var(--text-muted)' }}>'{str[i]}'</span>
                   </div>
                   {Array.from({ length: n }, (_, j) => (
-                    <DpCell key={`c-${i}-${j}`} i={i} j={j} dp={dpTable} step={currentStep} n={n} />
+                    <DpCell key={`c-${i}-${j}`} i={i} j={j} dp={dpTable} step={currentStep} />
                   ))}
-                </>
+                </Fragment>
               ))}
             </div>
           </div>
@@ -415,6 +565,13 @@ export default function PalindromeVisualizer() {
 
       {/* ── STEP DETAIL ───────────────────────────────────── */}
       <StepDetail step={currentStep} str={str} />
+
+        </div>
+
+        <AnimatePresence>
+          {showCode && <CodePanel step={currentStep} />}
+        </AnimatePresence>
+      </div>
 
       {/* ── CONTROLS ──────────────────────────────────────── */}
       {n > 0 && (
