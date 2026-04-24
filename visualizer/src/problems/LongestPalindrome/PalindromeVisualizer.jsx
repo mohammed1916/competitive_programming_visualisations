@@ -131,9 +131,9 @@ function DpCell({ i, j, dp, step, n }) {
       }}
       transition={{ type: 'spring', stiffness: 500, damping: 28 }}
     >
-      {val === true  && !isActive && '✓'}
-      {val === false && !isActive && '✗'}
-      {isActive && '?'}
+        {val === true && '✓'}
+        {val === false && '✗'}
+        {val === null && isActive && '?'}
     </motion.div>
   )
 }
