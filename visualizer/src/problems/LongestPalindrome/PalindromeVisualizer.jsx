@@ -216,7 +216,7 @@ function getVariableSections(step, previousStep, str) {
       title: 'State Variables',
       items: [
         makeItem({ label: 'start', value: current.start, changed: change('start'), explanation: `Start index of the best palindrome found so far. Current start = ${current.start}.` }),
-        makeItem({ label: 'max_length', value: current.maxLength, changed: change('maxLength'), explanation: `Length of the best palindrome found so far. Current max_length = ${current.maxLength}.` }),
+        makeItem({ label: 'max_length', value: current.maxLength, changed: change('maxLength'), wide: true, explanation: `Length of the best palindrome found so far. Current max_length = ${current.maxLength}.` }),
         makeItem({ label: 'current window', value: current.window ? `"${current.window}"` : null, changed: change('window'), wide: true, explanation: current.window ? `This is the substring currently being tested: "${current.window}".` : 'No active substring window yet.' }),
         makeItem({ label: 'inner substring', value: current.innerWindow ? `"${current.innerWindow}"` : null, changed: change('innerWindow'), wide: true, explanation: current.innerWindow ? `Inner substring used for the DP transition: "${current.innerWindow}".` : 'There is no inner substring for this step.' }),
       ],
@@ -225,7 +225,7 @@ function getVariableSections(step, previousStep, str) {
       title: 'Condition Checks',
       items: [
         makeItem({ label: 'end chars match', value: current.charsMatch, changed: change('charsMatch'), tone: current.charsMatch === true ? 'success' : current.charsMatch === false ? 'error' : 'neutral', explanation: current.charsMatch == null ? 'Character comparison has not started yet.' : current.charsMatch ? 'The left and right end characters are equal.' : 'The left and right end characters are different.' }),
-        makeItem({ label: 'inner is palindrome', value: current.innerOk, changed: change('innerOk'), tone: current.innerOk === true ? 'success' : current.innerOk === false ? 'error' : 'neutral', explanation: current.innerOk == null ? 'No inner DP check is needed for this step.' : current.innerOk ? 'The inner substring already has dp = true, so it is a palindrome.' : 'The inner substring has dp = false, so it breaks the palindrome.' }),
+        makeItem({ label: 'inner is palindrome', value: current.innerOk, changed: change('innerOk'), wide: true, tone: current.innerOk === true ? 'success' : current.innerOk === false ? 'error' : 'neutral', explanation: current.innerOk == null ? 'No inner DP check is needed for this step.' : current.innerOk ? 'The inner substring already has dp = true, so it is a palindrome.' : 'The inner substring has dp = false, so it breaks the palindrome.' }),
         makeItem({ label: 'dp[i][j]', value: current.dpValue, changed: change('dpValue'), tone: current.dpValue === true ? 'success' : current.dpValue === false ? 'error' : 'neutral', explanation: current.dpValue == null ? 'This DP cell is not evaluated yet.' : current.dpValue ? 'The current substring is a palindrome, so dp[i][j] becomes true.' : 'The current substring is not a palindrome, so dp[i][j] becomes false.' }),
         makeItem({ label: 'best updated', value: step?.updatesBest ?? false, changed: Boolean(step?.updatesBest), tone: step?.updatesBest ? 'warning' : 'neutral', explanation: step?.updatesBest ? 'This step found a longer palindrome, so start and max_length were updated.' : 'This step did not improve the best palindrome so far.' }),
       ],
