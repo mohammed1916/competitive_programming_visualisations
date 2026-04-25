@@ -71,6 +71,8 @@ const EXAMPLES = [
 
 const PHASE_META = {
   'build-edge': { label: 'Build Graph', color: 'blue' },
+  'push':       { label: 'Push Edge',  color: 'blue' },
+  'access':     { label: 'Access',     color: 'purple' },
   'init-queue': { label: 'Init Queue', color: 'amber' },
   'pop':        { label: 'Dequeue',    color: 'orange' },
   'reduce':     { label: 'Reduce',     color: 'slate' },
@@ -101,7 +103,9 @@ function cloneGraph(graph) {
 }
 
 function getCodeHighlight(phase) {
-  if (phase === 'build-edge') return { activeLine: 10, relatedLines: [8, 9, 10] }
+  if (phase === 'build-edge') return { activeLine: 9, relatedLines: [8, 9, 10] }
+  if (phase === 'push') return { activeLine: 9, relatedLines: [8, 9, 10] }
+  if (phase === 'access') return { activeLine: 19, relatedLines: [18, 19, 20, 21] }
   if (phase === 'init-queue') return { activeLine: 12, relatedLines: [12, 13] }
   if (phase === 'pop') return { activeLine: 17, relatedLines: [15, 16, 17] }
   if (phase === 'reduce') return { activeLine: 20, relatedLines: [19, 20, 21, 22] }
@@ -122,7 +126,11 @@ function buildStepDesc(phase, info) {
   const { prereq, course, neighbor, newVal, queue, takenCount, numCourses, result } = info
   switch (phase) {
     case 'build-edge':
+      return `about to append ${course} to graph[${prereq}]`
+    case 'push':
       return `graph[${prereq}].append(${course})  →  indegree[${course}] += 1  →  indegree[${course}] = ${newVal}`
+    case 'access':
+      return `accessing graph[${course}] neighbor ${neighbor}`
     case 'init-queue': {
       const seeds = queue.join(', ')
       return queue.length > 0
@@ -148,8 +156,7 @@ function generateCourseSteps(numCourses, prerequisites) {
   const steps = []
 
   prerequisites.forEach(([course, prereq], index) => {
-    graph[prereq].push(course)
-    indegree[course] += 1
+    // record intent to modify graph
     steps.push(withCode({
       phase: 'build-edge',
       edgeIndex: index,
@@ -164,6 +171,26 @@ function generateCourseSteps(numCourses, prerequisites) {
       description: buildStepDesc('build-edge', { prereq, course, newVal: indegree[course] }),
       result: null,
       event: null,
+      queueSnapshot: [],
+    }))
+
+    // perform the append and record the mutation as its own step
+    graph[prereq].push(course)
+    indegree[course] += 1
+    steps.push(withCode({
+      phase: 'push',
+      edgeIndex: index,
+      activeCourse: course,
+      activeNeighbor: course,
+      activePrereq: prereq,
+      graph: cloneGraph(graph),
+      indegree: [...indegree],
+      queue: [],
+      takenOrder: [],
+      takenCount: 0,
+      description: buildStepDesc('push', { prereq, course, newVal: indegree[course] }),
+      result: null,
+      event: 'push',
       queueSnapshot: [],
     }))
   })
@@ -211,7 +238,27 @@ function generateCourseSteps(numCourses, prerequisites) {
       queueSnapshot: [...queue],
     }))
 
-    for (const neighbor of graph[course]) {
+    // iterate by index so we can record an explicit 'access' step
+    for (let ni = 0; ni < graph[course].length; ni++) {
+      const neighbor = graph[course][ni]
+
+      // record access to graph[course] -> neighbor before mutating indegree
+      steps.push(withCode({
+        phase: 'access',
+        activeCourse: course,
+        activeNeighbor: neighbor,
+        activePrereq: course,
+        graph: cloneGraph(graph),
+        indegree: [...indegree],
+        queue: [...queue],
+        takenOrder: [...takenOrder],
+        takenCount: takenOrder.length,
+        description: buildStepDesc('access', { course, neighbor }),
+        result: null,
+        event: 'access',
+        queueSnapshot: [...queue],
+      }))
+
       indegree[neighbor] -= 1
       const becameZero = indegree[neighbor] === 0
 
