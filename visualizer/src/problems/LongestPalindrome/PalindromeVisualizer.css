@@ -233,6 +233,8 @@
   background: linear-gradient(135deg, var(--primary), var(--primary-d));
   color: white;
   box-shadow: 0 4px 14px var(--primary-glow);
+  padding: 0.72rem 1.35rem;
+  border-radius: 14px;
 }
 .btn-primary:hover:not(:disabled) {
   filter: brightness(1.1);
@@ -244,6 +246,8 @@
   background: var(--surface2);
   color: var(--text-muted);
   border: 1px solid var(--border);
+  padding: 0.72rem 1.35rem;
+  border-radius: 14px;
 }
 .btn-ghost:hover:not(:disabled) {
   color: var(--text);
@@ -255,7 +259,8 @@
   background: linear-gradient(135deg, #10b981, #059669);
   color: white;
   box-shadow: 0 4px 14px rgba(16,185,129,0.35);
-  padding-inline: 1.4rem;
+  padding: 0.72rem 1.45rem;
+  border-radius: 14px;
   font-size: 0.9rem;
 }
 .btn-play:hover:not(:disabled) {
