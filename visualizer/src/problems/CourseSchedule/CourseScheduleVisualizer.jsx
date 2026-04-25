@@ -676,7 +676,7 @@ export default function CourseScheduleVisualizer() {
                 <span className={`mono cs-output-text ${currentStep?.result === false ? 'fail' : ''}`}>{currentStep?.result == null ? 'pending' : String(currentStep.result)}</span>
               </div>
             </div>
-             <div className="cs-layout" ref={contentShellRef} style={contentHeight ? { height: `${contentHeight}px` } : undefined}>
+             <div className="cs-graph-content" ref={contentShellRef} style={contentHeight ? { height: `${contentHeight}px` } : undefined}>
               <GraphView
               numCourses={numCourses}
               step={currentStep}

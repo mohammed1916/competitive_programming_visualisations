@@ -243,6 +243,9 @@
   flex: 1;
   min-height: 280px;
 }
+.cs-graph-content {
+  position: relative;
+}
 
 .cs-graph-shell {
   display: flex;
