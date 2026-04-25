@@ -386,6 +386,9 @@ function GraphView({ numCourses, step, zoom, onZoomChange }) {
             const to   = nodeLookup.get(course)
             if (!from || !to) return null
             const isActive = step?.activePrereq === prereq && step?.activeNeighbor === course
+            const edgePhase = step?.phase
+            const edgeEvent = step?.event
+            const edgeExtraClass = isActive && (edgePhase === 'access' ? 'access' : edgeEvent === 'push' ? 'push' : '')
             const dx = to.x - from.x, dy = to.y - from.y
             const dist = Math.sqrt(dx * dx + dy * dy) || 1
             const nx = dx / dist, ny = dy / dist
@@ -397,7 +400,7 @@ function GraphView({ numCourses, step, zoom, onZoomChange }) {
               <line
                 key={`e-${prereq}-${course}-${i}`}
                 x1={x1} y1={y1} x2={x2} y2={y2}
-                className={`cs-edge ${isActive ? 'active' : ''}`}
+                className={`cs-edge ${isActive ? 'active' : ''} ${edgeExtraClass || ''}`}
                 markerEnd={isActive ? 'url(#cs-arr-active)' : 'url(#cs-arr)'}
               />
             )
@@ -409,7 +412,11 @@ function GraphView({ numCourses, step, zoom, onZoomChange }) {
             const inQueue  = step?.queue?.includes(course)
             const taken    = step?.takenOrder?.includes(course)
             const active   = step?.activeCourse === course || step?.activeNeighbor === course
-            const stateClass = active ? 'active' : taken ? 'taken' : inQueue ? 'queued' : ''
+            // determine extra classes for visualizing 'access' and 'push' events
+            const nodePhase = step?.phase
+            const nodeEvent = step?.event
+            const extraNodeClass = active && (nodePhase === 'access' ? 'access' : nodeEvent === 'push' ? 'push' : '')
+            const stateClass = [active ? 'active' : taken ? 'taken' : inQueue ? 'queued' : '', extraNodeClass].filter(Boolean).join(' ')
             return (
               <g key={`n-${course}`} transform={`translate(${x},${y})`}>
                 <circle className={`cs-node ${stateClass}`} r={NODE_R} />
@@ -477,11 +484,15 @@ function CodePanel({ step }) {
         {SOLUTION_CODE.map(({ line, text }) => {
           const isActive  = step?.activeLine === line
           const isRelated = step?.relatedLines?.includes(line)
+          // map current step phase/event to code-row classes when active
+          const codePhase = step?.phase
+          const codeEvent = step?.event
+          const extraCodeClass = isActive && (codePhase === 'access' ? 'access' : codeEvent === 'push' ? 'push' : '')
           return (
             <motion.div
               key={line}
               data-line={line}
-              className={`cs-code-row ${isActive ? 'active' : ''} ${isRelated ? 'related' : ''}`}
+              className={`cs-code-row ${isActive ? 'active' : ''} ${isRelated ? 'related' : ''} ${extraCodeClass || ''}`}
               animate={{ x: isActive ? 6 : 0, opacity: isRelated || isActive || !step ? 1 : 0.5 }}
               transition={{ type: 'spring', stiffness: 280, damping: 28 }}
             >
