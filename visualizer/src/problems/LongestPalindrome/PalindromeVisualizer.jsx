@@ -245,7 +245,14 @@ function formatVariableValue(value) {
 
 function VariablePanel({ step, previousStep, str }) {
   const [explainer, setExplainer] = useState(null)
+  const [cardLayout, setCardLayout] = useState('side-by-side')
   const sections = getVariableSections(step, previousStep, str)
+  const orderedSections = cardLayout === 'checks-bottom'
+    ? [
+        ...sections.filter((section) => section.title !== 'Condition Checks'),
+        ...sections.filter((section) => section.title === 'Condition Checks'),
+      ]
+    : sections
 
   useEffect(() => {
     if (!explainer) return
@@ -255,6 +262,29 @@ function VariablePanel({ step, previousStep, str }) {
 
   return (
     <div className="variable-panel-wrap">
+      <div className="variable-layout-bar">
+        <div>
+          <div className="section-label variable-layout-label">Card Layout</div>
+          <div className="variable-layout-caption">Move Condition Checks below the top row when you want a wider card.</div>
+        </div>
+        <div className="view-toggle-pill variable-layout-pill">
+          <button
+            type="button"
+            className={`view-toggle-btn ${cardLayout === 'side-by-side' ? 'active' : ''}`}
+            onClick={() => setCardLayout('side-by-side')}
+          >
+            3 columns
+          </button>
+          <button
+            type="button"
+            className={`view-toggle-btn ${cardLayout === 'checks-bottom' ? 'active' : ''}`}
+            onClick={() => setCardLayout('checks-bottom')}
+          >
+            Checks below
+          </button>
+        </div>
+      </div>
+
       <AnimatePresence>
         {explainer && (
           <motion.div
@@ -271,11 +301,12 @@ function VariablePanel({ step, previousStep, str }) {
         )}
       </AnimatePresence>
 
-      <div className="variable-panel-grid">
-        {sections.map((section) => (
+      <motion.div layout className={`variable-panel-grid layout-${cardLayout}`}>
+        {orderedSections.map((section) => (
           <motion.div
             key={section.title}
-            className="variable-card"
+            layout
+            className={`variable-card ${cardLayout === 'checks-bottom' && section.title === 'Condition Checks' ? 'full-width-card' : ''}`}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.18 }}
@@ -284,6 +315,7 @@ function VariablePanel({ step, previousStep, str }) {
             <div className="variable-list">
               {section.items.map((item) => (
                 <motion.button
+                  layout
                   type="button"
                   key={item.label}
                   className={`variable-item ${item.wide ? 'wide' : ''} ${item.changed ? 'changed' : ''} ${explainer?.id === item.id ? 'active-explainer' : ''}`}
@@ -299,7 +331,7 @@ function VariablePanel({ step, previousStep, str }) {
             </div>
           </motion.div>
         ))}
-      </div>
+      </motion.div>
     </div>
   )
 }
