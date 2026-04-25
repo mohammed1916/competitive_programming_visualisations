@@ -1,155 +1,171 @@
+/* ═══════════════════════════════════════════════════════════════
+   COURSE SCHEDULE VISUALIZER — Redesigned
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Root ──────────────────────────────────────────────────────── */
 .cs {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
-  padding-bottom: 3rem;
+  gap: 1rem;
+  padding-bottom: 2rem;
 }
 
+/* ── Cards ─────────────────────────────────────────────────────── */
 .cs-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
-  padding: 1.35rem 1.45rem;
+  padding: 1.25rem 1.4rem;
 }
 
+/* ── Input Card ─────────────────────────────────────────────────── */
 .cs-input-card {
-  border-color: rgba(249,115,22,0.18);
+  border-color: rgba(249, 115, 22, 0.15);
 }
 
-.cs-input-grid,
-.cs-support-row,
-.cs-toolbar,
-.cs-card-head,
-.cs-controls,
+.cs-input-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
 
-/* Top resize handle removed per user request */
-.cs-toggle-label,
-.cs-output-label,
-.cs-speed-label,
-.cs-section-label {
-  font-size: 0.72rem;
+.cs-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.cs-field-grow {
+  flex: 1;
+  min-width: 220px;
+}
+
+.cs-label {
+  font-size: 0.71rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--text-dim);
 }
 
+.cs-label-hint {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text-dim);
+  opacity: 0.6;
+  margin-left: 0.35rem;
+}
+
 .cs-input {
   background: var(--surface2);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 0.72rem 0.95rem;
+  border-radius: 12px;
+  padding: 0.65rem 0.9rem;
   color: var(--text);
-  font-size: 1rem;
+  font-size: 0.92rem;
+  transition: border-color 0.18s ease;
+  min-width: 0;
 }
 
-.cs-textarea {
-  resize: vertical;
-  min-height: 88px;
+.cs-input:focus {
+  outline: none;
+  border-color: rgba(249, 115, 22, 0.4);
 }
 
 .cs-input.has-error {
-  border-color: rgba(248,113,113,0.55);
-  box-shadow: 0 0 0 3px rgba(248,113,113,0.12);
+  border-color: rgba(248, 113, 113, 0.55);
 }
 
-.cs-btn {
-  display: inline-flex;
+.cs-input-sm { width: 90px; }
+
+.cs-textarea {
+  resize: vertical;
+  min-height: 64px;
+  font-family: monospace;
+  font-size: 0.82rem;
+}
+
+/* ── Support row ────────────────────────────────────────────────── */
+.cs-support-row {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 0.72rem 1.35rem;
-  border-radius: 14px;
-  font-size: 0.88rem;
-  font-weight: 700;
-  transition: all 0.18s ease;
-  white-space: nowrap;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
 }
 
-.cs-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-.cs-btn-primary {
-  background: linear-gradient(135deg, #f97316, #ea580c);
-  color: white;
-  box-shadow: 0 8px 22px rgba(249,115,22,0.24);
-}
-
-.cs-btn-ghost {
-  background: var(--surface2);
-  color: var(--text-muted);
-  border: 1px solid var(--border);
-}
-
-.cs-btn-play {
-  background: linear-gradient(135deg, #eab308, #ca8a04);
-  color: white;
-  box-shadow: 0 8px 22px rgba(234,179,8,0.24);
-}
-
-.cs-hint,
-.cs-subtitle,
-.cs-code-subtitle,
-.cs-example-note,
-.cs-explanation,
-.cs-empty-text {
-  font-size: 0.78rem;
+.cs-hint {
+  font-size: 0.77rem;
   color: var(--text-dim);
-  line-height: 1.5;
   margin: 0;
 }
 
 .cs-hint.error { color: var(--error); }
 
-.cs-meta-row { display: flex; gap: 0.45rem; flex-wrap: wrap; }
+.cs-meta-row { display: flex; gap: 0.4rem; flex-wrap: wrap; }
 
-.cs-pill,
-.cs-example-chip,
-.cs-chip,
-.cs-token {
+.cs-pill {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  padding: 0.28rem 0.58rem;
+  padding: 0.22rem 0.55rem;
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 0.72rem;
   color: var(--text-dim);
-  font-size: 0.74rem;
 }
 
-.cs-example-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: 0.75rem;
-  margin-top: 1rem;
-}
-
-.cs-example-card {
-  text-align: left;
-  border: 1px solid rgba(255,255,255,0.07);
-  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
-  border-radius: 16px;
-  padding: 0.85rem 0.95rem;
-  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
-}
-
-.cs-example-card.active {
-  border-color: rgba(249,115,22,0.35);
-  box-shadow: 0 0 0 1px rgba(249,115,22,0.12) inset, 0 12px 26px rgba(249,115,22,0.12);
-}
-
-.cs-example-top {
+/* ── Examples ───────────────────────────────────────────────────── */
+.cs-examples {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.6rem;
-  margin-bottom: 0.45rem;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+  margin-top: 0.9rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--border);
 }
 
-.cs-example-label { font-size: 0.76rem; font-weight: 700; color: var(--text); }
+.cs-example-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.12rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.025);
+  text-align: left;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+
+.cs-example-chip:hover {
+  border-color: rgba(249, 115, 22, 0.3);
+  background: rgba(249, 115, 22, 0.07);
+}
+
+.cs-example-chip.active {
+  border-color: rgba(249, 115, 22, 0.45);
+  background: rgba(249, 115, 22, 0.1);
+  box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.08) inset;
+}
+
+.cs-chip-label { font-size: 0.76rem; font-weight: 700; color: var(--text); }
+.cs-chip-note  { font-size: 0.7rem; color: var(--text-dim); line-height: 1.35; }
+.cs-chip-courses { font-size: 0.68rem; color: var(--text-dim); opacity: 0.55; margin-top: 0.1rem; }
+
+/* ── Progress band ──────────────────────────────────────────────── */
+.cs-progress-band {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
 
 .cs-progress-track {
   height: 4px;
-  background: var(--surface3);
+  background: var(--surface3, rgba(255, 255, 255, 0.06));
   border-radius: 999px;
   overflow: hidden;
 }
@@ -157,336 +173,265 @@
 .cs-progress-fill {
   height: 100%;
   background: linear-gradient(90deg, #f97316, #eab308);
+  border-radius: 999px;
 }
 
-.cs-step-counter {
-  font-size: 0.8rem;
-  color: var(--text-dim);
-  text-align: right;
-  margin-top: -0.35rem;
-}
-
-.cs-toggle-group {
+.cs-step-info {
   display: flex;
   align-items: center;
-  gap: 0.7rem;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.6rem;
 }
 
-.cs-toggle-pill {
+.cs-step-counter { font-size: 0.8rem; color: var(--text-dim); }
+
+/* ── Phase badge ────────────────────────────────────────────────── */
+.cs-phase-badge {
   display: inline-flex;
-  padding: 4px;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
   border-radius: 999px;
-  background: var(--surface);
-  border: 1px solid var(--border);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
 }
 
-.cs-toggle-btn {
-  padding: 0.48rem 0.88rem;
-  border-radius: 999px;
-  color: var(--text-muted);
-  font-size: 0.79rem;
-  font-weight: 600;
-  transition: all 0.18s ease;
-}
+.cs-phase-badge.phase-blue   { background: rgba(59,130,246,0.15);  color: #93c5fd; border: 1px solid rgba(59,130,246,0.22); }
+.cs-phase-badge.phase-amber  { background: rgba(234,179,8,0.15);   color: #fde68a; border: 1px solid rgba(234,179,8,0.22); }
+.cs-phase-badge.phase-orange { background: rgba(249,115,22,0.15);  color: #fdba74; border: 1px solid rgba(249,115,22,0.22); }
+.cs-phase-badge.phase-slate  { background: rgba(148,163,184,0.1);  color: #cbd5e1; border: 1px solid rgba(148,163,184,0.15); }
+.cs-phase-badge.phase-green  { background: rgba(34,197,94,0.15);   color: #86efac; border: 1px solid rgba(34,197,94,0.22); }
 
-.cs-toggle-btn.active {
-  background: linear-gradient(135deg, rgba(249,115,22,0.22), rgba(234,88,12,0.18));
-  color: var(--text);
-}
-
-.cs-layout {
+/* ── Main two-column layout ─────────────────────────────────────── */
+.cs-main {
   display: flex;
-  gap: 1.1rem;
+  gap: 1rem;
   align-items: flex-start;
 }
 
-.cs-layout.with-code {
-  /* left main column grows more than the right code panel */
-  --main-flex: 1.45;
-  --code-flex: 0.95;
-}
-
-.cs-main-column { order: 0 }
-.cs-code-panel { order: 1 }
-.cs-main-column { flex: var(--main-flex, 1); }
-.cs-code-panel { flex: var(--code-flex, 0.95); min-width: 320px; }
-
-.cs-main-column {
-  display: flex;
-  flex-direction: column;
-  gap: 1.1rem;
+.cs-col-left {
+  flex: 1.2;
   min-width: 0;
-}
-
-/* vertical panel splitter removed for CourseSchedule page */
-
-.cs-result-preview {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 0.25rem;
+  gap: 1rem;
 }
 
-.cs-output-text { color: var(--success); font-size: 1rem; }
-.cs-output-text.fail { color: var(--error); }
-
-.cs-graph-card {
-  resize: none;
-  max-width: 100%;
-  align-self: flex-start;
+.cs-col-right {
+  width: 320px;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  position: relative;
+  gap: 1rem;
+  position: sticky;
+  top: 72px;
+  max-height: calc(100vh - 90px);
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
-.cs-graph-wrap {
-  overflow: auto;
-  border-radius: 18px;
-  background:
-    radial-gradient(circle at 20% 20%, rgba(249,115,22,0.08), transparent 30%),
-    linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border: 1px solid rgba(255,255,255,0.06);
-  padding: 1rem;
-  flex: 1;
-  min-height: 280px;
-}
-.cs-graph-content {
-  position: relative;
-}
+.cs-col-right::-webkit-scrollbar { width: 4px; }
+.cs-col-right::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
 
-.cs-graph-shell {
+/* ── Graph card head ────────────────────────────────────────────── */
+.cs-card-head {
   display: flex;
-  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: 0.75rem;
+  margin-bottom: 1rem;
 }
+
+.cs-section-label {
+  font-size: 0.71rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  margin-bottom: 0.35rem;
+}
+
+.cs-card-sub { font-size: 0.77rem; color: var(--text-dim); margin: 0; }
+
+.cs-verdict { display: flex; flex-direction: column; align-items: flex-end; gap: 0.12rem; flex-shrink: 0; }
+
+.cs-verdict-label {
+  font-size: 0.71rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+}
+
+.cs-verdict-value { font-size: 1rem; color: var(--text-muted); }
+.cs-verdict-value.pass { color: var(--success, #22c55e); }
+.cs-verdict-value.fail { color: var(--error, #f87171); }
+
+/* ── Graph wrap & toolbar ───────────────────────────────────────── */
+.cs-graph-wrap { position: relative; }
 
 .cs-graph-toolbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.cs-graph-toolbar-copy {
-  font-size: 0.76rem;
-  color: var(--text-dim);
-}
-
-.cs-graph-actions {
-  display: flex;
-  align-items: center;
   gap: 0.45rem;
+  margin-bottom: 0.65rem;
 }
 
-.cs-graph-icon-btn {
-  width: 34px;
-  height: 34px;
+.cs-icon-btn {
+  width: 30px;
+  height: 30px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   color: var(--text-muted);
   transition: all 0.18s ease;
+  flex-shrink: 0;
 }
 
-.cs-graph-icon-btn:hover {
+.cs-icon-btn:hover {
   color: var(--text);
-  border-color: rgba(249,115,22,0.28);
-  background: rgba(249,115,22,0.1);
+  border-color: rgba(249, 115, 22, 0.28);
+  background: rgba(249, 115, 22, 0.1);
 }
 
-.cs-zoom-readout {
-  min-width: 54px;
-  text-align: center;
-  font-size: 0.76rem;
-  color: var(--text-dim);
-}
+.cs-zoom-label { font-size: 0.76rem; color: var(--text-dim); min-width: 40px; text-align: center; }
+.cs-zoom-hint  { font-size: 0.71rem; color: var(--text-dim); opacity: 0.5; margin-left: auto; }
 
-.cs-graph-stage {
-  width: 360px;
-  height: 300px;
-  transform-origin: top left;
-}
+/* ── Graph SVG stage ────────────────────────────────────────────── */
+.cs-graph-stage { display: flex; justify-content: center; overflow: visible; }
 
-.cs-graph {
-  width: 360px;
+.cs-graph-svg {
+  display: block;
+  width: 100%;
+  max-width: 480px;
   height: auto;
+  overflow: visible;
 }
 
-.cs-graph-resize-handle {
-  align-self: flex-end;
-  margin-top: 0.75rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  padding: 0.5rem;
-  width: 42px;
-  height: 42px;
-  border-radius: 14px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-  color: var(--text-dim);
-  cursor: nwse-resize;
-  flex-direction: column;
-}
+/* ── SVG: Edges ─────────────────────────────────────────────────── */
+.cs-edge { stroke: rgba(148,163,184,0.3); stroke-width: 1.8; transition: stroke 0.2s ease; }
+.cs-edge.active { stroke: rgba(249,115,22,0.85); stroke-width: 2.5; }
 
-.cs-graph-resize-handle-right {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 44px;
-  padding: 0.25rem;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.06);
-  cursor: ew-resize;
-}
+.cs-arrowhead { fill: rgba(148,163,184,0.55); }
+.cs-arrowhead.active { fill: rgba(249,115,22,0.9); }
 
-.cs-graph-resize-handle-top {
-  position: absolute;
-  left: 50%;
-  top: -12px;
-  transform: translateX(-50%);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 18px;
-  padding: 0.2rem;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.06);
-  cursor: ns-resize;
-}
-
-.cs-resize-top {
-  position: absolute;
-  left: 50%;
-  top: -18px;
-  transform: translateX(-50%);
-  width: 44px;
-  height: 18px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.06);
-  cursor: ns-resize;
-  z-index: 30;
-}
-
-.cs-resize-right {
-  position: absolute;
-  right: -12px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 18px;
-  height: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.06);
-  cursor: ew-resize;
-  z-index: 30;
-}
-
-.cs-graph-resize-handle span {
-  width: 14px;
-  height: 2px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.35);
-  transform: rotate(-45deg);
-}
-
-body.cs-resizing-graph,
-body.cs-resizing-graph * {
-  user-select: none !important;
-}
-
-.cs-edge {
-  stroke: rgba(148,163,184,0.42);
-  stroke-width: 2;
-}
-
-.cs-edge.active {
-  stroke: rgba(249,115,22,0.82);
-  stroke-width: 3;
-}
-
+/* ── SVG: Nodes ─────────────────────────────────────────────────── */
 .cs-node {
-  fill: rgba(30,41,59,0.95);
-  stroke: rgba(148,163,184,0.4);
+  fill: rgba(22, 32, 51, 0.96);
+  stroke: rgba(100, 116, 139, 0.4);
   stroke-width: 2;
+  transition: stroke 0.2s ease, fill 0.2s ease;
 }
 
-.cs-node.queued { stroke: rgba(234,179,8,0.7); fill: rgba(234,179,8,0.12); }
-.cs-node.taken { stroke: rgba(34,197,94,0.7); fill: rgba(34,197,94,0.12); }
-.cs-node.active { stroke: rgba(249,115,22,0.82); fill: rgba(249,115,22,0.12); }
+.cs-node.queued { stroke: rgba(234,179,8,0.85);  fill: rgba(234,179,8,0.1); }
+.cs-node.taken  { stroke: rgba(34,197,94,0.85);  fill: rgba(34,197,94,0.1); }
+.cs-node.active { stroke: rgba(249,115,22,0.9);  fill: rgba(249,115,22,0.14); }
 
-.cs-node-label {
-  fill: white;
-  font-size: 14px;
-  font-weight: 700;
-}
+.cs-node-num { fill: var(--text); font-size: 15px; font-weight: 700; font-family: monospace; }
+.cs-node-deg { fill: rgba(148,163,184,0.7); font-size: 10px; font-family: monospace; }
 
-.cs-node-degree {
-  fill: rgba(203,213,225,0.9);
-  font-size: 11px;
-}
-
-.cs-queue-row {
+/* ── Graph legend ───────────────────────────────────────────────── */
+.cs-graph-legend {
   display: flex;
-  gap: 0.5rem;
+  gap: 1rem;
   flex-wrap: wrap;
+  margin-top: 0.85rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--border);
 }
 
-.cs-token { color: var(--text); }
-.cs-token.taken { border-color: rgba(34,197,94,0.2); background: rgba(34,197,94,0.08); }
-
-.cs-indegree-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 0.75rem;
+.cs-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  font-size: 0.73rem;
+  color: var(--text-dim);
 }
 
-.cs-indegree-item {
+.cs-legend-item::before {
+  content: '';
+  display: block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid;
+  flex-shrink: 0;
+}
+
+.cs-legend-default::before { border-color: rgba(100,116,139,0.5);  background: rgba(22,32,51,0.96); }
+.cs-legend-queued::before  { border-color: rgba(234,179,8,0.85);   background: rgba(234,179,8,0.1); }
+.cs-legend-taken::before   { border-color: rgba(34,197,94,0.85);   background: rgba(34,197,94,0.1); }
+.cs-legend-active::before  { border-color: rgba(249,115,22,0.9);   background: rgba(249,115,22,0.14); }
+
+/* ── Step explanation card ──────────────────────────────────────── */
+.cs-step-card {
+  border-color: rgba(249, 115, 22, 0.1);
+  background: linear-gradient(135deg, rgba(249,115,22,0.04), transparent);
+}
+
+.cs-step-text { font-size: 0.875rem; color: var(--text-muted); line-height: 1.65; margin: 0; }
+
+/* ── State card (Queue + Taken) ─────────────────────────────────── */
+.cs-state-section { display: flex; flex-direction: column; gap: 0.5rem; }
+.cs-state-divider { height: 1px; background: var(--border); margin: 0.85rem 0; }
+
+.cs-token-row {
   display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  padding: 0.8rem 0.9rem;
-  border-radius: 14px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.05);
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  align-items: center;
+  min-height: 2rem;
 }
 
-.cs-indegree-item.active {
-  border-color: rgba(249,115,22,0.28);
-  background: rgba(249,115,22,0.08);
-}
-
-.cs-indegree-course,
-.cs-indegree-value {
+.cs-token {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.28rem 0.65rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
   color: var(--text);
 }
 
+.cs-token-queue { border-color: rgba(234,179,8,0.3);  background: rgba(234,179,8,0.08);  color: #fde68a; }
+.cs-token-taken { border-color: rgba(34,197,94,0.3);  background: rgba(34,197,94,0.08);  color: #86efac; }
+
+.cs-empty { font-size: 0.77rem; color: var(--text-dim); opacity: 0.5; }
+
+/* ── Indegree card ──────────────────────────────────────────────── */
+.cs-indegree-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.6rem; }
+
+.cs-deg-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.12rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.025);
+  min-width: 50px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.cs-deg-item.active { border-color: rgba(249,115,22,0.38); background: rgba(249,115,22,0.08); }
+.cs-deg-item.zero:not(.active) { border-color: rgba(34,197,94,0.2); background: rgba(34,197,94,0.04); }
+
+.cs-deg-course { font-size: 0.71rem; color: var(--text-dim); }
+.cs-deg-val    { font-size: 1rem; font-weight: 700; color: var(--text); }
+.cs-deg-item.zero:not(.active) .cs-deg-val { color: rgba(134,239,172,0.9); }
+
+/* ── Code panel ─────────────────────────────────────────────────── */
 .cs-code-panel {
-  position: sticky;
-  top: 82px;
-  background: linear-gradient(180deg, rgba(15,15,36,0.98), rgba(10,10,24,0.96));
-  border: 1px solid rgba(249,115,22,0.16);
+  background: linear-gradient(180deg, rgba(13,15,34,0.98), rgba(9,10,22,0.97));
+  border: 1px solid rgba(249, 115, 22, 0.16);
   border-radius: var(--radius-xl);
   overflow: hidden;
 }
@@ -496,89 +441,157 @@ body.cs-resizing-graph * {
   align-items: flex-start;
   justify-content: space-between;
   gap: 0.9rem;
-  padding: 1rem 1.15rem 0.9rem;
+  padding: 0.95rem 1.1rem 0.85rem;
   border-bottom: 1px solid var(--border);
+}
+
+.cs-code-subtitle { font-size: 0.75rem; color: var(--text-dim); margin-top: 0.15rem; }
+
+.cs-code-chip {
+  display: inline-block;
+  padding: 0.08rem 0.4rem;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.07);
+  font-size: 0.74rem;
 }
 
 .cs-copy-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.42rem;
-  padding: 0.55rem 0.82rem;
-  border-radius: 12px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
+  gap: 0.4rem;
+  padding: 0.48rem 0.72rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   color: var(--text-muted);
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   font-weight: 700;
   white-space: nowrap;
   transition: all 0.18s ease;
+  flex-shrink: 0;
 }
 
 .cs-copy-btn:hover {
   color: var(--text);
-  border-color: rgba(249,115,22,0.28);
-  background: rgba(249,115,22,0.1);
+  border-color: rgba(249, 115, 22, 0.28);
+  background: rgba(249, 115, 22, 0.1);
 }
 
 .cs-copy-btn.copied {
-  color: var(--success);
-  border-color: rgba(34,197,94,0.28);
-  background: rgba(34,197,94,0.1);
+  color: var(--success, #22c55e);
+  border-color: rgba(34, 197, 94, 0.28);
+  background: rgba(34, 197, 94, 0.1);
 }
 
-.cs-code-scroll {
-  max-height: 620px;
-  overflow: auto;
-  padding: 0.6rem;
-}
+.cs-code-scroll { max-height: 460px; overflow: auto; padding: 0.5rem; }
 
 .cs-code-row {
   display: grid;
-  grid-template-columns: 38px minmax(0, 1fr);
+  grid-template-columns: 34px minmax(0, 1fr);
   gap: 0.8rem;
-  padding: 0.46rem 0.65rem;
-  border-radius: 12px;
-  margin-bottom: 0.14rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 10px;
+  margin-bottom: 0.1rem;
 }
 
-.cs-code-row.related { background: rgba(255,255,255,0.025); }
+.cs-code-row.related { background: rgba(255,255,255,0.022); }
 .cs-code-row.active {
-  background: linear-gradient(135deg, rgba(249,115,22,0.18), rgba(234,88,12,0.09));
-  box-shadow: 0 0 0 1px rgba(249,115,22,0.18) inset;
+  background: linear-gradient(135deg, rgba(249,115,22,0.18), rgba(234,88,12,0.08));
+  box-shadow: 0 0 0 1px rgba(249,115,22,0.16) inset;
 }
 
-.cs-code-no { color: var(--text-dim); font-size: 0.76rem; text-align: right; }
-.cs-code-text { color: var(--text-muted); font-size: 0.83rem; white-space: pre; }
+.cs-code-no   { color: var(--text-dim); font-size: 0.74rem; text-align: right; opacity: 0.55; }
+.cs-code-text { color: var(--text-muted); font-size: 0.82rem; white-space: pre; font-family: monospace; }
 
-.cs-speed-wrap {
+/* ── Controls bar ───────────────────────────────────────────────── */
+.cs-controls {
   display: flex;
   align-items: center;
-  gap: 0.55rem;
-  margin-left: auto;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.85rem 1.2rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
 }
 
-.cs-speed-wrap input[type=range] { width: 100px; accent-color: #f97316; }
+.cs-controls-play    { display: flex; align-items: center; gap: 0.45rem; }
+.cs-controls-options { display: flex; align-items: center; gap: 1rem; margin-left: auto; flex-wrap: wrap; }
 
-@media (max-width: 980px) {
-  .cs-layout.with-code,
-  .cs-state-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
+/* ── Buttons ────────────────────────────────────────────────────── */
+.cs-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1.1rem;
+  border-radius: 12px;
+  font-size: 0.86rem;
+  font-weight: 700;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+  gap: 0.35rem;
+}
 
-  .cs-code-panel { position: static; }
+.cs-btn:disabled { opacity: 0.38; cursor: not-allowed; transform: none !important; }
+
+.cs-btn-primary {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  color: white;
+  box-shadow: 0 4px 14px rgba(249,115,22,0.22);
+}
+.cs-btn-primary:hover:not(:disabled) { box-shadow: 0 6px 20px rgba(249,115,22,0.32); transform: translateY(-1px); }
+
+.cs-btn-ghost { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border); }
+.cs-btn-ghost:hover:not(:disabled) { color: var(--text); border-color: rgba(249,115,22,0.28); background: rgba(249,115,22,0.07); }
+
+.cs-btn-icon { padding: 0.6rem; aspect-ratio: 1; }
+
+.cs-btn-play { background: linear-gradient(135deg, #eab308, #ca8a04); color: white; box-shadow: 0 4px 14px rgba(234,179,8,0.22); }
+.cs-btn-play:hover { box-shadow: 0 6px 20px rgba(234,179,8,0.32); transform: translateY(-1px); }
+
+/* ── Speed ──────────────────────────────────────────────────────── */
+.cs-speed-wrap { display: flex; align-items: center; gap: 0.5rem; }
+.cs-speed-wrap input[type='range'] { width: 88px; accent-color: #f97316; }
+
+/* ── View toggle ────────────────────────────────────────────────── */
+.cs-view-toggle {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+}
+
+.cs-toggle-opt {
+  padding: 0.38rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.cs-toggle-opt.active {
+  background: linear-gradient(135deg, rgba(249,115,22,0.22), rgba(234,88,12,0.16));
+  color: var(--text);
+}
+
+/* ── Responsive ─────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .cs-col-right { width: 290px; }
+}
+
+@media (max-width: 860px) {
+  .cs-main { flex-direction: column; }
+  .cs-col-right { width: 100%; position: static; max-height: none; overflow: visible; }
 }
 
 @media (max-width: 640px) {
-  .cs-example-grid,
-  .cs-indegree-grid,
-  .cs-input-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .cs-field-group.small,
-  .cs-field-group.large {
-    width: 100%;
-    min-width: 0;
-  }
+  .cs-input-row    { flex-direction: column; align-items: stretch; }
+  .cs-input-sm     { width: 100%; }
+  .cs-controls     { flex-direction: column; align-items: flex-start; }
+  .cs-controls-options { margin-left: 0; }
+  .cs-examples     { gap: 0.4rem; }
+  .cs-example-chip { padding: 0.45rem 0.7rem; }
 }

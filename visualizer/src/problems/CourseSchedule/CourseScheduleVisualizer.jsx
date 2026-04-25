@@ -1,15 +1,10 @@
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import './CourseScheduleVisualizer.css'
-import ResizablePanel from '../../components/ResizablePanel'
 
-const MIN_ZOOM = 0.65
-const MAX_ZOOM = 1.8
+const MIN_ZOOM = 0.5
+const MAX_ZOOM = 2.0
 const ZOOM_STEP = 0.1
-const MIN_GRAPH_WIDTH = 360
-const MAX_GRAPH_WIDTH = 920
-const MIN_GRAPH_HEIGHT = 280
-const MAX_GRAPH_HEIGHT = 620
 
 const SOLUTION_CODE = [
   { line: 1, text: 'from collections import deque' },
@@ -46,33 +41,42 @@ const EXAMPLES = [
     label: 'Acyclic chain',
     numCourses: 2,
     prerequisites: '[[1,0]]',
-    note: 'Single dependency, so all courses can be completed.',
+    note: 'Single dep, completable.',
   },
   {
     label: 'Simple cycle',
     numCourses: 2,
     prerequisites: '[[1,0],[0,1]]',
-    note: 'Each course blocks the other, so the queue becomes empty early.',
+    note: 'Mutual block, not completable.',
   },
   {
     label: 'Diamond DAG',
     numCourses: 4,
     prerequisites: '[[1,0],[2,0],[3,1],[3,2]]',
-    note: 'Good example for queue growth and merging prerequisites.',
+    note: 'Queue merges at course 3.',
   },
   {
-    label: 'No prerequisites',
+    label: 'No prereqs',
     numCourses: 5,
     prerequisites: '[]',
-    note: 'All courses start with indegree 0.',
+    note: 'All start in queue at once.',
   },
   {
     label: 'Hidden cycle',
     numCourses: 4,
     prerequisites: '[[1,0],[2,1],[0,2],[3,1]]',
-    note: 'One component has a cycle, even though course 3 looks reachable.',
+    note: 'Component cycle blocks completion.',
   },
 ]
+
+const PHASE_META = {
+  'build-edge': { label: 'Build Graph', color: 'blue' },
+  'init-queue': { label: 'Init Queue', color: 'amber' },
+  'pop':        { label: 'Dequeue',    color: 'orange' },
+  'reduce':     { label: 'Reduce',     color: 'slate' },
+  'enqueue':    { label: 'Enqueue',    color: 'amber' },
+  'final':      { label: 'Complete',   color: 'green' },
+}
 
 function parsePrerequisites(raw) {
   try {
@@ -223,110 +227,151 @@ function generateCourseSteps(numCourses, prerequisites) {
   return steps
 }
 
+// ── GraphView ─────────────────────────────────────────────────────────────────
+
+const NODE_R   = 26
+const GRAPH_VW = 480
+const GRAPH_VH = 360
+
+function computeNodePositions(numCourses) {
+  const cx = GRAPH_VW / 2
+  const cy = GRAPH_VH / 2
+  return Array.from({ length: numCourses }, (_, course) => {
+    if (numCourses === 1) return { course, x: cx, y: cy }
+    const radius = numCourses <= 3 ? 90 : numCourses <= 6 ? 135 : 155
+    const angle  = (course / numCourses) * Math.PI * 2 - Math.PI / 2
+    return { course, x: cx + Math.cos(angle) * radius, y: cy + Math.sin(angle) * radius }
+  })
+}
+
 function GraphView({ numCourses, step, zoom, onZoomChange }) {
-  const nodes = Array.from({ length: numCourses }, (_, course) => {
-    const angle = (course / Math.max(numCourses, 1)) * Math.PI * 2 - Math.PI / 2
-    const radius = numCourses <= 2 ? 0 : 120
-    return {
-      course,
-      x: 180 + Math.cos(angle) * radius,
-      y: 150 + Math.sin(angle) * radius,
-    }
-  })
+  const nodes      = computeNodePositions(numCourses)
+  const nodeLookup = new Map(nodes.map((n) => [n.course, n]))
 
-  const nodeLookup = new Map(nodes.map((node) => [node.course, node]))
   const edges = []
-  step?.graph?.forEach((neighbors, prereq) => {
-    neighbors.forEach((course) => edges.push({ prereq, course }))
+  step?.graph?.forEach((nbrs, prereq) => {
+    nbrs.forEach((course) => edges.push({ prereq, course }))
   })
 
-  const handleWheel = (event) => {
-    if (!event.ctrlKey) return
-    event.preventDefault()
-    const delta = event.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP
-    onZoomChange((current) => clamp(Number((current + delta).toFixed(2)), MIN_ZOOM, MAX_ZOOM))
+  const handleWheel = (e) => {
+    if (!e.ctrlKey) return
+    e.preventDefault()
+    const delta = e.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP
+    onZoomChange((z) => clamp(Number((z + delta).toFixed(2)), MIN_ZOOM, MAX_ZOOM))
   }
 
   return (
-    <div className="cs-graph-shell">
+    <div className="cs-graph-wrap" onWheel={handleWheel}>
+      {/* Zoom toolbar */}
       <div className="cs-graph-toolbar">
-        <div className="cs-graph-toolbar-copy">Hold Ctrl and scroll to zoom</div>
-        <div className="cs-graph-actions">
-          <button type="button" className="cs-graph-icon-btn" onClick={() => onZoomChange((current) => clamp(Number((current - ZOOM_STEP).toFixed(2)), MIN_ZOOM, MAX_ZOOM))} aria-label="Zoom out graph">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-              <path d="M5 12h14" />
-            </svg>
-          </button>
-          <span className="cs-zoom-readout mono">{Math.round(zoom * 100)}%</span>
-          <button type="button" className="cs-graph-icon-btn" onClick={() => onZoomChange((current) => clamp(Number((current + ZOOM_STEP).toFixed(2)), MIN_ZOOM, MAX_ZOOM))} aria-label="Zoom in graph">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      <div className="cs-graph-wrap" onWheel={handleWheel}>
-        <div className="cs-graph-stage" style={{ transform: `scale(${zoom})` }}>
-          <svg className="cs-graph" viewBox="0 0 360 300" role="img" aria-label="Course dependency graph">
-        <defs>
-          <marker id="cs-arrow" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
-            <path d="M0,0 L0,6 L8,3 z" fill="rgba(148,163,184,0.8)" />
-          </marker>
-        </defs>
-
-        {edges.map((edge, index) => {
-          const from = nodeLookup.get(edge.prereq)
-          const to = nodeLookup.get(edge.course)
-          const isActive = step?.activePrereq === edge.prereq && step?.activeNeighbor === edge.course
-          return (
-            <line
-              key={`${edge.prereq}-${edge.course}-${index}`}
-              x1={from?.x}
-              y1={from?.y}
-              x2={to?.x}
-              y2={to?.y}
-              className={`cs-edge ${isActive ? 'active' : ''}`}
-              markerEnd="url(#cs-arrow)"
-            />
-          )
-        })}
-
-        {nodes.map((node) => {
-          const indegree = step?.indegree?.[node.course] ?? 0
-          const inQueue = step?.queue?.includes(node.course)
-          const taken = step?.takenOrder?.includes(node.course)
-          const active = step?.activeCourse === node.course || step?.activeNeighbor === node.course
-          return (
-            <g key={node.course} transform={`translate(${node.x}, ${node.y})`}>
-              <circle className={`cs-node ${taken ? 'taken' : ''} ${inQueue ? 'queued' : ''} ${active ? 'active' : ''}`} r="28" />
-              <text className="cs-node-label" textAnchor="middle" dy="5">{node.course}</text>
-              <text className="cs-node-degree" textAnchor="middle" dy="44">in {indegree}</text>
-            </g>
-          )
-        })}
+        <button
+          type="button"
+          className="cs-icon-btn"
+          onClick={() => onZoomChange((z) => clamp(Number((z - ZOOM_STEP).toFixed(2)), MIN_ZOOM, MAX_ZOOM))}
+          aria-label="Zoom out"
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+            <path d="M5 12h14" />
           </svg>
-        </div>
+        </button>
+        <span className="cs-zoom-label mono">{Math.round(zoom * 100)}%</span>
+        <button
+          type="button"
+          className="cs-icon-btn"
+          onClick={() => onZoomChange((z) => clamp(Number((z + ZOOM_STEP).toFixed(2)), MIN_ZOOM, MAX_ZOOM))}
+          aria-label="Zoom in"
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+        </button>
+        <span className="cs-zoom-hint">Ctrl + scroll</span>
       </div>
 
+      {/* SVG */}
+      <div className="cs-graph-stage" style={{ transform: `scale(${zoom})`, transformOrigin: 'top center' }}>
+        <svg
+          className="cs-graph-svg"
+          viewBox={`0 0 ${GRAPH_VW} ${GRAPH_VH}`}
+          role="img"
+          aria-label="Course dependency graph"
+        >
+          <defs>
+            <marker id="cs-arr"        markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L0,6 L8,3 z" className="cs-arrowhead" />
+            </marker>
+            <marker id="cs-arr-active" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L0,6 L8,3 z" className="cs-arrowhead active" />
+            </marker>
+          </defs>
+
+          {/* Edges — trimmed so they don't overlap node circles */}
+          {edges.map(({ prereq, course }, i) => {
+            const from = nodeLookup.get(prereq)
+            const to   = nodeLookup.get(course)
+            if (!from || !to) return null
+            const isActive = step?.activePrereq === prereq && step?.activeNeighbor === course
+            const dx = to.x - from.x, dy = to.y - from.y
+            const dist = Math.sqrt(dx * dx + dy * dy) || 1
+            const nx = dx / dist, ny = dy / dist
+            const x1 = from.x + nx * (NODE_R + 3)
+            const y1 = from.y + ny * (NODE_R + 3)
+            const x2 = to.x   - nx * (NODE_R + 9)
+            const y2 = to.y   - ny * (NODE_R + 9)
+            return (
+              <line
+                key={`e-${prereq}-${course}-${i}`}
+                x1={x1} y1={y1} x2={x2} y2={y2}
+                className={`cs-edge ${isActive ? 'active' : ''}`}
+                markerEnd={isActive ? 'url(#cs-arr-active)' : 'url(#cs-arr)'}
+              />
+            )
+          })}
+
+          {/* Nodes */}
+          {nodes.map(({ course, x, y }) => {
+            const indegree = step?.indegree?.[course] ?? 0
+            const inQueue  = step?.queue?.includes(course)
+            const taken    = step?.takenOrder?.includes(course)
+            const active   = step?.activeCourse === course || step?.activeNeighbor === course
+            const stateClass = active ? 'active' : taken ? 'taken' : inQueue ? 'queued' : ''
+            return (
+              <g key={`n-${course}`} transform={`translate(${x},${y})`}>
+                <circle className={`cs-node ${stateClass}`} r={NODE_R} />
+                <text className="cs-node-num" textAnchor="middle" dy="5">{course}</text>
+                <text className="cs-node-deg" textAnchor="middle" dy={NODE_R + 14}>{`in=${indegree}`}</text>
+              </g>
+            )
+          })}
+        </svg>
+      </div>
+
+      {/* Legend */}
+      <div className="cs-graph-legend">
+        <span className="cs-legend-item cs-legend-default">Default</span>
+        <span className="cs-legend-item cs-legend-queued">In Queue</span>
+        <span className="cs-legend-item cs-legend-taken">Taken</span>
+        <span className="cs-legend-item cs-legend-active">Active</span>
+      </div>
     </div>
   )
 }
 
+// ── CodePanel ─────────────────────────────────────────────────────────────────
+
 function CodePanel({ step }) {
-  const codeRef = useRef(null)
+  const codeRef  = useRef(null)
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     if (!step?.activeLine || !codeRef.current) return
-    const activeLine = codeRef.current.querySelector(`[data-line="${step.activeLine}"]`)
-    activeLine?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    codeRef.current.querySelector(`[data-line="${step.activeLine}"]`)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
   }, [step])
 
   useEffect(() => {
     if (!copied) return
-    const timer = setTimeout(() => setCopied(false), 1600)
-    return () => clearTimeout(timer)
+    const t = setTimeout(() => setCopied(false), 1600)
+    return () => clearTimeout(t)
   }, [copied])
 
   const handleCopy = async () => {
@@ -335,30 +380,40 @@ function CodePanel({ step }) {
   }
 
   return (
-    <motion.div className="cs-code-panel" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.22 }}>
+    <motion.div
+      className="cs-code-panel"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 8 }}
+      transition={{ duration: 0.2 }}
+    >
       <div className="cs-code-head">
         <div>
           <div className="cs-section-label">Solution Code</div>
-          <div className="cs-code-subtitle">{step ? <>Line <span className="mono cs-chip">{step.activeLine}</span> is active</> : 'Press Play to start'}</div>
+          <div className="cs-code-subtitle">
+            {step
+              ? <>Line <span className="mono cs-code-chip">{step.activeLine}</span> active</>
+              : 'Press Play to start'}
+          </div>
         </div>
         <button type="button" className={`cs-copy-btn ${copied ? 'copied' : ''}`} onClick={handleCopy}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
           </svg>
-          {copied ? 'Copied' : 'Copy code'}
+          {copied ? 'Copied!' : 'Copy'}
         </button>
       </div>
       <div className="cs-code-scroll" ref={codeRef}>
         {SOLUTION_CODE.map(({ line, text }) => {
-          const isActive = step?.activeLine === line
+          const isActive  = step?.activeLine === line
           const isRelated = step?.relatedLines?.includes(line)
           return (
             <motion.div
               key={line}
               data-line={line}
               className={`cs-code-row ${isActive ? 'active' : ''} ${isRelated ? 'related' : ''}`}
-              animate={{ x: isActive ? 6 : 0, opacity: isRelated || isActive || !step ? 1 : 0.56 }}
+              animate={{ x: isActive ? 6 : 0, opacity: isRelated || isActive || !step ? 1 : 0.5 }}
               transition={{ type: 'spring', stiffness: 280, damping: 28 }}
             >
               <span className="cs-code-no mono">{line}</span>
@@ -371,47 +426,46 @@ function CodePanel({ step }) {
   )
 }
 
-export default function CourseScheduleVisualizer() {
-  const [courseInput, setCourseInput] = useState(String(DEFAULT_COURSES))
-  const [prereqInput, setPrereqInput] = useState(DEFAULT_PREREQS)
-  const [numCourses, setNumCourses] = useState(DEFAULT_COURSES)
-  const [prerequisites, setPrerequisites] = useState(() => JSON.parse(DEFAULT_PREREQS))
-  const [steps, setSteps] = useState(() => generateCourseSteps(DEFAULT_COURSES, JSON.parse(DEFAULT_PREREQS)))
-  const [stepIndex, setStepIndex] = useState(-1)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [speed, setSpeed] = useState(520)
-  const [showCode, setShowCode] = useState(true)
-  const [attemptedSubmit, setAttemptedSubmit] = useState(false)
-  const [graphZoom, setGraphZoom] = useState(1)
-  const [graphPanelWidth, setGraphPanelWidth] = useState(560)
-  const [graphPanelHeight, setGraphPanelHeight] = useState(360)
-  const mainSplit = 0.6 // fixed fraction for graph area vs lower panels
-  const contentShellRef = useRef(null)
-  const [contentHeight, setContentHeight] = useState(null)
-  const contentRightResizeRef = useRef(null)
-  const intervalRef = useRef(null)
-  const graphResizeRef = useRef(null)
+// ── Main Component ────────────────────────────────────────────────────────────
 
-  const parsedCourses = Number(courseInput)
-  const coursesValid = Number.isInteger(parsedCourses) && parsedCourses >= 1 && parsedCourses <= 12
-  const parsedPrereqs = parsePrerequisites(prereqInput)
-  const prereqValue = useMemo(() => (parsedPrereqs.value ?? []), [parsedPrereqs.value])
-  const prereqRangeValid = coursesValid && parsedPrereqs.value
+export default function CourseScheduleVisualizer() {
+  const [courseInput,     setCourseInput]     = useState(String(DEFAULT_COURSES))
+  const [prereqInput,     setPrereqInput]     = useState(DEFAULT_PREREQS)
+  const [numCourses,      setNumCourses]      = useState(DEFAULT_COURSES)
+  const [prerequisites,   setPrerequisites]   = useState(() => JSON.parse(DEFAULT_PREREQS))
+  const [steps,           setSteps]           = useState(() => generateCourseSteps(DEFAULT_COURSES, JSON.parse(DEFAULT_PREREQS)))
+  const [stepIndex,       setStepIndex]       = useState(-1)
+  const [isPlaying,       setIsPlaying]       = useState(false)
+  const [speed,           setSpeed]           = useState(520)
+  const [showCode,        setShowCode]        = useState(false)
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false)
+  const [graphZoom,       setGraphZoom]       = useState(1)
+  const intervalRef = useRef(null)
+
+  // ── Validation ──────────────────────────────────────────────────────────────
+  const parsedCourses     = Number(courseInput)
+  const coursesValid      = Number.isInteger(parsedCourses) && parsedCourses >= 1 && parsedCourses <= 12
+  const parsedPrereqs     = parsePrerequisites(prereqInput)
+  const prereqValue       = useMemo(() => parsedPrereqs.value ?? [], [parsedPrereqs.value])
+  const prereqRangeValid  = coursesValid && parsedPrereqs.value
     ? prereqValue.every(([a, b]) => a >= 0 && a < parsedCourses && b >= 0 && b < parsedCourses)
     : false
 
   const inputError = attemptedSubmit && !coursesValid
-    ? 'For the visualizer, numCourses must be an integer between 1 and 12.'
+    ? 'numCourses must be an integer between 1 and 12.'
     : attemptedSubmit && parsedPrereqs.error
       ? parsedPrereqs.error
       : attemptedSubmit && !prereqRangeValid
-        ? 'Every prerequisite course id must be between 0 and numCourses - 1.'
+        ? 'Every course id must be between 0 and numCourses − 1.'
         : null
 
+  // ── Derived ─────────────────────────────────────────────────────────────────
   const currentStep = stepIndex >= 0 ? steps[stepIndex] : null
-  const progress = steps.length > 0 ? ((stepIndex + 1) / steps.length) * 100 : 0
-  const isDone = stepIndex === steps.length - 1
+  const progress    = steps.length > 0 ? ((stepIndex + 1) / steps.length) * 100 : 0
+  const isDone      = stepIndex === steps.length - 1
+  const phaseMeta   = currentStep ? PHASE_META[currentStep.phase] : null
 
+  // ── Handlers ────────────────────────────────────────────────────────────────
   const handleVisualize = useCallback(() => {
     setAttemptedSubmit(true)
     if (!coursesValid || parsedPrereqs.error || !prereqRangeValid) return
@@ -435,278 +489,251 @@ export default function CourseScheduleVisualizer() {
   }, [])
 
   const stepForward = useCallback(() => {
-    setStepIndex((current) => {
-      if (current >= steps.length - 1) {
-        setIsPlaying(false)
-        return current
-      }
-      return current + 1
+    setStepIndex((cur) => {
+      if (cur >= steps.length - 1) { setIsPlaying(false); return cur }
+      return cur + 1
     })
   }, [steps.length])
 
-  const stepBack = () => setStepIndex((current) => Math.max(-1, current - 1))
-  const handleReset = () => {
-    setStepIndex(-1)
-    setIsPlaying(false)
-  }
-  const togglePlay = () => {
+  const stepBack    = () => setStepIndex((cur) => Math.max(-1, cur - 1))
+  const handleReset = () => { setStepIndex(-1); setIsPlaying(false) }
+  const togglePlay  = () => {
     if (stepIndex >= steps.length - 1) setStepIndex(-1)
-    setIsPlaying((current) => !current)
+    setIsPlaying((p) => !p)
   }
 
   useEffect(() => {
     clearInterval(intervalRef.current)
     if (isPlaying) {
       intervalRef.current = setInterval(() => {
-        setStepIndex((current) => {
-          if (current >= steps.length - 1) {
-            setIsPlaying(false)
-            return current
-          }
-          return current + 1
+        setStepIndex((cur) => {
+          if (cur >= steps.length - 1) { setIsPlaying(false); return cur }
+          return cur + 1
         })
       }, speed)
     }
     return () => clearInterval(intervalRef.current)
   }, [isPlaying, speed, steps.length])
 
-  useEffect(() => {
-    const handlePointerMove = (event) => {
-      const resize = graphResizeRef.current
-      if (!resize) return
-      const dx = event.clientX - resize.startX
-      const dy = event.clientY - resize.startY
-      let nextWidth = resize.startWidth
-      let nextHeight = resize.startHeight
-
-      if (resize.direction === 'right') {
-        nextWidth = resize.startWidth + dx
-      } else if (resize.direction === 'top') {
-        // dragging the top edge: moving pointer down (dy > 0) should decrease height
-        nextHeight = resize.startHeight - dy
-      } else {
-        // corner / both
-        nextWidth = resize.startWidth + dx
-        nextHeight = resize.startHeight + dy
-      }
-
-      setGraphPanelWidth(clamp(nextWidth, MIN_GRAPH_WIDTH, MAX_GRAPH_WIDTH))
-      setGraphPanelHeight(clamp(nextHeight, MIN_GRAPH_HEIGHT, MAX_GRAPH_HEIGHT))
-    }
-
-    const handlePointerUp = () => {
-      if (!graphResizeRef.current) return
-      graphResizeRef.current = null
-      document.body.classList.remove('cs-resizing-graph')
-      document.body.style.cursor = ''
-    }
-
-    window.addEventListener('pointermove', handlePointerMove)
-    window.addEventListener('pointerup', handlePointerUp)
-
-    return () => {
-      window.removeEventListener('pointermove', handlePointerMove)
-      window.removeEventListener('pointerup', handlePointerUp)
-      document.body.classList.remove('cs-resizing-graph')
-      document.body.style.cursor = ''
-    }
-  }, [])
-
-  useEffect(() => {
-    const handleGlobalMove = (event) => {
-      const cr = graphResizeRef.current
-      const rr = contentRightResizeRef.current
-      if (cr && cr._contentStartY != null) {
-        const dy = event.clientY - cr._contentStartY
-        const nextH = Math.max(320, Math.min(1100, cr._contentStartHeight - dy))
-        setContentHeight(nextH)
-        return
-      }
-
-      if (rr && rr.startX != null) {
-        const dx = event.clientX - rr.startX
-        const nextW = Math.max(320, Math.min(1400, rr.startWidth + dx))
-        setGraphPanelWidth(nextW)
-        return
-      }
-    }
-
-    const handleGlobalUp = () => {
-      if (graphResizeRef.current) {
-        delete graphResizeRef.current._contentStartY
-        delete graphResizeRef.current._contentStartHeight
-      }
-      if (contentRightResizeRef.current) contentRightResizeRef.current = { startX: null }
-      document.body.classList.remove('cs-resizing-graph')
-      document.body.style.cursor = ''
-    }
-
-    window.addEventListener('pointermove', handleGlobalMove)
-    window.addEventListener('pointerup', handleGlobalUp)
-    return () => {
-      window.removeEventListener('pointermove', handleGlobalMove)
-      window.removeEventListener('pointerup', handleGlobalUp)
-    }
-  }, [])
-
-  // removed unused granular resize handlers; vertical splitter handles main split now
+  // ── Render ──────────────────────────────────────────────────────────────────
+  const isActiveExample = (ex) => numCourses === ex.numCourses && prereqInput === ex.prerequisites
 
   return (
     <div className="cs">
+
+      {/* ── Input card ── */}
       <div className="cs-card cs-input-card">
-        <div className="cs-input-grid">
-          <div className="cs-field-group small">
-            <label className="cs-input-label">Courses</label>
+        <div className="cs-input-row">
+          <div className="cs-field">
+            <label className="cs-label">Courses</label>
             <input
-              className={`cs-input ${inputError && !coursesValid ? 'has-error' : ''}`}
+              className={`cs-input cs-input-sm ${attemptedSubmit && !coursesValid ? 'has-error' : ''}`}
               value={courseInput}
-              onChange={(event) => {
-                setCourseInput(event.target.value.replace(/[^0-9]/g, ''))
+              onChange={(e) => {
+                setCourseInput(e.target.value.replace(/[^0-9]/g, ''))
                 if (attemptedSubmit) setAttemptedSubmit(false)
               }}
               inputMode="numeric"
+              aria-label="Number of courses"
             />
           </div>
 
-          <div className="cs-field-group large">
-            <label className="cs-input-label">Prerequisites</label>
+          <div className="cs-field cs-field-grow">
+            <label className="cs-label">
+              Prerequisites <span className="cs-label-hint">[[course, prereq], …] JSON</span>
+            </label>
             <textarea
-              className={`cs-input cs-textarea mono ${inputError && (parsedPrereqs.error || !prereqRangeValid) ? 'has-error' : ''}`}
+              className={`cs-input cs-textarea mono ${attemptedSubmit && (parsedPrereqs.error || !prereqRangeValid) ? 'has-error' : ''}`}
               value={prereqInput}
-              onChange={(event) => {
-                setPrereqInput(event.target.value)
+              onChange={(e) => {
+                setPrereqInput(e.target.value)
                 if (attemptedSubmit) setAttemptedSubmit(false)
               }}
-              rows={3}
+              rows={2}
+              aria-label="Prerequisites JSON"
             />
           </div>
 
-          <button className="cs-btn cs-btn-primary" onClick={handleVisualize}>Visualize</button>
+          <button className="cs-btn cs-btn-primary" onClick={handleVisualize}>
+            Visualize
+          </button>
         </div>
 
         <div className="cs-support-row">
-          <p className={`cs-hint ${inputError ? 'error' : ''}`}>{inputError || 'This walkthrough uses Kahn\'s algorithm. The visualizer limits courses to 12 so the graph stays readable.'}</p>
+          <p className={`cs-hint ${inputError ? 'error' : ''}`}>
+            {inputError || "Kahn's algorithm — BFS topological sort. Max 12 courses."}
+          </p>
           <div className="cs-meta-row">
-            <span className="cs-pill mono">courses {courseInput || 0}</span>
-            <span className="cs-pill mono">edges {prerequisites.length}</span>
+            <span className="cs-pill mono">{courseInput || 0} courses</span>
+            <span className="cs-pill mono">{prerequisites.length} edges</span>
           </div>
         </div>
 
-        <div className="cs-example-grid">
-          {EXAMPLES.map((example) => (
-            <button key={example.label} type="button" className={`cs-example-card ${numCourses === example.numCourses && prereqInput === example.prerequisites ? 'active' : ''}`} onClick={() => applyExample(example)}>
-              <span className="cs-example-top">
-                <span className="cs-example-label">{example.label}</span>
-                <span className="cs-example-chip mono">{example.numCourses}c</span>
-              </span>
-              <span className="cs-example-note">{example.note}</span>
+        <div className="cs-examples">
+          {EXAMPLES.map((ex) => (
+            <button
+              key={ex.label}
+              type="button"
+              className={`cs-example-chip ${isActiveExample(ex) ? 'active' : ''}`}
+              onClick={() => applyExample(ex)}
+            >
+              <span className="cs-chip-label">{ex.label}</span>
+              <span className="cs-chip-note">{ex.note}</span>
+              <span className="cs-chip-courses mono">{ex.numCourses}c</span>
             </button>
           ))}
         </div>
       </div>
 
-      <div className="cs-progress-track">
-        <motion.div className="cs-progress-fill" animate={{ width: `${progress}%` }} transition={{ duration: 0.14 }} />
-      </div>
-      <div className="cs-step-counter">
-        {stepIndex < 0
-          ? 'Not started — press Play or Next'
-          : isDone
-            ? `Done! canFinish = ${String(currentStep?.result)}`
-            : `Step ${stepIndex + 1} / ${steps.length}`}
-      </div>
-
-      <div className="cs-toolbar">
-        <div className="cs-toggle-group">
-          <span className="cs-toggle-label">View</span>
-          <div className="cs-toggle-pill">
-            <button className={`cs-toggle-btn ${!showCode ? 'active' : ''}`} onClick={() => setShowCode(false)}>Visual only</button>
-            <button className={`cs-toggle-btn ${showCode ? 'active' : ''}`} onClick={() => setShowCode(true)}>Visual + code</button>
-          </div>
+      {/* ── Progress band ── */}
+      <div className="cs-progress-band">
+        <div className="cs-progress-track">
+          <motion.div
+            className="cs-progress-fill"
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.14 }}
+          />
+        </div>
+        <div className="cs-step-info">
+          <span className="cs-step-counter">
+            {stepIndex < 0
+              ? 'Not started — press Play or step forward'
+              : isDone
+                ? `Done — canFinish = ${String(currentStep?.result)}`
+                : `Step ${stepIndex + 1} / ${steps.length}`}
+          </span>
+          {phaseMeta && (
+            <span className={`cs-phase-badge phase-${phaseMeta.color}`}>
+              {phaseMeta.label}
+            </span>
+          )}
         </div>
       </div>
 
-      <div className={`cs-layout ${showCode ? 'with-code' : ''}`}>
-        <div className="cs-main-column">
-          <ResizablePanel width={graphPanelWidth} height={graphPanelHeight} minWidth={MIN_GRAPH_WIDTH} minHeight={MIN_GRAPH_HEIGHT} onResize={(v) => {
-            if (v.width) setGraphPanelWidth(v.width)
-            if (v.height) setGraphPanelHeight(v.height)
-          }}>
-            <div className="cs-card cs-graph-card" style={{ flex: mainSplit }}>
+      {/* ── Main two-column layout ── */}
+      <div className="cs-main">
+
+        {/* Left: graph + step explanation */}
+        <div className="cs-col-left">
+          <div className="cs-card cs-graph-card">
             <div className="cs-card-head">
               <div>
                 <div className="cs-section-label">Dependency Graph</div>
-                <div className="cs-subtitle">Edges point from prerequisite to course that becomes available after it.</div>
+                <p className="cs-card-sub">Edges: prerequisite → course unlocked</p>
               </div>
-              <div className="cs-result-preview">
-                <span className="cs-output-label">Verdict</span>
-                <span className={`mono cs-output-text ${currentStep?.result === false ? 'fail' : ''}`}>{currentStep?.result == null ? 'pending' : String(currentStep.result)}</span>
+              <div className="cs-verdict">
+                <span className="cs-verdict-label">Result</span>
+                <span className={`cs-verdict-value mono ${currentStep?.result === false ? 'fail' : currentStep?.result === true ? 'pass' : ''}`}>
+                  {currentStep?.result == null ? '—' : String(currentStep.result)}
+                </span>
               </div>
             </div>
-             <div className="cs-graph-content" ref={contentShellRef} style={contentHeight ? { height: `${contentHeight}px` } : undefined}>
-              <GraphView
+            <GraphView
               numCourses={numCourses}
               step={currentStep}
               zoom={graphZoom}
               onZoomChange={setGraphZoom}
             />
-              </div>
-              </div>
-            </ResizablePanel>
+          </div>
 
-          <div className="cs-state-grid">
-            <div className="cs-card">
+          <div className="cs-card cs-step-card">
+            <p className="cs-step-text">
+              {currentStep?.description || 'Press Play or step through the algorithm.'}
+            </p>
+          </div>
+        </div>
+
+        {/* Right: algorithm state + optional code panel */}
+        <div className="cs-col-right">
+
+          <div className="cs-card cs-state-card">
+            <div className="cs-state-section">
               <div className="cs-section-label">Queue</div>
-              <div className="cs-queue-row">
+              <div className="cs-token-row">
                 {(currentStep?.queue ?? []).length > 0
-                  ? currentStep.queue.map((course) => <span key={course} className="cs-token mono">{course}</span>)
-                  : <span className="cs-empty-text">Queue is empty</span>}
+                  ? currentStep.queue.map((c) => (
+                      <span key={c} className="cs-token cs-token-queue mono">{c}</span>
+                    ))
+                  : <span className="cs-empty">Empty</span>}
               </div>
             </div>
-
-            <div className="cs-card">
+            <div className="cs-state-divider" />
+            <div className="cs-state-section">
               <div className="cs-section-label">Taken Order</div>
-              <div className="cs-queue-row">
+              <div className="cs-token-row">
                 {(currentStep?.takenOrder ?? []).length > 0
-                  ? currentStep.takenOrder.map((course) => <span key={course} className="cs-token mono taken">{course}</span>)
-                  : <span className="cs-empty-text">No course processed yet</span>}
+                  ? currentStep.takenOrder.map((c) => (
+                      <span key={c} className="cs-token cs-token-taken mono">{c}</span>
+                    ))
+                  : <span className="cs-empty">None yet</span>}
               </div>
             </div>
           </div>
 
-          <div className="cs-card">
-            <div className="cs-section-label">Indegree Table</div>
-            <div className="cs-indegree-grid">
-              {Array.from({ length: numCourses }, (_, course) => (
-                <div key={course} className={`cs-indegree-item ${currentStep?.activeNeighbor === course || currentStep?.activeCourse === course ? 'active' : ''}`}>
-                  <span className="cs-indegree-course mono">course {course}</span>
-                  <span className="cs-indegree-value mono">{currentStep?.indegree?.[course] ?? 0}</span>
-                </div>
-              ))}
+          <div className="cs-card cs-indegree-card">
+            <div className="cs-section-label">In-degree Table</div>
+            <div className="cs-indegree-row">
+              {Array.from({ length: numCourses }, (_, course) => {
+                const val      = currentStep?.indegree?.[course] ?? 0
+                const isActive = currentStep?.activeNeighbor === course || currentStep?.activeCourse === course
+                return (
+                  <div key={course} className={`cs-deg-item ${isActive ? 'active' : ''} ${val === 0 ? 'zero' : ''}`}>
+                    <span className="cs-deg-course mono">{course}</span>
+                    <span className="cs-deg-val mono">{val}</span>
+                  </div>
+                )
+              })}
             </div>
           </div>
 
-          <div className="cs-card">
-            <div className="cs-section-label">Explanation</div>
-            <div className="cs-explanation">{currentStep?.description || 'Start the walkthrough to build the graph and process the queue.'}</div>
+          <AnimatePresence>
+            {showCode && <CodePanel step={currentStep} />}
+          </AnimatePresence>
+
+        </div>
+      </div>
+
+      {/* ── Controls bar ── */}
+      <div className="cs-controls">
+        <div className="cs-controls-play">
+          <button className="cs-btn cs-btn-ghost cs-btn-icon" onClick={handleReset} disabled={stepIndex < 0} title="Reset">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+              <path d="M3 3v5h5" />
+            </svg>
+          </button>
+          <button className="cs-btn cs-btn-ghost" onClick={stepBack} disabled={stepIndex < 0}>‹ Prev</button>
+          <button className="cs-btn cs-btn-play" onClick={togglePlay}>
+            {isPlaying ? '⏸ Pause' : isDone ? '↺ Replay' : '▶ Play'}
+          </button>
+          <button className="cs-btn cs-btn-ghost" onClick={stepForward} disabled={isDone}>Next ›</button>
+        </div>
+
+        <div className="cs-controls-options">
+          <div className="cs-speed-wrap">
+            <span className="cs-label">Speed</span>
+            <input
+              type="range"
+              min={80}
+              max={1400}
+              step={60}
+              value={1480 - speed}
+              onChange={(e) => setSpeed(1480 - Number(e.target.value))}
+              aria-label="Playback speed"
+            />
+          </div>
+          <div className="cs-view-toggle">
+            <button className={`cs-toggle-opt ${!showCode ? 'active' : ''}`} onClick={() => setShowCode(false)}>
+              Visual
+            </button>
+            <button className={`cs-toggle-opt ${showCode ? 'active' : ''}`} onClick={() => setShowCode(true)}>
+              + Code
+            </button>
           </div>
         </div>
-
-        <AnimatePresence>
-          {showCode && <CodePanel step={currentStep} />}
-        </AnimatePresence>
       </div>
 
-      <div className="cs-controls">
-        <button className="cs-btn cs-btn-ghost" onClick={handleReset} disabled={stepIndex < 0}>Reset</button>
-        <button className="cs-btn cs-btn-ghost" onClick={stepBack} disabled={stepIndex < 0}>Prev</button>
-        <button className="cs-btn cs-btn-play" onClick={togglePlay}>{isPlaying ? 'Pause' : isDone ? 'Replay' : 'Play'}</button>
-        <button className="cs-btn cs-btn-ghost" onClick={stepForward} disabled={isDone}>Next</button>
-        <div className="cs-speed-wrap">
-          <span className="cs-speed-label">Speed</span>
-          <input type="range" min={80} max={1400} step={60} value={1480 - speed} onChange={(event) => setSpeed(1480 - Number(event.target.value))} />
-        </div>
-      </div>
     </div>
   )
 }
+
