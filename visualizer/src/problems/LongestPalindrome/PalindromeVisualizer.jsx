@@ -546,6 +546,44 @@ function getDefaultPanelSizes(codeWidth) {
    MAIN VISUALIZER
    ═══════════════════════════════════════════════════════════════ */
 const DEFAULT = 'racecar'
+const INPUT_PRESETS = [
+  {
+    label: 'Classic',
+    value: 'racecar',
+    tone: 'featured',
+    note: 'Whole string is already a palindrome.',
+  },
+  {
+    label: 'Overlapping',
+    value: 'rarerer',
+    tone: 'featured',
+    note: 'Good for showing competing centers and nested palindromes.',
+  },
+  {
+    label: 'LeetCode',
+    value: 'banana',
+    tone: 'featured',
+    note: 'Finds a longer palindrome inside the middle.',
+  },
+  {
+    label: 'Even length',
+    value: 'cbbd',
+    tone: 'edge',
+    note: 'Tests even-length palindromes.',
+  },
+  {
+    label: 'Single char',
+    value: 'a',
+    tone: 'edge',
+    note: 'Smallest non-empty valid case.',
+  },
+  {
+    label: 'No long match',
+    value: 'abcd',
+    tone: 'edge',
+    note: 'Best answer stays length 1.',
+  },
+]
 
 export default function PalindromeVisualizer() {
   const [inputStr, setInputStr]  = useState(DEFAULT)
@@ -557,10 +595,12 @@ export default function PalindromeVisualizer() {
   const [showCode, setShowCode]  = useState(true)
   const [codeWidth, setCodeWidth] = useState('normal')
   const [panelSizes, setPanelSizes] = useState(() => getDefaultPanelSizes('normal'))
+  const [hasAttemptedInput, setHasAttemptedInput] = useState(false)
   const intervalRef = useRef(null)
   const contentShellRef = useRef(null)
   const dragStateRef = useRef(null)
 
+  const trimmedInput = inputStr.trim()
   const n = str.length
   const currentStep = stepIdx >= 0 ? steps[stepIdx] : null
   const previousStep = stepIdx > 0 ? steps[stepIdx - 1] : null
@@ -570,13 +610,24 @@ export default function PalindromeVisualizer() {
 
   /* ── Handlers ─────────────────────────────────────────────── */
   const handleVisualize = () => {
-    const s = inputStr.trim().slice(0, 14) // cap at 14 for readable grid
+    const s = trimmedInput.slice(0, 14) // cap at 14 for readable grid
+    setHasAttemptedInput(true)
     if (!s) return
     setStr(s)
     setSteps(generateSteps(s))
     setStepIdx(-1)
     setIsPlaying(false)
   }
+
+  const applyPreset = useCallback((value) => {
+    const sanitized = value.replace(/\s/g, '').slice(0, 14)
+    setInputStr(sanitized)
+    setHasAttemptedInput(false)
+    setStr(sanitized)
+    setSteps(generateSteps(sanitized))
+    setStepIdx(-1)
+    setIsPlaying(false)
+  }, [])
 
   const stepForward = useCallback(() => {
     setStepIdx(prev => {
@@ -680,6 +731,7 @@ export default function PalindromeVisualizer() {
 
   const hasVariables = n > 0
   const showResizableLayout = hasVariables
+  const inputError = hasAttemptedInput && !trimmedInput
   const contentShellStyle = showResizableLayout
     ? showCode
       ? {
@@ -702,18 +754,61 @@ export default function PalindromeVisualizer() {
         <div className="input-row">
           <label className="input-label">String</label>
           <input
-            className="str-input mono"
+            className={`str-input mono ${inputError ? 'has-error' : ''}`}
             value={inputStr}
-            onChange={e => setInputStr(e.target.value.replace(/\s/g, ''))}
+            onChange={e => {
+              setInputStr(e.target.value.replace(/\s/g, ''))
+              if (hasAttemptedInput) setHasAttemptedInput(false)
+            }}
             onKeyDown={e => e.key === 'Enter' && handleVisualize()}
             placeholder="e.g. racecar"
             maxLength={14}
+            aria-invalid={inputError}
           />
           <button className="btn btn-primary" onClick={handleVisualize}>
             Visualize
           </button>
+          <div className="input-counter mono">{trimmedInput.length}/14</div>
         </div>
-        <p className="input-hint">Max 14 characters for clear grid visibility. Press Enter or click Visualize.</p>
+
+        <div className="input-support-row">
+          <p className={`input-hint ${inputError ? 'error' : ''}`}>
+            {inputError
+              ? 'Enter at least one character to generate the DP walkthrough.'
+              : 'Pick an example or type your own. Press Enter or click Visualize.'}
+          </p>
+          <div className="input-badge-row">
+            <span className="input-badge">Single word</span>
+            <span className="input-badge">No spaces</span>
+            <span className="input-badge">Best at 5-10 chars</span>
+          </div>
+        </div>
+
+        <div className="preset-panel">
+          <div className="preset-panel-head">
+            <div>
+              <div className="section-label preset-label">Recommended Inputs</div>
+              <p className="preset-subtitle">Use one-tap examples to highlight odd centers, even-length matches, and edge cases.</p>
+            </div>
+          </div>
+
+          <div className="preset-grid">
+            {INPUT_PRESETS.map((preset) => (
+              <button
+                key={preset.label}
+                type="button"
+                className={`preset-chip tone-${preset.tone} ${trimmedInput === preset.value ? 'active' : ''}`}
+                onClick={() => applyPreset(preset.value)}
+              >
+                <span className="preset-chip-top">
+                  <span className="preset-chip-label">{preset.label}</span>
+                  <span className="preset-chip-value mono">{preset.value}</span>
+                </span>
+                <span className="preset-chip-note">{preset.note}</span>
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* ── PROGRESS BAR ──────────────────────────────────── */}
