@@ -2,6 +2,9 @@ import { Fragment, useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import './PalindromeVisualizer.css'
 
+const MIN_PANEL_PERCENT = 16
+const SPLITTER_WIDTH_PX = 18
+
 const SOLUTION_CODE = [
   { line: 1, text: 'class Solution(object):' },
   { line: 2, text: '    def longestPalindrome(self, s):' },
@@ -497,6 +500,16 @@ function CodePanel({ step }) {
   )
 }
 
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max)
+}
+
+function getDefaultPanelSizes(codeWidth) {
+  if (codeWidth === 'wide') return { left: 22, middle: 33, right: 45 }
+  if (codeWidth === 'full') return { left: 20, middle: 25, right: 55 }
+  return { left: 24, middle: 41, right: 35 }
+}
+
 /* ═══════════════════════════════════════════════════════════════
    MAIN VISUALIZER
    ═══════════════════════════════════════════════════════════════ */
@@ -511,7 +524,10 @@ export default function PalindromeVisualizer() {
   const [speed, setSpeed]        = useState(500) // ms per step
   const [showCode, setShowCode]  = useState(true)
   const [codeWidth, setCodeWidth] = useState('normal')
+  const [panelSizes, setPanelSizes] = useState(() => getDefaultPanelSizes('normal'))
   const intervalRef = useRef(null)
+  const contentShellRef = useRef(null)
+  const dragStateRef = useRef(null)
 
   const n = str.length
   const currentStep = stepIdx >= 0 ? steps[stepIdx] : null
@@ -559,6 +575,88 @@ export default function PalindromeVisualizer() {
     }
     return () => clearInterval(intervalRef.current)
   }, [isPlaying, speed, steps.length])
+
+  useEffect(() => {
+    const handlePointerMove = (event) => {
+      const dragState = dragStateRef.current
+      const container = contentShellRef.current
+      if (!dragState || !container) return
+
+      const rect = container.getBoundingClientRect()
+      const pointerX = event.clientX - rect.left
+      const pointerPercent = (pointerX / rect.width) * 100
+
+      if (dragState.type === 'left') {
+        const nextLeft = clamp(pointerPercent, MIN_PANEL_PERCENT, 100 - dragState.right - MIN_PANEL_PERCENT)
+        const nextMiddle = 100 - nextLeft - dragState.right
+        setPanelSizes({ left: nextLeft, middle: nextMiddle, right: dragState.right })
+        return
+      }
+
+      const leftBoundary = dragState.left
+      const nextMiddle = clamp(pointerPercent - leftBoundary, MIN_PANEL_PERCENT, 100 - leftBoundary - MIN_PANEL_PERCENT)
+      const nextRight = 100 - leftBoundary - nextMiddle
+      setPanelSizes({ left: dragState.left, middle: nextMiddle, right: nextRight })
+    }
+
+    const handlePointerUp = () => {
+      if (!dragStateRef.current) return
+      dragStateRef.current = null
+      document.body.classList.remove('panel-dragging')
+    }
+
+    window.addEventListener('pointermove', handlePointerMove)
+    window.addEventListener('pointerup', handlePointerUp)
+
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove)
+      window.removeEventListener('pointerup', handlePointerUp)
+      document.body.classList.remove('panel-dragging')
+    }
+  }, [])
+
+  const startDrag = useCallback((type) => (event) => {
+    if (window.innerWidth <= 980) return
+    event.preventDefault()
+    dragStateRef.current = {
+      type,
+      left: panelSizes.left,
+      right: panelSizes.right,
+    }
+    document.body.classList.add('panel-dragging')
+  }, [panelSizes.left, panelSizes.right])
+
+  const handleShowCodeChange = useCallback((nextShowCode) => {
+    setShowCode(nextShowCode)
+    if (!nextShowCode) {
+      setPanelSizes((current) => {
+        const left = clamp(current.left, MIN_PANEL_PERCENT, 40)
+        return { left, middle: 100 - left, right: 0 }
+      })
+      return
+    }
+
+    setPanelSizes(getDefaultPanelSizes(codeWidth))
+  }, [codeWidth])
+
+  const handleCodeWidthChange = useCallback((nextCodeWidth) => {
+    setCodeWidth(nextCodeWidth)
+    if (showCode) {
+      setPanelSizes(getDefaultPanelSizes(nextCodeWidth))
+    }
+  }, [showCode])
+
+  const hasVariables = n > 0
+  const showResizableLayout = hasVariables
+  const contentShellStyle = showResizableLayout
+    ? showCode
+      ? {
+          gridTemplateColumns: `minmax(220px, ${panelSizes.left}fr) ${SPLITTER_WIDTH_PX}px minmax(0, ${panelSizes.middle}fr) ${SPLITTER_WIDTH_PX}px minmax(280px, ${panelSizes.right}fr)`,
+        }
+      : {
+          gridTemplateColumns: `minmax(220px, ${panelSizes.left}fr) ${SPLITTER_WIDTH_PX}px minmax(0, ${panelSizes.middle}fr)`,
+        }
+    : undefined
 
   /* ── Render ──────────────────────────────────────────────── */
   const progress = steps.length > 0 ? ((stepIdx + 1) / steps.length) * 100 : 0
@@ -608,13 +706,13 @@ export default function PalindromeVisualizer() {
           <div className="view-toggle-pill">
             <button
               className={`view-toggle-btn ${!showCode ? 'active' : ''}`}
-              onClick={() => setShowCode(false)}
+              onClick={() => handleShowCodeChange(false)}
             >
               Visual only
             </button>
             <button
               className={`view-toggle-btn ${showCode ? 'active' : ''}`}
-              onClick={() => setShowCode(true)}
+              onClick={() => handleShowCodeChange(true)}
             >
               Visual + code
             </button>
@@ -627,19 +725,19 @@ export default function PalindromeVisualizer() {
             <div className="view-toggle-pill">
               <button
                 className={`view-toggle-btn ${codeWidth === 'normal' ? 'active' : ''}`}
-                onClick={() => setCodeWidth('normal')}
+                onClick={() => handleCodeWidthChange('normal')}
               >
                 Normal
               </button>
               <button
                 className={`view-toggle-btn ${codeWidth === 'wide' ? 'active' : ''}`}
-                onClick={() => setCodeWidth('wide')}
+                onClick={() => handleCodeWidthChange('wide')}
               >
                 Wide
               </button>
               <button
                 className={`view-toggle-btn ${codeWidth === 'full' ? 'active' : ''}`}
-                onClick={() => setCodeWidth('full')}
+                onClick={() => handleCodeWidthChange('full')}
               >
                 Full
               </button>
@@ -648,15 +746,34 @@ export default function PalindromeVisualizer() {
         )}
       </div>
 
-      <div className={`content-shell ${showCode ? 'split' : 'single'} code-width-${codeWidth} ${n > 0 ? 'has-variables' : ''}`}>
+      <div
+        ref={contentShellRef}
+        className={`content-shell ${showCode ? 'split' : 'single'} code-width-${codeWidth} ${hasVariables ? 'has-variables has-splitters' : ''}`}
+        style={contentShellStyle}
+      >
 
-      {n > 0 && (
+      {hasVariables && (
         <div className="variable-column">
           <div className="pv-card variable-shell">
             <div className="section-label">Variable Tracker</div>
             <VariablePanel step={currentStep} previousStep={previousStep} str={str} />
           </div>
         </div>
+      )}
+
+      {hasVariables && (
+        <button
+          type="button"
+          className="panel-splitter"
+          aria-label="Resize left and middle panels"
+          onPointerDown={startDrag('left')}
+        >
+          <span className="panel-splitter-grip" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </span>
+        </button>
       )}
 
         <div className="visual-column">
@@ -772,7 +889,23 @@ export default function PalindromeVisualizer() {
         </div>
 
         <AnimatePresence>
-          {showCode && <CodePanel step={currentStep} />}
+          {showCode && (
+            <>
+              <button
+                type="button"
+                className="panel-splitter"
+                aria-label="Resize middle and right panels"
+                onPointerDown={startDrag('right')}
+              >
+                <span className="panel-splitter-grip" aria-hidden="true">
+                  <span />
+                  <span />
+                  <span />
+                </span>
+              </button>
+              <CodePanel step={currentStep} />
+            </>
+          )}
         </AnimatePresence>
       </div>
 
