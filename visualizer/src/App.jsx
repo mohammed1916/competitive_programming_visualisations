@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import CourseSchedule from './problems/CourseSchedule'
 import LongestPalindrome from './problems/LongestPalindrome'
 import StringToIntegerAtoi from './problems/StringToIntegerAtoi'
 import ZigzagConversion from './problems/ZigzagConversion'
@@ -9,6 +10,16 @@ import './App.css'
    Problem Registry — add new problems here
    ───────────────────────────────────────────── */
 const PROBLEMS = [
+  {
+    id: 'course-schedule',
+    number: '207',
+    title: 'Course Schedule',
+    description: 'Build indegrees, process the zero-indegree queue, and detect cycles with topological sort.',
+    difficulty: 'Medium',
+    tags: ['Graph', 'Topological Sort'],
+    accent: '#f97316',
+    component: CourseSchedule,
+  },
   {
     id: 'longest-palindrome',
     number: '5',
