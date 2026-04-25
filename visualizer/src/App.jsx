@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import LongestPalindrome from './problems/LongestPalindrome'
+import StringToIntegerAtoi from './problems/StringToIntegerAtoi'
 import ZigzagConversion from './problems/ZigzagConversion'
 import './App.css'
 
@@ -27,6 +28,16 @@ const PROBLEMS = [
     tags: ['String', 'Simulation'],
     accent: '#22c55e',
     component: ZigzagConversion,
+  },
+  {
+    id: 'string-to-integer-atoi',
+    number: '8',
+    title: 'String to Integer (atoi)',
+    description: 'Follow the parser through whitespace, sign, digits, stop conditions, and 32-bit clamping.',
+    difficulty: 'Medium',
+    tags: ['String', 'Simulation'],
+    accent: '#3b82f6',
+    component: StringToIntegerAtoi,
   },
   // Add more problems here as the app grows
 ]
