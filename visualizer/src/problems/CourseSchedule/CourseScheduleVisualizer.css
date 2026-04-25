@@ -373,7 +373,15 @@
   background: linear-gradient(135deg, rgba(249,115,22,0.04), transparent);
 }
 
-.cs-step-text { font-size: 0.875rem; color: var(--text-muted); line-height: 1.65; margin: 0; }
+.cs-step-text {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+  margin: 0;
+  font-family: monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
 
 /* ── State card (Queue + Taken) ─────────────────────────────────── */
 .cs-state-section { display: flex; flex-direction: column; gap: 0.5rem; }
@@ -428,7 +436,7 @@
 .cs-deg-val    { font-size: 1rem; font-weight: 700; color: var(--text); }
 .cs-deg-item.zero:not(.active) .cs-deg-val { color: rgba(134,239,172,0.9); }
 
-/* ── Code panel ─────────────────────────────────────────────────── */
+/* ── Code panel (always-on bottom strip) ─────────────────────── */
 .cs-code-panel {
   background: linear-gradient(180deg, rgba(13,15,34,0.98), rgba(9,10,22,0.97));
   border: 1px solid rgba(249, 115, 22, 0.16);
@@ -483,15 +491,21 @@
   background: rgba(34, 197, 94, 0.1);
 }
 
-.cs-code-scroll { max-height: 460px; overflow: auto; padding: 0.5rem; }
+.cs-code-scroll {
+  height: 320px;
+  overflow-y: auto;
+  overflow-x: auto;
+  padding: 0.5rem;
+}
 
 .cs-code-row {
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr);
+  grid-template-columns: 34px max-content;
   gap: 0.8rem;
   padding: 0.4rem 0.6rem;
   border-radius: 10px;
   margin-bottom: 0.1rem;
+  min-width: max-content;
 }
 
 .cs-code-row.related { background: rgba(255,255,255,0.022); }
@@ -552,30 +566,6 @@
 /* ── Speed ──────────────────────────────────────────────────────── */
 .cs-speed-wrap { display: flex; align-items: center; gap: 0.5rem; }
 .cs-speed-wrap input[type='range'] { width: 88px; accent-color: #f97316; }
-
-/* ── View toggle ────────────────────────────────────────────────── */
-.cs-view-toggle {
-  display: inline-flex;
-  padding: 3px;
-  border-radius: 999px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-}
-
-.cs-toggle-opt {
-  padding: 0.38rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  transition: all 0.18s ease;
-  white-space: nowrap;
-}
-
-.cs-toggle-opt.active {
-  background: linear-gradient(135deg, rgba(249,115,22,0.22), rgba(234,88,12,0.16));
-  color: var(--text);
-}
 
 /* ── Responsive ─────────────────────────────────────────────────── */
 @media (max-width: 1024px) {

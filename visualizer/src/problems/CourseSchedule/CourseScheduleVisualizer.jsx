@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { motion } from 'framer-motion'
 import './CourseScheduleVisualizer.css'
 
 const MIN_ZOOM = 0.5
@@ -118,6 +118,30 @@ function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max)
 }
 
+function buildStepDesc(phase, info) {
+  const { prereq, course, neighbor, newVal, queue, takenCount, numCourses, result } = info
+  switch (phase) {
+    case 'build-edge':
+      return `graph[${prereq}].append(${course})  →  indegree[${course}] += 1  →  indegree[${course}] = ${newVal}`
+    case 'init-queue': {
+      const seeds = queue.join(', ')
+      return queue.length > 0
+        ? `for i in range(${numCourses}): check indegree[i] == 0  →  courses [${seeds}] satisfy this  →  queue.extend([${seeds}])`
+        : `for i in range(${numCourses}): check indegree[i] == 0  →  all indegrees > 0  →  queue stays empty (possible cycle)`
+    }
+    case 'pop':
+      return `course = queue.popleft()  →  course = ${course}  |  taken += 1  →  taken = ${takenCount} / ${numCourses}`
+    case 'reduce':
+      return `for neighbor in graph[${course}]: neighbor = ${neighbor}  |  indegree[${neighbor}] -= 1  →  indegree[${neighbor}] = ${newVal}  |  check indegree[${neighbor}] == 0?  →  false  →  skip enqueue`
+    case 'enqueue':
+      return `for neighbor in graph[${course}]: neighbor = ${neighbor}  |  indegree[${neighbor}] -= 1  →  indegree[${neighbor}] = 0  |  check indegree[${neighbor}] == 0?  →  true  →  queue.append(${neighbor})`
+    case 'final':
+      return `return taken == numCourses  →  ${takenCount} == ${numCourses}  →  ${result}`
+    default:
+      return ''
+  }
+}
+
 function generateCourseSteps(numCourses, prerequisites) {
   const graph = Array.from({ length: numCourses }, () => [])
   const indegree = Array(numCourses).fill(0)
@@ -137,7 +161,7 @@ function generateCourseSteps(numCourses, prerequisites) {
       queue: [],
       takenOrder: [],
       takenCount: 0,
-      description: `Add edge ${prereq} -> ${course}, then increase indegree[${course}] to ${indegree[course]}.`,
+      description: buildStepDesc('build-edge', { prereq, course, newVal: indegree[course] }),
       result: null,
     }))
   })
@@ -157,9 +181,7 @@ function generateCourseSteps(numCourses, prerequisites) {
     queue: [...queue],
     takenOrder: [],
     takenCount: 0,
-    description: queue.length > 0
-      ? `Start the queue with all zero-indegree courses: ${queue.join(', ')}.`
-      : 'No course has indegree 0, so the queue starts empty.',
+    description: buildStepDesc('init-queue', { queue: [...queue], numCourses }),
     result: null,
   }))
 
@@ -179,7 +201,7 @@ function generateCourseSteps(numCourses, prerequisites) {
       queue: [...queue],
       takenOrder: [...takenOrder],
       takenCount: takenOrder.length,
-      description: `Take course ${course} from the front of the queue.`,
+      description: buildStepDesc('pop', { course, takenCount: takenOrder.length, numCourses }),
       result: null,
     }))
 
@@ -197,9 +219,9 @@ function generateCourseSteps(numCourses, prerequisites) {
         queue: [...queue],
         takenOrder: [...takenOrder],
         takenCount: takenOrder.length,
-        description: becameZero
-          ? `Decrease indegree[${neighbor}] to 0, so enqueue course ${neighbor}.`
-          : `Decrease indegree[${neighbor}] to ${indegree[neighbor]}; it still has unresolved prerequisites.`,
+        description: buildStepDesc(becameZero ? 'enqueue' : 'reduce', {
+          course, neighbor, newVal: indegree[neighbor],
+        }),
         result: null,
       }))
 
@@ -218,9 +240,7 @@ function generateCourseSteps(numCourses, prerequisites) {
     queue: [...queue],
     takenOrder: [...takenOrder],
     takenCount: takenOrder.length,
-    description: result
-      ? `Processed all ${numCourses} courses, so the answer is true.`
-      : `Only processed ${takenOrder.length} of ${numCourses} courses, so a cycle blocks completion and the answer is false.`,
+    description: buildStepDesc('final', { takenCount: takenOrder.length, numCourses, result }),
     result,
   }))
 
@@ -380,13 +400,7 @@ function CodePanel({ step }) {
   }
 
   return (
-    <motion.div
-      className="cs-code-panel"
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 8 }}
-      transition={{ duration: 0.2 }}
-    >
+    <div className="cs-code-panel">
       <div className="cs-code-head">
         <div>
           <div className="cs-section-label">Solution Code</div>
@@ -422,7 +436,7 @@ function CodePanel({ step }) {
           )
         })}
       </div>
-    </motion.div>
+    </div>
   )
 }
 
@@ -437,7 +451,6 @@ export default function CourseScheduleVisualizer() {
   const [stepIndex,       setStepIndex]       = useState(-1)
   const [isPlaying,       setIsPlaying]       = useState(false)
   const [speed,           setSpeed]           = useState(520)
-  const [showCode,        setShowCode]        = useState(false)
   const [attemptedSubmit, setAttemptedSubmit] = useState(false)
   const [graphZoom,       setGraphZoom]       = useState(1)
   const intervalRef = useRef(null)
@@ -686,10 +699,6 @@ export default function CourseScheduleVisualizer() {
             </div>
           </div>
 
-          <AnimatePresence>
-            {showCode && <CodePanel step={currentStep} />}
-          </AnimatePresence>
-
         </div>
       </div>
 
@@ -722,16 +731,11 @@ export default function CourseScheduleVisualizer() {
               aria-label="Playback speed"
             />
           </div>
-          <div className="cs-view-toggle">
-            <button className={`cs-toggle-opt ${!showCode ? 'active' : ''}`} onClick={() => setShowCode(false)}>
-              Visual
-            </button>
-            <button className={`cs-toggle-opt ${showCode ? 'active' : ''}`} onClick={() => setShowCode(true)}>
-              + Code
-            </button>
-          </div>
         </div>
       </div>
+
+      {/* ── Code panel (always visible) ── */}
+      <CodePanel step={currentStep} />
 
     </div>
   )
