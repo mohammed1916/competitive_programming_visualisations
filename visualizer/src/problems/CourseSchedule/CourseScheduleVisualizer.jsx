@@ -700,7 +700,11 @@ export default function CourseScheduleVisualizer() {
               <div className="cs-io-section">
                 <div className="cs-section-label">Expected Input (Visualizer)</div>
                 <p className="cs-io-text">Enter number of courses and prerequisite edges in JSON:</p>
-                <pre className="cs-io-code mono">Courses: 4\nPrerequisites: [[1,0],[2,0],[3,1],[3,2]]</pre>
+                <div className="cs-io-code mono">
+                  {"Courses: 4\nPrerequisites: [[1,0],[2,0],[3,1],[3,2]]".split('\n').map((l, i, arr) => (
+                    <span key={i}>{l}{i < arr.length - 1 && <br />}</span>
+                  ))}
+                </div>
               </div>
 
               <div className="cs-io-section">
@@ -711,9 +715,17 @@ export default function CourseScheduleVisualizer() {
               <div className="cs-io-section">
                 <div className="cs-section-label">Competitive Programming Input (stdin)</div>
                 <p className="cs-io-text">Typical format:</p>
-                <pre className="cs-io-code mono">n m\ncourse1 prereq1\ncourse2 prereq2\n...\ncoursem prereqm</pre>
+                <div className="cs-io-code mono">
+                  {"n m\ncourse1 prereq1\ncourse2 prereq2\n...\ncoursem prereqm".split('\n').map((l, i, arr) => (
+                    <span key={i}>{l}{i < arr.length - 1 && <br />}</span>
+                  ))}
+                </div>
                 <p className="cs-io-text">Python parsing with <span className="mono">int(input())</span> style:</p>
-                <pre className="cs-io-code mono">n, m = map(int, input().split())\nprerequisites = []\nfor _ in range(m):\n    c, p = map(int, input().split())\n    prerequisites.append([c, p])\n\n# call: canFinish(n, prerequisites)</pre>
+                <div className="cs-io-code mono">
+                  {`n, m = map(int, input().split())\nprerequisites = []\nfor _ in range(m):\n    c, p = map(int, input().split())\n    prerequisites.append([c, p])\n\n# call: canFinish(n, prerequisites)`
+                    .split('\n')
+                    .map((l, i, arr) => <span key={i}>{l}{i < arr.length - 1 && <br />}</span>)}
+                </div>
               </div>
             </div>
           )}
