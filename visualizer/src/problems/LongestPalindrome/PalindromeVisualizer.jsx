@@ -225,7 +225,7 @@ function getVariableSections(step, previousStep, str) {
       title: 'Condition Checks',
       items: [
         makeItem({ label: 'end chars match', value: current.charsMatch, changed: change('charsMatch'), tone: current.charsMatch === true ? 'success' : current.charsMatch === false ? 'error' : 'neutral', explanation: current.charsMatch == null ? 'Character comparison has not started yet.' : current.charsMatch ? 'The left and right end characters are equal.' : 'The left and right end characters are different.' }),
-        makeItem({ label: 'inner is palindrome', value: current.innerOk, changed: change('innerOk'), wide: true, tone: current.innerOk === true ? 'success' : current.innerOk === false ? 'error' : 'neutral', explanation: current.innerOk == null ? 'No inner DP check is needed for this step.' : current.innerOk ? 'The inner substring already has dp = true, so it is a palindrome.' : 'The inner substring has dp = false, so it breaks the palindrome.' }),
+        makeItem({ label: 'inner is palindrome', value: current.innerOk, changed: change('innerOk'), wide: true, tone: current.innerOk === true ? 'success' : current.innerOk === false ? 'error' : 'neutral', explanation: step?.phase === 'check' && step?.len === 2 ? 'For length 2, the inner substring is empty. An empty middle is treated as already valid, so the algorithm uses inner = true and only checks whether the two end characters match.' : current.innerOk == null ? 'No inner DP check is needed for this step.' : current.innerOk ? 'The inner substring already has dp = true, so it is a palindrome.' : 'The inner substring has dp = false, so it breaks the palindrome.' }),
         makeItem({ label: 'dp[i][j]', value: current.dpValue, changed: change('dpValue'), tone: current.dpValue === true ? 'success' : current.dpValue === false ? 'error' : 'neutral', explanation: current.dpValue == null ? 'This DP cell is not evaluated yet.' : current.dpValue ? 'The current substring is a palindrome, so dp[i][j] becomes true.' : 'The current substring is not a palindrome, so dp[i][j] becomes false.' }),
         makeItem({ label: 'best updated', value: step?.updatesBest ?? false, changed: Boolean(step?.updatesBest), tone: step?.updatesBest ? 'warning' : 'neutral', explanation: step?.updatesBest ? 'This step found a longer palindrome, so start and max_length were updated.' : 'This step did not improve the best palindrome so far.' }),
       ],
@@ -411,7 +411,21 @@ function StepDetail({ step, str }) {
                     : <span style={{ color: 'var(--error)' }}>false ✗</span>}
                   {' '}
                   <span style={{ color: 'var(--text-dim)', fontSize: '0.78rem' }}>
-                    ("{str.slice(i+1, j)}")
+                    ("{str.slice(i+1, j)}" {innerOk ? 'is already known to be a palindrome' : 'breaks the palindrome condition'})
+                  </span>
+                </span>
+              </div>
+            )}
+            {!inner && step.len === 2 && (
+              <div className="step-row">
+                <span className="label">Inner</span>
+                <span>
+                  <span className="mono" style={{ color: 'var(--info)' }}>empty middle</span>
+                  {' = '}
+                  <span style={{ color: 'var(--success)' }}>true ✓</span>
+                  {' '}
+                  <span style={{ color: 'var(--text-dim)', fontSize: '0.78rem' }}>
+                    (for length 2, there is nothing inside the two characters)
                   </span>
                 </span>
               </div>
