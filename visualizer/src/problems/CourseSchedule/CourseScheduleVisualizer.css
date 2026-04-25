@@ -436,6 +436,49 @@
 .cs-deg-val    { font-size: 1rem; font-weight: 700; color: var(--text); }
 .cs-deg-item.zero:not(.active) .cs-deg-val { color: rgba(134,239,172,0.9); }
 
+/* ── Queue Timeline (horizontal) ───────────────────────────────── */
+.cs-queue-timeline-card { margin-top: 0.6rem; }
+.cs-queue-timeline {
+  display: flex;
+  gap: 0.45rem;
+  overflow-x: auto;
+  padding: 0.5rem 0.25rem;
+  align-items: flex-start;
+}
+.cs-queue-snap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 72px;
+  padding: 0.45rem 0.6rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.04);
+  background: rgba(255,255,255,0.015);
+  cursor: pointer;
+}
+.cs-queue-snap.past { opacity: 0.75; }
+.cs-queue-snap.cur { border-color: rgba(249,115,22,0.3); background: rgba(249,115,22,0.06); }
+.cs-queue-index { font-size: 0.7rem; color: var(--text-dim); margin-bottom: 0.28rem; }
+.cs-queue-list { display: flex; gap: 0.28rem; align-items: center; }
+.cs-queue-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.04);
+  font-weight: 700;
+}
+.cs-queue-item.deq { background: rgba(248,113,113,0.12); border-color: rgba(248,113,113,0.2); }
+.cs-queue-event { margin-top: 0.36rem; font-size: 0.85rem; color: var(--text-dim); }
+.cs-evt.plus { color: #86efac; }
+.cs-evt.minus { color: #fca5a5; }
+.cs-evt.init { color: #f97316; }
+
+
 /* ── Code panel (always-on bottom strip) ─────────────────────── */
 .cs-code-panel {
   background: linear-gradient(180deg, rgba(13,15,34,0.98), rgba(9,10,22,0.97));

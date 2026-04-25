@@ -163,6 +163,8 @@ function generateCourseSteps(numCourses, prerequisites) {
       takenCount: 0,
       description: buildStepDesc('build-edge', { prereq, course, newVal: indegree[course] }),
       result: null,
+      event: null,
+      queueSnapshot: [],
     }))
   })
 
@@ -183,6 +185,8 @@ function generateCourseSteps(numCourses, prerequisites) {
     takenCount: 0,
     description: buildStepDesc('init-queue', { queue: [...queue], numCourses }),
     result: null,
+    event: 'init',
+    queueSnapshot: [...queue],
   }))
 
   const takenOrder = []
@@ -203,6 +207,8 @@ function generateCourseSteps(numCourses, prerequisites) {
       takenCount: takenOrder.length,
       description: buildStepDesc('pop', { course, takenCount: takenOrder.length, numCourses }),
       result: null,
+      event: 'dequeue',
+      queueSnapshot: [...queue],
     }))
 
     for (const neighbor of graph[course]) {
@@ -223,6 +229,8 @@ function generateCourseSteps(numCourses, prerequisites) {
           course, neighbor, newVal: indegree[neighbor],
         }),
         result: null,
+        event: becameZero ? 'enqueue' : 'reduce',
+        queueSnapshot: [...queue],
       }))
 
       if (becameZero) queue.push(neighbor)
@@ -693,6 +701,51 @@ export default function CourseScheduleVisualizer() {
                   <div key={course} className={`cs-deg-item ${isActive ? 'active' : ''} ${val === 0 ? 'zero' : ''}`}>
                     <span className="cs-deg-course mono">{course}</span>
                     <span className="cs-deg-val mono">{val}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* New: Graph JSON viewer */}
+          <div className="cs-card cs-graph-json-card">
+            <div className="cs-section-label">Graph JSON</div>
+            <pre className="cs-graph-json mono">
+              {JSON.stringify(currentStep?.graph ?? Array.from({ length: numCourses }, () => []), null, 2)}
+            </pre>
+          </div>
+
+          {/* New: Queue timeline */}
+          <div className="cs-card cs-queue-timeline-card">
+            <div className="cs-section-label">Queue Timeline</div>
+            <div className="cs-queue-timeline">
+              {steps.map((s, idx) => {
+                const isCur = idx === stepIndex
+                const was = steps[idx - 1]
+                let changed = null
+                if (s.event === 'dequeue') changed = { type: 'dequeue', value: was?.queue?.[0] ?? null }
+                if (s.event === 'enqueue') changed = { type: 'enqueue', value: null }
+                if (s.event === 'init') changed = { type: 'init', value: null }
+                return (
+                  <div
+                    key={idx}
+                    className={`cs-queue-snap ${isCur ? 'cur' : ''} ${idx < stepIndex ? 'past' : ''}`}
+                    onClick={() => setStepIndex(idx)}
+                    role="button"
+                    tabIndex={0}
+                  >
+                    <div className="cs-queue-index">{idx + 1}</div>
+                    <div className="cs-queue-list mono">
+                      {(s.queueSnapshot || []).map((q, i) => (
+                        <span key={q} className={`cs-queue-item ${changed && changed.type === 'dequeue' && i === 0 ? 'deq' : ''}`}>{q}</span>
+                      ))}
+                      {(s.queueSnapshot || []).length === 0 && '—'}
+                    </div>
+                    <div className="cs-queue-event">
+                      {s.event === 'enqueue' && <span className="cs-evt plus">+</span>}
+                      {s.event === 'dequeue' && <span className="cs-evt minus">−</span>}
+                      {s.event === 'init' && <span className="cs-evt init">●</span>}
+                    </div>
                   </div>
                 )
               })}
