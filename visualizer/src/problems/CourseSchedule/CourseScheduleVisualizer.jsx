@@ -700,10 +700,12 @@ export default function CourseScheduleVisualizer() {
             </span>
           </button>
 
-          {/* Right column */}
+          {/* Right column (split into two sub-columns) */}
           <div className="cs-col-right" style={{ flex: '1 1 auto' }}>
+            <div className="cs-right-split" style={{ display: 'flex', gap: '0.75rem' }}>
 
-          <div className="cs-card cs-state-card">
+              <div style={{ flex: '1 1 160px', display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
+                <div className="cs-card cs-state-card">
             <div className="cs-state-section">
               <div className="cs-section-label">Queue</div>
               <div className="cs-token-row">
@@ -725,9 +727,10 @@ export default function CourseScheduleVisualizer() {
                   : <span className="cs-empty">None yet</span>}
               </div>
             </div>
-          </div>
+              </div>
 
-          <div className="cs-card cs-indegree-card">
+              <div style={{ flex: '1 1 160px', display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
+                <div className="cs-card cs-indegree-card">
             <div className="cs-section-label">In-degree Table</div>
             <div className="cs-indegree-row">
               {Array.from({ length: numCourses }, (_, course) => {
@@ -743,50 +746,54 @@ export default function CourseScheduleVisualizer() {
             </div>
           </div>
 
-          {/* New: Graph JSON viewer */}
-          <div className="cs-card cs-graph-json-card">
-            <div className="cs-section-label">Graph JSON</div>
-            <pre className="cs-graph-json mono">
-              {JSON.stringify(currentStep?.graph ?? Array.from({ length: numCourses }, () => []), null, 2)}
-            </pre>
-          </div>
+                {/* New: Graph JSON viewer */}
+                <div className="cs-card cs-graph-json-card">
+                  <div className="cs-section-label">Graph JSON</div>
+                  <pre className="cs-graph-json mono">
+                    {JSON.stringify(currentStep?.graph ?? Array.from({ length: numCourses }, () => []), null, 2)}
+                  </pre>
+                </div>
 
-          {/* New: Queue timeline */}
-          <div className="cs-card cs-queue-timeline-card">
-            <div className="cs-section-label">Queue Timeline</div>
-            <div className="cs-queue-timeline">
-              {steps.map((s, idx) => {
-                const isCur = idx === stepIndex
-                const was = steps[idx - 1]
-                let changed = null
-                if (s.event === 'dequeue') changed = { type: 'dequeue', value: was?.queue?.[0] ?? null }
-                if (s.event === 'enqueue') changed = { type: 'enqueue', value: null }
-                if (s.event === 'init') changed = { type: 'init', value: null }
-                return (
-                  <div
-                    key={idx}
-                    className={`cs-queue-snap ${isCur ? 'cur' : ''} ${idx < stepIndex ? 'past' : ''}`}
-                    onClick={() => setStepIndex(idx)}
-                    role="button"
-                    tabIndex={0}
-                  >
-                    <div className="cs-queue-index">{idx + 1}</div>
-                    <div className="cs-queue-list mono">
-                      {(s.queueSnapshot || []).map((q, i) => (
-                        <span key={q} className={`cs-queue-item ${changed && changed.type === 'dequeue' && i === 0 ? 'deq' : ''}`}>{q}</span>
-                      ))}
-                      {(s.queueSnapshot || []).length === 0 && '—'}
-                    </div>
-                    <div className="cs-queue-event">
-                      {s.event === 'enqueue' && <span className="cs-evt plus">+</span>}
-                      {s.event === 'dequeue' && <span className="cs-evt minus">−</span>}
-                      {s.event === 'init' && <span className="cs-evt init">●</span>}
-                    </div>
+                {/* New: Queue timeline */}
+                <div className="cs-card cs-queue-timeline-card">
+                  <div className="cs-section-label">Queue Timeline</div>
+                  <div className="cs-queue-timeline">
+                    {steps.map((s, idx) => {
+                      const isCur = idx === stepIndex
+                      const was = steps[idx - 1]
+                      let changed = null
+                      if (s.event === 'dequeue') changed = { type: 'dequeue', value: was?.queue?.[0] ?? null }
+                      if (s.event === 'enqueue') changed = { type: 'enqueue', value: null }
+                      if (s.event === 'init') changed = { type: 'init', value: null }
+                      return (
+                        <div
+                          key={idx}
+                          className={`cs-queue-snap ${isCur ? 'cur' : ''} ${idx < stepIndex ? 'past' : ''}`}
+                          onClick={() => setStepIndex(idx)}
+                          role="button"
+                          tabIndex={0}
+                        >
+                          <div className="cs-queue-index">{idx + 1}</div>
+                          <div className="cs-queue-list mono">
+                            {(s.queueSnapshot || []).map((q, i) => (
+                              <span key={q} className={`cs-queue-item ${changed && changed.type === 'dequeue' && i === 0 ? 'deq' : ''}`}>{q}</span>
+                            ))}
+                            {(s.queueSnapshot || []).length === 0 && '—'}
+                          </div>
+                          <div className="cs-queue-event">
+                            {s.event === 'enqueue' && <span className="cs-evt plus">+</span>}
+                            {s.event === 'dequeue' && <span className="cs-evt minus">−</span>}
+                            {s.event === 'init' && <span className="cs-evt init">●</span>}
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
-                )
-              })}
+                  </div>
+                </div>
+              </div>
+
             </div>
-          </div>
 
           </div>
 

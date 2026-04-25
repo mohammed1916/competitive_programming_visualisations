@@ -231,6 +231,10 @@
   overflow-x: hidden;
 }
 
+/* Ensure controls sit above right column to avoid overlap */
+.cs-col-right { z-index: 10; }
+.cs-controls { position: relative; z-index: 40; }
+
 .cs-col-right::-webkit-scrollbar { width: 4px; }
 .cs-col-right::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
 
