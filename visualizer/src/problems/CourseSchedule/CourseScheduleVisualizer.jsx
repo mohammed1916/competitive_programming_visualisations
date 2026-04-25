@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import './CourseScheduleVisualizer.css'
 import ResizablePanel from '../../components/ResizablePanel'
@@ -385,6 +385,7 @@ export default function CourseScheduleVisualizer() {
   const [graphZoom, setGraphZoom] = useState(1)
   const [graphPanelWidth, setGraphPanelWidth] = useState(560)
   const [graphPanelHeight, setGraphPanelHeight] = useState(360)
+  const mainSplit = 0.6 // fixed fraction for graph area vs lower panels
   const contentShellRef = useRef(null)
   const [contentHeight, setContentHeight] = useState(null)
   const contentRightResizeRef = useRef(null)
@@ -394,7 +395,7 @@ export default function CourseScheduleVisualizer() {
   const parsedCourses = Number(courseInput)
   const coursesValid = Number.isInteger(parsedCourses) && parsedCourses >= 1 && parsedCourses <= 12
   const parsedPrereqs = parsePrerequisites(prereqInput)
-  const prereqValue = parsedPrereqs.value ?? []
+  const prereqValue = useMemo(() => (parsedPrereqs.value ?? []), [parsedPrereqs.value])
   const prereqRangeValid = coursesValid && parsedPrereqs.value
     ? prereqValue.every(([a, b]) => a >= 0 && a < parsedCourses && b >= 0 && b < parsedCourses)
     : false
@@ -548,41 +549,7 @@ export default function CourseScheduleVisualizer() {
     }
   }, [])
 
-  const startGraphResize = (event, direction = 'corner') => {
-    event.preventDefault()
-    graphResizeRef.current = {
-      startX: event.clientX,
-      startY: event.clientY,
-      startWidth: graphPanelWidth,
-      startHeight: graphPanelHeight,
-      direction,
-    }
-    document.body.classList.add('cs-resizing-graph')
-    // set cursor affordance for immediate feedback
-    if (direction === 'right') document.body.style.cursor = 'ew-resize'
-    else if (direction === 'top') document.body.style.cursor = 'ns-resize'
-    else document.body.style.cursor = 'nwse-resize'
-  }
-
-  const startContentResize = (event) => {
-    event.preventDefault()
-    const rect = contentShellRef.current?.getBoundingClientRect()
-    const startY = event.clientY
-    const startHeight = rect ? rect.height : 520
-    contentRightResizeRef.current = { startX: null }
-    // store on ref for global handler
-    graphResizeRef.current = { _contentStartY: startY, _contentStartHeight: startHeight }
-    document.body.classList.add('cs-resizing-graph')
-    document.body.style.cursor = 'ns-resize'
-  }
-
-  const startContentRightResize = (event) => {
-    event.preventDefault()
-    const rect = contentShellRef.current?.getBoundingClientRect()
-    contentRightResizeRef.current = { startX: event.clientX, startWidth: rect ? rect.width : 900 }
-    document.body.classList.add('cs-resizing-graph')
-    document.body.style.cursor = 'ew-resize'
-  }
+  // removed unused granular resize handlers; vertical splitter handles main split now
 
   return (
     <div className="cs">
@@ -665,7 +632,7 @@ export default function CourseScheduleVisualizer() {
             if (v.width) setGraphPanelWidth(v.width)
             if (v.height) setGraphPanelHeight(v.height)
           }}>
-            <div className="cs-card cs-graph-card">
+            <div className="cs-card cs-graph-card" style={{ flex: mainSplit }}>
             <div className="cs-card-head">
               <div>
                 <div className="cs-section-label">Dependency Graph</div>

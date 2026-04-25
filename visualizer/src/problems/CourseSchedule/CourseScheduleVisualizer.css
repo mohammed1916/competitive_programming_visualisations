@@ -196,15 +196,21 @@
 }
 
 .cs-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  display: flex;
   gap: 1.1rem;
-  align-items: start;
+  align-items: flex-start;
 }
 
 .cs-layout.with-code {
-  grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.95fr);
+  /* left main column grows more than the right code panel */
+  --main-flex: 1.45;
+  --code-flex: 0.95;
 }
+
+.cs-main-column { order: 0 }
+.cs-code-panel { order: 1 }
+.cs-main-column { flex: var(--main-flex, 1); }
+.cs-code-panel { flex: var(--code-flex, 0.95); min-width: 320px; }
 
 .cs-main-column {
   display: flex;
@@ -212,6 +218,8 @@
   gap: 1.1rem;
   min-width: 0;
 }
+
+/* vertical panel splitter removed for CourseSchedule page */
 
 .cs-result-preview {
   display: flex;
