@@ -461,7 +461,27 @@ export default function CourseScheduleVisualizer() {
   const [speed,           setSpeed]           = useState(520)
   const [attemptedSubmit, setAttemptedSubmit] = useState(false)
   const [graphZoom,       setGraphZoom]       = useState(1)
+  const [leftWidth,       setLeftWidth]       = useState(560)
   const intervalRef = useRef(null)
+
+  const startDrag = (side) => (e) => {
+    e.preventDefault()
+    const startX = e.clientX
+    const startW = leftWidth
+    document.body.classList.add('resizing-panel')
+    const onMove = (ev) => {
+      const dx = ev.clientX - startX
+      const next = Math.max(360, Math.min(1100, startW + dx))
+      setLeftWidth(next)
+    }
+    const onUp = () => {
+      document.body.classList.remove('resizing-panel')
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+    }
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onUp)
+  }
 
   // ── Validation ──────────────────────────────────────────────────────────────
   const parsedCourses     = Number(courseInput)
@@ -634,8 +654,9 @@ export default function CourseScheduleVisualizer() {
       {/* ── Main two-column layout ── */}
       <div className="cs-main">
 
-        {/* Left: graph + step explanation */}
-        <div className="cs-col-left">
+        {/* Resizable shell: left (graph) and right (variables) */}
+        <div className="cs-content-shell" style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+          <div className="cs-col-left" style={{ width: `${leftWidth}px`, flex: '0 0 auto' }}>
           <div className="cs-card cs-graph-card">
             <div className="cs-card-head">
               <div>
@@ -657,15 +678,30 @@ export default function CourseScheduleVisualizer() {
             />
           </div>
 
-          <div className="cs-card cs-step-card">
+          </div>
+
+          {/* <div className="cs-card cs-step-card">
             <p className="cs-step-text">
               {currentStep?.description || 'Press Play or step through the algorithm.'}
             </p>
-          </div>
-        </div>
+          </div> */}
+          {/* splitter */}
+          <button
+            type="button"
+            className="panel-splitter"
+            aria-label="Resize graph and variable panels"
+            onPointerDown={startDrag('middle')}
+            style={{ alignSelf: 'stretch', marginTop: '8px' }}
+          >
+            <span className="panel-splitter-grip" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+            </span>
+          </button>
 
-        {/* Right: algorithm state + optional code panel */}
-        <div className="cs-col-right">
+          {/* Right column */}
+          <div className="cs-col-right" style={{ flex: '1 1 auto' }}>
 
           <div className="cs-card cs-state-card">
             <div className="cs-state-section">
@@ -750,6 +786,8 @@ export default function CourseScheduleVisualizer() {
                 )
               })}
             </div>
+          </div>
+
           </div>
 
         </div>
