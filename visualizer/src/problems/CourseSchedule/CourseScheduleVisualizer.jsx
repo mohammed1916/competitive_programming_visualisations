@@ -1,6 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import './CourseScheduleVisualizer.css'
+import ResizablePanel from '../../components/ResizablePanel'
+
+const MIN_ZOOM = 0.65
+const MAX_ZOOM = 1.8
+const ZOOM_STEP = 0.1
+const MIN_GRAPH_WIDTH = 360
+const MAX_GRAPH_WIDTH = 920
+const MIN_GRAPH_HEIGHT = 280
+const MAX_GRAPH_HEIGHT = 620
 
 const SOLUTION_CODE = [
   { line: 1, text: 'from collections import deque' },
@@ -99,6 +108,10 @@ function getCodeHighlight(phase) {
 function withCode(step) {
   const code = getCodeHighlight(step.phase)
   return { ...step, activeLine: code.activeLine, relatedLines: code.relatedLines }
+}
+
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max)
 }
 
 function generateCourseSteps(numCourses, prerequisites) {
@@ -210,7 +223,7 @@ function generateCourseSteps(numCourses, prerequisites) {
   return steps
 }
 
-function GraphView({ numCourses, step }) {
+function GraphView({ numCourses, step, zoom, onZoomChange }) {
   const nodes = Array.from({ length: numCourses }, (_, course) => {
     const angle = (course / Math.max(numCourses, 1)) * Math.PI * 2 - Math.PI / 2
     const radius = numCourses <= 2 ? 0 : 120
@@ -227,9 +240,35 @@ function GraphView({ numCourses, step }) {
     neighbors.forEach((course) => edges.push({ prereq, course }))
   })
 
+  const handleWheel = (event) => {
+    if (!event.ctrlKey) return
+    event.preventDefault()
+    const delta = event.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP
+    onZoomChange((current) => clamp(Number((current + delta).toFixed(2)), MIN_ZOOM, MAX_ZOOM))
+  }
+
   return (
-    <div className="cs-graph-wrap">
-      <svg className="cs-graph" viewBox="0 0 360 300" role="img" aria-label="Course dependency graph">
+    <div className="cs-graph-shell">
+      <div className="cs-graph-toolbar">
+        <div className="cs-graph-toolbar-copy">Hold Ctrl and scroll to zoom</div>
+        <div className="cs-graph-actions">
+          <button type="button" className="cs-graph-icon-btn" onClick={() => onZoomChange((current) => clamp(Number((current - ZOOM_STEP).toFixed(2)), MIN_ZOOM, MAX_ZOOM))} aria-label="Zoom out graph">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+              <path d="M5 12h14" />
+            </svg>
+          </button>
+          <span className="cs-zoom-readout mono">{Math.round(zoom * 100)}%</span>
+          <button type="button" className="cs-graph-icon-btn" onClick={() => onZoomChange((current) => clamp(Number((current + ZOOM_STEP).toFixed(2)), MIN_ZOOM, MAX_ZOOM))} aria-label="Zoom in graph">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div className="cs-graph-wrap" onWheel={handleWheel}>
+        <div className="cs-graph-stage" style={{ transform: `scale(${zoom})` }}>
+          <svg className="cs-graph" viewBox="0 0 360 300" role="img" aria-label="Course dependency graph">
         <defs>
           <marker id="cs-arrow" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
             <path d="M0,0 L0,6 L8,3 z" fill="rgba(148,163,184,0.8)" />
@@ -266,7 +305,10 @@ function GraphView({ numCourses, step }) {
             </g>
           )
         })}
-      </svg>
+          </svg>
+        </div>
+      </div>
+
     </div>
   )
 }
@@ -340,7 +382,14 @@ export default function CourseScheduleVisualizer() {
   const [speed, setSpeed] = useState(520)
   const [showCode, setShowCode] = useState(true)
   const [attemptedSubmit, setAttemptedSubmit] = useState(false)
+  const [graphZoom, setGraphZoom] = useState(1)
+  const [graphPanelWidth, setGraphPanelWidth] = useState(560)
+  const [graphPanelHeight, setGraphPanelHeight] = useState(360)
+  const contentShellRef = useRef(null)
+  const [contentHeight, setContentHeight] = useState(null)
+  const contentRightResizeRef = useRef(null)
   const intervalRef = useRef(null)
+  const graphResizeRef = useRef(null)
 
   const parsedCourses = Number(courseInput)
   const coursesValid = Number.isInteger(parsedCourses) && parsedCourses >= 1 && parsedCourses <= 12
@@ -420,6 +469,121 @@ export default function CourseScheduleVisualizer() {
     return () => clearInterval(intervalRef.current)
   }, [isPlaying, speed, steps.length])
 
+  useEffect(() => {
+    const handlePointerMove = (event) => {
+      const resize = graphResizeRef.current
+      if (!resize) return
+      const dx = event.clientX - resize.startX
+      const dy = event.clientY - resize.startY
+      let nextWidth = resize.startWidth
+      let nextHeight = resize.startHeight
+
+      if (resize.direction === 'right') {
+        nextWidth = resize.startWidth + dx
+      } else if (resize.direction === 'top') {
+        // dragging the top edge: moving pointer down (dy > 0) should decrease height
+        nextHeight = resize.startHeight - dy
+      } else {
+        // corner / both
+        nextWidth = resize.startWidth + dx
+        nextHeight = resize.startHeight + dy
+      }
+
+      setGraphPanelWidth(clamp(nextWidth, MIN_GRAPH_WIDTH, MAX_GRAPH_WIDTH))
+      setGraphPanelHeight(clamp(nextHeight, MIN_GRAPH_HEIGHT, MAX_GRAPH_HEIGHT))
+    }
+
+    const handlePointerUp = () => {
+      if (!graphResizeRef.current) return
+      graphResizeRef.current = null
+      document.body.classList.remove('cs-resizing-graph')
+      document.body.style.cursor = ''
+    }
+
+    window.addEventListener('pointermove', handlePointerMove)
+    window.addEventListener('pointerup', handlePointerUp)
+
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove)
+      window.removeEventListener('pointerup', handlePointerUp)
+      document.body.classList.remove('cs-resizing-graph')
+      document.body.style.cursor = ''
+    }
+  }, [])
+
+  useEffect(() => {
+    const handleGlobalMove = (event) => {
+      const cr = graphResizeRef.current
+      const rr = contentRightResizeRef.current
+      if (cr && cr._contentStartY != null) {
+        const dy = event.clientY - cr._contentStartY
+        const nextH = Math.max(320, Math.min(1100, cr._contentStartHeight - dy))
+        setContentHeight(nextH)
+        return
+      }
+
+      if (rr && rr.startX != null) {
+        const dx = event.clientX - rr.startX
+        const nextW = Math.max(320, Math.min(1400, rr.startWidth + dx))
+        setGraphPanelWidth(nextW)
+        return
+      }
+    }
+
+    const handleGlobalUp = () => {
+      if (graphResizeRef.current) {
+        delete graphResizeRef.current._contentStartY
+        delete graphResizeRef.current._contentStartHeight
+      }
+      if (contentRightResizeRef.current) contentRightResizeRef.current = { startX: null }
+      document.body.classList.remove('cs-resizing-graph')
+      document.body.style.cursor = ''
+    }
+
+    window.addEventListener('pointermove', handleGlobalMove)
+    window.addEventListener('pointerup', handleGlobalUp)
+    return () => {
+      window.removeEventListener('pointermove', handleGlobalMove)
+      window.removeEventListener('pointerup', handleGlobalUp)
+    }
+  }, [])
+
+  const startGraphResize = (event, direction = 'corner') => {
+    event.preventDefault()
+    graphResizeRef.current = {
+      startX: event.clientX,
+      startY: event.clientY,
+      startWidth: graphPanelWidth,
+      startHeight: graphPanelHeight,
+      direction,
+    }
+    document.body.classList.add('cs-resizing-graph')
+    // set cursor affordance for immediate feedback
+    if (direction === 'right') document.body.style.cursor = 'ew-resize'
+    else if (direction === 'top') document.body.style.cursor = 'ns-resize'
+    else document.body.style.cursor = 'nwse-resize'
+  }
+
+  const startContentResize = (event) => {
+    event.preventDefault()
+    const rect = contentShellRef.current?.getBoundingClientRect()
+    const startY = event.clientY
+    const startHeight = rect ? rect.height : 520
+    contentRightResizeRef.current = { startX: null }
+    // store on ref for global handler
+    graphResizeRef.current = { _contentStartY: startY, _contentStartHeight: startHeight }
+    document.body.classList.add('cs-resizing-graph')
+    document.body.style.cursor = 'ns-resize'
+  }
+
+  const startContentRightResize = (event) => {
+    event.preventDefault()
+    const rect = contentShellRef.current?.getBoundingClientRect()
+    contentRightResizeRef.current = { startX: event.clientX, startWidth: rect ? rect.width : 900 }
+    document.body.classList.add('cs-resizing-graph')
+    document.body.style.cursor = 'ew-resize'
+  }
+
   return (
     <div className="cs">
       <div className="cs-card cs-input-card">
@@ -497,7 +661,11 @@ export default function CourseScheduleVisualizer() {
 
       <div className={`cs-layout ${showCode ? 'with-code' : ''}`}>
         <div className="cs-main-column">
-          <div className="cs-card">
+          <ResizablePanel width={graphPanelWidth} height={graphPanelHeight} minWidth={MIN_GRAPH_WIDTH} minHeight={MIN_GRAPH_HEIGHT} onResize={(v) => {
+            if (v.width) setGraphPanelWidth(v.width)
+            if (v.height) setGraphPanelHeight(v.height)
+          }}>
+            <div className="cs-card cs-graph-card">
             <div className="cs-card-head">
               <div>
                 <div className="cs-section-label">Dependency Graph</div>
@@ -508,8 +676,17 @@ export default function CourseScheduleVisualizer() {
                 <span className={`mono cs-output-text ${currentStep?.result === false ? 'fail' : ''}`}>{currentStep?.result == null ? 'pending' : String(currentStep.result)}</span>
               </div>
             </div>
-            <GraphView numCourses={numCourses} step={currentStep} />
-          </div>
+             <div className="cs-layout" ref={contentShellRef} style={contentHeight ? { height: `${contentHeight}px` } : undefined}>
+               <button type="button" className="cs-resize-top" onPointerDown={startContentResize} aria-label="Resize panels vertically"><span/></button>
+               <button type="button" className="cs-resize-right" onPointerDown={startContentRightResize} aria-label="Resize panels horizontally"><span/></button>
+              <GraphView
+              numCourses={numCourses}
+              step={currentStep}
+              zoom={graphZoom}
+              onZoomChange={setGraphZoom}
+            />
+            </div>
+          </ResizablePanel>
 
           <div className="cs-state-grid">
             <div className="cs-card">

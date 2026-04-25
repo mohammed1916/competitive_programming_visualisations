@@ -1,5 +1,6 @@
 import { Fragment, useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import ResizablePanel from '../../components/ResizablePanel'
 import './PalindromeVisualizer.css'
 
 const MIN_PANEL_PERCENT = 16
@@ -615,6 +616,7 @@ export default function PalindromeVisualizer() {
   const [codeWidth, setCodeWidth] = useState('normal')
   const [panelSizes, setPanelSizes] = useState(() => getDefaultPanelSizes('normal'))
   const [hasAttemptedInput, setHasAttemptedInput] = useState(false)
+  const [contentHeight, setContentHeight] = useState(420)
   const intervalRef = useRef(null)
   const contentShellRef = useRef(null)
   const dragStateRef = useRef(null)
@@ -922,7 +924,8 @@ export default function PalindromeVisualizer() {
         </button>
       )}
 
-        <div className="visual-column">
+        <ResizablePanel height={contentHeight} minHeight={260} onResize={(v) => { if (v.height) setContentHeight(v.height); }}>
+          <div className="visual-column">
 
       {/* ── STRING DISPLAY ────────────────────────────────── */}
       {n > 0 && (
@@ -951,8 +954,8 @@ export default function PalindromeVisualizer() {
               }
             </motion.p>
           )}
-        </div>
-      )}
+            </div>
+          )}
 
       {/* ── DP TABLE ──────────────────────────────────────── */}
       {n > 0 && (
@@ -1033,6 +1036,7 @@ export default function PalindromeVisualizer() {
       <StepDetail step={currentStep} str={str} />
 
         </div>
+        </ResizablePanel>
 
         <AnimatePresence>
           {showCode && (

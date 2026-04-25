@@ -461,6 +461,49 @@ body.panel-dragging * {
   user-select: none !important;
 }
 
+.content-shell { position: relative; }
+
+.pv-resize-top {
+  position: absolute;
+  left: 50%;
+  top: -12px;
+  transform: translateX(-50%);
+  width: 44px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.1rem;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  cursor: ns-resize;
+  z-index: 30;
+}
+
+.pv-resize-right {
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.1rem;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  cursor: ew-resize;
+  z-index: 30;
+}
+
+body.panel-resizing,
+body.panel-resizing * {
+  user-select: none !important;
+}
+
 /* ── Variable Tracker ───────────────────────── */
 .variable-shell {
   border-color: rgba(56, 189, 248, 0.18);

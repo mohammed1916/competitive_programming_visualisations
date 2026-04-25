@@ -243,14 +243,186 @@
 .cs-output-text { color: var(--success); font-size: 1rem; }
 .cs-output-text.fail { color: var(--error); }
 
+.cs-graph-card {
+  resize: none;
+  max-width: 100%;
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
 .cs-graph-wrap {
-  overflow-x: auto;
+  overflow: auto;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(249,115,22,0.08), transparent 30%),
+    linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 1rem;
+  flex: 1;
+  min-height: 280px;
+}
+
+.cs-graph-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.cs-graph-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.cs-graph-toolbar-copy {
+  font-size: 0.76rem;
+  color: var(--text-dim);
+}
+
+.cs-graph-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.cs-graph-icon-btn {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--text-muted);
+  transition: all 0.18s ease;
+}
+
+.cs-graph-icon-btn:hover {
+  color: var(--text);
+  border-color: rgba(249,115,22,0.28);
+  background: rgba(249,115,22,0.1);
+}
+
+.cs-zoom-readout {
+  min-width: 54px;
+  text-align: center;
+  font-size: 0.76rem;
+  color: var(--text-dim);
+}
+
+.cs-graph-stage {
+  width: 360px;
+  height: 300px;
+  transform-origin: top left;
 }
 
 .cs-graph {
-  width: 100%;
-  min-width: 360px;
+  width: 360px;
   height: auto;
+}
+
+.cs-graph-resize-handle {
+  align-self: flex-end;
+  margin-top: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 0.5rem;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--text-dim);
+  cursor: nwse-resize;
+  flex-direction: column;
+}
+
+.cs-graph-resize-handle-right {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 44px;
+  padding: 0.25rem;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  cursor: ew-resize;
+}
+
+.cs-graph-resize-handle-top {
+  position: absolute;
+  left: 50%;
+  top: -12px;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 18px;
+  padding: 0.2rem;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  cursor: ns-resize;
+}
+
+.cs-resize-top {
+  position: absolute;
+  left: 50%;
+  top: -18px;
+  transform: translateX(-50%);
+  width: 44px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  cursor: ns-resize;
+  z-index: 30;
+}
+
+.cs-resize-right {
+  position: absolute;
+  right: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  cursor: ew-resize;
+  z-index: 30;
+}
+
+.cs-graph-resize-handle span {
+  width: 14px;
+  height: 2px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.35);
+  transform: rotate(-45deg);
+}
+
+body.cs-resizing-graph,
+body.cs-resizing-graph * {
+  user-select: none !important;
 }
 
 .cs-edge {
