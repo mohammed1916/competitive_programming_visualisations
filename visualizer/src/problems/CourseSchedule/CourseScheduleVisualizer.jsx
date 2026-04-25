@@ -520,9 +520,10 @@ export default function CourseScheduleVisualizer() {
   const [attemptedSubmit, setAttemptedSubmit] = useState(false)
   const [graphZoom,       setGraphZoom]       = useState(1)
   const [leftWidth,       setLeftWidth]       = useState(560)
+  const [showIOGuide,     setShowIOGuide]     = useState(false)
   const intervalRef = useRef(null)
 
-  const startDrag = (side) => (e) => {
+  const startDrag = (e) => {
     e.preventDefault()
     const startX = e.clientX
     const startW = leftWidth
@@ -682,6 +683,41 @@ export default function CourseScheduleVisualizer() {
             </button>
           ))}
         </div>
+
+        <div className="cs-io-guide-wrap">
+          <button
+            type="button"
+            className="cs-btn cs-btn-ghost cs-btn-sm"
+            onClick={() => setShowIOGuide((v) => !v)}
+            aria-expanded={showIOGuide}
+            aria-controls="cs-io-guide"
+          >
+            {showIOGuide ? 'Hide Input/Output Guide' : 'View Input/Output Guide'}
+          </button>
+
+          {showIOGuide && (
+            <div id="cs-io-guide" className="cs-io-guide-card" role="region" aria-label="Input output guide">
+              <div className="cs-io-section">
+                <div className="cs-section-label">Expected Input (Visualizer)</div>
+                <p className="cs-io-text">Enter number of courses and prerequisite edges in JSON:</p>
+                <pre className="cs-io-code mono">Courses: 4\nPrerequisites: [[1,0],[2,0],[3,1],[3,2]]</pre>
+              </div>
+
+              <div className="cs-io-section">
+                <div className="cs-section-label">Expected Output</div>
+                <p className="cs-io-text">Final verdict is a boolean: <span className="mono">true</span> if all courses can be completed, otherwise <span className="mono">false</span>.</p>
+              </div>
+
+              <div className="cs-io-section">
+                <div className="cs-section-label">Competitive Programming Input (stdin)</div>
+                <p className="cs-io-text">Typical format:</p>
+                <pre className="cs-io-code mono">n m\ncourse1 prereq1\ncourse2 prereq2\n...\ncoursem prereqm</pre>
+                <p className="cs-io-text">Python parsing with <span className="mono">int(input())</span> style:</p>
+                <pre className="cs-io-code mono">n, m = map(int, input().split())\nprerequisites = []\nfor _ in range(m):\n    c, p = map(int, input().split())\n    prerequisites.append([c, p])\n\n# call: canFinish(n, prerequisites)</pre>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ── Progress band ── */}
@@ -788,7 +824,7 @@ export default function CourseScheduleVisualizer() {
             type="button"
             className="panel-splitter"
             aria-label="Resize graph and variable panels"
-            onPointerDown={startDrag('middle')}
+            onPointerDown={startDrag}
             style={{ alignSelf: 'stretch', marginTop: '8px' }}
           >
             <span className="panel-splitter-grip" aria-hidden="true">

@@ -156,6 +156,50 @@
 .cs-chip-note  { font-size: 0.7rem; color: var(--text-dim); line-height: 1.35; }
 .cs-chip-courses { font-size: 0.68rem; color: var(--text-dim); opacity: 0.55; margin-top: 0.1rem; }
 
+/* ── Input/Output guide ────────────────────────────────────────── */
+.cs-io-guide-wrap {
+  margin-top: 0.8rem;
+  padding-top: 0.8rem;
+  border-top: 1px dashed var(--border);
+}
+
+.cs-io-guide-card {
+  margin-top: 0.6rem;
+  border: 1px solid rgba(249, 115, 22, 0.18);
+  border-radius: 12px;
+  background: linear-gradient(140deg, rgba(249,115,22,0.06), rgba(255,255,255,0.02));
+  padding: 0.85rem 0.95rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.cs-io-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.cs-io-text {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.cs-io-code {
+  margin: 0;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(10, 14, 26, 0.7);
+  padding: 0.62rem 0.72rem;
+  font-size: 0.74rem;
+  line-height: 1.5;
+  color: #dbeafe;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 /* ── Progress band ──────────────────────────────────────────────── */
 .cs-progress-band {
   display: flex;
@@ -614,6 +658,12 @@
   transition: all 0.18s ease;
   white-space: nowrap;
   gap: 0.35rem;
+}
+
+.cs-btn-sm {
+  padding: 0.42rem 0.78rem;
+  font-size: 0.76rem;
+  border-radius: 10px;
 }
 
 .cs-btn:disabled { opacity: 0.38; cursor: not-allowed; transform: none !important; }
