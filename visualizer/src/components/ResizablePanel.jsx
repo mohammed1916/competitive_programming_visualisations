@@ -66,9 +66,7 @@ export default function ResizablePanel({ width, height, minWidth=320, minHeight=
   return (
     <div className="resizable-panel" ref={nodeRef} style={{ width: width ? `${width}px` : undefined, height: height ? `${height}px` : undefined }}>
       <div className="resizable-children">{children}</div>
-      <button className="rp-handle rp-corner" onPointerDown={(e) => start(e, 'corner')} aria-label="Resize corner"><span/></button>
-      <button className="rp-handle rp-right" onPointerDown={(e) => start(e, 'right')} aria-label="Resize right"><span/></button>
-      <button className="rp-handle rp-top" onPointerDown={(e) => start(e, 'top')} aria-label="Resize top"><span/></button>
+      {/* Resizing handles removed per request; keep panel content only. */}
     </div>
   )
 }

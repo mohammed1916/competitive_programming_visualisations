@@ -21,28 +21,8 @@
 .cs-toolbar,
 .cs-card-head,
 .cs-controls,
-.cs-state-grid {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.9rem;
-  flex-wrap: wrap;
-}
 
-.cs-input-grid {
-  align-items: stretch;
-}
-
-.cs-field-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.42rem;
-}
-
-.cs-field-group.small { width: 110px; }
-.cs-field-group.large { flex: 1; min-width: 260px; }
-
-.cs-input-label,
+/* Top resize handle removed per user request */
 .cs-toggle-label,
 .cs-output-label,
 .cs-speed-label,

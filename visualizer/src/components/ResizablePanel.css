@@ -1,8 +1,4 @@
 .resizable-panel { position: relative; display: flex; flex-direction: column; }
 .resizable-children { width: 100%; height: 100%; }
-.rp-handle { position: absolute; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); display: inline-flex; align-items:center; justify-content:center; }
-.rp-handle span { width: 12px; height: 2px; background: rgba(255,255,255,0.35); border-radius: 2px }
-.rp-corner { right: 10px; bottom: 10px; width: 42px; height: 42px; border-radius: 10px; cursor: nwse-resize }
-.rp-right { right: -12px; top: 50%; transform: translateY(-50%); width: 18px; height: 44px; border-radius: 8px; cursor: ew-resize }
-.rp-top { left: 50%; top: -18px; transform: translateX(-50%); width: 44px; height: 18px; border-radius: 8px; cursor: ns-resize }
+/* rp-handle styles removed per request; handles are no longer rendered by ResizablePanel. */
 body.resizing-panel, body.resizing-panel * { user-select: none !important }

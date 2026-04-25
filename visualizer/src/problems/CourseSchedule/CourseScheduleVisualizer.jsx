@@ -677,16 +677,15 @@ export default function CourseScheduleVisualizer() {
               </div>
             </div>
              <div className="cs-layout" ref={contentShellRef} style={contentHeight ? { height: `${contentHeight}px` } : undefined}>
-               <button type="button" className="cs-resize-top" onPointerDown={startContentResize} aria-label="Resize panels vertically"><span/></button>
-               <button type="button" className="cs-resize-right" onPointerDown={startContentRightResize} aria-label="Resize panels horizontally"><span/></button>
               <GraphView
               numCourses={numCourses}
               step={currentStep}
               zoom={graphZoom}
               onZoomChange={setGraphZoom}
             />
-            </div>
-          </ResizablePanel>
+              </div>
+              </div>
+            </ResizablePanel>
 
           <div className="cs-state-grid">
             <div className="cs-card">
