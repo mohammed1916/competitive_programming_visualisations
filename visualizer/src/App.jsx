@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import LongestPalindrome from './problems/LongestPalindrome'
+import ZigzagConversion from './problems/ZigzagConversion'
 import './App.css'
 
 /* ─────────────────────────────────────────────
@@ -16,6 +17,16 @@ const PROBLEMS = [
     tags: ['Dynamic Programming', 'String'],
     accent: '#8b5cf6',
     component: LongestPalindrome,
+  },
+  {
+    id: 'zigzag-conversion',
+    number: '6',
+    title: 'Zigzag Conversion',
+    description: 'Trace how characters bounce between rows and then merge row buckets into the final answer.',
+    difficulty: 'Medium',
+    tags: ['String', 'Simulation'],
+    accent: '#22c55e',
+    component: ZigzagConversion,
   },
   // Add more problems here as the app grows
 ]
