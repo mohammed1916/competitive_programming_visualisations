@@ -297,6 +297,67 @@ function generateLRUSteps(initialCapacity, operations, args) {
   return steps
 }
 
+function VariablesPanel({ step }) {
+  const vars = step
+    ? [
+      { name: 'capacity', value: step.capacity, type: 'int', desc: 'max cache size' },
+      { name: 'len(cache)', value: step.entries.length, type: 'int', desc: 'current entries' },
+      { name: 'op', value: step.op, type: 'str', desc: 'current operation' },
+      { name: 'key', value: step.key ?? '—', type: step.key != null ? 'int' : 'none', desc: 'operation key' },
+      { name: 'value', value: step.value ?? '—', type: step.value != null ? 'int' : 'none', desc: 'operation value' },
+      { name: 'result', value: step.result != null ? step.result : step.result === null ? 'None' : '—', type: step.result != null ? 'int' : 'none', desc: 'return value' },
+      { name: 'evictedKey', value: step.evictedKey ?? '—', type: step.evictedKey != null ? 'int' : 'none', desc: 'LRU key evicted' },
+      {
+        name: 'left.next (LRU)',
+        value: step.entries.length > 0 ? `key=${step.entries[step.entries.length - 1].key}` : 'right',
+        type: 'node',
+        desc: 'least-recently-used'
+      },
+      {
+        name: 'right.prev (MRU)',
+        value: step.entries.length > 0 ? `key=${step.entries[0].key}` : 'left',
+        type: 'node',
+        desc: 'most-recently-used'
+      },
+    ]
+    : []
+
+  return (
+    <div className="lru-card">
+      <div className="lru-card-head">
+        <div className="lru-section-label">Variables</div>
+        <div className="lru-subtitle">Live algorithm state</div>
+      </div>
+      {vars.length === 0 ? (
+        <div className="lru-empty">Press Play or Next to see variables.</div>
+      ) : (
+        <div className="lru-vars-grid">
+          {vars.map((v) => (
+            <div key={v.name} className="lru-var-row">
+              <div className="lru-var-left">
+                <span className="lru-var-name mono">{v.name}</span>
+                <span className={`lru-var-type lru-var-type-${v.type}`}>{v.type}</span>
+              </div>
+              <div className="lru-var-right">
+                <motion.span
+                  key={String(v.value)}
+                  className="lru-var-value mono"
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.18 }}
+                >
+                  {String(v.value)}
+                </motion.span>
+                <span className="lru-var-desc">{v.desc}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function CodePanel({ step }) {
   const codeRef = useRef(null)
 
@@ -630,6 +691,7 @@ export default function LRUCacheVisualizer() {
             <p className="lru-step-desc mono">{currentStep?.description || 'Press Play or Next to start simulation.'}</p>
           </div>
 
+          <VariablesPanel step={currentStep} />
           <CacheOrder step={currentStep} />
           <MapTable step={currentStep} />
           <OutputPanel step={currentStep} />

@@ -56,7 +56,9 @@
   font-size: 0.82rem;
 }
 
-.lru-link:hover { text-decoration: underline; }
+.lru-link:hover {
+  text-decoration: underline;
+}
 
 .lru-field {
   display: flex;
@@ -90,7 +92,9 @@
   resize: vertical;
 }
 
-.lru-hint.error { color: var(--error); }
+.lru-hint.error {
+  color: var(--error);
+}
 
 .lru-meta-row,
 .lru-order-legend,
@@ -216,12 +220,41 @@
   border: 1px solid;
 }
 
-.phase-blue { color: #7dd3fc; border-color: rgba(14,165,233,0.32); background: rgba(14,165,233,0.12); }
-.phase-green { color: #86efac; border-color: rgba(34,197,94,0.32); background: rgba(34,197,94,0.12); }
-.phase-red { color: #fca5a5; border-color: rgba(248,113,113,0.32); background: rgba(248,113,113,0.12); }
-.phase-amber { color: #fde68a; border-color: rgba(245,158,11,0.32); background: rgba(245,158,11,0.12); }
-.phase-violet { color: #c4b5fd; border-color: rgba(139,92,246,0.32); background: rgba(139,92,246,0.12); }
-.phase-orange { color: #fdba74; border-color: rgba(249,115,22,0.32); background: rgba(249,115,22,0.12); }
+.phase-blue {
+  color: #7dd3fc;
+  border-color: rgba(14, 165, 233, 0.32);
+  background: rgba(14, 165, 233, 0.12);
+}
+
+.phase-green {
+  color: #86efac;
+  border-color: rgba(34, 197, 94, 0.32);
+  background: rgba(34, 197, 94, 0.12);
+}
+
+.phase-red {
+  color: #fca5a5;
+  border-color: rgba(248, 113, 113, 0.32);
+  background: rgba(248, 113, 113, 0.12);
+}
+
+.phase-amber {
+  color: #fde68a;
+  border-color: rgba(245, 158, 11, 0.32);
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.phase-violet {
+  color: #c4b5fd;
+  border-color: rgba(139, 92, 246, 0.32);
+  background: rgba(139, 92, 246, 0.12);
+}
+
+.phase-orange {
+  color: #fdba74;
+  border-color: rgba(249, 115, 22, 0.32);
+  background: rgba(249, 115, 22, 0.12);
+}
 
 .lru-layout {
   display: grid;
@@ -248,19 +281,19 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 999px;
   padding: 0.34rem 0.62rem;
-  background: rgba(255,255,255,0.03);
+  background: rgba(255, 255, 255, 0.03);
   color: var(--text-dim);
   font-size: 0.75rem;
   flex-shrink: 0;
 }
 
 .lru-op-chip.active {
-  border-color: rgba(14,165,233,0.4);
+  border-color: rgba(14, 165, 233, 0.4);
   color: var(--text);
-  background: rgba(14,165,233,0.14);
+  background: rgba(14, 165, 233, 0.14);
 }
 
 .lru-step-desc {
@@ -286,20 +319,20 @@
 .lru-order-node {
   min-width: 66px;
   border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
   padding: 0.45rem 0.58rem;
   text-align: center;
 }
 
 .lru-order-node.mru {
-  border-color: rgba(14,165,233,0.45);
-  background: rgba(14,165,233,0.12);
+  border-color: rgba(14, 165, 233, 0.45);
+  background: rgba(14, 165, 233, 0.12);
 }
 
 .lru-order-node.lru {
-  border-color: rgba(249,115,22,0.45);
-  background: rgba(249,115,22,0.12);
+  border-color: rgba(249, 115, 22, 0.45);
+  background: rgba(249, 115, 22, 0.12);
 }
 
 .lru-order-key {
@@ -328,15 +361,24 @@
   display: inline-flex;
   align-items: center;
   gap: 0.34rem;
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
-  background: rgba(255,255,255,0.03);
+  background: rgba(255, 255, 255, 0.03);
   padding: 0.4rem 0.52rem;
 }
 
-.lru-map-key { color: #7dd3fc; }
-.lru-map-val { color: #fca5a5; }
-.lru-map-sep { color: var(--text-dim); opacity: 0.6; }
+.lru-map-key {
+  color: #7dd3fc;
+}
+
+.lru-map-val {
+  color: #fca5a5;
+}
+
+.lru-map-sep {
+  color: var(--text-dim);
+  opacity: 0.6;
+}
 
 .lru-output {
   font-size: 0.88rem;
@@ -345,16 +387,106 @@
   word-break: break-word;
 }
 
-.lru-output-item:last-child { color: var(--text); }
+.lru-output-item:last-child {
+  color: var(--text);
+}
 
 .lru-empty {
   color: var(--text-dim);
   font-size: 0.8rem;
 }
 
+/* ── Variables Panel ── */
+.lru-vars-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.lru-var-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.44rem 0.2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.lru-var-row:last-child {
+  border-bottom: none;
+}
+
+.lru-var-left {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.lru-var-name {
+  font-size: 0.83rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.lru-var-type {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.1rem 0.38rem;
+  border-radius: 999px;
+  border: 1px solid;
+}
+
+.lru-var-type-int {
+  color: #7dd3fc;
+  border-color: rgba(14, 165, 233, 0.3);
+  background: rgba(14, 165, 233, 0.1);
+}
+
+.lru-var-type-str {
+  color: #86efac;
+  border-color: rgba(34, 197, 94, 0.3);
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.lru-var-type-node {
+  color: #c4b5fd;
+  border-color: rgba(139, 92, 246, 0.3);
+  background: rgba(139, 92, 246, 0.1);
+}
+
+.lru-var-type-none {
+  color: var(--text-dim);
+  border-color: rgba(255, 255, 255, 0.1);
+  background: transparent;
+}
+
+.lru-var-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.05rem;
+  min-width: 0;
+}
+
+.lru-var-value {
+  font-size: 0.88rem;
+  color: var(--text);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.lru-var-desc {
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
 .lru-code-card {
-  background: linear-gradient(180deg, rgba(9,14,24,0.98), rgba(9,12,20,0.98));
-  border: 1px solid rgba(14,165,233,0.22);
+  background: linear-gradient(180deg, rgba(9, 14, 24, 0.98), rgba(9, 12, 20, 0.98));
+  border: 1px solid rgba(14, 165, 233, 0.22);
   border-radius: var(--radius-xl);
   overflow: hidden;
 }
@@ -373,10 +505,13 @@
   padding: 0.34rem 0.56rem;
 }
 
-.lru-code-row.related { background: rgba(255,255,255,0.02); }
+.lru-code-row.related {
+  background: rgba(255, 255, 255, 0.02);
+}
+
 .lru-code-row.active {
-  background: linear-gradient(135deg, rgba(14,165,233,0.2), rgba(2,132,199,0.08));
-  box-shadow: 0 0 0 1px rgba(14,165,233,0.16) inset;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.2), rgba(2, 132, 199, 0.08));
+  box-shadow: 0 0 0 1px rgba(14, 165, 233, 0.16) inset;
 }
 
 .lru-code-line {

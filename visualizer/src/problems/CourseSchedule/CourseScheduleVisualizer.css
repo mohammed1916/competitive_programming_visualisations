@@ -365,6 +365,11 @@
 .cs-edge.active { stroke: rgba(249,115,22,0.85); stroke-width: 2.5; }
 .cs-edge.cycle { stroke: rgba(248,113,113,0.72); stroke-width: 2.2; }
 
+.cs-graph-wrap.failure-final .cs-edge.cycle {
+  stroke-dasharray: 6 4;
+  animation: blocked-edge-flow 1.05s linear infinite;
+}
+
 .cs-arrowhead { fill: rgba(148,163,184,0.55); }
 .cs-arrowhead.active { fill: rgba(249,115,22,0.9); }
 
@@ -381,6 +386,41 @@
 .cs-node.active { stroke: rgba(249,115,22,0.9);  fill: rgba(249,115,22,0.14); }
 .cs-node.cycle-core { stroke: rgba(248,113,113,0.94); fill: rgba(248,113,113,0.18); }
 .cs-node.cycle-locked { stroke: rgba(251,191,36,0.9); fill: rgba(251,191,36,0.14); }
+
+.cs-graph-wrap.failure-final .cs-node.cycle-core {
+  animation: cycle-core-pulse 1.05s ease-in-out infinite;
+}
+
+.cs-graph-wrap.failure-final .cs-node.cycle-locked {
+  animation: cycle-locked-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes cycle-core-pulse {
+  0%, 100% {
+    stroke-width: 2;
+    filter: drop-shadow(0 0 0 rgba(248,113,113,0.0));
+  }
+  50% {
+    stroke-width: 3.2;
+    filter: drop-shadow(0 0 8px rgba(248,113,113,0.45));
+  }
+}
+
+@keyframes cycle-locked-pulse {
+  0%, 100% {
+    stroke-width: 2;
+    filter: drop-shadow(0 0 0 rgba(251,191,36,0.0));
+  }
+  50% {
+    stroke-width: 3;
+    filter: drop-shadow(0 0 7px rgba(251,191,36,0.42));
+  }
+}
+
+@keyframes blocked-edge-flow {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -20; }
+}
 
 /* Access / Push visual cues */
 .cs-edge.access { stroke: rgba(139,92,246,0.9); stroke-width: 2.8; filter: drop-shadow(0 2px 6px rgba(139,92,246,0.18)); }
@@ -509,6 +549,24 @@
 .cs-deg-item.zero:not(.active) { border-color: rgba(34,197,94,0.2); background: rgba(34,197,94,0.04); }
 .cs-deg-item.cycle-core { border-color: rgba(248,113,113,0.45); background: rgba(248,113,113,0.12); }
 .cs-deg-item.cycle-locked { border-color: rgba(251,191,36,0.42); background: rgba(251,191,36,0.11); }
+
+.cs-indegree-card.failure-final .cs-deg-item.cycle-core {
+  animation: indegree-cycle-core-pulse 1.05s ease-in-out infinite;
+}
+
+.cs-indegree-card.failure-final .cs-deg-item.cycle-locked {
+  animation: indegree-cycle-locked-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes indegree-cycle-core-pulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(248,113,113,0); }
+  50% { box-shadow: 0 0 0 2px rgba(248,113,113,0.28) inset; }
+}
+
+@keyframes indegree-cycle-locked-pulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(251,191,36,0); }
+  50% { box-shadow: 0 0 0 2px rgba(251,191,36,0.28) inset; }
+}
 
 .cs-deg-course { font-size: 0.71rem; color: var(--text-dim); }
 .cs-deg-val    { font-size: 1rem; font-weight: 700; color: var(--text); }

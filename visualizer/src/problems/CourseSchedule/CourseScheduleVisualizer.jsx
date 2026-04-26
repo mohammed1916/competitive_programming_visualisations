@@ -418,6 +418,7 @@ function computeNodePositions(numCourses) {
 function GraphView({ numCourses, step, zoom, onZoomChange }) {
   const nodes      = computeNodePositions(numCourses)
   const nodeLookup = new Map(nodes.map((n) => [n.course, n]))
+  const isFailureFinal = step?.phase === 'final' && step?.result === false
   const blockedSet = new Set(step?.blockedCourses ?? [])
   const cycleCoreSet = new Set(step?.cycleCore ?? [])
   const blockedEdgeSet = new Set((step?.blockedEdges ?? []).map(([from, to]) => `${from}->${to}`))
@@ -435,7 +436,7 @@ function GraphView({ numCourses, step, zoom, onZoomChange }) {
   }
 
   return (
-    <div className="cs-graph-wrap" onWheel={handleWheel}>
+    <div className={`cs-graph-wrap ${isFailureFinal ? 'failure-final' : ''}`} onWheel={handleWheel}>
       {/* Zoom toolbar */}
       <div className="cs-graph-toolbar">
         <button
@@ -922,7 +923,7 @@ export default function CourseScheduleVisualizer() {
               </div>
             </div>
 
-            <div className="cs-card cs-indegree-card" style={{ marginTop: '0.9rem' }}>
+            <div className={`cs-card cs-indegree-card ${currentStep?.phase === 'final' && currentStep?.result === false ? 'failure-final' : ''}`} style={{ marginTop: '0.9rem' }}>
               <div className="cs-section-label">In-degree Table</div>
               <div className="cs-indegree-row">
                 {Array.from({ length: numCourses }, (_, course) => {
