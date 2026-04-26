@@ -65,7 +65,7 @@ const EXAMPLES = [
     label: 'Hidden cycle',
     numCourses: 4,
     prerequisites: '[[1,0],[2,1],[0,2],[3,1]]',
-    note: 'Component cycle blocks completion.',
+    note: 'Cycle among 0-1-2 also blocks course 3.',
   },
 ]
 
@@ -102,6 +102,67 @@ function cloneGraph(graph) {
   return graph.map((neighbors) => [...neighbors])
 }
 
+function findCycleCoreNodes(graph) {
+  const n = graph.length
+  const disc = Array(n).fill(-1)
+  const low = Array(n).fill(0)
+  const onStack = Array(n).fill(false)
+  const stack = []
+  const cycleCore = new Set()
+  let time = 0
+
+  const dfs = (u) => {
+    disc[u] = time
+    low[u] = time
+    time += 1
+    stack.push(u)
+    onStack[u] = true
+
+    for (const v of graph[u]) {
+      if (disc[v] === -1) {
+        dfs(v)
+        low[u] = Math.min(low[u], low[v])
+      } else if (onStack[v]) {
+        low[u] = Math.min(low[u], disc[v])
+      }
+    }
+
+    if (low[u] === disc[u]) {
+      const component = []
+      let w = -1
+      while (w !== u) {
+        w = stack.pop()
+        onStack[w] = false
+        component.push(w)
+      }
+
+      if (component.length > 1) {
+        component.forEach((node) => cycleCore.add(node))
+      } else if (graph[u].includes(u)) {
+        cycleCore.add(u)
+      }
+    }
+  }
+
+  for (let i = 0; i < n; i++) {
+    if (disc[i] === -1) dfs(i)
+  }
+
+  return cycleCore
+}
+
+function getBlockedEdges(graph, blockedSet) {
+  const blockedEdges = []
+  graph.forEach((neighbors, prereq) => {
+    neighbors.forEach((course) => {
+      if (blockedSet.has(prereq) && blockedSet.has(course)) {
+        blockedEdges.push([prereq, course])
+      }
+    })
+  })
+  return blockedEdges
+}
+
 function getCodeHighlight(phase) {
   if (phase === 'build-edge') return { activeLine: 9, relatedLines: [8, 9, 10] }
   if (phase === 'push') return { activeLine: 9, relatedLines: [8, 9, 10] }
@@ -123,7 +184,19 @@ function clamp(value, min, max) {
 }
 
 function buildStepDesc(phase, info) {
-  const { prereq, course, neighbor, newVal, queue, takenCount, numCourses, result } = info
+  const {
+    prereq,
+    course,
+    neighbor,
+    newVal,
+    queue,
+    takenCount,
+    numCourses,
+    result,
+    blockedCourses,
+    cycleCore,
+    blockedByCycle,
+  } = info
   switch (phase) {
     case 'build-edge':
       return `about to append ${course} to graph[${prereq}]`
@@ -144,7 +217,10 @@ function buildStepDesc(phase, info) {
     case 'enqueue':
       return `for neighbor in graph[${course}]: neighbor = ${neighbor}  |  indegree[${neighbor}] -= 1  →  indegree[${neighbor}] = 0  |  check indegree[${neighbor}] == 0?  →  true  →  queue.append(${neighbor})`
     case 'final':
-      return `return taken == numCourses  →  ${takenCount} == ${numCourses}  →  ${result}`
+      if (result) {
+        return `return taken == numCourses  →  ${takenCount} == ${numCourses}  →  true`
+      }
+      return `return taken == numCourses  →  ${takenCount} == ${numCourses}  →  false  |  blocked = [${blockedCourses.join(', ')}]  |  cycle core = [${cycleCore.join(', ')}]  |  blocked by cycle = [${blockedByCycle.join(', ')}]`
     default:
       return ''
   }
@@ -285,6 +361,15 @@ function generateCourseSteps(numCourses, prerequisites) {
   }
 
   const result = takenOrder.length === numCourses
+  const blockedCourses = indegree
+    .map((value, course) => (value > 0 ? course : null))
+    .filter((course) => course !== null)
+  const cycleCoreSet = findCycleCoreNodes(graph)
+  const cycleCore = blockedCourses.filter((course) => cycleCoreSet.has(course))
+  const blockedByCycle = blockedCourses.filter((course) => !cycleCoreSet.has(course))
+  const blockedSet = new Set(blockedCourses)
+  const blockedEdges = getBlockedEdges(graph, blockedSet)
+
   steps.push(withCode({
     phase: 'final',
     activeCourse: null,
@@ -295,8 +380,19 @@ function generateCourseSteps(numCourses, prerequisites) {
     queue: [...queue],
     takenOrder: [...takenOrder],
     takenCount: takenOrder.length,
-    description: buildStepDesc('final', { takenCount: takenOrder.length, numCourses, result }),
+    description: buildStepDesc('final', {
+      takenCount: takenOrder.length,
+      numCourses,
+      result,
+      blockedCourses,
+      cycleCore,
+      blockedByCycle,
+    }),
     result,
+    blockedCourses,
+    cycleCore,
+    blockedByCycle,
+    blockedEdges,
   }))
 
   return steps
@@ -322,6 +418,9 @@ function computeNodePositions(numCourses) {
 function GraphView({ numCourses, step, zoom, onZoomChange }) {
   const nodes      = computeNodePositions(numCourses)
   const nodeLookup = new Map(nodes.map((n) => [n.course, n]))
+  const blockedSet = new Set(step?.blockedCourses ?? [])
+  const cycleCoreSet = new Set(step?.cycleCore ?? [])
+  const blockedEdgeSet = new Set((step?.blockedEdges ?? []).map(([from, to]) => `${from}->${to}`))
 
   const edges = []
   step?.graph?.forEach((nbrs, prereq) => {
@@ -388,6 +487,7 @@ function GraphView({ numCourses, step, zoom, onZoomChange }) {
             const isActive = step?.activePrereq === prereq && step?.activeNeighbor === course
             const edgePhase = step?.phase
             const edgeEvent = step?.event
+            const isCycleEdge = blockedEdgeSet.has(`${prereq}->${course}`)
             const edgeExtraClass = isActive && (edgePhase === 'access' ? 'access' : edgeEvent === 'push' ? 'push' : '')
             const dx = to.x - from.x, dy = to.y - from.y
             const dist = Math.sqrt(dx * dx + dy * dy) || 1
@@ -400,7 +500,7 @@ function GraphView({ numCourses, step, zoom, onZoomChange }) {
               <line
                 key={`e-${prereq}-${course}-${i}`}
                 x1={x1} y1={y1} x2={x2} y2={y2}
-                className={`cs-edge ${isActive ? 'active' : ''} ${edgeExtraClass || ''}`}
+                className={`cs-edge ${isActive ? 'active' : ''} ${isCycleEdge ? 'cycle' : ''} ${edgeExtraClass || ''}`}
                 markerEnd={isActive ? 'url(#cs-arr-active)' : 'url(#cs-arr)'}
               />
             )
@@ -412,11 +512,18 @@ function GraphView({ numCourses, step, zoom, onZoomChange }) {
             const inQueue  = step?.queue?.includes(course)
             const taken    = step?.takenOrder?.includes(course)
             const active   = step?.activeCourse === course || step?.activeNeighbor === course
+            const isCycleCore = cycleCoreSet.has(course)
+            const isCycleLocked = blockedSet.has(course) && !isCycleCore
             // determine extra classes for visualizing 'access' and 'push' events
             const nodePhase = step?.phase
             const nodeEvent = step?.event
             const extraNodeClass = active && (nodePhase === 'access' ? 'access' : nodeEvent === 'push' ? 'push' : '')
-            const stateClass = [active ? 'active' : taken ? 'taken' : inQueue ? 'queued' : '', extraNodeClass].filter(Boolean).join(' ')
+            const stateClass = [
+              active ? 'active' : taken ? 'taken' : inQueue ? 'queued' : '',
+              isCycleCore ? 'cycle-core' : '',
+              isCycleLocked ? 'cycle-locked' : '',
+              extraNodeClass,
+            ].filter(Boolean).join(' ')
             return (
               <g key={`n-${course}`} transform={`translate(${x},${y})`}>
                 <circle className={`cs-node ${stateClass}`} r={NODE_R} />
@@ -434,6 +541,8 @@ function GraphView({ numCourses, step, zoom, onZoomChange }) {
         <span className="cs-legend-item cs-legend-queued">In Queue</span>
         <span className="cs-legend-item cs-legend-taken">Taken</span>
         <span className="cs-legend-item cs-legend-active">Active</span>
+        <span className="cs-legend-item cs-legend-cycle-core">Cycle Core</span>
+        <span className="cs-legend-item cs-legend-cycle-locked">Blocked by Cycle</span>
       </div>
     </div>
   )
@@ -564,6 +673,9 @@ export default function CourseScheduleVisualizer() {
   const progress    = steps.length > 0 ? ((stepIndex + 1) / steps.length) * 100 : 0
   const isDone      = stepIndex === steps.length - 1
   const phaseMeta   = currentStep ? PHASE_META[currentStep.phase] : null
+  const blockedCourses = currentStep?.blockedCourses ?? []
+  const cycleCore = currentStep?.cycleCore ?? []
+  const blockedByCycle = currentStep?.blockedByCycle ?? []
 
   // ── Handlers ────────────────────────────────────────────────────────────────
   const handleVisualize = useCallback(() => {
@@ -816,8 +928,10 @@ export default function CourseScheduleVisualizer() {
                 {Array.from({ length: numCourses }, (_, course) => {
                   const val      = currentStep?.indegree?.[course] ?? 0
                   const isActive = currentStep?.activeNeighbor === course || currentStep?.activeCourse === course
+                  const isCycleCore = cycleCore.includes(course)
+                  const isCycleLocked = blockedByCycle.includes(course)
                   return (
-                    <div key={course} className={`cs-deg-item ${isActive ? 'active' : ''} ${val === 0 ? 'zero' : ''}`}>
+                    <div key={course} className={`cs-deg-item ${isActive ? 'active' : ''} ${val === 0 ? 'zero' : ''} ${isCycleCore ? 'cycle-core' : ''} ${isCycleLocked ? 'cycle-locked' : ''}`}>
                       <span className="cs-deg-course mono">{course}</span>
                       <span className="cs-deg-val mono">{val}</span>
                     </div>
@@ -825,6 +939,21 @@ export default function CourseScheduleVisualizer() {
                 })}
               </div>
             </div>
+
+            {currentStep?.phase === 'final' && currentStep?.result === false && (
+              <div className="cs-card cs-cycle-insight-card" style={{ marginTop: '0.9rem' }}>
+                <div className="cs-section-label">Cycle Insight</div>
+                <p className="cs-cycle-line">
+                  Unfinished courses: <span className="mono">[{blockedCourses.join(', ')}]</span>
+                </p>
+                <p className="cs-cycle-line">
+                  Cycle core: <span className="mono">[{cycleCore.join(', ')}]</span>
+                </p>
+                <p className="cs-cycle-line">
+                  Blocked by cycle: <span className="mono">[{blockedByCycle.join(', ')}]</span>
+                </p>
+              </div>
+            )}
 
           {/* <div className="cs-card cs-step-card">
             <p className="cs-step-text">

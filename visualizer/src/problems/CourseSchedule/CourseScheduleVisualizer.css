@@ -363,6 +363,7 @@
 /* ── SVG: Edges ─────────────────────────────────────────────────── */
 .cs-edge { stroke: rgba(148,163,184,0.3); stroke-width: 1.8; transition: stroke 0.2s ease; }
 .cs-edge.active { stroke: rgba(249,115,22,0.85); stroke-width: 2.5; }
+.cs-edge.cycle { stroke: rgba(248,113,113,0.72); stroke-width: 2.2; }
 
 .cs-arrowhead { fill: rgba(148,163,184,0.55); }
 .cs-arrowhead.active { fill: rgba(249,115,22,0.9); }
@@ -378,6 +379,8 @@
 .cs-node.queued { stroke: rgba(234,179,8,0.85);  fill: rgba(234,179,8,0.1); }
 .cs-node.taken  { stroke: rgba(34,197,94,0.85);  fill: rgba(34,197,94,0.1); }
 .cs-node.active { stroke: rgba(249,115,22,0.9);  fill: rgba(249,115,22,0.14); }
+.cs-node.cycle-core { stroke: rgba(248,113,113,0.94); fill: rgba(248,113,113,0.18); }
+.cs-node.cycle-locked { stroke: rgba(251,191,36,0.9); fill: rgba(251,191,36,0.14); }
 
 /* Access / Push visual cues */
 .cs-edge.access { stroke: rgba(139,92,246,0.9); stroke-width: 2.8; filter: drop-shadow(0 2px 6px rgba(139,92,246,0.18)); }
@@ -437,6 +440,8 @@
 .cs-legend-queued::before  { border-color: rgba(234,179,8,0.85);   background: rgba(234,179,8,0.1); }
 .cs-legend-taken::before   { border-color: rgba(34,197,94,0.85);   background: rgba(34,197,94,0.1); }
 .cs-legend-active::before  { border-color: rgba(249,115,22,0.9);   background: rgba(249,115,22,0.14); }
+.cs-legend-cycle-core::before { border-color: rgba(248,113,113,0.94); background: rgba(248,113,113,0.18); }
+.cs-legend-cycle-locked::before { border-color: rgba(251,191,36,0.9); background: rgba(251,191,36,0.14); }
 
 /* ── Step explanation card ──────────────────────────────────────── */
 .cs-step-card {
@@ -502,10 +507,25 @@
 
 .cs-deg-item.active { border-color: rgba(249,115,22,0.38); background: rgba(249,115,22,0.08); }
 .cs-deg-item.zero:not(.active) { border-color: rgba(34,197,94,0.2); background: rgba(34,197,94,0.04); }
+.cs-deg-item.cycle-core { border-color: rgba(248,113,113,0.45); background: rgba(248,113,113,0.12); }
+.cs-deg-item.cycle-locked { border-color: rgba(251,191,36,0.42); background: rgba(251,191,36,0.11); }
 
 .cs-deg-course { font-size: 0.71rem; color: var(--text-dim); }
 .cs-deg-val    { font-size: 1rem; font-weight: 700; color: var(--text); }
 .cs-deg-item.zero:not(.active) .cs-deg-val { color: rgba(134,239,172,0.9); }
+
+/* ── Cycle insight ─────────────────────────────────────────────── */
+.cs-cycle-insight-card {
+  border-color: rgba(248, 113, 113, 0.28);
+  background: linear-gradient(145deg, rgba(248,113,113,0.11), rgba(251,191,36,0.08));
+}
+
+.cs-cycle-line {
+  margin: 0.22rem 0;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
 
 /* ── Queue Timeline (horizontal) ───────────────────────────────── */
 .cs-queue-timeline-card { margin-top: 0.6rem; }
