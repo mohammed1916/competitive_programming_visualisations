@@ -163,7 +163,7 @@ function getBlockedEdges(graph, blockedSet) {
   return blockedEdges
 }
 
-function getCodeHighlight(phase) {
+function getCodeHighlight(phase, isFinalFailure) {
   if (phase === 'build-edge') return { activeLine: 9, relatedLines: [8, 9, 10] }
   if (phase === 'push') return { activeLine: 9, relatedLines: [8, 9, 10] }
   if (phase === 'access') return { activeLine: 19, relatedLines: [18, 19, 20, 21] }
@@ -171,11 +171,14 @@ function getCodeHighlight(phase) {
   if (phase === 'pop') return { activeLine: 17, relatedLines: [15, 16, 17] }
   if (phase === 'reduce') return { activeLine: 20, relatedLines: [19, 20, 21, 22] }
   if (phase === 'enqueue') return { activeLine: 22, relatedLines: [19, 20, 21, 22] }
+  // Final step: if failed, highlight the while loop and return check
+  if (isFinalFailure) return { activeLine: 24, relatedLines: [15, 16, 17, 20, 21, 22, 24] }
   return { activeLine: 24, relatedLines: [24] }
 }
 
 function withCode(step) {
-  const code = getCodeHighlight(step.phase)
+  const isFinalFailure = step.phase === 'final' && step.result === false
+  const code = getCodeHighlight(step.phase, isFinalFailure)
   return { ...step, activeLine: code.activeLine, relatedLines: code.relatedLines }
 }
 
@@ -594,15 +597,17 @@ function CodePanel({ step }) {
         {SOLUTION_CODE.map(({ line, text }) => {
           const isActive  = step?.activeLine === line
           const isRelated = step?.relatedLines?.includes(line)
+          const isFinalFailure = step?.phase === 'final' && step?.result === false
           // map current step phase/event to code-row classes when active
           const codePhase = step?.phase
           const codeEvent = step?.event
           const extraCodeClass = isActive && (codePhase === 'access' ? 'access' : codeEvent === 'push' ? 'push' : '')
+          const failureClass = isFinalFailure && isRelated ? 'failure-related' : isFinalFailure && isActive ? 'failure-active' : ''
           return (
             <motion.div
               key={line}
               data-line={line}
-              className={`cs-code-row ${isActive ? 'active' : ''} ${isRelated ? 'related' : ''} ${extraCodeClass || ''}`}
+              className={`cs-code-row ${isActive ? 'active' : ''} ${isRelated ? 'related' : ''} ${extraCodeClass || ''} ${failureClass}`}
               animate={{ x: isActive ? 6 : 0, opacity: isRelated || isActive || !step ? 1 : 0.5 }}
               transition={{ type: 'spring', stiffness: 280, damping: 28 }}
             >
