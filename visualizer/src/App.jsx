@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import CourseSchedule from './problems/CourseSchedule'
 import LongestPalindrome from './problems/LongestPalindrome'
+import LRUCache from './problems/LRUCache'
 import StringToIntegerAtoi from './problems/StringToIntegerAtoi'
 import ZigzagConversion from './problems/ZigzagConversion'
 import './App.css'
@@ -29,6 +30,16 @@ const PROBLEMS = [
     tags: ['Dynamic Programming', 'String'],
     accent: '#8b5cf6',
     component: LongestPalindrome,
+  },
+  {
+    id: 'lru-cache',
+    number: '146',
+    title: 'LRU Cache',
+    description: 'Track O(1) get/put with a hash map and doubly linked list while MRU/LRU order updates live.',
+    difficulty: 'Medium',
+    tags: ['Design', 'Hash Map', 'Linked List'],
+    accent: '#0ea5e9',
+    component: LRUCache,
   },
   {
     id: 'zigzag-conversion',
