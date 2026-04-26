@@ -140,27 +140,13 @@ function toNullableOutput(value) {
   return value === null ? 'null' : String(value)
 }
 
-function getCodeHighlight(phase) {
-  if (phase === 'init') return { activeLine: 8, relatedLines: [7, 8, 9, 10, 11, 12] }
-  if (phase === 'get-hit') return { activeLine: 26, relatedLines: [23, 24, 25, 26, 27] }
-  if (phase === 'get-miss') return { activeLine: 24, relatedLines: [23, 24] }
-  if (phase === 'put-update') return { activeLine: 31, relatedLines: [29, 30, 31, 32, 33] }
-  if (phase === 'put-evict') return { activeLine: 37, relatedLines: [29, 32, 33, 34, 35, 36, 37] }
-  return { activeLine: 33, relatedLines: [29, 32, 33] }
-}
-
-function withCode(step) {
-  const code = getCodeHighlight(step.phase)
-  return { ...step, activeLine: code.activeLine, relatedLines: code.relatedLines }
-}
-
 function makeDescription({ phase, key, value, result, evictedKey }) {
   if (phase === 'init') return 'Initialize cache with empty hash map + doubly linked list sentinels.'
-  if (phase === 'get-hit') return `get(${key}) hit -> return ${result} and move key ${key} to MRU.`
-  if (phase === 'get-miss') return `get(${key}) miss -> return -1. Cache order is unchanged.`
-  if (phase === 'put-update') return `put(${key}, ${value}) updates existing key and moves it to MRU.`
-  if (phase === 'put-evict') return `put(${key}, ${value}) inserts new key; capacity exceeded, evict LRU key ${evictedKey}.`
-  return `put(${key}, ${value}) inserts new key and marks it as MRU.`
+  if (phase === 'get-hit') return `get(${key}) → hit, value=${result}. Move key ${key} to MRU position.`
+  if (phase === 'get-miss') return `get(${key}) → miss. key ${key} not in cache, return -1.`
+  if (phase === 'put-update') return `put(${key}, ${value}) → key exists. Update value and move to MRU.`
+  if (phase === 'put-evict') return `put(${key}, ${value}) → cache full! Insert key ${key} and evict LRU key ${evictedKey}.`
+  return `put(${key}, ${value}) → new key. Insert at MRU end.`
 }
 
 function moveKeyToFront(order, key) {
@@ -171,6 +157,375 @@ function moveKeyToFront(order, key) {
 
 function snapshotEntries(order, store) {
   return order.map((key) => ({ key, value: store.get(key) }))
+}
+
+// Returns index of key in order array, or null
+function getPrev(order, key) {
+  const idx = order.indexOf(key)
+  return idx > 0 ? order[idx - 1] : null  // null = left sentinel
+}
+function getNext(order, key) {
+  const idx = order.indexOf(key)
+  return idx < order.length - 1 ? order[idx + 1] : null  // null = right sentinel
+}
+
+function makeStep(base, overrides) {
+  return { ...base, ...overrides }
+}
+
+function generateLRUSteps(initialCapacity, operations, args, detail = false) {
+  const steps = []
+  const outputs = []
+  const store = new Map()
+  const order = [] // MRU -> LRU (index 0 = MRU)
+  let capacity = initialCapacity
+
+  const snap = () => snapshotEntries(order, store)
+
+  const push = (step) => steps.push(step)
+
+  const base = (i, op, arg, phase, key, value, result, evictedKey) => ({
+    index: i, op, arg, phase, key, value, result, evictedKey,
+    capacity,
+    entries: snap(),
+    keysInMap: [...order],
+    outputs: [...outputs],
+    // detail-mode pointer highlights:
+    highlightNode: null,   // key of node being operated on
+    highlightPointers: null, // { prev: key|'L'|null, node: key, next: key|'R'|null }
+    microLabel: null,
+  })
+
+  for (let i = 0; i < operations.length; i++) {
+    const op = operations[i]
+    const arg = args[i]
+
+    if (op === 'LRUCache') {
+      capacity = Number(arg[0])
+      store.clear()
+      order.length = 0
+      outputs.push(null)
+      push({
+        ...base(i, op, arg, 'init', null, null, null, null),
+        activeLine: 8, relatedLines: [7, 8, 9, 10, 11, 12],
+        description: 'Initialize LRUCache: capacity=' + capacity + '. Set up empty hash map and sentinel nodes left ↔ right.',
+      })
+      continue
+    }
+
+    if (op === 'get') {
+      const key = Number(arg[0])
+
+      if (store.has(key)) {
+        const value = store.get(key)
+
+        if (detail) {
+          // Step 1: look up in map
+          push({
+            ...base(i, op, arg, 'get-hit', key, value, value, null),
+            activeLine: 25, relatedLines: [23, 24, 25],
+            highlightNode: key,
+            highlightPointers: null,
+            entries: snap(),
+            description: `get(${key}): Look up key ${key} in cache → FOUND, node.value = ${value}.`,
+            microLabel: 'Lookup',
+          })
+          // Step 2: find prev/next before removal
+          const prevKey = getNext(order, key) // order is MRU→LRU, so visually "next" in list = higher index = LRU direction
+          const nextKey = getPrev(order, key)
+          push({
+            ...base(i, op, arg, 'get-hit', key, value, value, null),
+            activeLine: 15, relatedLines: [14, 15, 16],
+            highlightNode: key,
+            highlightPointers: { prev: nextKey ?? 'L', node: key, next: prevKey ?? 'R' },
+            entries: snap(),
+            description: `_remove(node): Read node.prev (key=${nextKey ?? 'LEFT'}) and node.next (key=${prevKey ?? 'RIGHT'}).`,
+            microLabel: 'Read Pointers',
+          })
+          // Step 3: relink prev/next to skip node
+          push({
+            ...base(i, op, arg, 'get-hit', key, value, value, null),
+            activeLine: 16, relatedLines: [14, 15, 16],
+            highlightNode: key,
+            highlightPointers: { prev: nextKey ?? 'L', node: key, next: prevKey ?? 'R' },
+            entries: snap(),
+            description: `_remove: Relink — prev.next = nxt, nxt.prev = prev. Node ${key} is unlinked from list.`,
+            microLabel: 'Unlink Node',
+          })
+          // Actually remove and re-insert
+          moveKeyToFront(order, key)
+          // Step 4: find insert position (right before right sentinel = MRU end)
+          const mruPrevKey = order.length > 1 ? order[1] : null
+          push({
+            ...base(i, op, arg, 'get-hit', key, value, value, null),
+            activeLine: 19, relatedLines: [18, 19, 20, 21],
+            highlightNode: key,
+            highlightPointers: { prev: mruPrevKey ?? 'L', node: key, next: 'R' },
+            entries: snap(),
+            description: `_insert_mru: prev = right.prev (key=${mruPrevKey ?? 'LEFT'}), nxt = right sentinel.`,
+            microLabel: 'Find MRU Slot',
+          })
+          // Step 5: wire new pointers
+          push({
+            ...base(i, op, arg, 'get-hit', key, value, value, null),
+            activeLine: 21, relatedLines: [18, 19, 20, 21],
+            highlightNode: key,
+            highlightPointers: { prev: mruPrevKey ?? 'L', node: key, next: 'R' },
+            entries: snap(),
+            description: `_insert_mru: Wire node ${key} — prev.next=node, node.prev=prev, node.next=right, right.prev=node.`,
+            microLabel: 'Wire Pointers',
+          })
+          // Step 6: return value
+          outputs.push(value)
+          push({
+            ...base(i, op, arg, 'get-hit', key, value, value, null),
+            activeLine: 27, relatedLines: [23, 27],
+            highlightNode: key,
+            highlightPointers: null,
+            description: `get(${key}) → return ${value}. Key ${key} is now at MRU position.`,
+            microLabel: 'Return Value',
+          })
+        } else {
+          moveKeyToFront(order, key)
+          outputs.push(value)
+          push({
+            ...base(i, op, arg, 'get-hit', key, value, value, null),
+            activeLine: 26, relatedLines: [23, 24, 25, 26, 27],
+            description: makeDescription({ phase: 'get-hit', key, result: value }),
+          })
+        }
+      } else {
+        if (detail) {
+          outputs.push(-1)
+          push({
+            ...base(i, op, arg, 'get-miss', key, null, -1, null),
+            activeLine: 24, relatedLines: [23, 24],
+            highlightNode: key,
+            highlightPointers: null,
+            description: `get(${key}): key ${key} NOT in cache. Return -1. List unchanged.`,
+            microLabel: 'Cache Miss',
+          })
+        } else {
+          outputs.push(-1)
+          push({
+            ...base(i, op, arg, 'get-miss', key, null, -1, null),
+            activeLine: 24, relatedLines: [23, 24],
+            description: makeDescription({ phase: 'get-miss', key }),
+          })
+        }
+      }
+      continue
+    }
+
+    // put
+    const key = Number(arg[0])
+    const value = Number(arg[1])
+
+    if (store.has(key)) {
+      if (detail) {
+        // Step 1: check map
+        push({
+          ...base(i, op, arg, 'put-update', key, value, null, null),
+          activeLine: 30, relatedLines: [29, 30],
+          highlightNode: key,
+          entries: snap(),
+          description: `put(${key}, ${value}): Key ${key} found in cache → will update value and move to MRU.`,
+          microLabel: 'Key Exists',
+        })
+        // Step 2: read old node pointers
+        const oldPrev = getNext(order, key)
+        const oldNext = getPrev(order, key)
+        push({
+          ...base(i, op, arg, 'put-update', key, value, null, null),
+          activeLine: 15, relatedLines: [14, 15, 16],
+          highlightNode: key,
+          highlightPointers: { prev: oldPrev ?? 'L', node: key, next: oldNext ?? 'R' },
+          entries: snap(),
+          description: `_remove: Read node.prev (key=${oldPrev ?? 'LEFT'}) and node.next (key=${oldNext ?? 'RIGHT'}).`,
+          microLabel: 'Read Pointers',
+        })
+        // Step 3: unlink
+        push({
+          ...base(i, op, arg, 'put-update', key, value, null, null),
+          activeLine: 16, relatedLines: [14, 15, 16],
+          highlightNode: key,
+          highlightPointers: { prev: oldPrev ?? 'L', node: key, next: oldNext ?? 'R' },
+          entries: snap(),
+          description: `_remove: Relink — prev.next = nxt, nxt.prev = prev. Node ${key} unlinked.`,
+          microLabel: 'Unlink Node',
+        })
+        store.set(key, value)
+        moveKeyToFront(order, key)
+        // Step 4: update value + re-create node
+        const mruPrev2 = order.length > 1 ? order[1] : null
+        push({
+          ...base(i, op, arg, 'put-update', key, value, null, null),
+          activeLine: 32, relatedLines: [32, 33],
+          highlightNode: key,
+          highlightPointers: { prev: mruPrev2 ?? 'L', node: key, next: 'R' },
+          entries: snap(),
+          description: `cache[${key}] = Node(${key}, ${value}). New node created with updated value.`,
+          microLabel: 'Update Node',
+        })
+        // Step 5: wire MRU
+        push({
+          ...base(i, op, arg, 'put-update', key, value, null, null),
+          activeLine: 21, relatedLines: [18, 19, 20, 21],
+          highlightNode: key,
+          highlightPointers: { prev: mruPrev2 ?? 'L', node: key, next: 'R' },
+          entries: snap(),
+          description: `_insert_mru: Wire node ${key} at MRU end — prev.next=node, node.prev=prev, node.next=right, right.prev=node.`,
+          microLabel: 'Wire MRU',
+        })
+        outputs.push(null)
+        push({
+          ...base(i, op, arg, 'put-update', key, value, null, null),
+          activeLine: 33, relatedLines: [29, 32, 33],
+          highlightNode: key,
+          highlightPointers: null,
+          description: `put(${key}, ${value}) complete. Key ${key} is now at MRU with new value ${value}.`,
+          microLabel: 'Done',
+        })
+      } else {
+        store.set(key, value)
+        moveKeyToFront(order, key)
+        outputs.push(null)
+        push({
+          ...base(i, op, arg, 'put-update', key, value, null, null),
+          activeLine: 31, relatedLines: [29, 30, 31, 32, 33],
+          description: makeDescription({ phase: 'put-update', key, value }),
+        })
+      }
+      continue
+    }
+
+    // new key
+    if (detail) {
+      // Step 1: check map → not found
+      push({
+        ...base(i, op, arg, order.length >= capacity ? 'put-evict' : 'put-insert', key, value, null, null),
+        activeLine: 30, relatedLines: [29, 30],
+        highlightNode: null,
+        entries: snap(),
+        description: `put(${key}, ${value}): Key ${key} NOT in cache → insert new node.`,
+        microLabel: 'New Key',
+      })
+      store.set(key, value)
+      order.unshift(key)
+      const mruPrev3 = order.length > 1 ? order[1] : null
+      // Step 2: create node and add to map
+      push({
+        ...base(i, op, arg, order.length > capacity ? 'put-evict' : 'put-insert', key, value, null, null),
+        activeLine: 32, relatedLines: [32],
+        highlightNode: key,
+        highlightPointers: null,
+        entries: snap(),
+        description: `cache[${key}] = Node(${key}, ${value}). Node created and added to hash map.`,
+        microLabel: 'Create Node',
+      })
+      // Step 3: find MRU slot
+      push({
+        ...base(i, op, arg, order.length > capacity ? 'put-evict' : 'put-insert', key, value, null, null),
+        activeLine: 19, relatedLines: [18, 19],
+        highlightNode: key,
+        highlightPointers: { prev: mruPrev3 ?? 'L', node: key, next: 'R' },
+        entries: snap(),
+        description: `_insert_mru: prev = right.prev (key=${mruPrev3 ?? 'LEFT'}), nxt = right sentinel.`,
+        microLabel: 'Find MRU Slot',
+      })
+      // Step 4: wire pointers
+      push({
+        ...base(i, op, arg, order.length > capacity ? 'put-evict' : 'put-insert', key, value, null, null),
+        activeLine: 21, relatedLines: [18, 19, 20, 21],
+        highlightNode: key,
+        highlightPointers: { prev: mruPrev3 ?? 'L', node: key, next: 'R' },
+        entries: snap(),
+        description: `_insert_mru: Wire — prev.next=node ${key}, node.prev=prev, node.next=right, right.prev=node.`,
+        microLabel: 'Wire Pointers',
+      })
+
+      if (order.length > capacity) {
+        // Step 5: check capacity
+        push({
+          ...base(i, op, arg, 'put-evict', key, value, null, null),
+          activeLine: 34, relatedLines: [34],
+          highlightNode: null,
+          highlightPointers: null,
+          entries: snap(),
+          description: `len(cache)=${order.length} > capacity=${capacity}. Must evict LRU!`,
+          microLabel: 'Check Capacity',
+        })
+        const lruKey = order[order.length - 1]
+        const lruPrevKey = order[order.length - 2]
+        // Step 6: identify LRU
+        push({
+          ...base(i, op, arg, 'put-evict', key, value, null, lruKey),
+          activeLine: 35, relatedLines: [35],
+          highlightNode: lruKey,
+          highlightPointers: { prev: lruPrevKey ?? 'L', node: lruKey, next: 'R' },
+          entries: snap(),
+          description: `lru = left.next → key=${lruKey} is the least recently used node.`,
+          microLabel: 'Identify LRU',
+        })
+        // Step 7: unlink LRU
+        push({
+          ...base(i, op, arg, 'put-evict', key, value, null, lruKey),
+          activeLine: 36, relatedLines: [35, 36],
+          highlightNode: lruKey,
+          highlightPointers: { prev: lruPrevKey ?? 'L', node: lruKey, next: 'R' },
+          entries: snap(),
+          description: `_remove(lru): Relink — prev.next = right, right.prev = prev. Node ${lruKey} unlinked.`,
+          microLabel: 'Unlink LRU',
+        })
+        order.pop()
+        store.delete(lruKey)
+        outputs.push(null)
+        // Step 8: delete from map
+        push({
+          ...base(i, op, arg, 'put-evict', key, value, null, lruKey),
+          activeLine: 37, relatedLines: [37],
+          highlightNode: null,
+          highlightPointers: null,
+          entries: snap(),
+          description: `del cache[${lruKey}]. Key ${lruKey} removed from hash map. Eviction complete.`,
+          microLabel: 'Delete from Map',
+        })
+      } else {
+        outputs.push(null)
+        push({
+          ...base(i, op, arg, 'put-insert', key, value, null, null),
+          activeLine: 33, relatedLines: [32, 33],
+          highlightNode: key,
+          highlightPointers: null,
+          entries: snap(),
+          description: `put(${key}, ${value}) complete. Cache size=${order.length}/${capacity}. No eviction needed.`,
+          microLabel: 'Done',
+        })
+      }
+    } else {
+      store.set(key, value)
+      order.unshift(key)
+      outputs.push(null)
+
+      if (order.length > capacity) {
+        const evictedKey = order.pop()
+        store.delete(evictedKey)
+        push({
+          ...base(i, op, arg, 'put-evict', key, value, null, evictedKey),
+          activeLine: 37, relatedLines: [29, 32, 33, 34, 35, 36, 37],
+          description: makeDescription({ phase: 'put-evict', key, value, evictedKey }),
+        })
+      } else {
+        push({
+          ...base(i, op, arg, 'put-insert', key, value, null, null),
+          activeLine: 33, relatedLines: [29, 32, 33],
+          description: makeDescription({ phase: 'put-insert', key, value }),
+        })
+      }
+    }
+  }
+
+  return steps
 }
 
 function validateInput(capacity, operations, args) {
@@ -199,151 +554,6 @@ function validateInput(capacity, operations, args) {
     if (!['LRUCache', 'get', 'put'].includes(op)) return `Unsupported operation "${op}" at index ${i}.`
   }
   return null
-}
-
-function generateLRUSteps(initialCapacity, operations, args) {
-  const steps = []
-  const outputs = []
-  const store = new Map()
-  const order = [] // MRU -> LRU
-  let capacity = initialCapacity
-
-  for (let i = 0; i < operations.length; i++) {
-    const op = operations[i]
-    const arg = args[i]
-
-    if (op === 'LRUCache') {
-      capacity = Number(arg[0])
-      store.clear()
-      order.length = 0
-      outputs.push(null)
-      steps.push(withCode({
-        index: i,
-        op,
-        arg,
-        phase: 'init',
-        key: null,
-        value: null,
-        result: null,
-        evictedKey: null,
-        capacity,
-        entries: [],
-        keysInMap: [],
-        outputs: [...outputs],
-        description: makeDescription({ phase: 'init' }),
-      }))
-      continue
-    }
-
-    if (op === 'get') {
-      const key = Number(arg[0])
-      if (store.has(key)) {
-        const value = store.get(key)
-        moveKeyToFront(order, key)
-        outputs.push(value)
-        steps.push(withCode({
-          index: i,
-          op,
-          arg,
-          phase: 'get-hit',
-          key,
-          value,
-          result: value,
-          evictedKey: null,
-          capacity,
-          entries: snapshotEntries(order, store),
-          keysInMap: [...order],
-          outputs: [...outputs],
-          description: makeDescription({ phase: 'get-hit', key, result: value }),
-        }))
-      } else {
-        outputs.push(-1)
-        steps.push(withCode({
-          index: i,
-          op,
-          arg,
-          phase: 'get-miss',
-          key,
-          value: null,
-          result: -1,
-          evictedKey: null,
-          capacity,
-          entries: snapshotEntries(order, store),
-          keysInMap: [...order],
-          outputs: [...outputs],
-          description: makeDescription({ phase: 'get-miss', key, result: -1 }),
-        }))
-      }
-      continue
-    }
-
-    const key = Number(arg[0])
-    const value = Number(arg[1])
-
-    if (store.has(key)) {
-      store.set(key, value)
-      moveKeyToFront(order, key)
-      outputs.push(null)
-      steps.push(withCode({
-        index: i,
-        op,
-        arg,
-        phase: 'put-update',
-        key,
-        value,
-        result: null,
-        evictedKey: null,
-        capacity,
-        entries: snapshotEntries(order, store),
-        keysInMap: [...order],
-        outputs: [...outputs],
-        description: makeDescription({ phase: 'put-update', key, value }),
-      }))
-      continue
-    }
-
-    store.set(key, value)
-    order.unshift(key)
-    outputs.push(null)
-
-    if (order.length > capacity) {
-      const evictedKey = order.pop()
-      store.delete(evictedKey)
-      steps.push(withCode({
-        index: i,
-        op,
-        arg,
-        phase: 'put-evict',
-        key,
-        value,
-        result: null,
-        evictedKey,
-        capacity,
-        entries: snapshotEntries(order, store),
-        keysInMap: [...order],
-        outputs: [...outputs],
-        description: makeDescription({ phase: 'put-evict', key, value, evictedKey }),
-      }))
-    } else {
-      steps.push(withCode({
-        index: i,
-        op,
-        arg,
-        phase: 'put-insert',
-        key,
-        value,
-        result: null,
-        evictedKey: null,
-        capacity,
-        entries: snapshotEntries(order, store),
-        keysInMap: [...order],
-        outputs: [...outputs],
-        description: makeDescription({ phase: 'put-insert', key, value }),
-      }))
-    }
-  }
-
-  return steps
 }
 
 function VariablesPanel({ step }) {
@@ -445,35 +655,84 @@ function CodePanel({ step }) {
 
 function CacheOrder({ step }) {
   const entries = step?.entries ?? []
+  const hp = step?.highlightPointers ?? null
+  const highlightNode = step?.highlightNode ?? null
+
+  // Build sets for quick lookup
+  const activePrevKey = hp ? hp.prev : null
+  const activeNodeKey = hp ? hp.node : null
+  const activeNextKey = hp ? hp.next : null
 
   return (
     <div className="lru-card">
       <div className="lru-card-head">
         <div className="lru-section-label">Cache Order</div>
-        <div className="lru-subtitle">MRU on left, LRU on right</div>
+        <div className="lru-subtitle">MRU on left · LRU on right</div>
       </div>
       <div className="lru-order-wrap">
+        {/* Left sentinel */}
+        <div className={`lru-sentinel lru-sentinel-left${activePrevKey === 'L' || activeNextKey === 'L' ? ' pointer-active' : ''}`}>L</div>
+        <span className={`lru-arrow${activeNextKey === 'L' || activePrevKey === 'L' ? ' arrow-active' : ''}`}>↔</span>
+
         {entries.length === 0 ? (
           <div className="lru-empty">Cache is empty</div>
         ) : (
-          entries.map((entry, idx) => (
-            <div key={entry.key} className="lru-order-node-wrap">
-              <motion.div
-                className={`lru-order-node ${idx === 0 ? 'mru' : ''} ${idx === entries.length - 1 ? 'lru' : ''}`}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-              >
-                <div className="lru-order-key mono">{entry.key}</div>
-                <div className="lru-order-val mono">{entry.value}</div>
-              </motion.div>
-              {idx < entries.length - 1 && <span className="lru-arrow">→</span>}
-            </div>
-          ))
+          entries.map((entry, idx) => {
+            const isHighlightNode = entry.key === activeNodeKey
+            const isPrevPtr = entry.key === activePrevKey
+            const isNextPtr = entry.key === activeNextKey
+            const isFocused = entry.key === highlightNode && !hp
+            const classes = [
+              'lru-order-node',
+              idx === 0 ? 'mru' : '',
+              idx === entries.length - 1 ? 'lru' : '',
+              isHighlightNode ? 'node-active' : '',
+              isPrevPtr ? 'ptr-prev' : '',
+              isNextPtr ? 'ptr-next' : '',
+              isFocused ? 'node-focused' : '',
+            ].filter(Boolean).join(' ')
+
+            // Arrow between nodes
+            const showArrow = idx < entries.length - 1
+            const arrowToNext = entry.key === activePrevKey && entries[idx + 1]?.key === activeNodeKey
+            const arrowFromNext = entry.key === activeNodeKey && entries[idx + 1]?.key === activeNextKey
+
+            return (
+              <div key={entry.key} className="lru-order-node-wrap">
+                <motion.div
+                  className={classes}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.25 }}
+                >
+                  {isPrevPtr && <div className="ptr-label prev-label">prev</div>}
+                  {isNextPtr && <div className="ptr-label next-label">next</div>}
+                  {isHighlightNode && <div className="ptr-label active-label">active</div>}
+                  <div className="lru-order-key mono">{entry.key}</div>
+                  <div className="lru-order-val mono">{entry.value}</div>
+                </motion.div>
+                {showArrow && (
+                  <span className={`lru-arrow${arrowToNext || arrowFromNext ? ' arrow-active' : ''}`}>↔</span>
+                )}
+              </div>
+            )
+          })
         )}
+
+        {/* Right sentinel */}
+        <span className={`lru-arrow${activePrevKey === 'R' || activeNextKey === 'R' ? ' arrow-active' : ''}`}>↔</span>
+        <div className={`lru-sentinel lru-sentinel-right${activePrevKey === 'R' || activeNextKey === 'R' ? ' pointer-active' : ''}`}>R</div>
       </div>
       <div className="lru-order-legend">
         <span className="lru-badge mru">MRU</span>
         <span className="lru-badge lru">LRU</span>
+        {hp && (
+          <>
+            <span className="lru-badge ptr-prev-badge">prev ptr</span>
+            <span className="lru-badge node-active-badge">active node</span>
+            <span className="lru-badge ptr-next-badge">next ptr</span>
+          </>
+        )}
       </div>
     </div>
   )
@@ -535,11 +794,12 @@ export default function LRUCacheVisualizer() {
   const [capacity, setCapacity] = useState(DEFAULT_CAPACITY)
   const [operations, setOperations] = useState(() => JSON.parse(DEFAULT_OPS))
   const [argumentsList, setArgumentsList] = useState(() => JSON.parse(DEFAULT_ARGS))
-  const [steps, setSteps] = useState(() => generateLRUSteps(DEFAULT_CAPACITY, JSON.parse(DEFAULT_OPS), JSON.parse(DEFAULT_ARGS)))
+  const [steps, setSteps] = useState(() => generateLRUSteps(DEFAULT_CAPACITY, JSON.parse(DEFAULT_OPS), JSON.parse(DEFAULT_ARGS), false))
 
   const [stepIndex, setStepIndex] = useState(-1)
   const [isPlaying, setIsPlaying] = useState(false)
   const [speed, setSpeed] = useState(560)
+  const [detailMode, setDetailMode] = useState(false)
   const intervalRef = useRef(null)
 
   const parsedCapacity = Number(capacityInput)
@@ -572,11 +832,11 @@ export default function LRUCacheVisualizer() {
     setCapacity(example.capacity)
     setOperations(parsedO)
     setArgumentsList(parsedA)
-    setSteps(generateLRUSteps(example.capacity, parsedO, parsedA))
+    setSteps(generateLRUSteps(example.capacity, parsedO, parsedA, detailMode))
     setStepIndex(-1)
     setIsPlaying(false)
     setAttemptedSubmit(false)
-  }, [])
+  }, [detailMode])
 
   const handleVisualize = useCallback(() => {
     setAttemptedSubmit(true)
@@ -584,10 +844,10 @@ export default function LRUCacheVisualizer() {
     setCapacity(parsedCapacity)
     setOperations(parsedOps.value)
     setArgumentsList(parsedArgs.value)
-    setSteps(generateLRUSteps(parsedCapacity, parsedOps.value, parsedArgs.value))
+    setSteps(generateLRUSteps(parsedCapacity, parsedOps.value, parsedArgs.value, detailMode))
     setStepIndex(-1)
     setIsPlaying(false)
-  }, [parsedCapacity, parsedOps, parsedArgs, structuralError])
+  }, [parsedCapacity, parsedOps, parsedArgs, structuralError, detailMode])
 
   const stepForward = useCallback(() => {
     setStepIndex((cur) => {
@@ -713,6 +973,7 @@ export default function LRUCacheVisualizer() {
           <span className="lru-step-counter">
             {stepIndex < 0 ? 'Not started' : `Step ${stepIndex + 1} / ${steps.length} (op index ${activeOpIndex})`}
           </span>
+          {currentStep?.microLabel && <span className="lru-micro-label">{currentStep.microLabel}</span>}
           {phaseMeta && <span className={`lru-phase phase-${phaseMeta.color}`}>{phaseMeta.label}</span>}
         </div>
       </div>
@@ -730,7 +991,12 @@ export default function LRUCacheVisualizer() {
                   key={`${op}-${idx}`}
                   type="button"
                   className={`lru-op-chip ${idx === activeOpIndex ? 'active' : ''}`}
-                  onClick={() => setStepIndex(idx)}
+                  onClick={() => {
+                    // jump to last step with this op index
+                    const target = steps.map((s, i) => s.index === idx ? i : -1).filter(x => x >= 0)
+                    if (target.length > 0) setStepIndex(target[target.length - 1])
+                    else setStepIndex(idx)
+                  }}
                 >
                   <span>{idx}</span>
                   <span>{op}</span>
@@ -756,6 +1022,20 @@ export default function LRUCacheVisualizer() {
           <button className="lru-btn lru-btn-play" onClick={togglePlay}>{isPlaying ? 'Pause' : isDone ? 'Replay' : 'Play'}</button>
           <button className="lru-btn lru-btn-ghost" onClick={stepForward} disabled={isDone}>Next</button>
         </div>
+
+        <button
+          className={`lru-btn lru-btn-detail${detailMode ? ' active' : ''}`}
+          onClick={() => {
+            const next = !detailMode
+            setDetailMode(next)
+            setSteps(generateLRUSteps(capacity, operations, argumentsList, next))
+            setStepIndex(-1)
+            setIsPlaying(false)
+          }}
+          title="Toggle pointer-level micro-step animation"
+        >
+          {detailMode ? '⚙ Detail ON' : '⚙ Detail OFF'}
+        </button>
 
         <div className="lru-speed">
           <span className="lru-label">Speed</span>
