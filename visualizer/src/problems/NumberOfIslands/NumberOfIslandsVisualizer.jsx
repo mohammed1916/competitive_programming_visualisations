@@ -151,13 +151,10 @@ export default function NumberOfIslandsVisualizer() {
   const [gridInput, setGridInput] = useState(
     JSON.stringify(EXAMPLES[0].grid)
   )
-  const [inputError, setInputError] = useState('')
-
-  const grid = useMemo(() => {
+  const { grid, inputError } = useMemo(() => {
     const g = parseGrid(gridInput)
-    if (!g) { setInputError('Invalid grid JSON'); return EXAMPLES[0].grid }
-    setInputError('')
-    return g
+    if (!g) return { grid: EXAMPLES[0].grid, inputError: 'Invalid grid JSON' }
+    return { grid: g, inputError: '' }
   }, [gridInput])
 
   const steps = useMemo(() => generateSteps(grid), [grid])

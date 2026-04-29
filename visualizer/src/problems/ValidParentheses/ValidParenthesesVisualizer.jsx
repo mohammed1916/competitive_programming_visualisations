@@ -117,14 +117,12 @@ const EXAMPLES = [
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function ValidParenthesesVisualizer() {
   const [sInput, setSInput] = useState('()[]{}')
-  const [inputError, setInputError] = useState('')
 
-  const s = useMemo(() => {
+  const { s, inputError } = useMemo(() => {
     const cleaned = sInput.trim()
     const valid = /^[()[\]{} ]*$/.test(cleaned)
-    if (!valid) { setInputError('Only bracket characters allowed'); return '()[]{}' }
-    setInputError('')
-    return cleaned.replace(/\s/g, '')
+    if (!valid) return { s: '()[]{}', inputError: 'Only bracket characters allowed' }
+    return { s: cleaned.replace(/\s/g, ''), inputError: '' }
   }, [sInput])
 
   const steps = useMemo(() => generateSteps(s), [s])

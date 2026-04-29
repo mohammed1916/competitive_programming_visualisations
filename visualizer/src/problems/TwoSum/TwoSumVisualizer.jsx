@@ -111,20 +111,17 @@ const EXAMPLES = [
 export default function TwoSumVisualizer() {
   const [numsInput, setNumsInput]     = useState('[2, 7, 11, 15]')
   const [targetInput, setTargetInput] = useState('9')
-  const [inputError, setInputError]   = useState('')
 
   // parse + validate
-  const { nums, target } = useMemo(() => {
+  const { nums, target, inputError } = useMemo(() => {
     try {
       const n = JSON.parse(numsInput)
       const t = Number(targetInput)
       if (!Array.isArray(n) || n.some((x) => typeof x !== 'number')) throw new Error()
       if (isNaN(t)) throw new Error()
-      setInputError('')
-      return { nums: n, target: t }
+      return { nums: n, target: t, inputError: '' }
     } catch {
-      setInputError('Invalid input')
-      return { nums: [2, 7, 11, 15], target: 9 }
+      return { nums: [2, 7, 11, 15], target: 9, inputError: 'Invalid input' }
     }
   }, [numsInput, targetInput])
 

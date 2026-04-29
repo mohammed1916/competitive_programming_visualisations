@@ -60,13 +60,11 @@ const EXAMPLES = [
 
 export default function ClimbingStairsVisualizer() {
   const [nInput, setNInput] = useState('10')
-  const [inputError, setInputError] = useState('')
 
-  const n = useMemo(() => {
+  const { n, inputError } = useMemo(() => {
     const v = parseInt(nInput, 10)
-    if (isNaN(v) || v < 1 || v > 40) { setInputError('n must be 1–40'); return 10 }
-    setInputError('')
-    return v
+    if (isNaN(v) || v < 1 || v > 40) return { n: 10, inputError: 'n must be 1–40' }
+    return { n: v, inputError: '' }
   }, [nInput])
 
   const steps = useMemo(() => generateSteps(n), [n])

@@ -101,18 +101,14 @@ const EXAMPLES = [
 export default function MergeTwoSortedListsVisualizer() {
   const [l1Input, setL1Input] = useState('[1, 2, 4]')
   const [l2Input, setL2Input] = useState('[1, 3, 4]')
-  const [inputError, setInputError] = useState('')
-
-  const { arr1, arr2 } = useMemo(() => {
+  const { arr1, arr2, inputError } = useMemo(() => {
     try {
       const a1 = JSON.parse(l1Input)
       const a2 = JSON.parse(l2Input)
       if (!Array.isArray(a1) || !Array.isArray(a2)) throw new Error()
-      setInputError('')
-      return { arr1: a1, arr2: a2 }
+      return { arr1: a1, arr2: a2, inputError: '' }
     } catch {
-      setInputError('Invalid list')
-      return { arr1: [1, 2, 4], arr2: [1, 3, 4] }
+      return { arr1: [1, 2, 4], arr2: [1, 3, 4], inputError: 'Invalid list' }
     }
   }, [l1Input, l2Input])
 

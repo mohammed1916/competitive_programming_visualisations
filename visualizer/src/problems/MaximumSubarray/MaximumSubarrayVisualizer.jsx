@@ -129,17 +129,14 @@ function barHeight(val, maxAbs) {
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function MaximumSubarrayVisualizer() {
   const [numsInput, setNumsInput] = useState('[-2, 1, -3, 4, -1, 2, 1, -5, 4]')
-  const [inputError, setInputError] = useState('')
 
-  const nums = useMemo(() => {
+  const { nums, inputError } = useMemo(() => {
     try {
       const n = JSON.parse(numsInput)
       if (!Array.isArray(n) || n.length === 0) throw new Error()
-      setInputError('')
-      return n
+      return { nums: n, inputError: '' }
     } catch {
-      setInputError('Invalid input')
-      return [-2, 1, -3, 4, -1, 2, 1, -5, 4]
+      return { nums: [-2, 1, -3, 4, -1, 2, 1, -5, 4], inputError: 'Invalid input' }
     }
   }, [numsInput])
 

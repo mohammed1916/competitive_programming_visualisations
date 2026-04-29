@@ -57,18 +57,15 @@ const EXAMPLES = [
 export default function BinarySearchVisualizer() {
   const [numsInput, setNumsInput] = useState('[-1, 0, 3, 5, 9, 12]')
   const [targetInput, setTargetInput] = useState('9')
-  const [inputError, setInputError] = useState('')
 
-  const { nums, target } = useMemo(() => {
+  const { nums, target, inputError } = useMemo(() => {
     try {
       const n = JSON.parse(numsInput)
       const t = Number(targetInput)
       if (!Array.isArray(n) || isNaN(t)) throw new Error()
-      setInputError('')
-      return { nums: n, target: t }
+      return { nums: n, target: t, inputError: '' }
     } catch {
-      setInputError('Invalid input')
-      return { nums: [-1, 0, 3, 5, 9, 12], target: 9 }
+      return { nums: [-1, 0, 3, 5, 9, 12], target: 9, inputError: 'Invalid input' }
     }
   }, [numsInput, targetInput])
 
