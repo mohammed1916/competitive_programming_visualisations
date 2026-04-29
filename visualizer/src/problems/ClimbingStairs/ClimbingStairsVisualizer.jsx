@@ -191,7 +191,7 @@ export default function ClimbingStairsVisualizer() {
         <PlaybackControls isPlaying={isPlaying} isDone={isDone} speed={speed}
           onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward}
           onReset={handleReset} prevDisabled={stepIndex < 0} nextDisabled={isDone}
-          resetDisabled={stepIndex < 0} onSpeedChange={setSpeed} />
+          resetDisabled={stepIndex < 0} onSpeedChange={(e) => setSpeed(Number(e.target.value))} />
       </div>
     </div>
   )

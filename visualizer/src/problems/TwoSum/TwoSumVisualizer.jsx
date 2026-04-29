@@ -354,7 +354,7 @@ export default function TwoSumVisualizer() {
           prevDisabled={stepIndex < 0}
           nextDisabled={isDone}
           resetDisabled={stepIndex < 0}
-          onSpeedChange={setSpeed}
+          onSpeedChange={(e) => setSpeed(Number(e.target.value))}
         />
       </div>
     </div>

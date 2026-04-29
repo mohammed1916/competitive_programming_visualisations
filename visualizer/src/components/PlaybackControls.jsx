@@ -1,4 +1,5 @@
 import { Fragment } from 'react'
+import './PlaybackControls.css'
 
 export default function PlaybackControls({
   className,
@@ -42,15 +43,22 @@ export default function PlaybackControls({
   speedIndicator = null,
   showSpeed = true,
 }) {
-  const ButtonGroup = buttonsGroupClassName ? 'div' : Fragment
-  const buttonGroupProps = buttonsGroupClassName ? { className: buttonsGroupClassName } : {}
-  const resetClasses = [buttonClassName, ghostButtonClassName, iconButtonClassName].filter(Boolean).join(' ')
-  const ghostClasses = [buttonClassName, ghostButtonClassName].filter(Boolean).join(' ')
-  const playClasses = [buttonClassName, playButtonClassName].filter(Boolean).join(' ')
+  const resolvedRootClass = className || 'pc'
+  const resolvedButtonsGroupClass = buttonsGroupClassName || 'pc-buttons'
+  const resolvedSpeedOuterClass = speedOuterClassName || 'pc-speed-outer'
+  const resolvedSpeedWrapClass = speedWrapClassName || 'pc-speed-wrap'
+  const resolvedSpeedLabelClass = speedLabelClassName || 'pc-speed-label'
+  const resolvedSpeedInputClass = speedInputClassName || 'pc-speed-input'
+  const resolvedSpeedIndicatorClass = speedIndicatorClassName || 'pc-speed-indicator'
+  const ButtonGroup = resolvedButtonsGroupClass ? 'div' : Fragment
+  const buttonGroupProps = resolvedButtonsGroupClass ? { className: resolvedButtonsGroupClass } : {}
+  const resetClasses = [buttonClassName || 'pc-btn', ghostButtonClassName || 'pc-btn-ghost', iconButtonClassName].filter(Boolean).join(' ')
+  const ghostClasses = [buttonClassName || 'pc-btn', ghostButtonClassName || 'pc-btn-ghost'].filter(Boolean).join(' ')
+  const playClasses = [buttonClassName || 'pc-btn', playButtonClassName || 'pc-btn-play'].filter(Boolean).join(' ')
   const resolvedPlayLabel = isPlaying ? pauseLabel : isDone ? replayLabel : playLabel
 
   return (
-    <div className={className}>
+    <div className={resolvedRootClass}>
       <ButtonGroup {...buttonGroupProps}>
         {leftSlot}
         <button type="button" className={resetClasses} onClick={onReset} disabled={resetDisabled} title={resetTitle}>
@@ -64,20 +72,20 @@ export default function PlaybackControls({
       {middleSlot}
 
       {showSpeed && (
-        <div className={speedOuterClassName}>
-          <div className={speedWrapClassName}>
-            <span className={speedLabelClassName}>{speedLabel}</span>
+        <div className={resolvedSpeedOuterClass}>
+          <div className={resolvedSpeedWrapClass}>
+            <span className={resolvedSpeedLabelClass}>{speedLabel}</span>
             <input
-              className={speedInputClassName}
+              className={resolvedSpeedInputClass}
               type="range"
               min={speedMin}
               max={speedMax}
               step={speedStep}
-              value={speedRangeValue}
+              value={speedRangeValue ?? speed}
               onChange={onSpeedChange}
               aria-label={speedAriaLabel}
             />
-            {speedIndicator && <span className={speedIndicatorClassName}>{speedIndicator}</span>}
+            {speedIndicator && <span className={resolvedSpeedIndicatorClass}>{speedIndicator}</span>}
           </div>
         </div>
       )}
