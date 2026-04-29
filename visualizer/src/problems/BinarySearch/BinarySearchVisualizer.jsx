@@ -144,13 +144,13 @@ export default function BinarySearchVisualizer() {
             </div>
 
             {/* search range indicator */}
-            {step && step.left !== null && step.right !== null && step.right >= step.left && (
+            {step && step.left !== null && step.right !== null && step.right >= step.left && nums.length > 1 && (
               <div className="bs-range-bar">
                 <div style={{ fontSize: 11, color: '#64748b' }}>Search window: [{step.left}, {step.right}]  ({step.right - step.left + 1} elements)</div>
                 <div className="bs-range-track">
                   <div className="bs-range-fill" style={{
                     left: `${(step.left / (nums.length - 1)) * 100}%`,
-                    width: `${((step.right - step.left) / (nums.length - 1)) * 100 + (nums.length > 1 ? 100 / nums.length : 100)}%`,
+                    width: `${((step.right - step.left) / (nums.length - 1)) * 100 + 100 / nums.length}%`,
                   }} />
                 </div>
               </div>
