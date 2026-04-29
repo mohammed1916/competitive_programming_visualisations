@@ -31,6 +31,69 @@
   margin-bottom: 2.5rem;
 }
 
+.catalog-meta {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.catalog-meta span {
+  font-size: 0.73rem;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.02);
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+}
+
+.filters-row {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) 160px 180px;
+  gap: 0.7rem;
+}
+
+.search-input,
+.filter-select {
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 0.83rem;
+  padding: 0 0.7rem;
+}
+
+.search-input::placeholder {
+  color: var(--text-dim);
+}
+
+.tag-row {
+  margin-top: 0.75rem;
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  max-height: 84px;
+  overflow: auto;
+  padding-right: 0.2rem;
+}
+
+.tag-filter {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  padding: 0.26rem 0.58rem;
+  border-radius: 999px;
+}
+
+.tag-filter.active {
+  color: var(--text);
+  border-color: rgba(139, 92, 246, 0.4);
+  background: rgba(139, 92, 246, 0.18);
+}
+
 .home-header-row {
   display: flex;
   align-items: flex-start;
@@ -246,6 +309,28 @@
   color: var(--primary-l);
 }
 
+.load-more-wrap {
+  margin-top: 1.25rem;
+  display: flex;
+  justify-content: center;
+}
+
+.load-more-btn {
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text-muted);
+  height: 38px;
+  padding: 0 1rem;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.load-more-btn:hover {
+  color: var(--text);
+  border-color: rgba(139, 92, 246, 0.4);
+}
+
 /* ── Problem Page ──────────────────────────── */
 .problem-page {
   min-height: 100vh;
@@ -326,6 +411,10 @@
 }
 
 @media (max-width: 960px) {
+  .filters-row {
+    grid-template-columns: 1fr;
+  }
+
   .problem-header {
     flex-wrap: wrap;
     align-items: flex-start;

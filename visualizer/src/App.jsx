@@ -1,20 +1,19 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import CourseSchedule from './problems/CourseSchedule'
 import LongestPalindrome from './problems/LongestPalindrome'
 import LRUCache from './problems/LRUCache'
 import StringToIntegerAtoi from './problems/StringToIntegerAtoi'
 import ZigzagConversion from './problems/ZigzagConversion'
+import ProblemScaffold from './components/panels/ProblemScaffold'
 import './App.css'
 
-/* ─────────────────────────────────────────────
-   Problem Registry — add new problems here
-   ───────────────────────────────────────────── */
-const PROBLEMS = [
+const IMPLEMENTED_PROBLEMS = [
   {
-    id: 'course-schedule',
+    id: 'lc-207',
     number: '207',
     title: 'Course Schedule',
+    slug: 'course-schedule',
     description: 'Build indegrees, process the zero-indegree queue, and detect cycles with topological sort.',
     difficulty: 'Medium',
     tags: ['Graph', 'Topological Sort'],
@@ -22,9 +21,10 @@ const PROBLEMS = [
     component: CourseSchedule,
   },
   {
-    id: 'longest-palindrome',
+    id: 'lc-5',
     number: '5',
     title: 'Longest Palindromic Substring',
+    slug: 'longest-palindromic-substring',
     description: 'Find the longest palindromic substring. Bottom-up DP with O(n²) time & space.',
     difficulty: 'Medium',
     tags: ['Dynamic Programming', 'String'],
@@ -32,9 +32,10 @@ const PROBLEMS = [
     component: LongestPalindrome,
   },
   {
-    id: 'lru-cache',
+    id: 'lc-146',
     number: '146',
     title: 'LRU Cache',
+    slug: 'lru-cache',
     description: 'Track O(1) get/put with a hash map and doubly linked list while MRU/LRU order updates live.',
     difficulty: 'Medium',
     tags: ['Design', 'Hash Map', 'Linked List'],
@@ -42,9 +43,10 @@ const PROBLEMS = [
     component: LRUCache,
   },
   {
-    id: 'zigzag-conversion',
+    id: 'lc-6',
     number: '6',
     title: 'Zigzag Conversion',
+    slug: 'zigzag-conversion',
     description: 'Trace how characters bounce between rows and then merge row buckets into the final answer.',
     difficulty: 'Medium',
     tags: ['String', 'Simulation'],
@@ -52,17 +54,40 @@ const PROBLEMS = [
     component: ZigzagConversion,
   },
   {
-    id: 'string-to-integer-atoi',
+    id: 'lc-8',
     number: '8',
     title: 'String to Integer (atoi)',
+    slug: 'string-to-integer-atoi',
     description: 'Follow the parser through whitespace, sign, digits, stop conditions, and 32-bit clamping.',
     difficulty: 'Medium',
     tags: ['String', 'Simulation'],
     accent: '#3b82f6',
     component: StringToIntegerAtoi,
   },
-  // Add more problems here as the app grows
 ]
+
+const IMPLEMENTED_BY_NUMBER = new Map(IMPLEMENTED_PROBLEMS.map((problem) => [problem.number, problem]))
+
+function buildCatalogProblems(catalogProblems) {
+  return catalogProblems.map((problem) => {
+    const implemented = IMPLEMENTED_BY_NUMBER.get(problem.number)
+    if (!implemented) {
+      return {
+        ...problem,
+        accent: '#64748b',
+        description: 'Cataloged in explorer. Visualizer shell is ready; implementation can be plugged into reusable panels.',
+        component: null,
+        implemented: false,
+      }
+    }
+
+    return {
+      ...problem,
+      ...implemented,
+      implemented: true,
+    }
+  })
+}
 
 /* ── Sub-components ──────────────────────────────────────────────────── */
 
@@ -122,13 +147,65 @@ function ProblemPage({ problem, onBack, layoutWidth, onLayoutChange }) {
         <LayoutControls layoutWidth={layoutWidth} onChange={onLayoutChange} compact />
       </header>
       <div className="problem-content">
-        <Component />
+        {Component ? <Component /> : <ProblemScaffold problem={problem} />}
       </div>
     </motion.div>
   )
 }
 
 function HomePage({ onSelect, layoutWidth, onLayoutChange }) {
+  const [allProblems, setAllProblems] = useState([])
+  const [catalogError, setCatalogError] = useState('')
+  const [search, setSearch] = useState('')
+  const [difficulty, setDifficulty] = useState('All')
+  const [status, setStatus] = useState('All')
+  const [activeTag, setActiveTag] = useState('All')
+  const [visibleCount, setVisibleCount] = useState(60)
+
+  useEffect(() => {
+    let cancelled = false
+
+    fetch('/data/leetcodeCatalog.json')
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Catalog load failed: ${response.status}`)
+        }
+        return response.json()
+      })
+      .then((payload) => {
+        if (cancelled) return
+        const catalogProblems = Array.isArray(payload?.problems) ? payload.problems : []
+        setAllProblems(buildCatalogProblems(catalogProblems))
+      })
+      .catch((error) => {
+        if (cancelled) return
+        setCatalogError(error.message || 'Failed to load LeetCode catalog')
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const allTags = useMemo(() => {
+    return Array.from(new Set(allProblems.flatMap((problem) => problem.tags || []))).sort()
+  }, [allProblems])
+
+  const normalizedSearch = search.trim().toLowerCase()
+
+  const filtered = allProblems.filter((problem) => {
+    if (difficulty !== 'All' && problem.difficulty !== difficulty) return false
+    if (status === 'Implemented' && !problem.implemented) return false
+    if (status === 'Catalog Only' && problem.implemented) return false
+    if (activeTag !== 'All' && !(problem.tags || []).includes(activeTag)) return false
+    if (!normalizedSearch) return true
+
+    const haystack = `${problem.number} ${problem.title} ${problem.slug} ${(problem.tags || []).join(' ')}`.toLowerCase()
+    return haystack.includes(normalizedSearch)
+  })
+
+  const visible = filtered.slice(0, visibleCount)
+
   return (
     <motion.div
       className="home-page"
@@ -153,10 +230,57 @@ function HomePage({ onSelect, layoutWidth, onLayoutChange }) {
 
           <LayoutControls layoutWidth={layoutWidth} onChange={onLayoutChange} />
         </div>
+
+        <div className="catalog-meta">
+          <span>Total catalog: {allProblems.length}</span>
+          <span>Implemented: {IMPLEMENTED_PROBLEMS.length}</span>
+          <span>Visible: {filtered.length}</span>
+          {catalogError ? <span>Catalog error: {catalogError}</span> : null}
+        </div>
+
+        <div className="filters-row">
+          <input
+            className="search-input"
+            value={search}
+            onChange={(event) => {
+              setSearch(event.target.value)
+              setVisibleCount(60)
+            }}
+            placeholder="Search by number, title, slug, or tag"
+          />
+
+          <select className="filter-select" value={difficulty} onChange={(event) => setDifficulty(event.target.value)}>
+            <option>All</option>
+            <option>Easy</option>
+            <option>Medium</option>
+            <option>Hard</option>
+          </select>
+
+          <select className="filter-select" value={status} onChange={(event) => setStatus(event.target.value)}>
+            <option>All</option>
+            <option>Implemented</option>
+            <option>Catalog Only</option>
+          </select>
+        </div>
+
+        <div className="tag-row">
+          <button className={`tag-filter ${activeTag === 'All' ? 'active' : ''}`} onClick={() => setActiveTag('All')}>
+            All
+          </button>
+          {allTags.slice(0, 24).map((tag) => (
+            <button
+              key={tag}
+              className={`tag-filter ${activeTag === tag ? 'active' : ''}`}
+              onClick={() => setActiveTag(tag)}
+            >
+              {tag}
+            </button>
+          ))}
+        </div>
       </header>
 
       <main className="cards-grid">
-        {PROBLEMS.map((p, i) => (
+        {visible.map((p, i) => (
           <motion.button
             key={p.id}
             className="problem-card"
@@ -180,22 +304,19 @@ function HomePage({ onSelect, layoutWidth, onLayoutChange }) {
               <div className="card-tags">
                 {p.tags.map(t => <span key={t} className="tag">{t}</span>)}
               </div>
-              <span className="card-arrow">→</span>
+              <span className="card-arrow">{p.implemented ? '→' : '⋯'}</span>
             </div>
           </motion.button>
         ))}
-
-        {/* Coming soon tile */}
-        <motion.div
-          className="problem-card coming-soon"
-          initial={{ opacity: 0, y: 28 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.14 + PROBLEMS.length * 0.07 }}
-        >
-          <div className="plus">+</div>
-          <p>More problems soon</p>
-        </motion.div>
       </main>
+
+      {visibleCount < filtered.length && (
+        <div className="load-more-wrap">
+          <button className="load-more-btn" onClick={() => setVisibleCount((count) => count + 60)}>
+            Load 60 more problems
+          </button>
+        </div>
+      )}
     </motion.div>
   )
 }
