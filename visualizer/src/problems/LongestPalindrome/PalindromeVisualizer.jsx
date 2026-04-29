@@ -2,6 +2,7 @@ import { Fragment, useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import ResizablePanel from '../../components/ResizablePanel'
 import CodeTracePanel from '../../components/CodeTracePanel'
+import PlaybackControls from '../../components/PlaybackControls'
 import './PalindromeVisualizer.css'
 
 const MIN_PANEL_PERCENT = 16
@@ -995,32 +996,34 @@ export default function PalindromeVisualizer() {
 
       {/* ── CONTROLS ──────────────────────────────────────── */}
       {n > 0 && (
-        <div className="controls">
-          <button className="btn btn-ghost" onClick={handleReset} disabled={stepIdx < 0}>
-            ↺ Reset
-          </button>
-          <button className="btn btn-ghost" onClick={stepBack} disabled={stepIdx < 0}>
-            ‹ Prev
-          </button>
-          <button className="btn btn-play" onClick={togglePlay}>
-            {isPlaying ? '⏸ Pause' : isDone ? '↺ Replay' : '▶ Play'}
-          </button>
-          <button className="btn btn-ghost" onClick={stepForward} disabled={isDone}>
-            Next ›
-          </button>
-
-          <div className="speed-wrap">
-            <span className="speed-label">Speed</span>
-            <input
-              type="range" min={80} max={1400} step={60}
-              value={1480 - speed}
-              onChange={e => setSpeed(1480 - Number(e.target.value))}
-            />
-            <span className="speed-val">
-              {speed < 300 ? '🚀 Fast' : speed < 700 ? '⚡ Med' : '🐢 Slow'}
-            </span>
-          </div>
-        </div>
+        <PlaybackControls
+          className="controls"
+          buttonClassName="btn"
+          ghostButtonClassName="btn-ghost"
+          playButtonClassName="btn-play"
+          onReset={handleReset}
+          onPrev={stepBack}
+          onPlayToggle={togglePlay}
+          onNext={stepForward}
+          resetDisabled={stepIdx < 0}
+          prevDisabled={stepIdx < 0}
+          nextDisabled={isDone}
+          isPlaying={isPlaying}
+          isDone={isDone}
+          resetLabel="↺ Reset"
+          prevLabel="‹ Prev"
+          playLabel="▶ Play"
+          pauseLabel="⏸ Pause"
+          replayLabel="↺ Replay"
+          nextLabel="Next ›"
+          speedWrapClassName="speed-wrap"
+          speedLabelClassName="speed-label"
+          speedIndicatorClassName="speed-val"
+          speed={speed}
+          speedRangeValue={1480 - speed}
+          onSpeedChange={(e) => setSpeed(1480 - Number(e.target.value))}
+          speedIndicator={speed < 300 ? '🚀 Fast' : speed < 700 ? '⚡ Med' : '🐢 Slow'}
+        />
       )}
 
       {/* ── FINAL RESULT ──────────────────────────────────── */}

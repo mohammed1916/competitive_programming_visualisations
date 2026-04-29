@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
+import PlaybackControls from '../../components/PlaybackControls'
 import './CourseScheduleVisualizer.css'
 
 const MIN_ZOOM = 0.5
@@ -964,36 +965,41 @@ export default function CourseScheduleVisualizer() {
       </div>
 
       {/* ── Controls bar ── */}
-      <div className="cs-controls">
-        <div className="cs-controls-play">
-          <button className="cs-btn cs-btn-ghost cs-btn-icon" onClick={handleReset} disabled={stepIndex < 0} title="Reset">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-              <path d="M3 3v5h5" />
-            </svg>
-          </button>
-          <button className="cs-btn cs-btn-ghost" onClick={stepBack} disabled={stepIndex < 0}>‹ Prev</button>
-          <button className="cs-btn cs-btn-play" onClick={togglePlay}>
-            {isPlaying ? '⏸ Pause' : isDone ? '↺ Replay' : '▶ Play'}
-          </button>
-          <button className="cs-btn cs-btn-ghost" onClick={stepForward} disabled={isDone}>Next ›</button>
-        </div>
-
-        <div className="cs-controls-options">
-          <div className="cs-speed-wrap">
-            <span className="cs-label">Speed</span>
-            <input
-              type="range"
-              min={80}
-              max={1400}
-              step={60}
-              value={1480 - speed}
-              onChange={(e) => setSpeed(1480 - Number(e.target.value))}
-              aria-label="Playback speed"
-            />
-          </div>
-        </div>
-      </div>
+      <PlaybackControls
+        className="cs-controls"
+        buttonsGroupClassName="cs-controls-play"
+        speedOuterClassName="cs-controls-options"
+        speedWrapClassName="cs-speed-wrap"
+        speedLabelClassName="cs-label"
+        buttonClassName="cs-btn"
+        ghostButtonClassName="cs-btn-ghost"
+        playButtonClassName="cs-btn-play"
+        iconButtonClassName="cs-btn-icon"
+        onReset={handleReset}
+        onPrev={stepBack}
+        onPlayToggle={togglePlay}
+        onNext={stepForward}
+        resetDisabled={stepIndex < 0}
+        prevDisabled={stepIndex < 0}
+        nextDisabled={isDone}
+        isPlaying={isPlaying}
+        isDone={isDone}
+        prevLabel="‹ Prev"
+        playLabel="▶ Play"
+        pauseLabel="⏸ Pause"
+        replayLabel="↺ Replay"
+        nextLabel="Next ›"
+        renderResetContent={() => (
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+            <path d="M3 3v5h5" />
+          </svg>
+        )}
+        resetTitle="Reset"
+        speed={speed}
+        speedRangeValue={1480 - speed}
+        onSpeedChange={(e) => setSpeed(1480 - Number(e.target.value))}
+      />
 
       {/* ── Code panel (always visible) ── */}
       <CodeTracePanel step={currentStep} codeLines={SOLUTION_CODE} />

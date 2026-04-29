@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
+import PlaybackControls from '../../components/PlaybackControls'
 import './AtoiVisualizer.css'
 
 const INT_MIN = -(2 ** 31)
@@ -413,16 +414,26 @@ export default function AtoiVisualizer() {
         </AnimatePresence>
       </div>
 
-      <div className="atoi-controls">
-        <button className="atoi-btn atoi-btn-ghost" onClick={handleReset} disabled={stepIndex < 0}>Reset</button>
-        <button className="atoi-btn atoi-btn-ghost" onClick={stepBack} disabled={stepIndex < 0}>Prev</button>
-        <button className="atoi-btn atoi-btn-play" onClick={togglePlay}>{isPlaying ? 'Pause' : isDone ? 'Replay' : 'Play'}</button>
-        <button className="atoi-btn atoi-btn-ghost" onClick={stepForward} disabled={isDone}>Next</button>
-        <div className="atoi-speed-wrap">
-          <span className="atoi-speed-label">Speed</span>
-          <input type="range" min={80} max={1400} step={60} value={1480 - speed} onChange={(event) => setSpeed(1480 - Number(event.target.value))} />
-        </div>
-      </div>
+      <PlaybackControls
+        className="atoi-controls"
+        buttonClassName="atoi-btn"
+        ghostButtonClassName="atoi-btn-ghost"
+        playButtonClassName="atoi-btn-play"
+        onReset={handleReset}
+        onPrev={stepBack}
+        onPlayToggle={togglePlay}
+        onNext={stepForward}
+        resetDisabled={stepIndex < 0}
+        prevDisabled={stepIndex < 0}
+        nextDisabled={isDone}
+        isPlaying={isPlaying}
+        isDone={isDone}
+        speedWrapClassName="atoi-speed-wrap"
+        speedLabelClassName="atoi-speed-label"
+        speed={speed}
+        speedRangeValue={1480 - speed}
+        onSpeedChange={(event) => setSpeed(1480 - Number(event.target.value))}
+      />
     </div>
   )
 }

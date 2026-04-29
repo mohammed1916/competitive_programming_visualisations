@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
+import PlaybackControls from '../../components/PlaybackControls'
 import './ZigzagVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -427,17 +428,26 @@ export default function ZigzagVisualizer() {
         </AnimatePresence>
       </div>
 
-      <div className="zv-controls">
-        <button className="zv-btn zv-btn-ghost" onClick={handleReset} disabled={stepIndex < 0}>Reset</button>
-        <button className="zv-btn zv-btn-ghost" onClick={stepBack} disabled={stepIndex < 0}>Prev</button>
-        <button className="zv-btn zv-btn-play" onClick={togglePlay}>{isPlaying ? 'Pause' : isDone ? 'Replay' : 'Play'}</button>
-        <button className="zv-btn zv-btn-ghost" onClick={stepForward} disabled={isDone}>Next</button>
-
-        <div className="zv-speed-wrap">
-          <span className="zv-speed-label">Speed</span>
-          <input type="range" min={80} max={1400} step={60} value={1480 - speed} onChange={(event) => setSpeed(1480 - Number(event.target.value))} />
-        </div>
-      </div>
+      <PlaybackControls
+        className="zv-controls"
+        buttonClassName="zv-btn"
+        ghostButtonClassName="zv-btn-ghost"
+        playButtonClassName="zv-btn-play"
+        onReset={handleReset}
+        onPrev={stepBack}
+        onPlayToggle={togglePlay}
+        onNext={stepForward}
+        resetDisabled={stepIndex < 0}
+        prevDisabled={stepIndex < 0}
+        nextDisabled={isDone}
+        isPlaying={isPlaying}
+        isDone={isDone}
+        speedWrapClassName="zv-speed-wrap"
+        speedLabelClassName="zv-speed-label"
+        speed={speed}
+        speedRangeValue={1480 - speed}
+        onSpeedChange={(event) => setSpeed(1480 - Number(event.target.value))}
+      />
     </div>
   )
 }

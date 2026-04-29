@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
+import PlaybackControls from '../../components/PlaybackControls'
 import './LRUCacheVisualizer.css'
 
 const DEFAULT_CAPACITY = 2
@@ -1030,40 +1031,43 @@ export default function LRUCacheVisualizer() {
         />
       </div>
 
-      <div className="lru-controls">
-        <div className="lru-controls-left">
-          <button className="lru-btn lru-btn-ghost" onClick={handleReset} disabled={stepIndex < 0}>Reset</button>
-          <button className="lru-btn lru-btn-ghost" onClick={stepBack} disabled={stepIndex < 0}>Prev</button>
-          <button className="lru-btn lru-btn-play" onClick={togglePlay}>{isPlaying ? 'Pause' : isDone ? 'Replay' : 'Play'}</button>
-          <button className="lru-btn lru-btn-ghost" onClick={stepForward} disabled={isDone}>Next</button>
-        </div>
-
-        <button
-          className={`lru-btn lru-btn-detail${detailMode ? ' active' : ''}`}
-          onClick={() => {
-            const next = !detailMode
-            setDetailMode(next)
-            setSteps(generateLRUSteps(capacity, operations, argumentsList, next))
-            setStepIndex(-1)
-            setIsPlaying(false)
-          }}
-          title="Toggle pointer-level micro-step animation"
-        >
-          {detailMode ? '⚙ Detail ON' : '⚙ Detail OFF'}
-        </button>
-
-        <div className="lru-speed">
-          <span className="lru-label">Speed</span>
-          <input
-            type="range"
-            min={80}
-            max={1400}
-            step={60}
-            value={1480 - speed}
-            onChange={(e) => setSpeed(1480 - Number(e.target.value))}
-          />
-        </div>
-      </div>
+      <PlaybackControls
+        className="lru-controls"
+        buttonsGroupClassName="lru-controls-left"
+        buttonClassName="lru-btn"
+        ghostButtonClassName="lru-btn-ghost"
+        playButtonClassName="lru-btn-play"
+        onReset={handleReset}
+        onPrev={stepBack}
+        onPlayToggle={togglePlay}
+        onNext={stepForward}
+        resetDisabled={stepIndex < 0}
+        prevDisabled={stepIndex < 0}
+        nextDisabled={isDone}
+        isPlaying={isPlaying}
+        isDone={isDone}
+        middleSlot={(
+          <button
+            type="button"
+            className={`lru-btn lru-btn-detail${detailMode ? ' active' : ''}`}
+            onClick={() => {
+              const next = !detailMode
+              setDetailMode(next)
+              setSteps(generateLRUSteps(capacity, operations, argumentsList, next))
+              setStepIndex(-1)
+              setIsPlaying(false)
+            }}
+            title="Toggle pointer-level micro-step animation"
+          >
+            {detailMode ? '⚙ Detail ON' : '⚙ Detail OFF'}
+          </button>
+        )}
+        speedWrapClassName="lru-speed"
+        speedLabelClassName="lru-label"
+        speed={speed}
+        speedRangeValue={1480 - speed}
+        onSpeedChange={(e) => setSpeed(1480 - Number(e.target.value))}
+      />
     </div>
   )
 }
