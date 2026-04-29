@@ -1,0 +1,176 @@
+.cs-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+}
+
+.cs-top {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 16px 16px 0;
+}
+
+.cs-middle {
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  gap: 12px;
+  padding: 12px 16px 0;
+  flex: 1;
+  min-height: 0;
+}
+
+/* panel */
+.cs-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.cs-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.cs-badge {
+  margin-left: auto;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.cs-panel-body {
+  flex: 1;
+  padding: 14px;
+  overflow: auto;
+}
+
+/* DP row */
+.cs-dp-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cs-dp-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cs-dp-idx {
+  font-size: 9px;
+  color: #475569;
+  margin-bottom: 3px;
+  font-family: var(--font-mono);
+}
+
+.cs-dp-val {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--border);
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  background: var(--bg-page);
+  color: var(--text-primary);
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.cs-dp-val.active  { background: #a855f7; border-color: #a855f7; color: #fff; }
+.cs-dp-val.prev    { background: #1e3a5f; border-color: #0ea5e9; color: #93c5fd; }
+.cs-dp-val.filled  { background: #1e293b; border-color: #334155; color: #94a3b8; }
+
+/* staircase */
+.cs-stairs {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  justify-content: flex-end;
+}
+
+.cs-stair {
+  height: 22px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  justify-content: space-between;
+  transition: background 0.2s;
+}
+
+.cs-stair.active {
+  background: #581c87;
+  border-color: #a855f7;
+}
+
+.cs-stair.filled {
+  background: #1e293b;
+  border-color: #475569;
+}
+
+.cs-stair-label {
+  font-size: 10px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.cs-stair.active .cs-stair-label { color: #d8b4fe; }
+
+.cs-stair-ways {
+  font-size: 11px;
+  font-weight: 700;
+  color: #a855f7;
+  font-family: var(--font-mono);
+}
+
+/* vars */
+.cs-vars { display: flex; flex-direction: column; gap: 8px; }
+
+.cs-var-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 10px;
+  background: var(--bg-page);
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.cs-var-name { color: var(--text-muted); font-family: var(--font-mono); }
+.cs-var-val  { font-weight: 700; font-family: var(--font-mono); color: var(--text-primary); }
+.cs-var-val.highlight { color: #a855f7; }
+
+/* status + dock */
+.cs-status {
+  padding: 6px 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  min-height: 28px;
+}
+
+.cs-status.done { color: #22c55e; font-weight: 600; }
+.cs-dock { border-top: 1px solid var(--border); }

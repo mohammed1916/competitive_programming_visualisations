@@ -1,0 +1,2 @@
+import ValidParenthesesVisualizer from './ValidParenthesesVisualizer'
+export default ValidParenthesesVisualizer

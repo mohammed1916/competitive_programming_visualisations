@@ -1,0 +1,189 @@
+.ms-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+}
+
+.ms-top {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 16px 16px 0;
+}
+
+.ms-middle {
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  gap: 12px;
+  padding: 12px 16px 0;
+  flex: 1;
+  min-height: 0;
+}
+
+/* panel */
+.ms-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.ms-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.ms-badge {
+  margin-left: auto;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.ms-panel-body {
+  flex: 1;
+  padding: 14px;
+  overflow: auto;
+}
+
+/* array cells */
+.ms-array-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 0;
+  flex-wrap: nowrap;
+  margin-bottom: 10px;
+}
+
+.ms-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 44px;
+}
+
+.ms-cell-val {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--border);
+  border-radius: 7px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  background: var(--bg-page);
+  color: var(--text-primary);
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.ms-cell-val.active     { background: #f97316; border-color: #f97316; color: #fff; }
+.ms-cell-val.in-window  { background: #1e3a5f; border-color: #0ea5e9; color: #93c5fd; }
+.ms-cell-val.best       { background: #14532d; border-color: #22c55e; color: #86efac; }
+.ms-cell-val.best.active{ background: #22c55e; border-color: #16a34a; color: #fff; }
+
+.ms-cell-idx {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+/* bar chart */
+.ms-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 80px;
+  margin-top: 10px;
+}
+
+.ms-bar-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.ms-bar {
+  width: 100%;
+  min-height: 4px;
+  border-radius: 3px 3px 0 0;
+  transition: height 0.2s, background 0.2s;
+}
+
+/* running sum chart */
+.ms-chart-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 70px;
+}
+
+.ms-chart-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.ms-chart-seg {
+  width: 28px;
+  border-radius: 3px 3px 0 0;
+  font-size: 9px;
+  color: transparent;
+}
+
+.ms-chart-label {
+  font-size: 9px;
+  color: #475569;
+  margin-top: 2px;
+}
+
+/* vars */
+.ms-vars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ms-var-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 10px;
+  background: var(--bg-page);
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.ms-var-name { color: var(--text-muted); font-family: var(--font-mono); }
+.ms-var-val  { font-weight: 700; font-family: var(--font-mono); color: var(--text-primary); }
+.ms-var-val.highlight { color: #22c55e; }
+
+/* status + dock */
+.ms-status {
+  padding: 6px 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  min-height: 28px;
+}
+
+.ms-status.done { color: #22c55e; font-weight: 600; }
+.ms-dock { border-top: 1px solid var(--border); }

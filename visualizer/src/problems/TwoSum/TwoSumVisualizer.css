@@ -1,0 +1,232 @@
+.twosum-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+}
+
+/* ── top row: array + map ── */
+.twosum-top {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 16px 16px 0;
+}
+
+/* ── middle row: code + vars ── */
+.twosum-middle {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 12px;
+  padding: 12px 16px 0;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ── panel base ── */
+.ts-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.ts-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.ts-panel-head .ts-badge {
+  margin-left: auto;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.ts-panel-body {
+  flex: 1;
+  padding: 14px;
+  overflow: auto;
+}
+
+/* ── Array Panel ── */
+.ts-array-row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 10px;
+  flex-wrap: nowrap;
+}
+
+.ts-array-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 48px;
+}
+
+.ts-cell-val {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  background: var(--bg-page);
+  transition: background 0.2s, border-color 0.2s;
+  color: var(--text-primary);
+}
+
+.ts-cell-idx {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+/* cell states */
+.ts-cell-val.active {
+  background: #f97316;
+  border-color: #f97316;
+  color: #fff;
+}
+
+.ts-cell-val.answer {
+  background: #22c55e;
+  border-color: #22c55e;
+  color: #fff;
+}
+
+.ts-cell-val.visited {
+  background: #1e3a5f;
+  border-color: #0ea5e9;
+  color: #93c5fd;
+}
+
+.ts-target-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+.ts-target-chip {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 4px 12px;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.ts-complement-chip {
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  background: #fef9c3;
+  color: #713f12;
+  border: 1px solid #fde047;
+}
+
+/* ── Hash Map Panel ── */
+.ts-map-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.ts-map-table th {
+  text-align: left;
+  padding: 6px 10px;
+  color: var(--text-muted);
+  font-size: 11px;
+  border-bottom: 1px solid var(--border);
+}
+
+.ts-map-row {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.2s;
+}
+
+.ts-map-row td {
+  padding: 7px 10px;
+  font-weight: 600;
+}
+
+.ts-map-row.highlight {
+  background: #14532d;
+  color: #86efac;
+}
+
+.ts-map-row.highlight td {
+  color: #86efac;
+}
+
+/* ── Variables panel ── */
+.ts-vars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ts-var-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 10px;
+  background: var(--bg-page);
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.ts-var-name {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.ts-var-val {
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+}
+
+.ts-var-val.highlight {
+  color: #22c55e;
+}
+
+/* ── status strip ── */
+.ts-status {
+  padding: 6px 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  min-height: 28px;
+}
+
+.ts-status.found {
+  color: #22c55e;
+  font-weight: 600;
+}
+
+/* ── playback dock ── */
+.twosum-dock {
+  border-top: 1px solid var(--border);
+}

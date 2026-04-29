@@ -1,0 +1,2 @@
+import NumberOfIslandsVisualizer from './NumberOfIslandsVisualizer'
+export default NumberOfIslandsVisualizer

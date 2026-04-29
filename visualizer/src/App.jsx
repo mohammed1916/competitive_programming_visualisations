@@ -5,10 +5,94 @@ import LongestPalindrome from './problems/LongestPalindrome'
 import LRUCache from './problems/LRUCache'
 import StringToIntegerAtoi from './problems/StringToIntegerAtoi'
 import ZigzagConversion from './problems/ZigzagConversion'
+import TwoSum from './problems/TwoSum'
+import ValidParentheses from './problems/ValidParentheses'
+import MergeTwoSortedLists from './problems/MergeTwoSortedLists'
+import MaximumSubarray from './problems/MaximumSubarray'
+import ClimbingStairs from './problems/ClimbingStairs'
+import BinarySearch from './problems/BinarySearch'
+import NumberOfIslands from './problems/NumberOfIslands'
 import ProblemScaffold from './components/panels/ProblemScaffold'
 import './App.css'
 
 const IMPLEMENTED_PROBLEMS = [
+  {
+    id: 'lc-1',
+    number: '1',
+    title: 'Two Sum',
+    slug: 'two-sum',
+    description: 'Find two indices that add to the target using a single-pass hash map to achieve O(n) time.',
+    difficulty: 'Easy',
+    tags: ['Array', 'Hash Table'],
+    accent: '#22c55e',
+    component: TwoSum,
+  },
+  {
+    id: 'lc-20',
+    number: '20',
+    title: 'Valid Parentheses',
+    slug: 'valid-parentheses',
+    description: 'Use a stack to match opening brackets — every closing bracket must pop a matching open bracket.',
+    difficulty: 'Easy',
+    tags: ['String', 'Stack'],
+    accent: '#f97316',
+    component: ValidParentheses,
+  },
+  {
+    id: 'lc-21',
+    number: '21',
+    title: 'Merge Two Sorted Lists',
+    slug: 'merge-two-sorted-lists',
+    description: 'Use a dummy head and a curr pointer to weave two sorted linked lists in O(n+m) time.',
+    difficulty: 'Easy',
+    tags: ['Linked List', 'Two Pointers'],
+    accent: '#0ea5e9',
+    component: MergeTwoSortedLists,
+  },
+  {
+    id: 'lc-53',
+    number: '53',
+    title: 'Maximum Subarray',
+    slug: 'maximum-subarray',
+    description: "Kadane's algorithm: extend the current window or reset it, tracking the global max.",
+    difficulty: 'Medium',
+    tags: ['Array', 'Dynamic Programming', 'Divide and Conquer'],
+    accent: '#eab308',
+    component: MaximumSubarray,
+  },
+  {
+    id: 'lc-70',
+    number: '70',
+    title: 'Climbing Stairs',
+    slug: 'climbing-stairs',
+    description: 'Classic 1-D DP: dp[i] = dp[i-1] + dp[i-2]. Watch the Fibonacci-like table fill up.',
+    difficulty: 'Easy',
+    tags: ['Dynamic Programming', 'Math', 'Memoization'],
+    accent: '#a855f7',
+    component: ClimbingStairs,
+  },
+  {
+    id: 'lc-200',
+    number: '200',
+    title: 'Number of Islands',
+    slug: 'number-of-islands',
+    description: 'BFS flood-fill on a 2-D grid — each unvisited land cell seeds a new island count.',
+    difficulty: 'Medium',
+    tags: ['Array', 'BFS', 'DFS', 'Graph', 'Matrix'],
+    accent: '#06b6d4',
+    component: NumberOfIslands,
+  },
+  {
+    id: 'lc-704',
+    number: '704',
+    title: 'Binary Search',
+    slug: 'binary-search',
+    description: 'Classic binary search: halve the search window each iteration until target is found or window collapses.',
+    difficulty: 'Easy',
+    tags: ['Array', 'Binary Search'],
+    accent: '#3b82f6',
+    component: BinarySearch,
+  },
   {
     id: 'lc-207',
     number: '207',

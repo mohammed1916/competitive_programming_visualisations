@@ -1,0 +1,130 @@
+.ni-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+}
+
+.ni-top {
+  display: grid;
+  grid-template-columns: 1fr 240px;
+  gap: 12px;
+  padding: 16px 16px 0;
+}
+
+.ni-middle {
+  padding: 12px 16px 0;
+  flex: 1;
+  min-height: 0;
+}
+
+.ni-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.ni-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.ni-badge {
+  margin-left: auto;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.ni-panel-body {
+  flex: 1;
+  padding: 14px;
+  overflow: auto;
+}
+
+/* grid */
+.ni-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 12px;
+}
+
+.ni-grid-row {
+  display: flex;
+  gap: 3px;
+}
+
+.ni-cell {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  cursor: default;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+/* legend */
+.ni-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.ni-leg-item {
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+/* vars */
+.ni-vars { display: flex; flex-direction: column; gap: 8px; }
+
+.ni-var-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 10px;
+  background: var(--bg-page);
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.ni-var-name { color: var(--text-muted); font-family: var(--font-mono); }
+.ni-var-val  { font-weight: 700; font-family: var(--font-mono); color: var(--text-primary); }
+.ni-var-val.highlight { color: #22c55e; }
+
+/* status + dock */
+.ni-status {
+  padding: 6px 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  min-height: 28px;
+}
+
+.ni-status.done { color: #22c55e; font-weight: 600; }
+.ni-dock { border-top: 1px solid var(--border); }
