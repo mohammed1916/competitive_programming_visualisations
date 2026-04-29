@@ -1,4 +1,4 @@
-import { Fragment, useState, useCallback, useEffect } from 'react'
+import { Fragment, useState, useCallback, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import ResizablePanel from '../../components/ResizablePanel'
 import CodeTracePanel from '../../components/CodeTracePanel'
