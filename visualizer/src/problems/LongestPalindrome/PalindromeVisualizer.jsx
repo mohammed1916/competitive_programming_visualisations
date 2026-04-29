@@ -1,6 +1,7 @@
 import { Fragment, useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import ResizablePanel from '../../components/ResizablePanel'
+import CodeTracePanel from '../../components/CodeTracePanel'
 import './PalindromeVisualizer.css'
 
 const MIN_PANEL_PERCENT = 16
@@ -476,79 +477,6 @@ function StepDetail({ step, str }) {
         )}
       </motion.div>
     </AnimatePresence>
-  )
-}
-
-function CodePanel({ step }) {
-  const codeRef = useRef(null)
-  const [copied, setCopied] = useState(false)
-
-  useEffect(() => {
-    if (!step?.activeLine || !codeRef.current) return
-
-    const activeLine = codeRef.current.querySelector(`[data-line="${step.activeLine}"]`)
-    activeLine?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
-  }, [step])
-
-  useEffect(() => {
-    if (!copied) return
-    const timer = setTimeout(() => setCopied(false), 1600)
-    return () => clearTimeout(timer)
-  }, [copied])
-
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(SOLUTION_CODE.map(({ text }) => text).join('\n'))
-    setCopied(true)
-  }
-
-  return (
-    <motion.div
-      className="code-panel"
-      initial={{ opacity: 0, x: 12 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.22 }}
-    >
-      <div className="code-panel-head">
-        <div>
-          <div className="section-label">Solution Code</div>
-          <div className="code-panel-subtitle">
-            {step
-              ? <>Currently executing line <span className="mono code-line-chip">{step.activeLine}</span></>
-              : 'Press Play to start code tracking'}
-          </div>
-        </div>
-        <button type="button" className={`code-copy-btn ${copied ? 'copied' : ''}`} onClick={handleCopy}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          {copied ? 'Copied' : 'Copy code'}
-        </button>
-      </div>
-
-      <div className="code-scroll" ref={codeRef}>
-        {SOLUTION_CODE.map(({ line, text }) => {
-          const isActive = step?.activeLine === line
-          const isRelated = step?.relatedLines?.includes(line)
-
-          return (
-            <motion.div
-              key={line}
-              data-line={line}
-              className={`code-row ${isActive ? 'active' : ''} ${isRelated ? 'related' : ''}`}
-              animate={{
-                x: isActive ? 6 : 0,
-                opacity: isRelated || isActive || !step ? 1 : 0.58,
-              }}
-              transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-            >
-              <span className="code-line-no mono">{line}</span>
-              <code className="code-line-text">{text || ' '}</code>
-            </motion.div>
-          )
-        })}
-      </div>
-    </motion.div>
   )
 }
 
@@ -1053,7 +981,13 @@ export default function PalindromeVisualizer() {
                   <span />
                 </span>
               </button>
-              <CodePanel step={currentStep} />
+              <CodeTracePanel
+                step={currentStep}
+                codeLines={SOLUTION_CODE}
+                activeLabelPrefix="Currently executing line"
+                activeLabelSuffix=""
+                idleLabel="Press Play to start code tracking"
+              />
             </>
           )}
         </AnimatePresence>

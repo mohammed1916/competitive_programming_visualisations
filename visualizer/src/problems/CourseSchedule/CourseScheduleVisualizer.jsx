@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
+import CodeTracePanel from '../../components/CodeTracePanel'
 import './CourseScheduleVisualizer.css'
 
 const MIN_ZOOM = 0.5
@@ -554,73 +555,6 @@ function GraphView({ numCourses, step, zoom, onZoomChange }) {
 
 // ── CodePanel ─────────────────────────────────────────────────────────────────
 
-function CodePanel({ step }) {
-  const codeRef  = useRef(null)
-  const [copied, setCopied] = useState(false)
-
-  useEffect(() => {
-    if (!step?.activeLine || !codeRef.current) return
-    codeRef.current.querySelector(`[data-line="${step.activeLine}"]`)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
-  }, [step])
-
-  useEffect(() => {
-    if (!copied) return
-    const t = setTimeout(() => setCopied(false), 1600)
-    return () => clearTimeout(t)
-  }, [copied])
-
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(SOLUTION_CODE.map(({ text }) => text).join('\n'))
-    setCopied(true)
-  }
-
-  return (
-    <div className="cs-code-panel">
-      <div className="cs-code-head">
-        <div>
-          <div className="cs-section-label">Solution Code</div>
-          <div className="cs-code-subtitle">
-            {step
-              ? <>Line <span className="mono cs-code-chip">{step.activeLine}</span> active</>
-              : 'Press Play to start'}
-          </div>
-        </div>
-        <button type="button" className={`cs-copy-btn ${copied ? 'copied' : ''}`} onClick={handleCopy}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          {copied ? 'Copied!' : 'Copy'}
-        </button>
-      </div>
-      <div className="cs-code-scroll" ref={codeRef}>
-        {SOLUTION_CODE.map(({ line, text }) => {
-          const isActive  = step?.activeLine === line
-          const isRelated = step?.relatedLines?.includes(line)
-          const isFinalFailure = step?.phase === 'final' && step?.result === false
-          // map current step phase/event to code-row classes when active
-          const codePhase = step?.phase
-          const codeEvent = step?.event
-          const extraCodeClass = isActive && (codePhase === 'access' ? 'access' : codeEvent === 'push' ? 'push' : '')
-          const failureClass = isFinalFailure && isRelated ? 'failure-related' : isFinalFailure && isActive ? 'failure-active' : ''
-          return (
-            <motion.div
-              key={line}
-              data-line={line}
-              className={`cs-code-row ${isActive ? 'active' : ''} ${isRelated ? 'related' : ''} ${extraCodeClass || ''} ${failureClass}`}
-              animate={{ x: isActive ? 6 : 0, opacity: isRelated || isActive || !step ? 1 : 0.5 }}
-              transition={{ type: 'spring', stiffness: 280, damping: 28 }}
-            >
-              <span className="cs-code-no mono">{line}</span>
-              <code className="cs-code-text">{text || ' '}</code>
-            </motion.div>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
-
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export default function CourseScheduleVisualizer() {
@@ -1062,7 +996,7 @@ export default function CourseScheduleVisualizer() {
       </div>
 
       {/* ── Code panel (always visible) ── */}
-      <CodePanel step={currentStep} />
+      <CodeTracePanel step={currentStep} codeLines={SOLUTION_CODE} />
 
     </div>
   )

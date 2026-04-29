@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import CodeTracePanel from '../../components/CodeTracePanel'
 import './ZigzagVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -184,72 +185,6 @@ function ZigzagGrid({ numRows, input, step }) {
         )}
       </div>
     </div>
-  )
-}
-
-function CodePanel({ step }) {
-  const codeRef = useRef(null)
-  const [copied, setCopied] = useState(false)
-
-  useEffect(() => {
-    if (!step?.activeLine || !codeRef.current) return
-    const activeLine = codeRef.current.querySelector(`[data-line="${step.activeLine}"]`)
-    activeLine?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
-  }, [step])
-
-  useEffect(() => {
-    if (!copied) return
-    const timer = setTimeout(() => setCopied(false), 1600)
-    return () => clearTimeout(timer)
-  }, [copied])
-
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(SOLUTION_CODE.map(({ text }) => text).join('\n'))
-    setCopied(true)
-  }
-
-  return (
-    <motion.div
-      className="zv-code-panel"
-      initial={{ opacity: 0, x: 12 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.22 }}
-    >
-      <div className="zv-code-head">
-        <div>
-          <div className="zv-section-label">Solution Code</div>
-          <div className="zv-code-subtitle">
-            {step ? <>Line <span className="mono zv-chip">{step.activeLine}</span> is active</> : 'Press Play to start'}
-          </div>
-        </div>
-        <button type="button" className={`zv-copy-btn ${copied ? 'copied' : ''}`} onClick={handleCopy}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          {copied ? 'Copied' : 'Copy code'}
-        </button>
-      </div>
-      <div className="zv-code-scroll" ref={codeRef}>
-        {SOLUTION_CODE.map(({ line, text }) => {
-          const isActive = step?.activeLine === line
-          const isRelated = step?.relatedLines?.includes(line)
-
-          return (
-            <motion.div
-              key={line}
-              data-line={line}
-              className={`zv-code-row ${isActive ? 'active' : ''} ${isRelated ? 'related' : ''}`}
-              animate={{ x: isActive ? 6 : 0, opacity: isRelated || isActive || !step ? 1 : 0.56 }}
-              transition={{ type: 'spring', stiffness: 280, damping: 28 }}
-            >
-              <span className="zv-code-no mono">{line}</span>
-              <code className="zv-code-text">{text || ' '}</code>
-            </motion.div>
-          )
-        })}
-      </div>
-    </motion.div>
   )
 }
 
@@ -488,7 +423,7 @@ export default function ZigzagVisualizer() {
         </div>
 
         <AnimatePresence>
-          {showCode && <CodePanel step={currentStep} />}
+          {showCode && <CodeTracePanel step={currentStep} codeLines={SOLUTION_CODE} />}
         </AnimatePresence>
       </div>
 

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import CodeTracePanel from '../../components/CodeTracePanel'
 import './LRUCacheVisualizer.css'
 
 const DEFAULT_CAPACITY = 2
@@ -617,42 +618,6 @@ function VariablesPanel({ step }) {
   )
 }
 
-function CodePanel({ step }) {
-  const codeRef = useRef(null)
-
-  useEffect(() => {
-    if (!step?.activeLine || !codeRef.current) return
-    codeRef.current.querySelector(`[data-line="${step.activeLine}"]`)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
-  }, [step])
-
-  return (
-    <div className="lru-code-card">
-      <div className="lru-card-head">
-        <div className="lru-section-label">Python O(1) Design</div>
-        <div className="lru-subtitle">Hash map + doubly linked list</div>
-      </div>
-      <div className="lru-code-scroll" ref={codeRef}>
-        {SOLUTION_CODE.map(({ line, text }) => {
-          const isActive = step?.activeLine === line
-          const isRelated = step?.relatedLines?.includes(line)
-          return (
-            <motion.div
-              key={line}
-              data-line={line}
-              className={`lru-code-row ${isActive ? 'active' : ''} ${isRelated ? 'related' : ''}`}
-              animate={{ x: isActive ? 6 : 0, opacity: isActive || isRelated || !step ? 1 : 0.55 }}
-              transition={{ type: 'spring', stiffness: 280, damping: 26 }}
-            >
-              <span className="lru-code-line mono">{line}</span>
-              <code className="lru-code-text">{text || ' '}</code>
-            </motion.div>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
-
 function CacheOrder({ step }) {
   const entries = step?.entries ?? []
   const hp = step?.highlightPointers ?? null
@@ -1057,7 +1022,12 @@ export default function LRUCacheVisualizer() {
           <OutputPanel step={currentStep} />
         </div>
 
-        <CodePanel step={currentStep} />
+        <CodeTracePanel
+          step={currentStep}
+          codeLines={SOLUTION_CODE}
+          title="Python O(1) Design"
+          subtitle="Hash map + doubly linked list"
+        />
       </div>
 
       <div className="lru-controls">
