@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import { usePlaybackState } from '../../hooks/usePlaybackState'
 import './AtoiVisualizer.css'
 
 const INT_MIN = -(2 ** 31)
@@ -233,12 +234,23 @@ export default function AtoiVisualizer() {
   const [inputValue, setInputValue] = useState(DEFAULT_INPUT)
   const [source, setSource] = useState(DEFAULT_INPUT)
   const [steps, setSteps] = useState(() => generateAtoiSteps(DEFAULT_INPUT))
-  const [stepIndex, setStepIndex] = useState(-1)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [speed, setSpeed] = useState(520)
   const [showCode, setShowCode] = useState(true)
   const [attemptedSubmit, setAttemptedSubmit] = useState(false)
-  const intervalRef = useRef(null)
+
+  // Playback state hook
+  const {
+    stepIndex,
+    setStepIndex,
+    isPlaying,
+    setIsPlaying,
+    speed,
+    setSpeed,
+    stepForward,
+    stepBack,
+    togglePlay,
+    handleReset,
+    isDone,
+  } = usePlaybackState(steps.length, 520)
 
   const sanitizedInput = inputValue.slice(0, 60)
   const hasInput = sanitizedInput.length > 0
@@ -246,7 +258,6 @@ export default function AtoiVisualizer() {
 
   const currentStep = stepIndex >= 0 ? steps[stepIndex] : null
   const progress = steps.length > 0 ? ((stepIndex + 1) / steps.length) * 100 : 0
-  const isDone = stepIndex === steps.length - 1
 
   const handleVisualize = useCallback(() => {
     setAttemptedSubmit(true)
@@ -266,43 +277,6 @@ export default function AtoiVisualizer() {
     setIsPlaying(false)
     setAttemptedSubmit(false)
   }, [])
-
-  const stepForward = useCallback(() => {
-    setStepIndex((current) => {
-      if (current >= steps.length - 1) {
-        setIsPlaying(false)
-        return current
-      }
-      return current + 1
-    })
-  }, [steps.length])
-
-  const stepBack = () => setStepIndex((current) => Math.max(-1, current - 1))
-  const handleReset = () => {
-    setStepIndex(-1)
-    setIsPlaying(false)
-  }
-  const togglePlay = () => {
-    if (stepIndex >= steps.length - 1) setStepIndex(-1)
-    setIsPlaying((current) => !current)
-  }
-
-  useEffect(() => {
-    clearInterval(intervalRef.current)
-    if (isPlaying) {
-      intervalRef.current = setInterval(() => {
-        setStepIndex((current) => {
-          if (current >= steps.length - 1) {
-            setIsPlaying(false)
-            return current
-          }
-          return current + 1
-        })
-      }, speed)
-    }
-
-    return () => clearInterval(intervalRef.current)
-  }, [isPlaying, speed, steps.length])
 
   return (
     <div className="atoi">

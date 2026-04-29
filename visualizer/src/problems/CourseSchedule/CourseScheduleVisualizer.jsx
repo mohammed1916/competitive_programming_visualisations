@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef, useState, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import { usePlaybackState } from '../../hooks/usePlaybackState'
 import './CourseScheduleVisualizer.css'
 
 const MIN_ZOOM = 0.5
@@ -564,14 +565,25 @@ export default function CourseScheduleVisualizer() {
   const [numCourses,      setNumCourses]      = useState(DEFAULT_COURSES)
   const [prerequisites,   setPrerequisites]   = useState(() => JSON.parse(DEFAULT_PREREQS))
   const [steps,           setSteps]           = useState(() => generateCourseSteps(DEFAULT_COURSES, JSON.parse(DEFAULT_PREREQS)))
-  const [stepIndex,       setStepIndex]       = useState(-1)
-  const [isPlaying,       setIsPlaying]       = useState(false)
-  const [speed,           setSpeed]           = useState(520)
   const [attemptedSubmit, setAttemptedSubmit] = useState(false)
   const [graphZoom,       setGraphZoom]       = useState(1)
   const [leftWidth,       setLeftWidth]       = useState(560)
   const [showIOGuide,     setShowIOGuide]     = useState(false)
-  const intervalRef = useRef(null)
+
+  // Playback state hook
+  const {
+    stepIndex,
+    setStepIndex,
+    isPlaying,
+    setIsPlaying,
+    speed,
+    setSpeed,
+    stepForward,
+    stepBack,
+    togglePlay,
+    handleReset,
+    isDone,
+  } = usePlaybackState(steps.length, 520)
 
   const startDrag = (e) => {
     e.preventDefault()
@@ -612,7 +624,6 @@ export default function CourseScheduleVisualizer() {
   // ── Derived ─────────────────────────────────────────────────────────────────
   const currentStep = stepIndex >= 0 ? steps[stepIndex] : null
   const progress    = steps.length > 0 ? ((stepIndex + 1) / steps.length) * 100 : 0
-  const isDone      = stepIndex === steps.length - 1
   const phaseMeta   = currentStep ? PHASE_META[currentStep.phase] : null
   const blockedCourses = currentStep?.blockedCourses ?? []
   const cycleCore = currentStep?.cycleCore ?? []
@@ -640,33 +651,6 @@ export default function CourseScheduleVisualizer() {
     setIsPlaying(false)
     setAttemptedSubmit(false)
   }, [])
-
-  const stepForward = useCallback(() => {
-    setStepIndex((cur) => {
-      if (cur >= steps.length - 1) { setIsPlaying(false); return cur }
-      return cur + 1
-    })
-  }, [steps.length])
-
-  const stepBack    = () => setStepIndex((cur) => Math.max(-1, cur - 1))
-  const handleReset = () => { setStepIndex(-1); setIsPlaying(false) }
-  const togglePlay  = () => {
-    if (stepIndex >= steps.length - 1) setStepIndex(-1)
-    setIsPlaying((p) => !p)
-  }
-
-  useEffect(() => {
-    clearInterval(intervalRef.current)
-    if (isPlaying) {
-      intervalRef.current = setInterval(() => {
-        setStepIndex((cur) => {
-          if (cur >= steps.length - 1) { setIsPlaying(false); return cur }
-          return cur + 1
-        })
-      }, speed)
-    }
-    return () => clearInterval(intervalRef.current)
-  }, [isPlaying, speed, steps.length])
 
   // ── Render ──────────────────────────────────────────────────────────────────
   const isActiveExample = (ex) => numCourses === ex.numCourses && prereqInput === ex.prerequisites

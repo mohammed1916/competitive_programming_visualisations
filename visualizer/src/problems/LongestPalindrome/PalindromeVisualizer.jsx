@@ -1,8 +1,9 @@
-import { Fragment, useState, useEffect, useRef, useCallback } from 'react'
+import { Fragment, useState, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import ResizablePanel from '../../components/ResizablePanel'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import { usePlaybackState } from '../../hooks/usePlaybackState'
 import './PalindromeVisualizer.css'
 
 const MIN_PANEL_PERCENT = 16
@@ -538,17 +539,28 @@ export default function PalindromeVisualizer() {
   const [inputStr, setInputStr]  = useState(DEFAULT)
   const [str, setStr]            = useState(DEFAULT)
   const [steps, setSteps]        = useState(() => generateSteps(DEFAULT))
-  const [stepIdx, setStepIdx]    = useState(-1)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [speed, setSpeed]        = useState(500) // ms per step
   const [showCode, setShowCode]  = useState(true)
   const [codeWidth, setCodeWidth] = useState('normal')
   const [panelSizes, setPanelSizes] = useState(() => getDefaultPanelSizes('normal'))
   const [hasAttemptedInput, setHasAttemptedInput] = useState(false)
   const [contentHeight, setContentHeight] = useState(420)
-  const intervalRef = useRef(null)
   const contentShellRef = useRef(null)
   const dragStateRef = useRef(null)
+
+  // Playback state hook
+  const {
+    stepIndex: stepIdx,
+    setStepIndex: setStepIdx,
+    isPlaying,
+    setIsPlaying,
+    speed,
+    setSpeed,
+    stepForward,
+    stepBack,
+    togglePlay,
+    handleReset,
+    isDone,
+  } = usePlaybackState(steps.length, 500)
 
   const trimmedInput = inputStr.trim()
   const n = str.length
@@ -560,7 +572,7 @@ export default function PalindromeVisualizer() {
 
   /* ── Handlers ─────────────────────────────────────────────── */
   const handleVisualize = () => {
-    const s = trimmedInput.slice(0, 14) // cap at 14 for readable grid
+    const s = trimmedInput.slice(0, 14)
     setHasAttemptedInput(true)
     if (!s) return
     setStr(s)
@@ -579,36 +591,7 @@ export default function PalindromeVisualizer() {
     setIsPlaying(false)
   }, [])
 
-  const stepForward = useCallback(() => {
-    setStepIdx(prev => {
-      if (prev >= steps.length - 1) { setIsPlaying(false); return prev }
-      return prev + 1
-    })
-  }, [steps.length])
-
-  const stepBack = () => setStepIdx(prev => Math.max(-1, prev - 1))
-
-  const handleReset = () => { setStepIdx(-1); setIsPlaying(false) }
-
-  const togglePlay = () => {
-    if (stepIdx >= steps.length - 1) setStepIdx(-1)
-    setIsPlaying(p => !p)
-  }
-
-  /* ── Playback loop ────────────────────────────────────────── */
-  useEffect(() => {
-    clearInterval(intervalRef.current)
-    if (isPlaying) {
-      intervalRef.current = setInterval(() => {
-        setStepIdx(prev => {
-          if (prev >= steps.length - 1) { setIsPlaying(false); return prev }
-          return prev + 1
-        })
-      }, speed)
-    }
-    return () => clearInterval(intervalRef.current)
-  }, [isPlaying, speed, steps.length])
-
+  /* ── Resizable panel event handling ────────────────────────── */
   useEffect(() => {
     const handlePointerMove = (event) => {
       const dragState = dragStateRef.current
@@ -694,7 +677,6 @@ export default function PalindromeVisualizer() {
 
   /* ── Render ──────────────────────────────────────────────── */
   const progress = steps.length > 0 ? ((stepIdx + 1) / steps.length) * 100 : 0
-  const isDone   = stepIdx === steps.length - 1
 
   return (
     <div className="pv">

@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import { usePlaybackState } from '../../hooks/usePlaybackState'
 import './LRUCacheVisualizer.css'
 
 const DEFAULT_CAPACITY = 2
@@ -807,11 +808,22 @@ export default function LRUCacheVisualizer() {
   const [argumentsList, setArgumentsList] = useState(() => JSON.parse(DEFAULT_ARGS))
   const [steps, setSteps] = useState(() => generateLRUSteps(DEFAULT_CAPACITY, JSON.parse(DEFAULT_OPS), JSON.parse(DEFAULT_ARGS), false))
 
-  const [stepIndex, setStepIndex] = useState(-1)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [speed, setSpeed] = useState(560)
   const [detailMode, setDetailMode] = useState(false)
-  const intervalRef = useRef(null)
+
+  // Playback state hook
+  const {
+    stepIndex,
+    setStepIndex,
+    isPlaying,
+    setIsPlaying,
+    speed,
+    setSpeed,
+    stepForward,
+    stepBack,
+    togglePlay,
+    handleReset,
+    isDone,
+  } = usePlaybackState(steps.length, 560)
 
   const parsedCapacity = Number(capacityInput)
   const parsedOps = useMemo(() => parseJson(opsInput), [opsInput])
@@ -830,7 +842,6 @@ export default function LRUCacheVisualizer() {
   const currentStep = stepIndex >= 0 ? steps[stepIndex] : null
   const phaseMeta = currentStep ? PHASE_META[currentStep.phase] : null
   const progress = steps.length > 0 ? ((stepIndex + 1) / steps.length) * 100 : 0
-  const isDone = stepIndex === steps.length - 1
 
   const applyExample = useCallback((example) => {
     setCapacityInput(String(example.capacity))
@@ -859,43 +870,6 @@ export default function LRUCacheVisualizer() {
     setStepIndex(-1)
     setIsPlaying(false)
   }, [parsedCapacity, parsedOps, parsedArgs, structuralError, detailMode])
-
-  const stepForward = useCallback(() => {
-    setStepIndex((cur) => {
-      if (cur >= steps.length - 1) {
-        setIsPlaying(false)
-        return cur
-      }
-      return cur + 1
-    })
-  }, [steps.length])
-
-  const stepBack = () => setStepIndex((cur) => Math.max(-1, cur - 1))
-  const handleReset = () => {
-    setStepIndex(-1)
-    setIsPlaying(false)
-  }
-
-  const togglePlay = () => {
-    if (stepIndex >= steps.length - 1) setStepIndex(-1)
-    setIsPlaying((p) => !p)
-  }
-
-  useEffect(() => {
-    clearInterval(intervalRef.current)
-    if (isPlaying) {
-      intervalRef.current = setInterval(() => {
-        setStepIndex((cur) => {
-          if (cur >= steps.length - 1) {
-            setIsPlaying(false)
-            return cur
-          }
-          return cur + 1
-        })
-      }, speed)
-    }
-    return () => clearInterval(intervalRef.current)
-  }, [isPlaying, speed, steps.length])
 
   const activeOpIndex = currentStep?.index ?? -1
 
