@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import './LRUCacheVisualizer.css'
 
 const DEFAULT_CAPACITY = 2
@@ -418,7 +418,7 @@ function generateLRUSteps(initialCapacity, operations, args, detail = false) {
         ...base(i, op, arg, order.length > capacity ? 'put-evict' : 'put-insert', key, value, null, null),
         activeLine: 32, relatedLines: [32],
         highlightNode: key,
-        highlightPointers: null,
+        highlightPointers: { prev: mruPrev3 ?? 'L', node: key, next: 'R' },
         entries: snap(),
         description: `cache[${key}] = Node(${key}, ${value}). Node created and added to hash map.`,
         microLabel: 'Create Node',
@@ -663,6 +663,20 @@ function CacheOrder({ step }) {
   const activeNodeKey = hp ? hp.node : null
   const activeNextKey = hp ? hp.next : null
 
+  const chain = ['L', ...entries.map((e) => e.key), 'R']
+  const valueByKey = new Map(entries.map((e) => [e.key, e.value]))
+
+  const isLinkActive = (left, right) => {
+    if (!hp) return false
+    const pair = `${left}->${right}`
+    const reversePair = `${right}->${left}`
+    const prevToNode = `${activePrevKey}->${activeNodeKey}`
+    const nodeToNext = `${activeNodeKey}->${activeNextKey}`
+    return pair === prevToNode || pair === nodeToNext || reversePair === prevToNode || reversePair === nodeToNext
+  }
+
+  const showPointerLabels = hp && chain.length > 2
+
   return (
     <div className="lru-card">
       <div className="lru-card-head">
@@ -670,58 +684,89 @@ function CacheOrder({ step }) {
         <div className="lru-subtitle">MRU on left · LRU on right</div>
       </div>
       <div className="lru-order-wrap">
-        {/* Left sentinel */}
-        <div className={`lru-sentinel lru-sentinel-left${activePrevKey === 'L' || activeNextKey === 'L' ? ' pointer-active' : ''}`}>L</div>
-        <span className={`lru-arrow${activeNextKey === 'L' || activePrevKey === 'L' ? ' arrow-active' : ''}`}>↔</span>
-
         {entries.length === 0 ? (
-          <div className="lru-empty">Cache is empty</div>
+          <>
+            <div className="lru-sentinel">L</div>
+            <span className="lru-arrow">↔</span>
+            <div className="lru-empty">Cache is empty</div>
+            <span className="lru-arrow">↔</span>
+            <div className="lru-sentinel">R</div>
+          </>
         ) : (
-          entries.map((entry, idx) => {
-            const isHighlightNode = entry.key === activeNodeKey
-            const isPrevPtr = entry.key === activePrevKey
-            const isNextPtr = entry.key === activeNextKey
-            const isFocused = entry.key === highlightNode && !hp
-            const classes = [
-              'lru-order-node',
-              idx === 0 ? 'mru' : '',
-              idx === entries.length - 1 ? 'lru' : '',
-              isHighlightNode ? 'node-active' : '',
-              isPrevPtr ? 'ptr-prev' : '',
-              isNextPtr ? 'ptr-next' : '',
-              isFocused ? 'node-focused' : '',
-            ].filter(Boolean).join(' ')
+          <AnimatePresence initial={false}>
+            {chain.map((nodeKey, idx) => {
+              const isSentinel = nodeKey === 'L' || nodeKey === 'R'
+              const isFirstReal = !isSentinel && idx === 1
+              const isLastReal = !isSentinel && idx === chain.length - 2
+              const isHighlightNode = nodeKey === activeNodeKey
+              const isPrevPtr = nodeKey === activePrevKey
+              const isNextPtr = nodeKey === activeNextKey
+              const isFocused = nodeKey === highlightNode && !hp
+              const nodeClasses = [
+                isSentinel ? 'lru-sentinel' : 'lru-order-node',
+                !isSentinel && isFirstReal ? 'mru' : '',
+                !isSentinel && isLastReal ? 'lru' : '',
+                !isSentinel && isHighlightNode ? 'node-active' : '',
+                !isSentinel && isPrevPtr ? 'ptr-prev' : '',
+                !isSentinel && isNextPtr ? 'ptr-next' : '',
+                !isSentinel && isFocused ? 'node-focused' : '',
+                isSentinel && (isPrevPtr || isNextPtr) ? 'pointer-active' : '',
+              ].filter(Boolean).join(' ')
 
-            // Arrow between nodes
-            const showArrow = idx < entries.length - 1
-            const arrowToNext = entry.key === activePrevKey && entries[idx + 1]?.key === activeNodeKey
-            const arrowFromNext = entry.key === activeNodeKey && entries[idx + 1]?.key === activeNextKey
+              const left = nodeKey
+              const right = chain[idx + 1]
+              const arrowIsActive = right != null ? isLinkActive(left, right) : false
 
-            return (
-              <div key={entry.key} className="lru-order-node-wrap">
+              return (
                 <motion.div
-                  className={classes}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.25 }}
+                  key={String(nodeKey)}
+                  className="lru-order-node-wrap"
+                  layout
+                  transition={{ type: 'spring', stiffness: 340, damping: 28 }}
                 >
-                  {isPrevPtr && <div className="ptr-label prev-label">prev</div>}
-                  {isNextPtr && <div className="ptr-label next-label">next</div>}
-                  {isHighlightNode && <div className="ptr-label active-label">active</div>}
-                  <div className="lru-order-key mono">{entry.key}</div>
-                  <div className="lru-order-val mono">{entry.value}</div>
-                </motion.div>
-                {showArrow && (
-                  <span className={`lru-arrow${arrowToNext || arrowFromNext ? ' arrow-active' : ''}`}>↔</span>
-                )}
-              </div>
-            )
-          })
-        )}
+                  <motion.div
+                    className={nodeClasses}
+                    layout
+                    initial={{ opacity: 0, y: 14, scale: 0.94 }}
+                    animate={{
+                      opacity: 1,
+                      y: 0,
+                      scale: isHighlightNode ? [1, 1.06, 1] : 1,
+                    }}
+                    exit={{ opacity: 0, y: -10, scale: 0.9 }}
+                    transition={{ duration: 0.28 }}
+                  >
+                    {showPointerLabels && isPrevPtr && !isSentinel && <div className="ptr-label prev-label">prev</div>}
+                    {showPointerLabels && isNextPtr && !isSentinel && <div className="ptr-label next-label">next</div>}
+                    {showPointerLabels && isHighlightNode && !isSentinel && <div className="ptr-label active-label">active</div>}
 
-        {/* Right sentinel */}
-        <span className={`lru-arrow${activePrevKey === 'R' || activeNextKey === 'R' ? ' arrow-active' : ''}`}>↔</span>
-        <div className={`lru-sentinel lru-sentinel-right${activePrevKey === 'R' || activeNextKey === 'R' ? ' pointer-active' : ''}`}>R</div>
+                    {isSentinel ? (
+                      nodeKey
+                    ) : (
+                      <>
+                        <div className="lru-order-key mono">{nodeKey}</div>
+                        <div className="lru-order-val mono">{valueByKey.get(nodeKey)}</div>
+                      </>
+                    )}
+                  </motion.div>
+
+                  {right != null && (
+                    <motion.span
+                      className={`lru-arrow${arrowIsActive ? ' arrow-active' : ''}`}
+                      key={`${left}->${right}-${step?.index}-${step?.microLabel || 'base'}`}
+                      animate={arrowIsActive
+                        ? { opacity: [0.65, 1, 0.84], scale: [1, 1.22, 1], x: [0, 1.5, 0] }
+                        : { opacity: 0.65, scale: 1, x: 0 }}
+                      transition={{ duration: 0.42 }}
+                    >
+                      ↔
+                    </motion.span>
+                  )}
+                </motion.div>
+              )
+            })}
+          </AnimatePresence>
+        )}
       </div>
       <div className="lru-order-legend">
         <span className="lru-badge mru">MRU</span>
