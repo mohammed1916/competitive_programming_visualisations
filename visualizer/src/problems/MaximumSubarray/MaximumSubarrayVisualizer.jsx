@@ -340,10 +340,13 @@ export default function MaximumSubarrayVisualizer() {
           isPlaying={isPlaying}
           isDone={isDone}
           speed={speed}
-          onTogglePlay={togglePlay}
-          onStepBack={stepBack}
-          onStepForward={stepForward}
+          onPlayToggle={togglePlay}
+          onPrev={stepBack}
+          onNext={stepForward}
           onReset={handleReset}
+          prevDisabled={stepIndex < 0}
+          nextDisabled={isDone}
+          resetDisabled={stepIndex < 0}
           onSpeedChange={setSpeed}
         />
       </div>

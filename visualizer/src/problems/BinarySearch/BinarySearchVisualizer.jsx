@@ -187,8 +187,9 @@ export default function BinarySearchVisualizer() {
 
       <div className="bs-dock">
         <PlaybackControls isPlaying={isPlaying} isDone={isDone} speed={speed}
-          onTogglePlay={togglePlay} onStepBack={stepBack} onStepForward={stepForward}
-          onReset={handleReset} onSpeedChange={setSpeed} />
+          onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward}
+          onReset={handleReset} prevDisabled={stepIndex < 0} nextDisabled={isDone}
+          resetDisabled={stepIndex < 0} onSpeedChange={setSpeed} />
       </div>
     </div>
   )
