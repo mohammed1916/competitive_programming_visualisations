@@ -238,12 +238,7 @@ export default function MergeTwoSortedListsVisualizer() {
 
       {/* ── middle: code + vars ── */}
       <div className="ml-middle">
-        <CodeTracePanel
-          lines={SOLUTION_CODE}
-          activeLine={step?.activeLine ?? null}
-          relatedLines={[]}
-          language="python"
-        />
+        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
         <div className="ml-panel">
           <div className="ml-panel-head">Variables</div>
           <div className="ml-panel-body">

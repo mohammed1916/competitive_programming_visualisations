@@ -251,12 +251,7 @@ export default function ValidParenthesesVisualizer() {
 
       {/* ── middle row ── */}
       <div className="vp-middle">
-        <CodeTracePanel
-          lines={SOLUTION_CODE}
-          activeLine={activeLine}
-          relatedLines={[]}
-          language="python"
-        />
+        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
 
         <div className="vp-panel">
           <div className="vp-panel-head">Variables</div>

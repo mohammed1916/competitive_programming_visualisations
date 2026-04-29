@@ -297,12 +297,7 @@ export default function MaximumSubarrayVisualizer() {
 
       {/* ── middle: code + vars ── */}
       <div className="ms-middle">
-        <CodeTracePanel
-          lines={SOLUTION_CODE}
-          activeLine={step?.activeLine ?? null}
-          relatedLines={[]}
-          language="python"
-        />
+        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
         <div className="ms-panel">
           <div className="ms-panel-head">Variables</div>
           <div className="ms-panel-body">

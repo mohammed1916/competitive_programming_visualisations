@@ -293,12 +293,7 @@ export default function TwoSumVisualizer() {
 
       {/* ── middle: code + variables ── */}
       <div className="twosum-middle">
-        <CodeTracePanel
-          lines={SOLUTION_CODE}
-          activeLine={codeHighlight.activeLine}
-          relatedLines={codeHighlight.relatedLines}
-          language="python"
-        />
+        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
 
         <div className="ts-panel">
           <div className="ts-panel-head">Variables</div>

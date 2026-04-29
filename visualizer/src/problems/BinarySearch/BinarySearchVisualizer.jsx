@@ -178,7 +178,7 @@ export default function BinarySearchVisualizer() {
       </div>
 
       <div className="bs-middle">
-        <CodeTracePanel lines={SOLUTION_CODE} activeLine={step?.activeLine ?? null} relatedLines={[]} language="python" />
+        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
       </div>
 
       <div className={`bs-status${step?.phase === 'found' ? ' found' : step?.phase === 'not-found' ? ' nf' : ''}`}>

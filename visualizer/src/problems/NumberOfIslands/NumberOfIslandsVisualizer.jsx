@@ -273,7 +273,7 @@ export default function NumberOfIslandsVisualizer() {
       </div>
 
       <div className="ni-middle">
-        <CodeTracePanel lines={SOLUTION_CODE} activeLine={step?.activeLine ?? null} relatedLines={[]} language="python" />
+        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
       </div>
 
       <div className={`ni-status${step?.phase === 'done' ? ' done' : ''}`}>

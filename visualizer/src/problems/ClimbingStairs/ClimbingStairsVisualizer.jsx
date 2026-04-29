@@ -168,7 +168,7 @@ export default function ClimbingStairsVisualizer() {
       </div>
 
       <div className="cs-middle">
-        <CodeTracePanel lines={SOLUTION_CODE} activeLine={step?.activeLine ?? null} relatedLines={[]} language="python" />
+        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
         <div className="cs-panel">
           <div className="cs-panel-head">Variables</div>
           <div className="cs-panel-body">
