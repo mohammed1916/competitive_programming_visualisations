@@ -246,6 +246,9 @@ export default function MatrixIterationBasicsVisualizer({ problem }) {
                 <div className={getCellClassName(i, j)} key={`${i}-${j}`}>
                   <span className="mib-idx">{i},{j}</span>
                   <span className="mib-val">{value}</span>
+                  {mode === 'anti' && (
+                    <span className="mib-cond">{i} + {j} = {i + j} (target {size - 1})</span>
+                  )}
                 </div>
               )))}
             </div>

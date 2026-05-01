@@ -192,6 +192,14 @@
   font-family: 'Fira Code', 'Cascadia Code', 'Consolas', 'Courier New', monospace;
 }
 
+.mib-cond {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--text-dim);
+  font-family: 'Fira Code', monospace;
+}
+
 .mib-legend {
   display: grid;
   gap: 8px;
