@@ -1,0 +1,3 @@
+import MatrixIterationBasicsVisualizer from './MatrixIterationBasicsVisualizer'
+
+export default MatrixIterationBasicsVisualizer

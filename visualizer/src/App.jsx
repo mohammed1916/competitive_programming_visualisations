@@ -12,8 +12,14 @@ import MaximumSubarray from './problems/MaximumSubarray'
 import ClimbingStairs from './problems/ClimbingStairs'
 import BinarySearch from './problems/BinarySearch'
 import NumberOfIslands from './problems/NumberOfIslands'
+import MatrixIterationBasics from './problems/MatrixIterationBasics'
 import ProblemScaffold from './components/panels/ProblemScaffold'
 import './App.css'
+
+const TRACKS = {
+  LEETCODE: 'leetcode',
+  BASICS: 'basics',
+}
 
 const IMPLEMENTED_PROBLEMS = [
   {
@@ -152,6 +158,48 @@ const IMPLEMENTED_PROBLEMS = [
 
 const IMPLEMENTED_BY_NUMBER = new Map(IMPLEMENTED_PROBLEMS.map((problem) => [problem.number, problem]))
 
+const BASICS_PROBLEMS = [
+  {
+    id: 'bs-01',
+    number: 'B1',
+    title: 'Upper Triangular Iteration',
+    slug: 'upper-triangular-iteration',
+    description: 'Visualize i-j loop ordering while visiting only cells where j >= i.',
+    difficulty: 'Easy',
+    tags: ['Matrix', 'Loops', 'Triangular'],
+    accent: '#0ea5e9',
+    component: MatrixIterationBasics,
+    implemented: true,
+    mode: 'upper',
+  },
+  {
+    id: 'bs-02',
+    number: 'B2',
+    title: 'Lower Triangular Iteration',
+    slug: 'lower-triangular-iteration',
+    description: 'Step through row-major loops while visiting only cells where i >= j.',
+    difficulty: 'Easy',
+    tags: ['Matrix', 'Loops', 'Triangular'],
+    accent: '#22c55e',
+    component: MatrixIterationBasics,
+    implemented: true,
+    mode: 'lower',
+  },
+  {
+    id: 'bs-03',
+    number: 'B3',
+    title: 'Diagonal And Full Traversals',
+    slug: 'diagonal-and-full-traversals',
+    description: 'Compare diagonal, anti-diagonal, and full matrix traversals from one visual panel.',
+    difficulty: 'Easy',
+    tags: ['Matrix', 'Loops', 'Traversal'],
+    accent: '#f59e0b',
+    component: MatrixIterationBasics,
+    implemented: true,
+    mode: 'diag',
+  },
+]
+
 function buildCatalogProblems(catalogProblems) {
   return catalogProblems.map((problem) => {
     const implemented = IMPLEMENTED_BY_NUMBER.get(problem.number)
@@ -277,14 +325,14 @@ function ProblemPage({ problem, onBack, layoutWidth, onLayoutChange }) {
       </header>
       <div className="problem-content">
         <ErrorBoundary key={problem.id}>
-          {Component ? <Component /> : <ProblemScaffold problem={problem} />}
+          {Component ? <Component problem={problem} /> : <ProblemScaffold problem={problem} />}
         </ErrorBoundary>
       </div>
     </motion.div>
   )
 }
 
-function HomePage({ onSelect, layoutWidth, onLayoutChange }) {
+function HomePage({ track, onTrackChange, onSelect, layoutWidth, onLayoutChange }) {
   const [allProblems, setAllProblems] = useState([])
   const [catalogError, setCatalogError] = useState('')
   const [search, setSearch] = useState('')
@@ -293,7 +341,15 @@ function HomePage({ onSelect, layoutWidth, onLayoutChange }) {
   const [activeTag, setActiveTag] = useState('All')
   const [visibleCount, setVisibleCount] = useState(60)
 
+  const isLeetCodeTrack = track === TRACKS.LEETCODE
+
   useEffect(() => {
+    if (!isLeetCodeTrack) {
+      setAllProblems(BASICS_PROBLEMS)
+      setCatalogError('')
+      return
+    }
+
     let cancelled = false
 
     fetch('/data/leetcodeCatalog.json')
@@ -316,7 +372,15 @@ function HomePage({ onSelect, layoutWidth, onLayoutChange }) {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [isLeetCodeTrack])
+
+  useEffect(() => {
+    setSearch('')
+    setDifficulty('All')
+    setStatus('All')
+    setActiveTag('All')
+    setVisibleCount(60)
+  }, [track])
 
   const allTags = useMemo(() => {
     return Array.from(new Set(allProblems.flatMap((problem) => problem.tags || []))).sort()
@@ -355,18 +419,33 @@ function HomePage({ onSelect, layoutWidth, onLayoutChange }) {
             <div className="brand-icon">⟨/⟩</div>
             <div>
               <h1>CP Visualizer</h1>
-              <p>Algorithms, step by step</p>
+              <p>{isLeetCodeTrack ? 'LeetCode and interview patterns' : 'Core programming basics and loop patterns'}</p>
             </div>
           </motion.div>
+
+          <div className="track-switcher" role="tablist" aria-label="Problem tracks">
+            <button
+              className={`track-btn ${track === TRACKS.LEETCODE ? 'active' : ''}`}
+              onClick={() => onTrackChange(TRACKS.LEETCODE)}
+            >
+              LeetCode Track
+            </button>
+            <button
+              className={`track-btn ${track === TRACKS.BASICS ? 'active' : ''}`}
+              onClick={() => onTrackChange(TRACKS.BASICS)}
+            >
+              Basics Track
+            </button>
+          </div>
 
           <LayoutControls layoutWidth={layoutWidth} onChange={onLayoutChange} />
         </div>
 
         <div className="catalog-meta">
-          <span>Total catalog: {allProblems.length}</span>
-          <span>Implemented: {IMPLEMENTED_PROBLEMS.length}</span>
+          <span>{isLeetCodeTrack ? `Total catalog: ${allProblems.length}` : `Basics topics: ${allProblems.length}`}</span>
+          <span>Implemented: {allProblems.filter((problem) => problem.implemented).length}</span>
           <span>Visible: {filtered.length}</span>
-          {catalogError ? <span>Catalog error: {catalogError}</span> : null}
+          {isLeetCodeTrack && catalogError ? <span>Catalog error: {catalogError}</span> : null}
         </div>
 
         <div className="filters-row">
@@ -387,11 +466,15 @@ function HomePage({ onSelect, layoutWidth, onLayoutChange }) {
             <option>Hard</option>
           </select>
 
-          <select className="filter-select" value={status} onChange={(event) => setStatus(event.target.value)}>
-            <option>All</option>
-            <option>Implemented</option>
-            <option>Catalog Only</option>
-          </select>
+          {isLeetCodeTrack ? (
+            <select className="filter-select" value={status} onChange={(event) => setStatus(event.target.value)}>
+              <option>All</option>
+              <option>Implemented</option>
+              <option>Catalog Only</option>
+            </select>
+          ) : (
+            <div className="track-note">Basics track includes foundational loop visualizations.</div>
+          )}
         </div>
 
         <div className="tag-row">
@@ -455,6 +538,7 @@ function HomePage({ onSelect, layoutWidth, onLayoutChange }) {
 /* ── Root App ────────────────────────────────────────────────────────── */
 export default function App() {
   const [active, setActive] = useState(null)
+  const [track, setTrack] = useState(TRACKS.LEETCODE)
   const [layoutWidth, setLayoutWidth] = useState('full')
 
   // Keep browser history in sync so the browser back button works
@@ -476,12 +560,24 @@ export default function App() {
   // other effect will update the URL, and popstate won't fire on pushState.
   const goBack = () => setActive(null)
 
+  const handleTrackChange = (nextTrack) => {
+    setTrack(nextTrack)
+    setActive(null)
+  }
+
   return (
     <div className={`app layout-${layoutWidth}`}>
       <AnimatePresence mode="wait">
         {active
           ? <ProblemPage key={active.id} problem={active} onBack={goBack} layoutWidth={layoutWidth} onLayoutChange={setLayoutWidth} />
-          : <HomePage    key="home"      onSelect={setActive} layoutWidth={layoutWidth} onLayoutChange={setLayoutWidth} />
+          : <HomePage
+              key={`home-${track}`}
+              track={track}
+              onTrackChange={handleTrackChange}
+              onSelect={setActive}
+              layoutWidth={layoutWidth}
+              onLayoutChange={setLayoutWidth}
+            />
         }
       </AnimatePresence>
     </div>

@@ -65,6 +65,18 @@
   padding: 0 0.7rem;
 }
 
+.track-note {
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  padding: 0 0.7rem;
+  display: flex;
+  align-items: center;
+}
+
 .search-input::placeholder {
   color: var(--text-dim);
 }
@@ -100,6 +112,30 @@
   justify-content: space-between;
   gap: 1.5rem;
   flex-wrap: wrap;
+}
+
+.track-switcher {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  border-radius: 999px;
+  padding: 4px;
+  gap: 4px;
+}
+
+.track-btn {
+  border-radius: 999px;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+}
+
+.track-btn.active {
+  background: linear-gradient(135deg, rgba(139,92,246,0.24), rgba(99,102,241,0.22));
+  color: var(--text);
+  box-shadow: 0 0 0 1px rgba(139,92,246,0.26) inset;
 }
 
 .brand {
