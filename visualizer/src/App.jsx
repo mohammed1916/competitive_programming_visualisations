@@ -333,7 +333,7 @@ function ProblemPage({ problem, onBack, layoutWidth, onLayoutChange }) {
 }
 
 function HomePage({ track, onTrackChange, onSelect, layoutWidth, onLayoutChange }) {
-  const [allProblems, setAllProblems] = useState([])
+  const [catalogProblems, setCatalogProblems] = useState([])
   const [catalogError, setCatalogError] = useState('')
   const [search, setSearch] = useState('')
   const [difficulty, setDifficulty] = useState('All')
@@ -344,11 +344,7 @@ function HomePage({ track, onTrackChange, onSelect, layoutWidth, onLayoutChange 
   const isLeetCodeTrack = track === TRACKS.LEETCODE
 
   useEffect(() => {
-    if (!isLeetCodeTrack) {
-      setAllProblems(BASICS_PROBLEMS)
-      setCatalogError('')
-      return
-    }
+    if (!isLeetCodeTrack) return
 
     let cancelled = false
 
@@ -361,8 +357,9 @@ function HomePage({ track, onTrackChange, onSelect, layoutWidth, onLayoutChange 
       })
       .then((payload) => {
         if (cancelled) return
-        const catalogProblems = Array.isArray(payload?.problems) ? payload.problems : []
-        setAllProblems(buildCatalogProblems(catalogProblems))
+        const nextCatalogProblems = Array.isArray(payload?.problems) ? payload.problems : []
+        setCatalogProblems(nextCatalogProblems)
+        setCatalogError('')
       })
       .catch((error) => {
         if (cancelled) return
@@ -374,13 +371,9 @@ function HomePage({ track, onTrackChange, onSelect, layoutWidth, onLayoutChange 
     }
   }, [isLeetCodeTrack])
 
-  useEffect(() => {
-    setSearch('')
-    setDifficulty('All')
-    setStatus('All')
-    setActiveTag('All')
-    setVisibleCount(60)
-  }, [track])
+  const allProblems = useMemo(() => {
+    return isLeetCodeTrack ? buildCatalogProblems(catalogProblems) : BASICS_PROBLEMS
+  }, [catalogProblems, isLeetCodeTrack])
 
   const allTags = useMemo(() => {
     return Array.from(new Set(allProblems.flatMap((problem) => problem.tags || []))).sort()

@@ -230,7 +230,7 @@ export default function MatrixIterationBasicsVisualizer({ problem }) {
             <div className="mib-stats-row">
               <div><span>Scanned</span><strong>{scannedCount}</strong></div>
               <div><span>Visited</span><strong>{visitedCount}</strong></div>
-              <div><span>Current</span><strong>{step?.i !== null && step?.j !== null ? `(${step.i}, ${step.j})` : 'None'}</strong></div>
+              <div><span>Current</span><strong>{step && step.i !== null && step.j !== null ? `(${step.i}, ${step.j})` : 'None'}</strong></div>
             </div>
           </div>
         </section>
