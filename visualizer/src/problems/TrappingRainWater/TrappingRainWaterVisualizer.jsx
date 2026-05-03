@@ -6,15 +6,15 @@ import { usePlaybackState } from '../../hooks/usePlaybackState'
 import './TrappingRainWaterVisualizer.css'
 
 const SOLUTION_CODE = [
-  { line: 1,  text: 'class Solution:' },
-  { line: 2,  text: '    def trap(self, height: List[int]) -> int:' },
-  { line: 3,  text: '        if not height: return 0' },
-  { line: 4,  text: '        left, right = 0, len(height) - 1' },
-  { line: 5,  text: '        left_max, right_max = height[left], height[right]' },
-  { line: 6,  text: '        water = 0' },
-  { line: 7,  text: '        while left < right:' },
-  { line: 8,  text: '            if left_max < right_max:' },
-  { line: 9,  text: '                left += 1' },
+  { line: 1, text: 'class Solution:' },
+  { line: 2, text: '    def trap(self, height: List[int]) -> int:' },
+  { line: 3, text: '        if not height: return 0' },
+  { line: 4, text: '        left, right = 0, len(height) - 1' },
+  { line: 5, text: '        left_max, right_max = height[left], height[right]' },
+  { line: 6, text: '        water = 0' },
+  { line: 7, text: '        while left < right:' },
+  { line: 8, text: '            if left_max < right_max:' },
+  { line: 9, text: '                left += 1' },
   { line: 10, text: '                left_max = max(left_max, height[left])' },
   { line: 11, text: '                water += left_max - height[left]' },
   { line: 12, text: '            else:' },
@@ -45,48 +45,48 @@ function generateSteps(height) {
     phase: 'init',
     left, right, leftMax, rightMax, water, waterAmounts: [...waterAmounts],
     activeLine: 5,
-    message: \`Initialize left=0, right=\${right}, left_max=\${leftMax}, right_max=\${rightMax}.\`
+    message: `Initialize left=0, right=${right}, left_max=${leftMax}, right_max=${rightMax}.`
   })
 
   while (left < right) {
     steps.push({
       phase: 'check', left, right, leftMax, rightMax, water, waterAmounts: [...waterAmounts],
       activeLine: 8,
-      message: \`Compare left_max (\${leftMax}) and right_max (\${rightMax}).\`
+      message: `Compare left_max (${leftMax}) and right_max (${rightMax}).`
     })
 
     if (leftMax < rightMax) {
       left++
       steps.push({
         phase: 'move_left', left, right, leftMax, rightMax, water, waterAmounts: [...waterAmounts],
-        activeLine: 9, message: \`left_max < right_max. Move left pointer to index \${left}.\`
+        activeLine: 9, message: `left_max < right_max. Move left pointer to index ${left}.`
       })
 
       leftMax = Math.max(leftMax, height[left])
       steps.push({
         phase: 'max_left', left, right, leftMax, rightMax, water, waterAmounts: [...waterAmounts],
-        activeLine: 10, message: \`Update left_max = max(\${leftMax}, \${height[left]}) = \${leftMax}.\`
+        activeLine: 10, message: `Update left_max = max(${leftMax}, ${height[left]}) = ${leftMax}.`
       })
 
       const added = leftMax - height[left]
       water += added
       waterAmounts[left] = added
-      
+
       steps.push({
         phase: 'add_water', left, right, leftMax, rightMax, water, waterAmounts: [...waterAmounts],
-        activeLine: 11, message: \`Add \${added} units of water at index \${left}. Total water = \${water}.\`
+        activeLine: 11, message: `Add ${added} units of water at index ${left}. Total water = ${water}.`
       })
     } else {
       right--
       steps.push({
         phase: 'move_right', left, right, leftMax, rightMax, water, waterAmounts: [...waterAmounts],
-        activeLine: 13, message: \`left_max >= right_max. Move right pointer to index \${right}.\`
+        activeLine: 13, message: `left_max >= right_max. Move right pointer to index ${right}.`
       })
 
       rightMax = Math.max(rightMax, height[right])
       steps.push({
         phase: 'max_right', left, right, leftMax, rightMax, water, waterAmounts: [...waterAmounts],
-        activeLine: 14, message: \`Update right_max = max(\${rightMax}, \${height[right]}) = \${rightMax}.\`
+        activeLine: 14, message: `Update right_max = max(${rightMax}, ${height[right]}) = ${rightMax}.`
       })
 
       const added = rightMax - height[right]
@@ -95,14 +95,14 @@ function generateSteps(height) {
 
       steps.push({
         phase: 'add_water', left, right, leftMax, rightMax, water, waterAmounts: [...waterAmounts],
-        activeLine: 15, message: \`Add \${added} units of water at index \${right}. Total water = \${water}.\`
+        activeLine: 15, message: `Add ${added} units of water at index ${right}. Total water = ${water}.`
       })
     }
   }
 
   steps.push({
     phase: 'done', left, right, leftMax, rightMax, water, waterAmounts: [...waterAmounts],
-    activeLine: 16, message: \`Pointers met. Total trapped water is \${water}.\`
+    activeLine: 16, message: `Pointers met. Total trapped water is ${water}.`
   })
 
   return steps
@@ -172,54 +172,54 @@ export default function TrappingRainWaterVisualizer() {
               placeholder="[0,1,0,2,1,0,1,3,2,1,2,1]"
               className="tw-input"
             />
-            
+
             <div className="tw-chart-container">
               {height.map((h, i) => {
                 const isLeft = step?.left === i
                 const isRight = step?.right === i
                 const isActive = isLeft || isRight
                 const waterAmt = step ? step.waterAmounts[i] : 0
-                
+
                 return (
                   <div key={i} className="tw-column">
-                    <div className="tw-column-value">{h + waterAmt > 0 ? (h + waterAmt === h ? h : \`\${h}+\${waterAmt}\`) : ''}</div>
-                    <div className="tw-blocks-wrapper" style={{ height: \`\${(Math.max(h + waterAmt, 1) / maxHeightValue) * 100}%\` }}>
-                        <motion.div 
-                          className="tw-water-block"
-                          style={{ height: \`\${(waterAmt / Math.max(h + waterAmt, 1)) * 100}%\` }}
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1, height: \`\${(waterAmt / Math.max(h + waterAmt, 1)) * 100}%\` }}
-                        />
-                        <motion.div 
-                          className={\`tw-ground-block \${isActive ? 'active' : ''}\`}
-                          style={{ height: \`\${(h / Math.max(h + waterAmt, 1)) * 100}%\` }}
-                          layout
-                        />
+                    <div className="tw-column-value">{h + waterAmt > 0 ? (h + waterAmt === h ? h : `${h}+${waterAmt}`) : ''}</div>
+                    <div className="tw-blocks-wrapper" style={{ height: `${(Math.max(h + waterAmt, 1) / maxHeightValue) * 100}%` }}>
+                      <motion.div
+                        className="tw-water-block"
+                        style={{ height: `${(waterAmt / Math.max(h + waterAmt, 1)) * 100}%` }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1, height: `${(waterAmt / Math.max(h + waterAmt, 1)) * 100}%` }}
+                      />
+                      <motion.div
+                        className={`tw-ground-block ${isActive ? 'active' : ''}`}
+                        style={{ height: `${(h / Math.max(h + waterAmt, 1)) * 100}%` }}
+                        layout
+                      />
                     </div>
                     <div className="tw-pointer-label">
-                        {isLeft ? 'L' : isRight ? 'R' : ''}
+                      {isLeft ? 'L' : isRight ? 'R' : ''}
                     </div>
                   </div>
                 )
               })}
-              
+
               {/* Max level indicators */}
               {step && step.leftMax !== null && step.rightMax !== null && step.phase !== 'done' && (
                 <>
-                  <div 
+                  <div
                     className="tw-max-line left"
-                    style={{ 
+                    style={{
                       bottom: 24,
-                      height: \`\${(step.leftMax / maxHeightValue) * 100}%\`,
-                      left: \`calc(\${(step.left / Math.max(height.length - 1, 1)) * 100}%)\`
+                      height: `${(step.leftMax / maxHeightValue) * 100}%`,
+                      left: `calc(${(step.left / Math.max(height.length - 1, 1)) * 100}%)`
                     }}
                   />
-                  <div 
+                  <div
                     className="tw-max-line right"
-                    style={{ 
+                    style={{
                       bottom: 24,
-                      height: \`\${(step.rightMax / maxHeightValue) * 100}%\`,
-                      right: \`calc(\${100 - (step.right / Math.max(height.length - 1, 1)) * 100}%)\`
+                      height: `${(step.rightMax / maxHeightValue) * 100}%`,
+                      right: `calc(${100 - (step.right / Math.max(height.length - 1, 1)) * 100}%)`
                     }}
                   />
                 </>
@@ -261,7 +261,7 @@ export default function TrappingRainWaterVisualizer() {
         </div>
       </div>
 
-      <div className={\`tw-status \${step?.phase === 'add_water' ? 'found' : ''}\`}>
+      <div className={`tw-status ${step?.phase === 'add_water' ? 'found' : ''}`}>
         {step?.message ?? 'Press Play or Step to begin.'}
       </div>
 
