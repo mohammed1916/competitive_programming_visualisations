@@ -13,6 +13,8 @@ import ClimbingStairs from './problems/ClimbingStairs'
 import BinarySearch from './problems/BinarySearch'
 import NumberOfIslands from './problems/NumberOfIslands'
 import MergeIntervals from './problems/MergeIntervals'
+import TrappingRainWater from './problems/TrappingRainWater'
+import LongestSubstringWithoutRepeating from './problems/LongestSubstringWithoutRepeating'
 import MatrixIterationBasics from './problems/MatrixIterationBasics'
 import ContainerWithMostWater from './problems/ContainerWithMostWater'
 import ProblemScaffold from './components/panels/ProblemScaffold'
@@ -47,6 +49,17 @@ const IMPLEMENTED_PROBLEMS = [
     component: ContainerWithMostWater,
   },
   {
+    id: 'lc-42',
+    number: '42',
+    title: 'Trapping Rain Water',
+    slug: 'trapping-rain-water',
+    description: 'Use two pointers with left and right maximums to compute trapped water dynamically without extra space.',
+    difficulty: 'Hard',
+    tags: ['Array', 'Two Pointers', 'Dynamic Programming'],
+    accent: '#3b82f6',
+    component: TrappingRainWater,
+  },
+  {
     id: 'lc-20',
     number: '20',
     title: 'Valid Parentheses',
@@ -67,6 +80,17 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ['Linked List', 'Two Pointers'],
     accent: '#0ea5e9',
     component: MergeTwoSortedLists,
+  },
+  {
+    id: 'lc-3',
+    number: '3',
+    title: 'Longest Substring Without Repeating Characters',
+    slug: 'longest-substring-without-repeating-characters',
+    description: 'Use a sliding window and a hash map to track characters and dynamically adjust the window size to find the longest substring without duplicates.',
+    difficulty: 'Medium',
+    tags: ['String', 'Sliding Window', 'Hash Table'],
+    accent: '#8b5cf6',
+    component: LongestSubstringWithoutRepeating,
   },
   {
     id: 'lc-56',
