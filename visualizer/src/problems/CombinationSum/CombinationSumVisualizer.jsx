@@ -6,15 +6,15 @@ import { usePlaybackState } from '../../hooks/usePlaybackState'
 import './CombinationSumVisualizer.css'
 
 const SOLUTION_CODE = [
-  { line: 1,  text: 'class Solution:' },
-  { line: 2,  text: '    def combinationSum(self, candidates: List[int], target: int) -> List[List[int]]:' },
-  { line: 3,  text: '        res = []' },
-  { line: 4,  text: '        def dfs(i, current_path, total):' },
-  { line: 5,  text: '            if total == target:' },
-  { line: 6,  text: '                res.append(current_path.copy())' },
-  { line: 7,  text: '                return' },
-  { line: 8,  text: '            if i >= len(candidates) or total > target:' },
-  { line: 9,  text: '                return' },
+  { line: 1, text: 'class Solution:' },
+  { line: 2, text: '    def combinationSum(self, candidates: List[int], target: int) -> List[List[int]]:' },
+  { line: 3, text: '        res = []' },
+  { line: 4, text: '        def dfs(i, current_path, total):' },
+  { line: 5, text: '            if total == target:' },
+  { line: 6, text: '                res.append(current_path.copy())' },
+  { line: 7, text: '                return' },
+  { line: 8, text: '            if i >= len(candidates) or total > target:' },
+  { line: 9, text: '                return' },
   { line: 10, text: '            ' },
   { line: 11, text: '            # Include candidates[i]' },
   { line: 12, text: '            current_path.append(candidates[i])' },
@@ -49,7 +49,7 @@ function generateSteps(candidates, target) {
     phase: 'init', i: null, path: [], total: 0, res: [...res], callStack: [],
     activeLine: 3, message: 'Initialize empty results list res = [].'
   })
-  
+
   steps.push({
     phase: 'call_dfs', i: null, path: [], total: 0, res: [...res], callStack: [],
     activeLine: 19, message: 'Initial call: dfs(0, [], 0).'
@@ -59,24 +59,24 @@ function generateSteps(candidates, target) {
     // Artificial limit to prevent infinite loops / huge traces
     if (stepCounter++ > 1500) return
 
-    const stackEntry = \`dfs(\${i}, [\${current_path.join(', ')}], \${total})\`
+    const stackEntry = `dfs(${i}, [${current_path.join(', ')}], ${total})`
     callStack.push(stackEntry)
 
     steps.push({
       phase: 'enter_dfs', i, path: [...current_path], total, res: [...res], callStack: [...callStack],
-      activeLine: 4, message: \`Entering \${stackEntry}.\`
+      activeLine: 4, message: `Entering ${stackEntry}.`
     })
 
     steps.push({
       phase: 'check_target', i, path: [...current_path], total, res: [...res], callStack: [...callStack],
-      activeLine: 5, message: \`Check if total (\${total}) == target (\${target}).\`
+      activeLine: 5, message: `Check if total (${total}) == target (${target}).`
     })
 
     if (total === target) {
       res.push([...current_path])
       steps.push({
         phase: 'found', i, path: [...current_path], total, res: [...res], callStack: [...callStack],
-        activeLine: 6, message: \`Target reached! Append [\${current_path.join(', ')}] to res.\`
+        activeLine: 6, message: `Target reached! Append [${current_path.join(', ')}] to res.`
       })
       steps.push({
         phase: 'return_target', i, path: [...current_path], total, res: [...res], callStack: [...callStack],
@@ -88,13 +88,13 @@ function generateSteps(candidates, target) {
 
     steps.push({
       phase: 'check_bound', i, path: [...current_path], total, res: [...res], callStack: [...callStack],
-      activeLine: 8, message: \`Check if out of bounds (i >= \${sortedCandidates.length}) or exceeded target (\${total} > \${target}).\`
+      activeLine: 8, message: `Check if out of bounds (i >= ${sortedCandidates.length}) or exceeded target (${total} > ${target}).`
     })
 
     if (i >= sortedCandidates.length || total > target) {
       steps.push({
         phase: 'return_bound', i, path: [...current_path], total, res: [...res], callStack: [...callStack],
-        activeLine: 9, message: \`Condition met (i=\${i}, total=\${total}). Backtrack/return.\`
+        activeLine: 9, message: `Condition met (i=${i}, total=${total}). Backtrack/return.`
       })
       callStack.pop()
       return
@@ -104,26 +104,26 @@ function generateSteps(candidates, target) {
     current_path.push(sortedCandidates[i])
     steps.push({
       phase: 'include', i, path: [...current_path], total, res: [...res], callStack: [...callStack],
-      activeLine: 12, message: \`Include candidates[\${i}] (\${sortedCandidates[i]}). Path is now [\${current_path.join(', ')}].\`
+      activeLine: 12, message: `Include candidates[${i}] (${sortedCandidates[i]}). Path is now [${current_path.join(', ')}].`
     })
 
     steps.push({
       phase: 'call_include', i, path: [...current_path], total, res: [...res], callStack: [...callStack],
-      activeLine: 13, message: \`Recursive call including \${sortedCandidates[i]}: dfs(\${i}, [\${current_path.join(', ')}], \${total + sortedCandidates[i]}).\`
+      activeLine: 13, message: `Recursive call including ${sortedCandidates[i]}: dfs(${i}, [${current_path.join(', ')}], ${total + sortedCandidates[i]}).`
     })
-    
+
     dfs(i, current_path, total + sortedCandidates[i])
 
     // Skip candidate
     const popped = current_path.pop()
     steps.push({
       phase: 'pop', i, path: [...current_path], total, res: [...res], callStack: [...callStack],
-      activeLine: 16, message: \`Backtrack: pop \${popped} from path. Path is now [\${current_path.join(', ')}].\`
+      activeLine: 16, message: `Backtrack: pop ${popped} from path. Path is now [${current_path.join(', ')}].`
     })
 
     steps.push({
       phase: 'call_skip', i, path: [...current_path], total, res: [...res], callStack: [...callStack],
-      activeLine: 17, message: \`Recursive call skipping candidates[\${i}]: dfs(\${i + 1}, [\${current_path.join(', ')}], \${total}).\`
+      activeLine: 17, message: `Recursive call skipping candidates[${i}]: dfs(${i + 1}, [${current_path.join(', ')}], ${total}).`
     })
 
     dfs(i + 1, current_path, total)
@@ -135,7 +135,7 @@ function generateSteps(candidates, target) {
 
   steps.push({
     phase: 'done', i: null, path: [], total: 0, res: [...res], callStack: [],
-    activeLine: 20, message: \`Search complete. Found \${res.length} combinations.\`
+    activeLine: 20, message: `Search complete. Found ${res.length} combinations.`
   })
 
   // To simplify rendering, we attach the sorted candidates to the first step
@@ -175,7 +175,7 @@ export default function CombinationSumVisualizer() {
   } = usePlaybackState(steps.length)
 
   const step = stepIndex >= 0 ? steps[stepIndex] : null
-  const sortedCandidates = steps[0]?.sortedCandidates || [...candidates].sort((a,b) => a - b)
+  const sortedCandidates = steps[0]?.sortedCandidates || [...candidates].sort((a, b) => a - b)
 
   const applyExample = useCallback((ex) => {
     setCandidatesInput(JSON.stringify(ex.candidates))
@@ -223,76 +223,76 @@ export default function CombinationSumVisualizer() {
             </div>
 
             <div className="cs-candidates-row">
-                <span className="cs-label">Candidates (Sorted):</span>
-                <div className="cs-array">
-                    {sortedCandidates.map((val, idx) => (
-                        <div key={idx} className={\`cs-candidate \${step?.i === idx ? 'active' : ''}\`}>
-                            <span className="cs-val">{val}</span>
-                            <span className="cs-idx">i={idx}</span>
-                        </div>
-                    ))}
-                </div>
+              <span className="cs-label">Candidates (Sorted):</span>
+              <div className="cs-array">
+                {sortedCandidates.map((val, idx) => (
+                  <div key={idx} className={`cs-candidate ${step?.i === idx ? 'active' : ''}`}>
+                    <span className="cs-val">{val}</span>
+                    <span className="cs-idx">i={idx}</span>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="cs-state-cards">
-                <div className="cs-card">
-                    <div className="cs-card-title">current_path</div>
-                    <div className="cs-card-value">
-                        [{step?.path?.join(', ') || ''}]
-                    </div>
+              <div className="cs-card">
+                <div className="cs-card-title">current_path</div>
+                <div className="cs-card-value">
+                  [{step?.path?.join(', ') || ''}]
                 </div>
-                <div className="cs-card">
-                    <div className="cs-card-title">total</div>
-                    <div className={\`cs-card-value \${step?.total === target ? 'match' : step?.total > target ? 'exceed' : ''}\`}>
-                        {step?.total ?? 0} <span className="cs-card-sub">/ {target}</span>
-                    </div>
+              </div>
+              <div className="cs-card">
+                <div className="cs-card-title">total</div>
+                <div className={`cs-card-value ${step?.total === target ? 'match' : step?.total > target ? 'exceed' : ''}`}>
+                  {step?.total ?? 0} <span className="cs-card-sub">/ {target}</span>
                 </div>
+              </div>
             </div>
 
             <div className="cs-stack-container">
-                <div className="cs-section-title">Call Stack</div>
-                <div className="cs-stack-list">
-                    <AnimatePresence>
-                        {step?.callStack?.map((call, idx) => {
-                            const isTop = idx === step.callStack.length - 1
-                            return (
-                                <motion.div 
-                                    key={\`\${call}-\${idx}\`}
-                                    className={\`cs-stack-item \${isTop ? 'top' : ''}\`}
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, scale: 0.9 }}
-                                    transition={{ duration: 0.2 }}
-                                >
-                                    <span className="cs-stack-depth">{'>'.repeat(idx + 1)}</span>
-                                    {call}
-                                </motion.div>
-                            )
-                        })}
-                    </AnimatePresence>
-                    {(!step || !step.callStack || step.callStack.length === 0) && (
-                        <div className="cs-empty-stack">Stack is empty</div>
-                    )}
-                </div>
+              <div className="cs-section-title">Call Stack</div>
+              <div className="cs-stack-list">
+                <AnimatePresence>
+                  {step?.callStack?.map((call, idx) => {
+                    const isTop = idx === step.callStack.length - 1
+                    return (
+                      <motion.div
+                        key={`${call}-${idx}`}
+                        className={`cs-stack-item ${isTop ? 'top' : ''}`}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <span className="cs-stack-depth">{'>'.repeat(idx + 1)}</span>
+                        {call}
+                      </motion.div>
+                    )
+                  })}
+                </AnimatePresence>
+                {(!step || !step.callStack || step.callStack.length === 0) && (
+                  <div className="cs-empty-stack">Stack is empty</div>
+                )}
+              </div>
             </div>
 
             <div className="cs-res-container">
-                <div className="cs-section-title">Results (res)</div>
-                <div className="cs-res-list">
-                    <AnimatePresence>
-                        {step?.res?.map((arr, idx) => (
-                            <motion.div 
-                                key={idx}
-                                className="cs-res-item"
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                            >
-                                [{arr.join(', ')}]
-                            </motion.div>
-                        ))}
-                    </AnimatePresence>
-                    {(!step || step.res.length === 0) && <span style={{ color: '#475569', fontStyle: 'italic', fontSize: 13 }}>[ ]</span>}
-                </div>
+              <div className="cs-section-title">Results (res)</div>
+              <div className="cs-res-list">
+                <AnimatePresence>
+                  {step?.res?.map((arr, idx) => (
+                    <motion.div
+                      key={idx}
+                      className="cs-res-item"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                    >
+                      [{arr.join(', ')}]
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+                {(!step || step.res.length === 0) && <span style={{ color: '#475569', fontStyle: 'italic', fontSize: 13 }}>[ ]</span>}
+              </div>
             </div>
 
           </div>
@@ -303,7 +303,7 @@ export default function CombinationSumVisualizer() {
         <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
       </div>
 
-      <div className={\`cs-status \${step?.phase === 'found' ? 'found' : step?.phase === 'return_bound' ? 'bound' : ''}\`}>
+      <div className={`cs-status ${step?.phase === 'found' ? 'found' : step?.phase === 'return_bound' ? 'bound' : ''}`}>
         {step?.message ?? 'Press Play or Step to begin.'}
       </div>
 
