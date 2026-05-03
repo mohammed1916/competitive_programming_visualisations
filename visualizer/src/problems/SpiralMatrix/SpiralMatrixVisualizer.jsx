@@ -301,7 +301,7 @@ export default function SpiralMatrixVisualizer() {
               <div className="sm-var-row">
                 <span className="sm-var-name">matrix[i][j]</span>
                 <span className="sm-var-val highlight">
-                    {step?.currI !== null && step?.currJ !== null ? matrix[step.currI][step.currJ] : '–'}
+                    {step && step.currI !== null && step.currJ !== null ? matrix[step.currI][step.currJ] : '–'}
                 </span>
               </div>
             </div>
