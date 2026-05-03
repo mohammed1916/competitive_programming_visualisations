@@ -12,7 +12,9 @@ import MaximumSubarray from './problems/MaximumSubarray'
 import ClimbingStairs from './problems/ClimbingStairs'
 import BinarySearch from './problems/BinarySearch'
 import NumberOfIslands from './problems/NumberOfIslands'
+import MergeIntervals from './problems/MergeIntervals'
 import MatrixIterationBasics from './problems/MatrixIterationBasics'
+import ContainerWithMostWater from './problems/ContainerWithMostWater'
 import ProblemScaffold from './components/panels/ProblemScaffold'
 import './App.css'
 
@@ -32,6 +34,17 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ['Array', 'Hash Table'],
     accent: '#22c55e',
     component: TwoSum,
+  },
+  {
+    id: 'lc-11',
+    number: '11',
+    title: 'Container With Most Water',
+    slug: 'container-with-most-water',
+    description: 'Use two pointers shrinking from the outside in to find the maximum area between two lines.',
+    difficulty: 'Medium',
+    tags: ['Array', 'Two Pointers', 'Greedy'],
+    accent: '#3b82f6',
+    component: ContainerWithMostWater,
   },
   {
     id: 'lc-20',
@@ -54,6 +67,17 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ['Linked List', 'Two Pointers'],
     accent: '#0ea5e9',
     component: MergeTwoSortedLists,
+  },
+  {
+    id: 'lc-56',
+    number: '56',
+    title: 'Merge Intervals',
+    slug: 'merge-intervals',
+    description: 'Sort intervals by start time, then iteratively merge overlapping bounds.',
+    difficulty: 'Medium',
+    tags: ['Array', 'Sorting'],
+    accent: '#10b981',
+    component: MergeIntervals,
   },
   {
     id: 'lc-53',

@@ -1,0 +1,246 @@
+.merge-intervals-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 16px;
+  overflow: hidden;
+}
+
+.mi-top {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  gap: 16px;
+}
+
+.merge-intervals-middle {
+  display: flex;
+  height: 200px;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.mi-panel {
+  flex: 1;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.mi-panel-head {
+  padding: 12px 16px;
+  background: var(--surface-3);
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.mi-panel-body {
+  padding: 16px;
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.mi-example-btn {
+  padding: 4px 12px;
+  border-radius: 99px;
+  font-size: 12px;
+  cursor: pointer;
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #94a3b8;
+  transition: all 0.2s ease;
+}
+
+.mi-example-btn:hover {
+  background: #334155;
+  color: #f8fafc;
+}
+
+.mi-input {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: #f8fafc;
+  font-family: monospace;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.mi-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.mi-canvas {
+  position: relative;
+  flex: 1;
+  background: #0f172a;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mi-axis {
+  position: sticky;
+  top: 0;
+  height: 20px;
+  border-bottom: 1px solid #334155;
+  margin-bottom: 8px;
+  z-index: 10;
+  background: #0f172a;
+}
+
+.mi-axis-tick {
+  position: absolute;
+  bottom: 0;
+  height: 6px;
+  width: 1px;
+  background: #64748b;
+}
+
+.mi-tick-label {
+  position: absolute;
+  bottom: 8px;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: #94a3b8;
+}
+
+.mi-intervals-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+}
+
+.mi-section-title {
+  font-size: 12px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.mi-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 28px;
+}
+
+.mi-row-idx {
+  font-family: monospace;
+  font-size: 12px;
+  color: #64748b;
+  width: 24px;
+  text-align: right;
+}
+
+.mi-track {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 4px;
+}
+
+.mi-bar {
+  position: absolute;
+  height: 100%;
+  background: #3b82f6;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.mi-bar.active {
+  background: #60a5fa;
+  box-shadow: 0 0 12px rgba(96, 165, 250, 0.5);
+  border-color: #fff;
+  z-index: 5;
+}
+
+.mi-bar.merged {
+  background: #10b981;
+}
+
+.mi-bar.merged.active {
+  background: #34d399;
+  box-shadow: 0 0 12px rgba(52, 211, 153, 0.5);
+}
+
+.mi-bar.merged.just-merged {
+  background: #f59e0b;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.6);
+}
+
+.mi-bar-text {
+  font-size: 11px;
+  color: white;
+  font-family: monospace;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  padding: 0 4px;
+}
+
+.mi-empty-text {
+  font-family: monospace;
+  font-size: 13px;
+  color: #64748b;
+  padding-left: 36px;
+  font-style: italic;
+}
+
+.mi-status {
+  padding: 12px 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+  color: var(--text-main);
+  font-family: monospace;
+  font-size: 13px;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.mi-status.merge {
+  border-left-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.mi-status.append {
+  border-left-color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.mi-dock {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 8px 16px;
+  flex-shrink: 0;
+}
