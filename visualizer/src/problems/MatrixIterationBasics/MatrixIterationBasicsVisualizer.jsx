@@ -63,9 +63,10 @@ function makeMatrix(n) {
   return Array.from({ length: n }, () => Array.from({ length: n }, () => value++))
 }
 
-function buildSteps(n, mode) {
+function buildSteps(n, mode, exprOptions = {}) {
   const steps = []
   const { match } = MODE_META[mode]
+  const { exprEnabled = false, coeffI = 1, coeffJ = 1, op = '===', constVal = 0 } = exprOptions
   const visited = new Set()
   const scanned = new Set()
 
@@ -90,7 +91,19 @@ function buildSteps(n, mode) {
 
     for (let j = 0; j < n; j++) {
       const key = toKey(i, j)
-      const shouldVisit = match(i, j, n)
+      let shouldVisit = match(i, j, n)
+      if (exprEnabled) {
+        const lhs = coeffI * i + coeffJ * j
+        switch (op) {
+          case '===': shouldVisit = lhs === constVal; break
+          case '==': shouldVisit = lhs == constVal; break
+          case '>=': shouldVisit = lhs >= constVal; break
+          case '<=': shouldVisit = lhs <= constVal; break
+          case '>': shouldVisit = lhs > constVal; break
+          case '<': shouldVisit = lhs < constVal; break
+          default: shouldVisit = false
+        }
+      }
       scanned.add(key)
 
       steps.push({
@@ -147,7 +160,13 @@ export default function MatrixIterationBasicsVisualizer({ problem }) {
 
   const matrix = useMemo(() => makeMatrix(size), [size])
   const codeLines = useMemo(() => makeCodeLines(mode), [mode])
-  const steps = useMemo(() => buildSteps(size, mode), [size, mode])
+  const [exprEnabled, setExprEnabled] = useState(false)
+  const [coeffI, setCoeffI] = useState(1)
+  const [coeffJ, setCoeffJ] = useState(1)
+  const [op, setOp] = useState('===')
+  const [constVal, setConstVal] = useState(0)
+
+  const steps = useMemo(() => buildSteps(size, mode, { exprEnabled, coeffI, coeffJ, op, constVal }), [size, mode, exprEnabled, coeffI, coeffJ, op, constVal])
 
   const {
     stepIndex,
@@ -206,6 +225,45 @@ export default function MatrixIterationBasicsVisualizer({ problem }) {
                   {meta.label}
                 </button>
               ))}
+            </div>
+
+            <div style={{ marginTop: 10 }}>
+              <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <input type="checkbox" checked={exprEnabled} onChange={(e) => { setExprEnabled(e.target.checked); handleReset() }} />
+                <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>Enable custom expression</span>
+              </label>
+
+              {exprEnabled && (
+                <div style={{ marginTop: 8, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                    <label style={{ color: 'var(--text-dim)' }}>i ×</label>
+                    <select value={coeffI} onChange={(e) => setCoeffI(Number(e.target.value))}>
+                      <option value={0}>0</option>
+                      <option value={1}>1</option>
+                      <option value={2}>2</option>
+                    </select>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                    <label style={{ color: 'var(--text-dim)' }}>j ×</label>
+                    <select value={coeffJ} onChange={(e) => setCoeffJ(Number(e.target.value))}>
+                      <option value={0}>0</option>
+                      <option value={1}>1</option>
+                      <option value={2}>2</option>
+                    </select>
+                  </div>
+
+                  <select value={op} onChange={(e) => setOp(e.target.value)}>
+                    <option value={'==='}>=</option>
+                    <option value={'>='}>&gt;=</option>
+                    <option value={'<='}>&lt;=</option>
+                    <option value={'>'}>&gt;</option>
+                    <option value={'<'}>&lt;</option>
+                  </select>
+
+                  <input style={{ width: 68 }} value={constVal} onChange={(e) => setConstVal(Number(e.target.value))} />
+                </div>
+              )}
             </div>
 
             <div className="mib-size-row">
