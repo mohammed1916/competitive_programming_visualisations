@@ -74,13 +74,13 @@ const EXAMPLES = [
 
 const PHASE_META = {
   'build-edge': { label: 'Build Graph', color: 'blue' },
-  'push':       { label: 'Push Edge',  color: 'blue' },
-  'access':     { label: 'Access',     color: 'purple' },
+  'push': { label: 'Push Edge', color: 'blue' },
+  'access': { label: 'Access', color: 'purple' },
   'init-queue': { label: 'Init Queue', color: 'amber' },
-  'pop':        { label: 'Dequeue',    color: 'orange' },
-  'reduce':     { label: 'Reduce',     color: 'slate' },
-  'enqueue':    { label: 'Enqueue',    color: 'amber' },
-  'final':      { label: 'Complete',   color: 'green' },
+  'pop': { label: 'Dequeue', color: 'orange' },
+  'reduce': { label: 'Reduce', color: 'slate' },
+  'enqueue': { label: 'Enqueue', color: 'amber' },
+  'final': { label: 'Complete', color: 'green' },
 }
 
 function parsePrerequisites(raw) {
@@ -406,7 +406,7 @@ function generateCourseSteps(numCourses, prerequisites) {
 
 // ── GraphView ─────────────────────────────────────────────────────────────────
 
-const NODE_R   = 26
+const NODE_R = 26
 const GRAPH_VW = 480
 const GRAPH_VH = 360
 
@@ -416,13 +416,13 @@ function computeNodePositions(numCourses) {
   return Array.from({ length: numCourses }, (_, course) => {
     if (numCourses === 1) return { course, x: cx, y: cy }
     const radius = numCourses <= 3 ? 90 : numCourses <= 6 ? 135 : 155
-    const angle  = (course / numCourses) * Math.PI * 2 - Math.PI / 2
+    const angle = (course / numCourses) * Math.PI * 2 - Math.PI / 2
     return { course, x: cx + Math.cos(angle) * radius, y: cy + Math.sin(angle) * radius }
   })
 }
 
 function GraphView({ numCourses, step, zoom, onZoomChange }) {
-  const nodes      = computeNodePositions(numCourses)
+  const nodes = computeNodePositions(numCourses)
   const nodeLookup = new Map(nodes.map((n) => [n.course, n]))
   const isFailureFinal = step?.phase === 'final' && step?.result === false
   const blockedSet = new Set(step?.blockedCourses ?? [])
@@ -478,7 +478,7 @@ function GraphView({ numCourses, step, zoom, onZoomChange }) {
           aria-label="Course dependency graph"
         >
           <defs>
-            <marker id="cs-arr"        markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+            <marker id="cs-arr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
               <path d="M0,0 L0,6 L8,3 z" className="cs-arrowhead" />
             </marker>
             <marker id="cs-arr-active" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
@@ -489,7 +489,7 @@ function GraphView({ numCourses, step, zoom, onZoomChange }) {
           {/* Edges — trimmed so they don't overlap node circles */}
           {edges.map(({ prereq, course }, i) => {
             const from = nodeLookup.get(prereq)
-            const to   = nodeLookup.get(course)
+            const to = nodeLookup.get(course)
             if (!from || !to) return null
             const isActive = step?.activePrereq === prereq && step?.activeNeighbor === course
             const edgePhase = step?.phase
@@ -501,8 +501,8 @@ function GraphView({ numCourses, step, zoom, onZoomChange }) {
             const nx = dx / dist, ny = dy / dist
             const x1 = from.x + nx * (NODE_R + 3)
             const y1 = from.y + ny * (NODE_R + 3)
-            const x2 = to.x   - nx * (NODE_R + 9)
-            const y2 = to.y   - ny * (NODE_R + 9)
+            const x2 = to.x - nx * (NODE_R + 9)
+            const y2 = to.y - ny * (NODE_R + 9)
             return (
               <line
                 key={`e-${prereq}-${course}-${i}`}
@@ -516,9 +516,9 @@ function GraphView({ numCourses, step, zoom, onZoomChange }) {
           {/* Nodes */}
           {nodes.map(({ course, x, y }) => {
             const indegree = step?.indegree?.[course] ?? 0
-            const inQueue  = step?.queue?.includes(course)
-            const taken    = step?.takenOrder?.includes(course)
-            const active   = step?.activeCourse === course || step?.activeNeighbor === course
+            const inQueue = step?.queue?.includes(course)
+            const taken = step?.takenOrder?.includes(course)
+            const active = step?.activeCourse === course || step?.activeNeighbor === course
             const isCycleCore = cycleCoreSet.has(course)
             const isCycleLocked = blockedSet.has(course) && !isCycleCore
             // determine extra classes for visualizing 'access' and 'push' events
@@ -560,15 +560,15 @@ function GraphView({ numCourses, step, zoom, onZoomChange }) {
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export default function CourseScheduleVisualizer() {
-  const [courseInput,     setCourseInput]     = useState(String(DEFAULT_COURSES))
-  const [prereqInput,     setPrereqInput]     = useState(DEFAULT_PREREQS)
-  const [numCourses,      setNumCourses]      = useState(DEFAULT_COURSES)
-  const [prerequisites,   setPrerequisites]   = useState(() => JSON.parse(DEFAULT_PREREQS))
-  const [steps,           setSteps]           = useState(() => generateCourseSteps(DEFAULT_COURSES, JSON.parse(DEFAULT_PREREQS)))
+  const [courseInput, setCourseInput] = useState(String(DEFAULT_COURSES))
+  const [prereqInput, setPrereqInput] = useState(DEFAULT_PREREQS)
+  const [numCourses, setNumCourses] = useState(DEFAULT_COURSES)
+  const [prerequisites, setPrerequisites] = useState(() => JSON.parse(DEFAULT_PREREQS))
+  const [steps, setSteps] = useState(() => generateCourseSteps(DEFAULT_COURSES, JSON.parse(DEFAULT_PREREQS)))
   const [attemptedSubmit, setAttemptedSubmit] = useState(false)
-  const [graphZoom,       setGraphZoom]       = useState(1)
-  const [leftWidth,       setLeftWidth]       = useState(560)
-  const [showIOGuide,     setShowIOGuide]     = useState(false)
+  const [graphZoom, setGraphZoom] = useState(1)
+  const [leftWidth, setLeftWidth] = useState(560)
+  const [showIOGuide, setShowIOGuide] = useState(false)
 
   // Playback state hook
   const {
@@ -605,11 +605,11 @@ export default function CourseScheduleVisualizer() {
   }
 
   // ── Validation ──────────────────────────────────────────────────────────────
-  const parsedCourses     = Number(courseInput)
-  const coursesValid      = Number.isInteger(parsedCourses) && parsedCourses >= 1 && parsedCourses <= 12
-  const parsedPrereqs     = parsePrerequisites(prereqInput)
-  const prereqValue       = useMemo(() => parsedPrereqs.value ?? [], [parsedPrereqs.value])
-  const prereqRangeValid  = coursesValid && parsedPrereqs.value
+  const parsedCourses = Number(courseInput)
+  const coursesValid = Number.isInteger(parsedCourses) && parsedCourses >= 1 && parsedCourses <= 12
+  const parsedPrereqs = parsePrerequisites(prereqInput)
+  const prereqValue = useMemo(() => parsedPrereqs.value ?? [], [parsedPrereqs.value])
+  const prereqRangeValid = coursesValid && parsedPrereqs.value
     ? prereqValue.every(([a, b]) => a >= 0 && a < parsedCourses && b >= 0 && b < parsedCourses)
     : false
 
@@ -623,8 +623,8 @@ export default function CourseScheduleVisualizer() {
 
   // ── Derived ─────────────────────────────────────────────────────────────────
   const currentStep = stepIndex >= 0 ? steps[stepIndex] : null
-  const progress    = steps.length > 0 ? ((stepIndex + 1) / steps.length) * 100 : 0
-  const phaseMeta   = currentStep ? PHASE_META[currentStep.phase] : null
+  const progress = steps.length > 0 ? ((stepIndex + 1) / steps.length) * 100 : 0
+  const phaseMeta = currentStep ? PHASE_META[currentStep.phase] : null
   const blockedCourses = currentStep?.blockedCourses ?? []
   const cycleCore = currentStep?.cycleCore ?? []
   const blockedByCycle = currentStep?.blockedByCycle ?? []
@@ -738,7 +738,7 @@ export default function CourseScheduleVisualizer() {
                 <div className="cs-section-label">Expected Input (Visualizer)</div>
                 <p className="cs-io-text">Enter number of courses and prerequisite edges in JSON:</p>
                 <div className="cs-io-code mono">
-                  {"Courses: 4\nPrerequisites: [[1,0],[2,0],[3,1],[3,2]]".split('\n').map((l, i, arr) => (
+                  {"Courses: 4nPrerequisites: [[1,0],[2,0],[3,1],[3,2]]".split('n').map((l, i, arr) => (
                     <span key={i}>{l}{i < arr.length - 1 && <br />}</span>
                   ))}
                 </div>
@@ -753,14 +753,14 @@ export default function CourseScheduleVisualizer() {
                 <div className="cs-section-label">Competitive Programming Input (stdin)</div>
                 <p className="cs-io-text">Typical format:</p>
                 <div className="cs-io-code mono">
-                  {"n m\ncourse1 prereq1\ncourse2 prereq2\n...\ncoursem prereqm".split('\n').map((l, i, arr) => (
+                  {"n mncourse1 prereq1ncourse2 prereq2n...ncoursem prereqm".split('n').map((l, i, arr) => (
                     <span key={i}>{l}{i < arr.length - 1 && <br />}</span>
                   ))}
                 </div>
                 <p className="cs-io-text">Python parsing with <span className="mono">int(input())</span> style:</p>
                 <div className="cs-io-code mono">
-                  {`n, m = map(int, input().split())\nprerequisites = []\nfor _ in range(m):\n    c, p = map(int, input().split())\n    prerequisites.append([c, p])\n\n# call: canFinish(n, prerequisites)`
-                    .split('\n')
+                  {`n, m = map(int, input().split())nprerequisites = []nfor _ in range(m):n    c, p = map(int, input().split())n    prerequisites.append([c, p])nn# call: canFinish(n, prerequisites)`
+                    .split('n')
                     .map((l, i, arr) => <span key={i}>{l}{i < arr.length - 1 && <br />}</span>)}
                 </div>
               </div>
@@ -800,85 +800,85 @@ export default function CourseScheduleVisualizer() {
         {/* Resizable shell: left (graph) and right (variables) */}
         <div className="cs-content-shell" style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
           <div className="cs-col-left" style={{ width: `${leftWidth}px`, flex: '0 0 auto' }}>
-          <div className="cs-card cs-graph-card">
-            <div className="cs-card-head">
-              <div>
-                <div className="cs-section-label">Dependency Graph</div>
-                <p className="cs-card-sub">Edges: prerequisite → course unlocked</p>
-              </div>
-              <div className="cs-verdict">
-                <span className="cs-verdict-label">Result</span>
-                <span className={`cs-verdict-value mono ${currentStep?.result === false ? 'fail' : currentStep?.result === true ? 'pass' : ''}`}>
-                  {currentStep?.result == null ? '—' : String(currentStep.result)}
-                </span>
-              </div>
-            </div>
-            <GraphView
-              numCourses={numCourses}
-              step={currentStep}
-              zoom={graphZoom}
-              onZoomChange={setGraphZoom}
-            />
-          </div>
-          </div>
-
-            {/* Move: Queue/Taken and In-degree into left column below graph */}
-            <div className="cs-card cs-state-card" style={{ marginTop: '0.9rem' }}>
-              <div className="cs-state-section">
-                <div className="cs-section-label">Queue</div>
-                <div className="cs-token-row">
-                  {(currentStep?.queue ?? []).length > 0
-                    ? currentStep.queue.map((c) => (
-                        <span key={c} className="cs-token cs-token-queue mono">{c}</span>
-                      ))
-                    : <span className="cs-empty">Empty</span>}
+            <div className="cs-card cs-graph-card">
+              <div className="cs-card-head">
+                <div>
+                  <div className="cs-section-label">Dependency Graph</div>
+                  <p className="cs-card-sub">Edges: prerequisite → course unlocked</p>
+                </div>
+                <div className="cs-verdict">
+                  <span className="cs-verdict-label">Result</span>
+                  <span className={`cs-verdict-value mono ${currentStep?.result === false ? 'fail' : currentStep?.result === true ? 'pass' : ''}`}>
+                    {currentStep?.result == null ? '—' : String(currentStep.result)}
+                  </span>
                 </div>
               </div>
-              <div className="cs-state-divider" />
-              <div className="cs-state-section">
-                <div className="cs-section-label">Taken Order</div>
-                <div className="cs-token-row">
-                  {(currentStep?.takenOrder ?? []).length > 0
-                    ? currentStep.takenOrder.map((c) => (
-                        <span key={c} className="cs-token cs-token-taken mono">{c}</span>
-                      ))
-                    : <span className="cs-empty">None yet</span>}
-                </div>
+              <GraphView
+                numCourses={numCourses}
+                step={currentStep}
+                zoom={graphZoom}
+                onZoomChange={setGraphZoom}
+              />
+            </div>
+          </div>
+
+          {/* Move: Queue/Taken and In-degree into left column below graph */}
+          <div className="cs-card cs-state-card" style={{ marginTop: '0.9rem' }}>
+            <div className="cs-state-section">
+              <div className="cs-section-label">Queue</div>
+              <div className="cs-token-row">
+                {(currentStep?.queue ?? []).length > 0
+                  ? currentStep.queue.map((c) => (
+                    <span key={c} className="cs-token cs-token-queue mono">{c}</span>
+                  ))
+                  : <span className="cs-empty">Empty</span>}
               </div>
             </div>
-
-            <div className={`cs-card cs-indegree-card ${currentStep?.phase === 'final' && currentStep?.result === false ? 'failure-final' : ''}`} style={{ marginTop: '0.9rem' }}>
-              <div className="cs-section-label">In-degree Table</div>
-              <div className="cs-indegree-row">
-                {Array.from({ length: numCourses }, (_, course) => {
-                  const val      = currentStep?.indegree?.[course] ?? 0
-                  const isActive = currentStep?.activeNeighbor === course || currentStep?.activeCourse === course
-                  const isCycleCore = cycleCore.includes(course)
-                  const isCycleLocked = blockedByCycle.includes(course)
-                  return (
-                    <div key={course} className={`cs-deg-item ${isActive ? 'active' : ''} ${val === 0 ? 'zero' : ''} ${isCycleCore ? 'cycle-core' : ''} ${isCycleLocked ? 'cycle-locked' : ''}`}>
-                      <span className="cs-deg-course mono">{course}</span>
-                      <span className="cs-deg-val mono">{val}</span>
-                    </div>
-                  )
-                })}
+            <div className="cs-state-divider" />
+            <div className="cs-state-section">
+              <div className="cs-section-label">Taken Order</div>
+              <div className="cs-token-row">
+                {(currentStep?.takenOrder ?? []).length > 0
+                  ? currentStep.takenOrder.map((c) => (
+                    <span key={c} className="cs-token cs-token-taken mono">{c}</span>
+                  ))
+                  : <span className="cs-empty">None yet</span>}
               </div>
             </div>
+          </div>
 
-            {currentStep?.phase === 'final' && currentStep?.result === false && (
-              <div className="cs-card cs-cycle-insight-card" style={{ marginTop: '0.9rem' }}>
-                <div className="cs-section-label">Cycle Insight</div>
-                <p className="cs-cycle-line">
-                  Unfinished courses: <span className="mono">[{blockedCourses.join(', ')}]</span>
-                </p>
-                <p className="cs-cycle-line">
-                  Cycle core: <span className="mono">[{cycleCore.join(', ')}]</span>
-                </p>
-                <p className="cs-cycle-line">
-                  Blocked by cycle: <span className="mono">[{blockedByCycle.join(', ')}]</span>
-                </p>
-              </div>
-            )}
+          <div className={`cs-card cs-indegree-card ${currentStep?.phase === 'final' && currentStep?.result === false ? 'failure-final' : ''}`} style={{ marginTop: '0.9rem' }}>
+            <div className="cs-section-label">In-degree Table</div>
+            <div className="cs-indegree-row">
+              {Array.from({ length: numCourses }, (_, course) => {
+                const val = currentStep?.indegree?.[course] ?? 0
+                const isActive = currentStep?.activeNeighbor === course || currentStep?.activeCourse === course
+                const isCycleCore = cycleCore.includes(course)
+                const isCycleLocked = blockedByCycle.includes(course)
+                return (
+                  <div key={course} className={`cs-deg-item ${isActive ? 'active' : ''} ${val === 0 ? 'zero' : ''} ${isCycleCore ? 'cycle-core' : ''} ${isCycleLocked ? 'cycle-locked' : ''}`}>
+                    <span className="cs-deg-course mono">{course}</span>
+                    <span className="cs-deg-val mono">{val}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {currentStep?.phase === 'final' && currentStep?.result === false && (
+            <div className="cs-card cs-cycle-insight-card" style={{ marginTop: '0.9rem' }}>
+              <div className="cs-section-label">Cycle Insight</div>
+              <p className="cs-cycle-line">
+                Unfinished courses: <span className="mono">[{blockedCourses.join(', ')}]</span>
+              </p>
+              <p className="cs-cycle-line">
+                Cycle core: <span className="mono">[{cycleCore.join(', ')}]</span>
+              </p>
+              <p className="cs-cycle-line">
+                Blocked by cycle: <span className="mono">[{blockedByCycle.join(', ')}]</span>
+              </p>
+            </div>
+          )}
 
           {/* <div className="cs-card cs-step-card">
             <p className="cs-step-text">

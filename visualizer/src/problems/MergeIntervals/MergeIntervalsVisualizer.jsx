@@ -6,24 +6,24 @@ import { usePlaybackState } from '../../hooks/usePlaybackState'
 import './MergeIntervalsVisualizer.css'
 
 const SOLUTION_CODE = [
-  { line: 1,  text: 'class Solution:' },
-  { line: 2,  text: '    def merge(self, intervals: List[List[int]]) -> List[List[int]]:' },
-  { line: 3,  text: '        intervals.sort(key=lambda x: x[0])' },
-  { line: 4,  text: '        merged = []' },
-  { line: 5,  text: '        for interval in intervals:' },
-  { line: 6,  text: '            if not merged or merged[-1][1] < interval[0]:' },
-  { line: 7,  text: '                merged.append(interval)' },
-  { line: 8,  text: '            else:' },
-  { line: 9,  text: '                merged[-1][1] = max(merged[-1][1], interval[1])' },
+  { line: 1, text: 'class Solution:' },
+  { line: 2, text: '    def merge(self, intervals: List[List[int]]) -> List[List[int]]:' },
+  { line: 3, text: '        intervals.sort(key=lambda x: x[0])' },
+  { line: 4, text: '        merged = []' },
+  { line: 5, text: '        for interval in intervals:' },
+  { line: 6, text: '            if not merged or merged[-1][1] < interval[0]:' },
+  { line: 7, text: '                merged.append(interval)' },
+  { line: 8, text: '            else:' },
+  { line: 9, text: '                merged[-1][1] = max(merged[-1][1], interval[1])' },
   { line: 10, text: '        return merged' },
 ]
 
 function generateSteps(originalIntervals) {
   const steps = []
-  
+
   // Clone and sort
   const intervals = [...originalIntervals].map(a => [...a])
-  
+
   steps.push({
     phase: 'init',
     intervals: JSON.parse(JSON.stringify(originalIntervals)),
@@ -33,9 +33,9 @@ function generateSteps(originalIntervals) {
     message: 'Sort intervals based on their start times.',
     isSorted: false
   })
-  
+
   intervals.sort((a, b) => a[0] - b[0])
-  
+
   steps.push({
     phase: 'sorted',
     intervals: JSON.parse(JSON.stringify(intervals)),
@@ -50,26 +50,26 @@ function generateSteps(originalIntervals) {
 
   for (let i = 0; i < intervals.length; i++) {
     const interval = intervals[i]
-    
+
     steps.push({
       phase: 'eval',
       intervals: JSON.parse(JSON.stringify(intervals)),
       merged: JSON.parse(JSON.stringify(merged)),
       currIdx: i,
       activeLine: 5,
-      message: \`Evaluating interval [\${interval[0]}, \${interval[1]}].\`,
+      message: `Evaluating interval [${interval[0]}, ${interval[1]}].`,
       isSorted: true
     })
-    
+
     steps.push({
       phase: 'check',
       intervals: JSON.parse(JSON.stringify(intervals)),
       merged: JSON.parse(JSON.stringify(merged)),
       currIdx: i,
       activeLine: 6,
-      message: merged.length === 0 
-        ? 'Merged list is empty.' 
-        : \`Check if last merged end (\${merged[merged.length-1][1]}) < current start (\${interval[0]}).\`,
+      message: merged.length === 0
+        ? 'Merged list is empty.'
+        : `Check if last merged end (${merged[merged.length - 1][1]}) < current start (${interval[0]}).`,
       isSorted: true
     })
 
@@ -81,21 +81,21 @@ function generateSteps(originalIntervals) {
         merged: JSON.parse(JSON.stringify(merged)),
         currIdx: i,
         activeLine: 7,
-        message: \`No overlap. Append [\${interval[0]}, \${interval[1]}] to merged list.\`,
+        message: `No overlap. Append [${interval[0]}, ${interval[1]}] to merged list.`,
         isSorted: true
       })
     } else {
       const prevEnd = merged[merged.length - 1][1]
       const newEnd = Math.max(prevEnd, interval[1])
       merged[merged.length - 1][1] = newEnd
-      
+
       steps.push({
         phase: 'merge',
         intervals: JSON.parse(JSON.stringify(intervals)),
         merged: JSON.parse(JSON.stringify(merged)),
         currIdx: i,
         activeLine: 9,
-        message: \`Overlap detected! Update end of last merged interval to max(\${prevEnd}, \${interval[1]}) = \${newEnd}.\`,
+        message: `Overlap detected! Update end of last merged interval to max(${prevEnd}, ${interval[1]}) = ${newEnd}.`,
         isSorted: true
       })
     }
@@ -156,7 +156,7 @@ export default function MergeIntervalsVisualizer() {
 
   const displayIntervals = step ? step.intervals : originalIntervals
   const displayMerged = step ? step.merged : []
-  
+
   const minVal = Math.min(0, ...displayIntervals.map(i => i[0]))
   const maxVal = Math.max(10, ...displayIntervals.map(i => i[1]))
   const range = Math.max(maxVal - minVal, 1)
@@ -188,33 +188,33 @@ export default function MergeIntervalsVisualizer() {
               placeholder="[[1,3],[2,6],[8,10],[15,18]]"
               className="mi-input"
             />
-            
+
             <div className="mi-canvas">
               <div className="mi-axis">
-                  {Array.from({ length: 11 }).map((_, i) => {
-                      const val = Math.round(minVal + (i / 10) * range)
-                      return (
-                          <div key={i} className="mi-axis-tick" style={{ left: \`\${((val - minVal) / range) * 100}%\` }}>
-                              <span className="mi-tick-label">{val}</span>
-                          </div>
-                      )
-                  })}
+                {Array.from({ length: 11 }).map((_, i) => {
+                  const val = Math.round(minVal + (i / 10) * range)
+                  return (
+                    <div key={i} className="mi-axis-tick" style={{ left: `${((val - minVal) / range) * 100}%` }}>
+                      <span className="mi-tick-label">{val}</span>
+                    </div>
+                  )
+                })}
               </div>
-              
+
               <div className="mi-intervals-list">
                 <div className="mi-section-title">Intervals {step?.isSorted ? '(Sorted)' : '(Unsorted)'}</div>
                 {displayIntervals.map((interval, i) => {
                   const isActive = step?.currIdx === i
                   const leftPct = ((interval[0] - minVal) / range) * 100
                   const widthPct = ((interval[1] - interval[0]) / range) * 100
-                  
+
                   return (
-                    <div key={\`input-\${i}\`} className="mi-row">
+                    <div key={`input-${i}`} className="mi-row">
                       <div className="mi-row-idx">[{i}]</div>
                       <div className="mi-track">
-                        <motion.div 
-                          className={\`mi-bar \${isActive ? 'active' : ''}\`}
-                          style={{ left: \`\${leftPct}%\`, width: \`\${widthPct}%\` }}
+                        <motion.div
+                          className={`mi-bar ${isActive ? 'active' : ''}`}
+                          style={{ left: `${leftPct}%`, width: `${widthPct}%` }}
                           layout
                           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                         >
@@ -233,17 +233,17 @@ export default function MergeIntervalsVisualizer() {
                   const isJustMerged = isLast && step?.phase === 'merge'
                   const isJustAppended = isLast && step?.phase === 'append'
                   const isActive = isLast && (isJustMerged || isJustAppended || step?.phase === 'eval' || step?.phase === 'check')
-                  
+
                   const leftPct = ((interval[0] - minVal) / range) * 100
                   const widthPct = ((interval[1] - interval[0]) / range) * 100
-                  
+
                   return (
-                    <div key={\`merged-\${i}\`} className="mi-row">
+                    <div key={`merged-${i}`} className="mi-row">
                       <div className="mi-row-idx">[{i}]</div>
                       <div className="mi-track">
-                        <motion.div 
-                          className={\`mi-bar merged \${isActive ? 'active' : ''} \${isJustMerged ? 'just-merged' : ''}\`}
-                          style={{ left: \`\${leftPct}%\`, width: \`\${widthPct}%\` }}
+                        <motion.div
+                          className={`mi-bar merged ${isActive ? 'active' : ''} ${isJustMerged ? 'just-merged' : ''}`}
+                          style={{ left: `${leftPct}%`, width: `${widthPct}%` }}
                           layout
                           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                         >
@@ -254,7 +254,7 @@ export default function MergeIntervalsVisualizer() {
                   )
                 })}
                 {displayMerged.length === 0 && (
-                    <div className="mi-empty-text">[]</div>
+                  <div className="mi-empty-text">[]</div>
                 )}
               </div>
             </div>
@@ -266,7 +266,7 @@ export default function MergeIntervalsVisualizer() {
         <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
       </div>
 
-      <div className={\`mi-status \${step?.phase === 'merge' ? 'merge' : step?.phase === 'append' ? 'append' : ''}\`}>
+      <div className={`mi-status ${step?.phase === 'merge' ? 'merge' : step?.phase === 'append' ? 'append' : ''}`}>
         {step?.message ?? 'Press Play or Step to begin.'}
       </div>
 

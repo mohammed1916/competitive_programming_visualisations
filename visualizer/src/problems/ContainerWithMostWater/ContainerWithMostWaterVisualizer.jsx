@@ -6,15 +6,15 @@ import { usePlaybackState } from '../../hooks/usePlaybackState'
 import './ContainerWithMostWaterVisualizer.css'
 
 const SOLUTION_CODE = [
-  { line: 1,  text: 'class Solution:' },
-  { line: 2,  text: '    def maxArea(self, height: List[int]) -> int:' },
-  { line: 3,  text: '        left, right = 0, len(height) - 1' },
-  { line: 4,  text: '        max_area = 0' },
-  { line: 5,  text: '        while left < right:' },
-  { line: 6,  text: '            area = min(height[left], height[right]) * (right - left)' },
-  { line: 7,  text: '            max_area = max(max_area, area)' },
-  { line: 8,  text: '            if height[left] < height[right]:' },
-  { line: 9,  text: '                left += 1' },
+  { line: 1, text: 'class Solution:' },
+  { line: 2, text: '    def maxArea(self, height: List[int]) -> int:' },
+  { line: 3, text: '        left, right = 0, len(height) - 1' },
+  { line: 4, text: '        max_area = 0' },
+  { line: 5, text: '        while left < right:' },
+  { line: 6, text: '            area = min(height[left], height[right]) * (right - left)' },
+  { line: 7, text: '            max_area = max(max_area, area)' },
+  { line: 8, text: '            if height[left] < height[right]:' },
+  { line: 9, text: '                left += 1' },
   { line: 10, text: '            else:' },
   { line: 11, text: '                right -= 1' },
   { line: 12, text: '        return max_area' },
@@ -40,7 +40,7 @@ function generateSteps(height) {
     const w = right - left
     const h = Math.min(height[left], height[right])
     const area = w * h
-    
+
     steps.push({
       phase: 'compute',
       left,
@@ -63,15 +63,15 @@ function generateSteps(height) {
         message: `New max area found! Update max_area to ${maxArea}.`,
       })
     } else {
-        steps.push({
-            phase: 'skip',
-            left,
-            right,
-            maxArea,
-            currentArea: area,
-            activeLine: 7,
-            message: `Area ${area} is not greater than max_area ${maxArea}.`,
-        })
+      steps.push({
+        phase: 'skip',
+        left,
+        right,
+        maxArea,
+        currentArea: area,
+        activeLine: 7,
+        message: `Area ${area} is not greater than max_area ${maxArea}.`,
+      })
     }
 
     if (height[left] < height[right]) {
@@ -113,10 +113,10 @@ function generateSteps(height) {
 }
 
 const EXAMPLES = [
-  { label: 'Classic',  height: [1, 8, 6, 2, 5, 4, 8, 3, 7] },
-  { label: 'Simple',   height: [1, 1] },
+  { label: 'Classic', height: [1, 8, 6, 2, 5, 4, 8, 3, 7] },
+  { label: 'Simple', height: [1, 1] },
   { label: 'Mountain', height: [2, 3, 4, 5, 18, 17, 6] },
-  { label: 'Valley',   height: [10, 2, 1, 3, 9] },
+  { label: 'Valley', height: [10, 2, 1, 3, 9] },
 ]
 
 export default function ContainerWithMostWaterVisualizer() {
@@ -176,33 +176,33 @@ export default function ContainerWithMostWaterVisualizer() {
               placeholder="[1,8,6,2,5,4,8,3,7]"
               className="cw-input"
             />
-            
+
             <div className="cw-chart-container">
               {step && step.left !== null && step.right !== null && step.phase !== 'done' && (
-                  <div 
-                    className="cw-water-fill"
-                    style={{
-                        left: \`calc(\${(step.left / Math.max(height.length - 1, 1)) * 100}% + 12px)\`,
-                        right: \`calc(\${100 - (step.right / Math.max(height.length - 1, 1)) * 100}% - 12px)\`,
-                        height: \`\${(Math.min(height[step.left], height[step.right]) / maxHeightValue) * 100}%\`,
-                    }}
-                  />
+                <div
+                  className="cw-water-fill"
+                  style={{
+                    left: `calc(${(step.left / Math.max(height.length - 1, 1)) * 100}% + 12px)`,
+                    right: `calc(${100 - (step.right / Math.max(height.length - 1, 1)) * 100}% - 12px)`,
+                    height: `${(Math.min(height[step.left], height[step.right]) / maxHeightValue) * 100}%`,
+                  }}
+                />
               )}
               {height.map((h, i) => {
                 const isLeft = step?.left === i
                 const isRight = step?.right === i
                 const isActive = isLeft || isRight
-                
+
                 return (
                   <div key={i} className="cw-bar-wrapper">
                     <div className="cw-bar-value">{h}</div>
-                    <motion.div 
-                      className={\`cw-bar \${isActive ? 'active' : ''}\`}
-                      style={{ height: \`\${(h / maxHeightValue) * 100}%\` }}
+                    <motion.div
+                      className={`cw-bar ${isActive ? 'active' : ''}`}
+                      style={{ height: `${(h / maxHeightValue) * 100}%` }}
                       layout
                     />
                     <div className="cw-pointer-label">
-                        {isLeft ? 'L' : isRight ? 'R' : ''}
+                      {isLeft ? 'L' : isRight ? 'R' : ''}
                     </div>
                   </div>
                 )
@@ -248,7 +248,7 @@ export default function ContainerWithMostWaterVisualizer() {
         </div>
       </div>
 
-      <div className={\`cw-status \${step?.phase === 'update' ? 'found' : ''}\`}>
+      <div className={`cw-status ${step?.phase === 'update' ? 'found' : ''}`}>
         {step?.message ?? 'Press Play or Step to begin.'}
       </div>
 
