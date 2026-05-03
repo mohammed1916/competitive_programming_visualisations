@@ -1,0 +1,256 @@
+.spiral-matrix-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 16px;
+  overflow: hidden;
+}
+
+.sm-top {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  gap: 16px;
+}
+
+.spiral-matrix-middle {
+  display: flex;
+  height: 280px;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.sm-panel {
+  flex: 1;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.sm-panel-head {
+  padding: 12px 16px;
+  background: var(--surface-3);
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.sm-panel-body {
+  padding: 16px;
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.sm-example-btn {
+  padding: 4px 12px;
+  border-radius: 99px;
+  font-size: 12px;
+  cursor: pointer;
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #94a3b8;
+  transition: all 0.2s ease;
+}
+
+.sm-example-btn:hover {
+  background: #334155;
+  color: #f8fafc;
+}
+
+.sm-input {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: #f8fafc;
+  font-family: monospace;
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+.sm-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.sm-matrix-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-height: 150px;
+  padding: 16px;
+}
+
+.sm-grid {
+  display: grid;
+  gap: 4px;
+  position: relative;
+}
+
+.sm-boundary {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.2);
+  z-index: 5;
+  transition: all 0.3s ease;
+}
+
+.sm-boundary.top-bound {
+  height: 2px;
+  left: -8px;
+  right: -8px;
+  background: #ef4444;
+}
+
+.sm-boundary.bottom-bound {
+  height: 2px;
+  left: -8px;
+  right: -8px;
+  background: #f97316;
+}
+
+.sm-boundary.left-bound {
+  width: 2px;
+  top: -8px;
+  bottom: -8px;
+  background: #3b82f6;
+}
+
+.sm-boundary.right-bound {
+  width: 2px;
+  top: -8px;
+  bottom: -8px;
+  background: #8b5cf6;
+}
+
+.sm-cell {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 16px;
+  color: #f8fafc;
+  transition: all 0.3s ease;
+  z-index: 2;
+}
+
+.sm-cell.visited {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: #10b981;
+  color: #34d399;
+}
+
+.sm-cell.current {
+  background: #3b82f6;
+  border-color: #60a5fa;
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.5);
+  transform: scale(1.1);
+  z-index: 10;
+}
+
+.sm-cell.out-bounds {
+  opacity: 0.3;
+}
+
+.sm-res-container {
+  display: flex;
+  align-items: center;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 16px;
+  overflow-x: auto;
+}
+
+.sm-res-array {
+  display: flex;
+  gap: 4px;
+}
+
+.sm-res-item {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #10b981;
+  color: #022c22;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 13px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.sm-vars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sm-var-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--surface-1);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-family: monospace;
+  font-size: 13px;
+}
+
+.sm-var-name {
+  color: #94a3b8;
+}
+
+.sm-var-val {
+  color: #f8fafc;
+  font-weight: 500;
+}
+
+.sm-var-val.highlight {
+  color: #22c55e;
+}
+
+.sm-status {
+  padding: 12px 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+  color: var(--text-main);
+  font-family: monospace;
+  font-size: 13px;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.sm-status.visit {
+  border-left-color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.sm-dock {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 8px 16px;
+  flex-shrink: 0;
+}

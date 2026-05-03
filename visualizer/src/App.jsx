@@ -15,6 +15,8 @@ import NumberOfIslands from './problems/NumberOfIslands'
 import MergeIntervals from './problems/MergeIntervals'
 import TrappingRainWater from './problems/TrappingRainWater'
 import LongestSubstringWithoutRepeating from './problems/LongestSubstringWithoutRepeating'
+import SpiralMatrix from './problems/SpiralMatrix'
+import CombinationSum from './problems/CombinationSum'
 import MatrixIterationBasics from './problems/MatrixIterationBasics'
 import ContainerWithMostWater from './problems/ContainerWithMostWater'
 import ProblemScaffold from './components/panels/ProblemScaffold'
@@ -58,6 +60,28 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ['Array', 'Two Pointers', 'Dynamic Programming'],
     accent: '#3b82f6',
     component: TrappingRainWater,
+  },
+  {
+    id: 'lc-54',
+    number: '54',
+    title: 'Spiral Matrix',
+    slug: 'spiral-matrix',
+    description: 'Traverse a 2D matrix in spiral order by carefully shrinking four directional boundaries (top, bottom, left, right).',
+    difficulty: 'Medium',
+    tags: ['Array', 'Matrix', 'Simulation'],
+    accent: '#f97316',
+    component: SpiralMatrix,
+  },
+  {
+    id: 'lc-39',
+    number: '39',
+    title: 'Combination Sum',
+    slug: 'combination-sum',
+    description: 'Use a backtracking depth-first search (DFS) algorithm to find all unique combinations of candidates that sum to the target.',
+    difficulty: 'Medium',
+    tags: ['Array', 'Backtracking'],
+    accent: '#14b8a6',
+    component: CombinationSum,
   },
   {
     id: 'lc-20',
