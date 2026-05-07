@@ -200,36 +200,36 @@
   min-height: 120px;
 }
 
-.cs-stack-list {
+.cs-tree-container {
   flex: 1;
   background: #0f172a;
   border: 1px solid #334155;
   border-radius: 8px;
   padding: 12px;
   overflow-y: auto;
+  overflow-x: auto;
   display: flex;
   flex-direction: column;
-  gap: 4px;
 }
 
-.cs-stack-item {
+.cs-tree-node {
   font-family: monospace;
   font-size: 13px;
   color: #94a3b8;
-  padding: 4px 8px;
+  white-space: pre;
+}
+
+.cs-tree-label {
+  display: inline-block;
+  padding: 0 4px;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.02);
 }
 
-.cs-stack-item.top {
+.cs-tree-label.active {
   color: #e2e8f0;
-  background: rgba(59, 130, 246, 0.15);
-  border-left: 2px solid #3b82f6;
-}
-
-.cs-stack-depth {
-  color: #3b82f6;
-  margin-right: 8px;
+  background: rgba(59, 130, 246, 0.2);
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.5);
 }
 
 .cs-empty-stack {

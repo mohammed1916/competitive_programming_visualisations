@@ -36,22 +36,39 @@ function generateSteps(candidates, target) {
 
   if (!candidates || candidates.length === 0) {
     steps.push({
-      phase: 'done', i: null, path: [], total: 0, res: [], callStack: [],
+      phase: 'done', i: null, path: [], total: 0, res: [],
       activeLine: 20, message: 'Empty candidates array. Return [].'
     })
     return steps
+  }
+
+  const treeNodes = new Map()
+
+  function registerTrieNode(pathArray, stepIndex) {
+    const key = pathArray.join(',')
+    if (!treeNodes.has(key)) {
+      treeNodes.set(key, { path: [...pathArray], children: [], firstStep: stepIndex })
+      if (pathArray.length > 0) {
+        const parentKey = pathArray.slice(0, -1).join(',')
+        const parentNode = treeNodes.get(parentKey)
+        if (parentNode && !parentNode.children.includes(key)) {
+          parentNode.children.push(key)
+        }
+      }
+    }
+    return key
   }
 
   // Pre-sort candidates for more logical visual progression (optional, but good practice)
   const sortedCandidates = [...candidates].sort((a, b) => a - b)
 
   steps.push({
-    phase: 'init', i: null, path: [], total: 0, res: [...res], callStack: [],
+    phase: 'init', i: null, path: [], total: 0, res: [...res], activePathKey: '',
     activeLine: 3, message: 'Initialize empty results list res = [].'
   })
 
   steps.push({
-    phase: 'call_dfs', i: null, path: [], total: 0, res: [...res], callStack: [],
+    phase: 'call_dfs', i: null, path: [], total: 0, res: [...res], activePathKey: '',
     activeLine: 19, message: 'Initial call: dfs(0, [], 0).'
   })
 
@@ -59,56 +76,55 @@ function generateSteps(candidates, target) {
     // Artificial limit to prevent infinite loops / huge traces
     if (stepCounter++ > 1500) return
 
+    const activePathKey = registerTrieNode(current_path, steps.length)
+
     const stackEntry = `dfs(${i}, [${current_path.join(', ')}], ${total})`
-    callStack.push(stackEntry)
 
     steps.push({
-      phase: 'enter_dfs', i, path: [...current_path], total, res: [...res], callStack: [...callStack],
+      phase: 'enter_dfs', i, path: [...current_path], total, res: [...res], activePathKey,
       activeLine: 4, message: `Entering ${stackEntry}.`
     })
 
     steps.push({
-      phase: 'check_target', i, path: [...current_path], total, res: [...res], callStack: [...callStack],
+      phase: 'check_target', i, path: [...current_path], total, res: [...res], activePathKey,
       activeLine: 5, message: `Check if total (${total}) == target (${target}).`
     })
 
     if (total === target) {
       res.push([...current_path])
       steps.push({
-        phase: 'found', i, path: [...current_path], total, res: [...res], callStack: [...callStack],
+        phase: 'found', i, path: [...current_path], total, res: [...res], activePathKey,
         activeLine: 6, message: `Target reached! Append [${current_path.join(', ')}] to res.`
       })
       steps.push({
-        phase: 'return_target', i, path: [...current_path], total, res: [...res], callStack: [...callStack],
+        phase: 'return_target', i, path: [...current_path], total, res: [...res], activePathKey,
         activeLine: 7, message: 'Return from current DFS call.'
       })
-      callStack.pop()
       return
     }
 
     steps.push({
-      phase: 'check_bound', i, path: [...current_path], total, res: [...res], callStack: [...callStack],
+      phase: 'check_bound', i, path: [...current_path], total, res: [...res], activePathKey,
       activeLine: 8, message: `Check if out of bounds (i >= ${sortedCandidates.length}) or exceeded target (${total} > ${target}).`
     })
 
     if (i >= sortedCandidates.length || total > target) {
       steps.push({
-        phase: 'return_bound', i, path: [...current_path], total, res: [...res], callStack: [...callStack],
+        phase: 'return_bound', i, path: [...current_path], total, res: [...res], activePathKey,
         activeLine: 9, message: `Condition met (i=${i}, total=${total}). Backtrack/return.`
       })
-      callStack.pop()
       return
     }
 
     // Include candidate
     current_path.push(sortedCandidates[i])
     steps.push({
-      phase: 'include', i, path: [...current_path], total, res: [...res], callStack: [...callStack],
+      phase: 'include', i, path: [...current_path], total, res: [...res], activePathKey,
       activeLine: 12, message: `Include candidates[${i}] (${sortedCandidates[i]}). Path is now [${current_path.join(', ')}].`
     })
 
     steps.push({
-      phase: 'call_include', i, path: [...current_path], total, res: [...res], callStack: [...callStack],
+      phase: 'call_include', i, path: [...current_path], total, res: [...res], activePathKey,
       activeLine: 13, message: `Recursive call including ${sortedCandidates[i]}: dfs(${i}, [${current_path.join(', ')}], ${total + sortedCandidates[i]}).`
     })
 
@@ -117,29 +133,28 @@ function generateSteps(candidates, target) {
     // Skip candidate
     const popped = current_path.pop()
     steps.push({
-      phase: 'pop', i, path: [...current_path], total, res: [...res], callStack: [...callStack],
+      phase: 'pop', i, path: [...current_path], total, res: [...res], activePathKey,
       activeLine: 16, message: `Backtrack: pop ${popped} from path. Path is now [${current_path.join(', ')}].`
     })
 
     steps.push({
-      phase: 'call_skip', i, path: [...current_path], total, res: [...res], callStack: [...callStack],
+      phase: 'call_skip', i, path: [...current_path], total, res: [...res], activePathKey,
       activeLine: 17, message: `Recursive call skipping candidates[${i}]: dfs(${i + 1}, [${current_path.join(', ')}], ${total}).`
     })
 
     dfs(i + 1, current_path, total)
-
-    callStack.pop()
   }
 
   dfs(0, [], 0)
 
   steps.push({
-    phase: 'done', i: null, path: [], total: 0, res: [...res], callStack: [],
+    phase: 'done', i: null, path: [], total: 0, res: [...res], activePathKey: '',
     activeLine: 20, message: `Search complete. Found ${res.length} combinations.`
   })
 
-  // To simplify rendering, we attach the sorted candidates to the first step
+  // To simplify rendering, we attach the sorted candidates and treeNodes to the first step
   steps[0].sortedCandidates = sortedCandidates
+  steps[0].treeNodes = treeNodes
 
   return steps
 }
@@ -150,6 +165,38 @@ const EXAMPLES = [
   { label: 'No Answer', candidates: [4, 5], target: 3 },
   { label: 'Single', candidates: [2], target: 4 },
 ]
+
+function RecursionTreeNode({ nodeKey, treeNodes, activeKey, currentStepIndex, linePrefix = "", childBasePrefix = "" }) {
+  const node = treeNodes.get(nodeKey)
+  if (!node || node.firstStep > currentStepIndex) return null
+
+  const isActive = nodeKey === activeKey
+  const visibleChildren = node.children.filter(k => treeNodes.get(k).firstStep <= currentStepIndex)
+
+  return (
+    <div className="cs-tree-node">
+      <div className={`cs-tree-label ${isActive ? 'active' : ''}`}>
+        {linePrefix}{nodeKey === "" ? "root" : `[${node.path.join(', ')}]`}
+      </div>
+      {visibleChildren.map((childKey, idx) => {
+        const isLast = idx === visibleChildren.length - 1
+        const childLinePrefix = childBasePrefix + (isLast ? "└── " : "├── ")
+        const childChildBasePrefix = childBasePrefix + (isLast ? "    " : "│   ")
+        return (
+          <RecursionTreeNode
+            key={childKey}
+            nodeKey={childKey}
+            treeNodes={treeNodes}
+            activeKey={activeKey}
+            currentStepIndex={currentStepIndex}
+            linePrefix={childLinePrefix}
+            childBasePrefix={childChildBasePrefix}
+          />
+        )
+      })}
+    </div>
+  )
+}
 
 export default function CombinationSumVisualizer() {
   const [candidatesInput, setCandidatesInput] = useState('[2, 3, 6, 7]')
@@ -250,28 +297,18 @@ export default function CombinationSumVisualizer() {
             </div>
 
             <div className="cs-stack-container">
-              <div className="cs-section-title">Call Stack</div>
-              <div className="cs-stack-list">
-                <AnimatePresence>
-                  {step?.callStack?.map((call, idx) => {
-                    const isTop = idx === step.callStack.length - 1
-                    return (
-                      <motion.div
-                        key={`${call}-${idx}`}
-                        className={`cs-stack-item ${isTop ? 'top' : ''}`}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <span className="cs-stack-depth">{'>'.repeat(idx + 1)}</span>
-                        {call}
-                      </motion.div>
-                    )
-                  })}
-                </AnimatePresence>
-                {(!step || !step.callStack || step.callStack.length === 0) && (
-                  <div className="cs-empty-stack">Stack is empty</div>
+              <div className="cs-section-title">Recursion Tree (Explored Paths)</div>
+              <div className="cs-tree-container">
+                {steps[0]?.treeNodes && (
+                  <RecursionTreeNode
+                    nodeKey=""
+                    treeNodes={steps[0].treeNodes}
+                    activeKey={step?.activePathKey}
+                    currentStepIndex={stepIndex}
+                  />
+                )}
+                {(!steps[0]?.treeNodes || stepIndex < 0) && (
+                  <div className="cs-empty-stack">Tree is empty</div>
                 )}
               </div>
             </div>
