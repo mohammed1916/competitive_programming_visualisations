@@ -5,124 +5,110 @@ import PlaybackControls from '../../components/PlaybackControls'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import './ValidParenthesesVisualizer.css'
 
-// ─── Solution code ────────────────────────────────────────────────────────────
 const SOLUTION_CODE = [
-  { line: 1, text: 'class Solution(object):' },
-  { line: 2, text: '    def isValid(self, s):' },
-  { line: 3, text: '        stack = []' },
-  { line: 4, text: '        mapping = {")": "(", "}": "{", "]": "["}' },
-  { line: 5, text: '        for char in s:' },
-  { line: 6, text: '            if char in mapping:' },
-  { line: 7, text: '                top = stack.pop() if stack else "#"' },
-  { line: 8, text: '                if mapping[char] != top:' },
-  { line: 9, text: '                    return False' },
-  { line: 10, text: '            else:' },
-  { line: 11, text: '                stack.append(char)' },
-  { line: 12, text: '        return len(stack) == 0' },
+  { line: 1,  text: 'class Solution:' },
+  { line: 2,  text: '    def isValid(self, s: str) -> bool:' },
+  { line: 3,  text: '        stack = []' },
+  { line: 4,  text: '        closeToOpen = {")": "(", "]": "[", "}": "{"}' },
+  { line: 5,  text: '        ' },
+  { line: 6,  text: '        for c in s:' },
+  { line: 7,  text: '            if c in closeToOpen:' },
+  { line: 8,  text: '                if stack and stack[-1] == closeToOpen[c]:' },
+  { line: 9,  text: '                    stack.pop()' },
+  { line: 10, text: '                else:' },
+  { line: 11, text: '                    return False' },
+  { line: 12, text: '            else:' },
+  { line: 13, text: '                stack.append(c)' },
+  { line: 14, text: '                ' },
+  { line: 15, text: '        return True if not stack else False' },
 ]
 
-const CLOSE_TO_OPEN = { ')': '(', '}': '{', ']': '[' }
-const OPEN_SET = new Set(['(', '{', '['])
-
-// ─── Step generator ───────────────────────────────────────────────────────────
 function generateSteps(s) {
   const steps = []
+  
+  if (typeof s !== 'string') {
+      steps.push({
+          phase: 'done', i: null, stack: [], c: null, success: false,
+          activeLine: 15, message: 'Invalid input. Return False.'
+      })
+      return steps
+  }
+
   const stack = []
+  const closeToOpen = { ")": "(", "]": "[", "}": "{" }
 
   steps.push({
-    phase: 'init',
-    i: null,
-    char: null,
-    stack: [],
-    valid: null,
-    activeLine: 3,
-    message: 'Initialise empty stack.',
+    phase: 'init', i: null, stack: [...stack], c: null,
+    activeLine: 4, message: 'Initialize empty stack and closeToOpen mapping.'
   })
 
   for (let i = 0; i < s.length; i++) {
-    const char = s[i]
-    const isClose = char in CLOSE_TO_OPEN
+    const c = s[i]
+    
+    steps.push({
+      phase: 'loop', i, stack: [...stack], c,
+      activeLine: 6, message: \`Read character c = '\${c}' at index \${i}.\`
+    })
 
-    if (isClose) {
-      const top = stack.length > 0 ? stack[stack.length - 1] : '#'
-      const expected = CLOSE_TO_OPEN[char]
-      const match = top === expected
+    steps.push({
+      phase: 'check_close', i, stack: [...stack], c,
+      activeLine: 7, message: \`Is '\${c}' a closing bracket? (in closeToOpen?)\`
+    })
 
+    if (c in closeToOpen) {
+      const match = closeToOpen[c]
+      
       steps.push({
-        phase: 'check-close',
-        i,
-        char,
-        stack: [...stack],
-        top,
-        expected,
-        match,
-        valid: null,
-        activeLine: 7,
-        message: `Close '${char}': pop top='${top}', expected '${expected}' → ${match ? '✓ match' : '✗ mismatch'}`,
+        phase: 'check_stack', i, stack: [...stack], c,
+        activeLine: 8, message: \`Yes. Check if stack is non-empty and top of stack == '\${match}'.\`
       })
 
-      if (!match) {
+      if (stack.length > 0 && stack[stack.length - 1] === match) {
+        const popped = stack.pop()
         steps.push({
-          phase: 'invalid',
-          i,
-          char,
-          stack: [...stack],
-          valid: false,
-          activeLine: 9,
-          message: `Mismatch! '${top}' ≠ '${expected}' → return False`,
+          phase: 'pop', i, stack: [...stack], c, popped,
+          activeLine: 9, message: \`Match found! Pop '\${popped}' from stack.\`
+        })
+      } else {
+        steps.push({
+          phase: 'fail_mismatch', i, stack: [...stack], c,
+          activeLine: 11, message: \`Mismatch or empty stack. Expected '\${match}' but got \${stack.length ? "'" + stack[stack.length - 1] + "'" : 'empty stack'}. Return False.\`
         })
         return steps
       }
-
-      stack.pop()
     } else {
+      stack.push(c)
       steps.push({
-        phase: 'push',
-        i,
-        char,
-        stack: [...stack],
-        valid: null,
-        activeLine: 11,
-        message: `Open '${char}': push onto stack.`,
+        phase: 'push', i, stack: [...stack], c,
+        activeLine: 13, message: \`No, '\${c}' is an opening bracket. Push it onto the stack.\`
       })
-      stack.push(char)
     }
   }
 
-  const isValid = stack.length === 0
+  const success = stack.length === 0
   steps.push({
-    phase: isValid ? 'valid' : 'invalid',
-    i: null,
-    char: null,
-    stack: [...stack],
-    valid: isValid,
-    activeLine: 12,
-    message: isValid
-      ? 'Stack is empty → return True ✓'
-      : `Stack not empty (${stack.join('')} remains) → return False ✗`,
+    phase: 'done', i: null, stack: [...stack], c: null, success,
+    activeLine: 15, message: success 
+      ? 'Loop finished and stack is empty. Return True!' 
+      : 'Loop finished but stack is NOT empty (unmatched open brackets). Return False.'
   })
+
   return steps
 }
 
-// ─── Default examples ─────────────────────────────────────────────────────────
 const EXAMPLES = [
-  { label: '()[]{}',  s: '()[]{}' },
-  { label: '()',      s: '()' },
-  { label: '{[]}',    s: '{[]}' },
-  { label: '(]',      s: '(]' },
-  { label: '([)]',    s: '([)]' },
-  { label: '(((',     s: '(((' },
+  { label: 'Valid', s: '()[]{}' },
+  { label: 'Nested', s: '({[]})' },
+  { label: 'Mismatch', s: '(]' },
+  { label: 'Unmatched Open', s: '((()' },
+  { label: 'Unmatched Close', s: '())' },
 ]
 
-// ─── Component ────────────────────────────────────────────────────────────────
 export default function ValidParenthesesVisualizer() {
-  const [sInput, setSInput] = useState('()[]{}')
+  const [sInput, setSInput] = useState('({[]})')
 
   const { s, inputError } = useMemo(() => {
-    const cleaned = sInput.trim()
-    const valid = /^[()[\]{} ]*$/.test(cleaned)
-    if (!valid) return { s: '()[]{}', inputError: 'Only bracket characters allowed' }
-    return { s: cleaned.replace(/\s/g, ''), inputError: '' }
+    return { s: sInput, inputError: '' } // any string is valid input for this problem
   }, [sInput])
 
   const steps = useMemo(() => generateSteps(s), [s])
@@ -139,163 +125,130 @@ export default function ValidParenthesesVisualizer() {
     handleReset()
   }, [handleReset])
 
-  // ── cell state ──────────────────────────────────────────────────────────────
-  function charState(idx) {
-    if (!step) return 'idle'
-    if (step.phase === 'invalid' && step.i === idx) return 'done-err'
-    if (step.phase === 'valid') return 'done-ok'
-    if (step.i === idx) return 'active'
-    if (step.i !== null && idx < step.i) return 'past'
-    return 'idle'
-  }
-
-  // ── code highlight ──────────────────────────────────────────────────────────
-  const activeLine = step?.activeLine ?? null
-
-  // ── outcome classes ─────────────────────────────────────────────────────────
-  const statusClass =
-    step?.valid === true ? 'valid' : step?.valid === false ? 'invalid' : ''
-
   return (
     <div className="vp-shell">
-      {/* ── top row ── */}
       <div className="vp-top">
-        {/* String strip */}
-        <div className="vp-panel">
+        <div className="vp-panel" style={{ flex: 1.5 }}>
           <div className="vp-panel-head">
-            Input String
+            String Parsing
             {inputError && <span style={{ color: '#f87171', marginLeft: 8 }}>{inputError}</span>}
-            <span className="vp-badge" style={{ background: '#1e293b', color: '#93c5fd' }}>String</span>
           </div>
           <div className="vp-panel-body">
-            <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
               {EXAMPLES.map((ex) => (
                 <button
                   key={ex.label}
                   onClick={() => applyExample(ex)}
-                  style={{
-                    padding: '3px 10px', borderRadius: 99, fontSize: 11, cursor: 'pointer',
-                    background: '#1e293b', border: '1px solid #334155', color: '#94a3b8',
-                    fontFamily: 'monospace',
-                  }}
+                  className="vp-example-btn"
                 >
                   {ex.label}
                 </button>
               ))}
             </div>
-            <input
-              value={sInput}
-              onChange={(e) => { setSInput(e.target.value); handleReset() }}
-              placeholder="()[]{}..."
-              style={{
-                width: '100%', padding: '5px 10px', borderRadius: 7, border: '1px solid #334155',
-                background: '#0f172a', color: '#f8fafc', fontFamily: 'monospace', fontSize: 14,
-                marginBottom: 14, boxSizing: 'border-box',
-              }}
-            />
-            <div className="vp-str-row">
-              {s.split('').map((ch, idx) => (
-                <motion.div key={idx} className="vp-char-cell">
-                  <motion.div
-                    className={`vp-char-box ${charState(idx)}`}
-                    animate={{ scale: charState(idx) === 'active' ? 1.15 : 1 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 22 }}
-                  >
-                    {ch}
-                  </motion.div>
-                  <div className="vp-char-idx">{idx}</div>
-                </motion.div>
-              ))}
+
+            <div style={{ display: 'flex', gap: 12, marginBottom: 24, alignItems: 'center' }}>
+              <span style={{ color: '#64748b', fontSize: 13, fontFamily: 'monospace' }}>s =</span>
+              <input
+                value={sInput}
+                onChange={(e) => { setSInput(e.target.value); handleReset() }}
+                placeholder="()[]{}"
+                className="vp-input"
+                style={{ flex: 1, margin: 0 }}
+              />
             </div>
+
+            <div className="vp-string-container">
+              {s.split('').map((char, idx) => {
+                const isActive = step?.i === idx
+                const isProcessed = step?.i > idx || step?.phase === 'done' || step?.phase === 'fail_mismatch'
+                
+                let cellClass = "vp-char-cell "
+                if (isActive) cellClass += "active "
+                if (isProcessed && !isActive) cellClass += "processed "
+
+                if (isActive && step?.phase === 'fail_mismatch') cellClass += "fail "
+                if (isActive && step?.phase === 'pop') cellClass += "match "
+
+                return (
+                  <div key={idx} className="vp-char-wrapper">
+                    <div className="vp-char-index">{idx}</div>
+                    <motion.div 
+                        className={cellClass}
+                        animate={isActive ? { y: -5, scale: 1.1 } : { y: 0, scale: 1 }}
+                    >
+                      {char}
+                    </motion.div>
+                    <div className="vp-ptr-container">
+                        {isActive && <div className="vp-ptr">▲</div>}
+                    </div>
+                  </div>
+                )
+              })}
+              {s.length === 0 && (
+                  <div style={{ color: '#64748b', fontStyle: 'italic' }}>Empty string</div>
+              )}
+            </div>
+            
+            <div className="vp-map-legend">
+                <span className="vp-legend-title">Mapping (closeToOpen)</span>
+                <div className="vp-map-pairs">
+                    <span className="vp-map-pair">) → (</span>
+                    <span className="vp-map-pair">] → [</span>
+                    <span className="vp-map-pair">{"} → {"}</span>
+                </div>
+            </div>
+
           </div>
         </div>
 
-        {/* Stack panel */}
-        <div className="vp-panel">
-          <div className="vp-panel-head">
-            Stack (open brackets)
-            <span className="vp-badge" style={{ background: '#1e293b', color: '#fb923c' }}>Stack</span>
-          </div>
-          <div className="vp-panel-body">
-            <div style={{ fontSize: 11, color: '#475569', marginBottom: 10 }}>
-              ↑ top of stack
-            </div>
-            <div className="vp-stack-wrap">
-              <AnimatePresence>
-                {(step?.stack ?? []).length === 0 ? (
-                  <span className="vp-stack-empty">Stack is empty</span>
-                ) : (
-                  (step?.stack ?? []).map((ch, depth) => {
-                    const isTop = depth === (step?.stack ?? []).length - 1
-                    return (
-                      <motion.div
-                        key={`${depth}-${ch}`}
-                        className="vp-stack-item"
-                        initial={{ opacity: 0, x: -16 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: 16 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <div className={`vp-stack-box${isTop ? ' top-item' : ''}`}>{ch}</div>
-                        <span className="vp-stack-depth">{depth}</span>
-                        {isTop && <span style={{ fontSize: 10, color: '#f97316' }}>← top</span>}
-                      </motion.div>
-                    )
-                  })
+        <div className="vp-panel" style={{ flex: 1 }}>
+          <div className="vp-panel-head">Stack</div>
+          <div className="vp-panel-body" style={{ justifyContent: 'flex-end' }}>
+            <div className="vp-stack-container">
+                <AnimatePresence mode="popLayout">
+                    {step?.stack?.map((char, idx) => {
+                        const isTop = idx === step.stack.length - 1
+                        const isMatching = isTop && step.phase === 'check_stack' && char === { ")": "(", "]": "[", "}": "{" }[step.c]
+                        const isFailing = isTop && step.phase === 'fail_mismatch'
+                        
+                        let itemClass = "vp-stack-item "
+                        if (isTop) itemClass += "top "
+                        if (isMatching) itemClass += "matching "
+                        if (isFailing) itemClass += "failing "
+
+                        return (
+                            <motion.div 
+                                key={\`\${idx}-\${char}\`}
+                                layout
+                                initial={{ opacity: 0, y: -20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.8, x: 20 }}
+                                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                                className={itemClass}
+                            >
+                                {char}
+                                {isTop && <span className="vp-stack-top-label">TOP</span>}
+                            </motion.div>
+                        )
+                    })}
+                </AnimatePresence>
+                {(!step?.stack || step.stack.length === 0) && (
+                    <div className="vp-empty-stack">Stack is empty</div>
                 )}
-              </AnimatePresence>
+                <div className="vp-stack-base" />
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── middle row ── */}
       <div className="vp-middle">
         <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
-
-        <div className="vp-panel">
-          <div className="vp-panel-head">Variables</div>
-          <div className="vp-panel-body">
-            <div className="vp-vars">
-              <div className="vp-var-row">
-                <span className="vp-var-name">char</span>
-                <span className="vp-var-val">{step?.char ?? '–'}</span>
-              </div>
-              <div className="vp-var-row">
-                <span className="vp-var-name">stack size</span>
-                <span className="vp-var-val">{step ? (step.stack?.length ?? 0) : '–'}</span>
-              </div>
-              {step?.top !== undefined && (
-                <div className="vp-var-row">
-                  <span className="vp-var-name">top</span>
-                  <span className="vp-var-val">{step.top}</span>
-                </div>
-              )}
-              {step?.expected !== undefined && (
-                <div className="vp-var-row">
-                  <span className="vp-var-name">expected</span>
-                  <span className="vp-var-val">{step.expected}</span>
-                </div>
-              )}
-              {step?.valid !== null && step?.valid !== undefined && (
-                <div className="vp-var-row">
-                  <span className="vp-var-name">result</span>
-                  <span className={`vp-var-val ${step.valid ? 'ok' : 'err'}`}>
-                    {step.valid ? 'True' : 'False'}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
       </div>
 
-      {/* ── status ── */}
-      <div className={`vp-status ${statusClass}`}>
+      <div className={\`vp-status \${step?.phase === 'done' ? (step.success ? 'success' : 'fail') : step?.phase === 'fail_mismatch' ? 'fail' : ''}\`}>
         {step?.message ?? 'Press Play or Step to begin.'}
       </div>
 
-      {/* ── dock ── */}
       <div className="vp-dock">
         <PlaybackControls
           isPlaying={isPlaying}

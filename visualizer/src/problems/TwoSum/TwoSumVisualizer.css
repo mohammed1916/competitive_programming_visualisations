@@ -2,231 +2,309 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--bg-page);
-  color: var(--text-primary);
-  font-family: var(--font-sans);
+  gap: 16px;
+  overflow: hidden;
 }
 
-/* ── top row: array + map ── */
 .twosum-top {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  padding: 16px 16px 0;
-}
-
-/* ── middle row: code + vars ── */
-.twosum-middle {
-  display: grid;
-  grid-template-columns: 1fr 280px;
-  gap: 12px;
-  padding: 12px 16px 0;
+  display: flex;
   flex: 1;
   min-height: 0;
+  gap: 16px;
 }
 
-/* ── panel base ── */
-.ts-panel {
-  background: var(--bg-panel);
+.twosum-middle {
+  display: flex;
+  height: 240px;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.twosum-panel {
+  background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
 }
 
-.ts-panel-head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
+.twosum-panel-head {
+  padding: 12px 16px;
+  background: var(--surface-3);
   border-bottom: 1px solid var(--border);
-  font-size: 11px;
   font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: .05em;
-}
-
-.ts-panel-head .ts-badge {
-  margin-left: auto;
-  padding: 2px 8px;
-  border-radius: 99px;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.ts-panel-body {
-  flex: 1;
-  padding: 14px;
-  overflow: auto;
-}
-
-/* ── Array Panel ── */
-.ts-array-row {
+  font-size: 13px;
+  color: var(--text-main);
   display: flex;
   align-items: center;
-  gap: 0;
-  margin-bottom: 10px;
-  flex-wrap: nowrap;
+  flex-shrink: 0;
 }
 
-.ts-array-cell {
+.twosum-panel-body {
+  padding: 16px;
+  flex: 1;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  min-width: 48px;
 }
 
-.ts-cell-val {
-  width: 42px;
-  height: 42px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid var(--border);
-  border-radius: 8px;
-  font-size: 15px;
-  font-weight: 700;
-  background: var(--bg-page);
-  transition: background 0.2s, border-color 0.2s;
-  color: var(--text-primary);
-}
-
-.ts-cell-idx {
-  font-size: 10px;
-  color: var(--text-muted);
-  margin-top: 3px;
-}
-
-/* cell states */
-.ts-cell-val.active {
-  background: #f97316;
-  border-color: #f97316;
-  color: #fff;
-}
-
-.ts-cell-val.answer {
-  background: #22c55e;
-  border-color: #22c55e;
-  color: #fff;
-}
-
-.ts-cell-val.visited {
-  background: #1e3a5f;
-  border-color: #0ea5e9;
-  color: #93c5fd;
-}
-
-.ts-target-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 8px;
-  font-size: 13px;
-}
-
-.ts-target-chip {
+.twosum-example-btn {
+  padding: 4px 12px;
+  border-radius: 99px;
+  font-size: 12px;
+  cursor: pointer;
   background: #1e293b;
   border: 1px solid #334155;
-  border-radius: 8px;
-  padding: 4px 12px;
-  font-weight: 600;
+  color: #94a3b8;
+  transition: all 0.2s ease;
+}
+
+.twosum-example-btn:hover {
+  background: #334155;
   color: #f8fafc;
 }
 
-.ts-complement-chip {
-  padding: 4px 12px;
+.twosum-input {
+  padding: 8px 12px;
   border-radius: 8px;
-  font-weight: 600;
-  background: #fef9c3;
-  color: #713f12;
-  border: 1px solid #fde047;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: #f8fafc;
+  font-family: monospace;
+  font-size: 14px;
 }
 
-/* ── Hash Map Panel ── */
-.ts-map-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
+.twosum-input:focus {
+  outline: none;
+  border-color: var(--accent);
 }
 
-.ts-map-table th {
-  text-align: left;
-  padding: 6px 10px;
-  color: var(--text-muted);
+.twosum-array-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 32px;
+  min-height: 80px;
+  align-items: flex-start;
+}
+
+.twosum-cell-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 48px;
+}
+
+.twosum-index {
   font-size: 11px;
-  border-bottom: 1px solid var(--border);
+  color: #64748b;
+  margin-bottom: 6px;
+  font-family: monospace;
 }
 
-.ts-map-row {
-  border-bottom: 1px solid var(--border);
-  transition: background 0.2s;
-}
-
-.ts-map-row td {
-  padding: 7px 10px;
+.twosum-cell {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1e293b;
+  border: 2px solid #334155;
+  border-radius: 8px;
+  color: #f8fafc;
+  font-size: 16px;
   font-weight: 600;
+  font-family: monospace;
+  transition: all 0.3s ease;
 }
 
-.ts-map-row.highlight {
-  background: #14532d;
-  color: #86efac;
+.twosum-cell.stored {
+  background: rgba(168, 85, 247, 0.15);
+  border-color: #a855f7;
+  color: #c084fc;
 }
 
-.ts-map-row.highlight td {
-  color: #86efac;
+.twosum-cell.active {
+  background: rgba(14, 165, 233, 0.2);
+  border-color: #0ea5e9;
+  box-shadow: 0 0 15px rgba(14, 165, 233, 0.3);
+  color: #38bdf8;
 }
 
-/* ── Variables panel ── */
-.ts-vars {
+.twosum-cell.match {
+  background: rgba(34, 197, 94, 0.2);
+  border-color: #22c55e;
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
+  color: #4ade80;
+}
+
+.twosum-ptr-container {
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.twosum-ptr {
+  font-size: 12px;
+  font-weight: bold;
+  font-family: monospace;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #0ea5e9;
+  color: white;
+}
+
+.twosum-ptr.match {
+  background: #22c55e;
+}
+
+.twosum-formula-box {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-
-.ts-var-row {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 7px 10px;
-  background: var(--bg-page);
-  border-radius: 7px;
-  border: 1px solid var(--border);
-  font-size: 13px;
+  margin-top: auto;
 }
 
-.ts-var-name {
-  color: var(--text-muted);
-  font-family: var(--font-mono);
+.twosum-formula {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: monospace;
+  font-size: 14px;
 }
 
-.ts-var-val {
-  font-weight: 700;
-  font-family: var(--font-mono);
-  color: var(--text-primary);
+.twosum-formula.vals {
+  font-size: 18px;
+  font-weight: bold;
 }
 
-.ts-var-val.highlight {
+.twosum-formula .var { color: #94a3b8; }
+.twosum-formula .op { color: #64748b; }
+.twosum-formula .val { color: #f8fafc; }
+
+.twosum-formula .diff {
+  color: #a855f7;
+}
+
+.twosum-formula .diff.val {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.twosum-formula .diff.val.visible {
+  opacity: 1;
+}
+
+.twosum-formula .diff.val.match {
   color: #22c55e;
+  text-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
 }
 
-/* ── status strip ── */
-.ts-status {
-  padding: 6px 16px;
-  font-size: 12px;
-  color: var(--text-muted);
-  border-top: 1px solid var(--border);
-  min-height: 28px;
+.twosum-map-container {
+  display: flex;
+  flex-direction: column;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  flex: 1;
+  overflow: hidden;
 }
 
-.ts-status.found {
-  color: #22c55e;
+.twosum-map-headers {
+  display: flex;
+  padding: 8px 16px;
+  background: #1e293b;
+  border-bottom: 1px solid #334155;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #64748b;
   font-weight: 600;
+  justify-content: space-between;
 }
 
-/* ── playback dock ── */
+.twosum-map-row {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+  font-family: monospace;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.twosum-map-row:last-child {
+  border-bottom: none;
+}
+
+.twosum-map-key {
+  color: #c084fc;
+  font-weight: bold;
+  width: 40px;
+}
+
+.twosum-map-arrow {
+  color: #64748b;
+  margin: 0 auto;
+}
+
+.twosum-map-val {
+  color: #94a3b8;
+  width: 40px;
+  text-align: right;
+}
+
+.twosum-map-row.checking {
+  background: rgba(168, 85, 247, 0.2);
+  border-left: 3px solid #a855f7;
+}
+
+.twosum-map-row.match {
+  background: rgba(34, 197, 94, 0.2);
+  border-left: 3px solid #22c55e;
+}
+
+.twosum-map-row.match .twosum-map-key,
+.twosum-map-row.match .twosum-map-val {
+  color: #4ade80;
+}
+
+.twosum-empty-map {
+  padding: 16px;
+  color: #475569;
+  font-style: italic;
+  font-size: 13px;
+  text-align: center;
+}
+
+.twosum-status {
+  padding: 12px 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+  color: var(--text-main);
+  font-family: monospace;
+  font-size: 13px;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.twosum-status.success { border-left-color: #22c55e; background: rgba(34, 197, 94, 0.1); }
+.twosum-status.fail { border-left-color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+
 .twosum-dock {
-  border-top: 1px solid var(--border);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 8px 16px;
+  flex-shrink: 0;
 }

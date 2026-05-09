@@ -5,123 +5,100 @@ import PlaybackControls from '../../components/PlaybackControls'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import './TwoSumVisualizer.css'
 
-// ─── Solution code ────────────────────────────────────────────────────────────
 const SOLUTION_CODE = [
-  { line: 1,  text: 'class Solution(object):' },
-  { line: 2,  text: '    def twoSum(self, nums, target):' },
-  { line: 3,  text: '        seen = {}  # val -> index' },
-  { line: 4,  text: '        for i, num in enumerate(nums):' },
-  { line: 5,  text: '            complement = target - num' },
-  { line: 6,  text: '            if complement in seen:' },
-  { line: 7,  text: '                return [seen[complement], i]' },
-  { line: 8,  text: '            seen[num] = i' },
-  { line: 9,  text: '        return []' },
+  { line: 1, text: 'class Solution:' },
+  { line: 2, text: '    def twoSum(self, nums: List[int], target: int) -> List[int]:' },
+  { line: 3, text: '        prevMap = {}  # val -> index' },
+  { line: 4, text: '        ' },
+  { line: 5, text: '        for i, n in enumerate(nums):' },
+  { line: 6, text: '            diff = target - n' },
+  { line: 7, text: '            if diff in prevMap:' },
+  { line: 8, text: '                return [prevMap[diff], i]' },
+  { line: 9, text: '            prevMap[n] = i' },
+  { line: 10, text: '        ' },
+  { line: 11, text: '        return []' },
 ]
 
-// ─── Step generator ───────────────────────────────────────────────────────────
 function generateSteps(nums, target) {
   const steps = []
-  const seen = {}
 
-  // init step
+  if (!nums || nums.length < 2) {
+    steps.push({
+      phase: 'done', i: null, prevMap: {}, diff: null,
+      activeLine: 11, message: 'Invalid array. Return [].'
+    })
+    return steps
+  }
+
+  const prevMap = {}
+
   steps.push({
-    phase: 'init',
-    i: null,
-    num: null,
-    complement: null,
-    found: false,
-    answerPair: null,
-    seenSnapshot: {},
-    activeLine: 3,
-    message: 'Initialise empty hash map seen = {}',
+    phase: 'init', i: null, prevMap: {...prevMap}, diff: null,
+    activeLine: 3, message: 'Initialize empty hash map to store previously seen values and their indices.'
   })
 
   for (let i = 0; i < nums.length; i++) {
-    const num = nums[i]
-    const complement = target - num
-
-    // highlight current element, compute complement
+    const n = nums[i]
+    
     steps.push({
-      phase: 'compute',
-      i,
-      num,
-      complement,
-      found: false,
-      answerPair: null,
-      seenSnapshot: { ...seen },
-      activeLine: 5,
-      message: `i=${i}  num=${num}  →  complement = ${target} - ${num} = ${complement}`,
+      phase: 'loop', i, prevMap: {...prevMap}, diff: null, n,
+      activeLine: 5, message: \`Check element nums[\${i}] = \${n}.\`
     })
 
-    if (complement in seen) {
-      // found answer
+    const diff = target - n
+    steps.push({
+      phase: 'calc_diff', i, prevMap: {...prevMap}, diff, n,
+      activeLine: 6, message: \`Calculate diff = target (\${target}) - n (\${n}) = \${diff}.\`
+    })
+
+    steps.push({
+      phase: 'check_map', i, prevMap: {...prevMap}, diff, n,
+      activeLine: 7, message: \`Check if diff (\${diff}) is in prevMap.\`
+    })
+
+    if (diff in prevMap) {
       steps.push({
-        phase: 'found',
-        i,
-        num,
-        complement,
-        found: true,
-        answerPair: [seen[complement], i],
-        seenSnapshot: { ...seen },
-        activeLine: 7,
-        message: `Found! complement ${complement} is at index ${seen[complement]}  →  return [${seen[complement]}, ${i}]`,
+        phase: 'found', i, prevMap: {...prevMap}, diff, n, matchIdx: prevMap[diff],
+        activeLine: 8, message: \`Match found! \${diff} is at index \${prevMap[diff]}. Return [\${prevMap[diff]}, \${i}].\`
       })
       return steps
+    } else {
+      prevMap[n] = i
+      steps.push({
+        phase: 'add_map', i, prevMap: {...prevMap}, diff, n,
+        activeLine: 9, message: \`Not found. Add \${n} to prevMap at index \${i}.\`
+      })
     }
-
-    // check failed – add to map
-    steps.push({
-      phase: 'store',
-      i,
-      num,
-      complement,
-      found: false,
-      answerPair: null,
-      seenSnapshot: { ...seen },
-      activeLine: 8,
-      message: `${complement} not in map. Store seen[${num}] = ${i}`,
-    })
-    seen[num] = i
   }
 
-  // no answer (shouldn't happen for valid inputs but handled gracefully)
   steps.push({
-    phase: 'done',
-    i: null,
-    num: null,
-    complement: null,
-    found: false,
-    answerPair: null,
-    seenSnapshot: { ...seen },
-    activeLine: 9,
-    message: 'No two-sum pair found.',
+    phase: 'done', i: null, prevMap: {...prevMap}, diff: null,
+    activeLine: 11, message: 'No two sum solution found. Return [].'
   })
+
   return steps
 }
 
-// ─── Default examples ─────────────────────────────────────────────────────────
 const EXAMPLES = [
-  { label: 'Classic',      nums: [2, 7, 11, 15],     target: 9  },
-  { label: 'Middle pair',  nums: [3, 2, 4],           target: 6  },
-  { label: 'Duplicate',    nums: [3, 3],              target: 6  },
-  { label: 'Longer',       nums: [1, 5, 3, 8, 2, 4], target: 10 },
+  { label: 'Example 1', nums: [2, 7, 11, 15], target: 9 },
+  { label: 'Example 2', nums: [3, 2, 4], target: 6 },
+  { label: 'Same Values', nums: [3, 3], target: 6 },
+  { label: 'Negatives', nums: [-3, 4, 3, 90], target: 0 },
 ]
 
-// ─── Component ────────────────────────────────────────────────────────────────
 export default function TwoSumVisualizer() {
-  const [numsInput, setNumsInput]     = useState('[2, 7, 11, 15]')
+  const [numsInput, setNumsInput] = useState('[2, 7, 11, 15]')
   const [targetInput, setTargetInput] = useState('9')
 
-  // parse + validate
   const { nums, target, inputError } = useMemo(() => {
     try {
       const n = JSON.parse(numsInput)
       const t = Number(targetInput)
-      if (!Array.isArray(n) || n.some((x) => typeof x !== 'number')) throw new Error()
-      if (isNaN(t)) throw new Error()
+      if (!Array.isArray(n)) throw new Error('nums must be an array')
+      if (isNaN(t)) throw new Error('target must be a number')
       return { nums: n, target: t, inputError: '' }
-    } catch {
-      return { nums: [2, 7, 11, 15], target: 9, inputError: 'Invalid input' }
+    } catch (e) {
+      return { nums: [2, 7, 11, 15], target: 9, inputError: e.message || 'Invalid input' }
     }
   }, [numsInput, targetInput])
 
@@ -140,208 +117,136 @@ export default function TwoSumVisualizer() {
     handleReset()
   }, [handleReset])
 
-  // ── derive cell states ──────────────────────────────────────────────────────
-  function cellState(idx) {
-    if (!step) return 'idle'
-    if (step.found && step.answerPair?.includes(idx)) return 'answer'
-    if (step.i === idx) return 'active'
-    if (step.seenSnapshot) {
-      const seenIdx = Object.values(step.seenSnapshot)
-      if (seenIdx.includes(idx)) return 'visited'
-    }
-    return 'idle'
-  }
-
-  // ── code highlight ──────────────────────────────────────────────────────────
-  const codeHighlight = step
-    ? { activeLine: step.activeLine, relatedLines: [] }
-    : { activeLine: null, relatedLines: [] }
-
   return (
     <div className="twosum-shell">
-      {/* ── top: array + hash map ── */}
       <div className="twosum-top">
-        {/* Array panel */}
-        <div className="ts-panel">
-          <div className="ts-panel-head">
-            Input Array
+        <div className="twosum-panel" style={{ flex: 1.5 }}>
+          <div className="twosum-panel-head">
+            Array & Target
             {inputError && <span style={{ color: '#f87171', marginLeft: 8 }}>{inputError}</span>}
-            <span className="ts-badge" style={{ background: '#1e3a5f', color: '#93c5fd' }}>Array</span>
           </div>
-          <div className="ts-panel-body">
-            {/* examples */}
-            <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
+          <div className="twosum-panel-body">
+            <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
               {EXAMPLES.map((ex) => (
                 <button
                   key={ex.label}
                   onClick={() => applyExample(ex)}
-                  style={{
-                    padding: '3px 10px', borderRadius: 99, fontSize: 11, cursor: 'pointer',
-                    background: '#1e293b', border: '1px solid #334155', color: '#94a3b8',
-                  }}
+                  className="twosum-example-btn"
                 >
                   {ex.label}
                 </button>
               ))}
             </div>
 
-            {/* inputs */}
-            <div style={{ display: 'flex', gap: 8, marginBottom: 14, alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: 12, marginBottom: 24, alignItems: 'center' }}>
               <input
                 value={numsInput}
                 onChange={(e) => { setNumsInput(e.target.value); handleReset() }}
-                placeholder="[2,7,11,15]"
-                style={{
-                  flex: 1, padding: '5px 10px', borderRadius: 7, border: '1px solid #334155',
-                  background: '#0f172a', color: '#f8fafc', fontFamily: 'monospace', fontSize: 13,
-                }}
+                placeholder="[2, 7, 11, 15]"
+                className="twosum-input"
+                style={{ flex: 1, margin: 0 }}
               />
-              <span style={{ color: '#64748b', fontSize: 12, whiteSpace: 'nowrap' }}>target</span>
+              <span style={{ color: '#64748b', fontSize: 13, fontFamily: 'monospace' }}>target=</span>
               <input
                 value={targetInput}
                 onChange={(e) => { setTargetInput(e.target.value); handleReset() }}
                 placeholder="9"
-                style={{
-                  width: 56, padding: '5px 8px', borderRadius: 7, border: '1px solid #334155',
-                  background: '#0f172a', color: '#f8fafc', fontFamily: 'monospace', fontSize: 13,
-                  textAlign: 'center',
-                }}
+                className="twosum-input"
+                style={{ width: '60px', margin: 0, textAlign: 'center' }}
               />
             </div>
 
-            {/* array cells */}
-            <div className="ts-array-row">
-              {nums.map((val, idx) => (
-                <motion.div
-                  key={idx}
-                  className="ts-array-cell"
-                  layout
-                >
-                  <motion.div
-                    className={`ts-cell-val ${cellState(idx)}`}
-                    layout
-                    animate={{ scale: cellState(idx) !== 'idle' ? 1.1 : 1 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                  >
-                    {val}
-                  </motion.div>
-                  <div className="ts-cell-idx">{idx}</div>
-                </motion.div>
-              ))}
+            <div className="twosum-array-container">
+              {nums.map((num, idx) => {
+                const isActive = step?.i === idx
+                const isMatch = step?.phase === 'found' && (step.matchIdx === idx || step.i === idx)
+                const isStored = step?.prevMap && num in step.prevMap && step.prevMap[num] === idx
+
+                return (
+                  <div key={idx} className="twosum-cell-wrapper">
+                    <span className="twosum-index">{idx}</span>
+                    <motion.div 
+                        className={\`twosum-cell \${isActive ? 'active' : ''} \${isMatch ? 'match' : ''} \${isStored && !isActive && !isMatch ? 'stored' : ''}\`}
+                        animate={isActive ? { y: -5 } : { y: 0 }}
+                    >
+                      {num}
+                    </motion.div>
+                    <div className="twosum-ptr-container">
+                        {isActive && <div className="twosum-ptr">i</div>}
+                        {isMatch && step.matchIdx === idx && <div className="twosum-ptr match">match</div>}
+                    </div>
+                  </div>
+                )
+              })}
             </div>
 
-            {/* target + complement row */}
-            <div className="ts-target-row">
-              <span style={{ color: '#64748b' }}>target</span>
-              <span className="ts-target-chip">{target}</span>
-              {step && step.complement !== null && (
-                <>
-                  <span style={{ color: '#64748b' }}>complement</span>
-                  <span className="ts-complement-chip">{step.complement}</span>
-                </>
-              )}
-            </div>
+            {step && step.phase !== 'init' && step.i !== null && (
+                <div className="twosum-formula-box">
+                    <div className="twosum-formula">
+                        <span className="var">target</span>
+                        <span className="op">-</span>
+                        <span className="var">nums[i]</span>
+                        <span className="op">=</span>
+                        <span className="var diff">diff</span>
+                    </div>
+                    <div className="twosum-formula vals">
+                        <span className="val">{target}</span>
+                        <span className="op">-</span>
+                        <span className="val">{step.n}</span>
+                        <span className="op">=</span>
+                        <span className={\`val diff \${step.diff !== null ? 'visible' : ''} \${step.phase === 'found' ? 'match' : ''}\`}>
+                            {step.diff}
+                        </span>
+                    </div>
+                </div>
+            )}
           </div>
         </div>
 
-        {/* Hash map panel */}
-        <div className="ts-panel">
-          <div className="ts-panel-head">
-            Hash Map <code style={{ marginLeft: 6, fontFamily: 'monospace', fontSize: 11 }}>seen = &#123;val: index&#125;</code>
-            <span className="ts-badge" style={{ background: '#1e293b', color: '#a78bfa' }}>HashMap</span>
-          </div>
-          <div className="ts-panel-body">
-            <AnimatePresence mode="sync">
-              {(!step || Object.keys(step.seenSnapshot ?? {}).length === 0) ? (
-                <p style={{ color: '#475569', fontSize: 12, fontStyle: 'italic' }}>
-                  Map is empty — no elements stored yet.
-                </p>
-              ) : (
-                <table className="ts-map-table">
-                  <thead>
-                    <tr>
-                      <th>Value (key)</th>
-                      <th>Index (value)</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {Object.entries(step.seenSnapshot).map(([val, idx]) => {
-                      const isHighlighted =
-                        step.found && step.seenSnapshot[step.complement] !== undefined &&
-                        Number(val) === step.complement
-                      return (
-                        <motion.tr
-                          key={val}
-                          className={`ts-map-row${isHighlighted ? ' highlight' : ''}`}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: 10 }}
-                          transition={{ duration: 0.2 }}
-                        >
-                          <td>{val}</td>
-                          <td>{idx}</td>
-                        </motion.tr>
-                      )
+        <div className="twosum-panel" style={{ flex: 1 }}>
+          <div className="twosum-panel-head">Hash Map (prevMap)</div>
+          <div className="twosum-panel-body">
+            <div className="twosum-map-container">
+                <div className="twosum-map-headers">
+                    <span>Key (Value)</span>
+                    <span>Val (Index)</span>
+                </div>
+                <AnimatePresence>
+                    {step?.prevMap && Object.entries(step.prevMap).map(([val, idx]) => {
+                        const isChecking = step.diff !== null && Number(val) === step.diff
+                        const isMatch = step.phase === 'found' && Number(val) === step.diff
+
+                        return (
+                            <motion.div 
+                                key={val}
+                                layout
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                className={\`twosum-map-row \${isChecking ? 'checking' : ''} \${isMatch ? 'match' : ''}\`}
+                            >
+                                <span className="twosum-map-key">{val}</span>
+                                <span className="twosum-map-arrow">→</span>
+                                <span className="twosum-map-val">{idx}</span>
+                            </motion.div>
+                        )
                     })}
-                  </tbody>
-                </table>
-              )}
-            </AnimatePresence>
+                </AnimatePresence>
+                {(!step?.prevMap || Object.keys(step.prevMap).length === 0) && (
+                    <div className="twosum-empty-map">Map is empty</div>
+                )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* ── middle: code + variables ── */}
       <div className="twosum-middle">
         <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
-
-        <div className="ts-panel">
-          <div className="ts-panel-head">Variables</div>
-          <div className="ts-panel-body">
-            <div className="ts-vars">
-              <div className="ts-var-row">
-                <span className="ts-var-name">i</span>
-                <span className="ts-var-val">{step?.i ?? '–'}</span>
-              </div>
-              <div className="ts-var-row">
-                <span className="ts-var-name">num</span>
-                <span className="ts-var-val">{step?.num ?? '–'}</span>
-              </div>
-              <div className="ts-var-row">
-                <span className="ts-var-name">complement</span>
-                <span className={`ts-var-val${step?.complement !== null ? ' highlight' : ''}`}>
-                  {step?.complement ?? '–'}
-                </span>
-              </div>
-              <div className="ts-var-row">
-                <span className="ts-var-name">in seen?</span>
-                <span className="ts-var-val">
-                  {step
-                    ? step.complement !== null
-                      ? step.complement in (step.seenSnapshot ?? {}) ? '✓ yes' : '✗ no'
-                      : '–'
-                    : '–'}
-                </span>
-              </div>
-              {step?.found && (
-                <div className="ts-var-row" style={{ borderColor: '#22c55e' }}>
-                  <span className="ts-var-name">answer</span>
-                  <span className="ts-var-val highlight">
-                    [{step.answerPair?.join(', ')}]
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
       </div>
 
-      {/* ── status strip ── */}
-      <div className={`ts-status${step?.found ? ' found' : ''}`}>
+      <div className={\`twosum-status \${step?.phase === 'found' ? 'success' : step?.phase === 'done' ? 'fail' : ''}\`}>
         {step?.message ?? 'Press Play or Step to begin.'}
       </div>
 
-      {/* ── playback controls ── */}
       <div className="twosum-dock">
         <PlaybackControls
           isPlaying={isPlaying}
