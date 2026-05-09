@@ -6,15 +6,15 @@ import { usePlaybackState } from '../../hooks/usePlaybackState'
 import './ZigzagConversionVisualizer.css'
 
 const SOLUTION_CODE = [
-  { line: 1,  text: 'class Solution:' },
-  { line: 2,  text: '    def convert(self, s: str, numRows: int) -> str:' },
-  { line: 3,  text: '        if numRows == 1 or numRows >= len(s):' },
-  { line: 4,  text: '            return s' },
-  { line: 5,  text: '            ' },
-  { line: 6,  text: '        rows = ["" for _ in range(numRows)]' },
-  { line: 7,  text: '        curRow = 0' },
-  { line: 8,  text: '        goingDown = False' },
-  { line: 9,  text: '        ' },
+  { line: 1, text: 'class Solution:' },
+  { line: 2, text: '    def convert(self, s: str, numRows: int) -> str:' },
+  { line: 3, text: '        if numRows == 1 or numRows >= len(s):' },
+  { line: 4, text: '            return s' },
+  { line: 5, text: '            ' },
+  { line: 6, text: '        rows = ["" for _ in range(numRows)]' },
+  { line: 7, text: '        curRow = 0' },
+  { line: 8, text: '        goingDown = False' },
+  { line: 9, text: '        ' },
   { line: 10, text: '        for c in s:' },
   { line: 11, text: '            rows[curRow] += c' },
   { line: 12, text: '            if curRow == 0 or curRow == numRows - 1:' },
@@ -28,11 +28,11 @@ function generateSteps(s, numRows) {
   const steps = []
 
   if (!s || numRows === 1 || numRows >= s.length) {
-      steps.push({
-          phase: 'done', i: null, curRow: null, goingDown: null, rows: [], res: s,
-          activeLine: 4, message: 'Base case met (numRows=1 or >= len(s)). Return s directly.'
-      })
-      return steps
+    steps.push({
+      phase: 'done', i: null, curRow: null, goingDown: null, rows: [], res: s,
+      activeLine: 4, message: 'Base case met (numRows=1 or >= len(s)). Return s directly.'
+    })
+    return steps
   }
 
   const rows = Array.from({ length: numRows }, () => "")
@@ -41,7 +41,7 @@ function generateSteps(s, numRows) {
 
   steps.push({
     phase: 'init', i: null, curRow, goingDown, rows: [...rows], res: null,
-    activeLine: 6, message: \`Initialize rows array with \${numRows} empty strings, curRow=0, goingDown=False.\`
+    activeLine: 6, message: `Initialize rows array with \${numRows} empty strings, curRow=0, goingDown=False.`
   })
 
   for (let i = 0; i < s.length; i++) {
@@ -49,39 +49,39 @@ function generateSteps(s, numRows) {
 
     steps.push({
       phase: 'loop', i, curRow, goingDown, rows: [...rows], res: null, c,
-      activeLine: 10, message: \`Read character c = '\${c}'.\`
+      activeLine: 10, message: `Read character c = '\${c}'.`
     })
 
     rows[curRow] += c
     steps.push({
       phase: 'append', i, curRow, goingDown, rows: [...rows], res: null, c,
-      activeLine: 11, message: \`Append '\${c}' to rows[\${curRow}].\`
+      activeLine: 11, message: `Append '\${c}' to rows[\${curRow}].`
     })
 
     steps.push({
       phase: 'check_bounce', i, curRow, goingDown, rows: [...rows], res: null, c,
-      activeLine: 12, message: \`Check if curRow is at top (0) or bottom (\${numRows - 1}).\`
+      activeLine: 12, message: `Check if curRow is at top (0) or bottom (\${numRows - 1}).`
     })
 
     if (curRow === 0 || curRow === numRows - 1) {
       goingDown = !goingDown
       steps.push({
         phase: 'bounce', i, curRow, goingDown, rows: [...rows], res: null, c,
-        activeLine: 13, message: \`Hit boundary! Flip goingDown to \${goingDown ? 'True' : 'False'}.\`
+        activeLine: 13, message: `Hit boundary! Flip goingDown to \${goingDown ? 'True' : 'False'}.`
       })
     }
 
     curRow += goingDown ? 1 : -1
     steps.push({
       phase: 'move', i, curRow, goingDown, rows: [...rows], res: null, c,
-      activeLine: 14, message: \`Move curRow to \${curRow} (going \${goingDown ? 'DOWN' : 'UP'}).\`
+      activeLine: 14, message: `Move curRow to \${curRow} (going \${goingDown ? 'DOWN' : 'UP'}).`
     })
   }
 
   const res = rows.join("")
   steps.push({
     phase: 'done', i: null, curRow: null, goingDown: null, rows: [...rows], res,
-    activeLine: 16, message: \`Join all rows. Return "\${res}".\`
+    activeLine: 16, message: `Join all rows. Return "\${res}".`
   })
 
   return steps
@@ -165,83 +165,83 @@ export default function ZigzagConversionVisualizer() {
             </div>
 
             <div className="zigzag-source-str">
-                {s.split('').map((char, idx) => {
-                    const isActive = step?.i === idx
-                    const isProcessed = step?.i > idx || step?.phase === 'done'
+              {s.split('').map((char, idx) => {
+                const isActive = step?.i === idx
+                const isProcessed = step?.i > idx || step?.phase === 'done'
 
-                    let cellClass = "zigzag-char "
-                    if (isActive) cellClass += "active "
-                    if (isProcessed && !isActive) cellClass += "processed "
+                let cellClass = "zigzag-char "
+                if (isActive) cellClass += "active "
+                if (isProcessed && !isActive) cellClass += "processed "
 
-                    return (
-                        <div key={idx} className={cellClass}>
-                            {char}
-                        </div>
-                    )
-                })}
+                return (
+                  <div key={idx} className={cellClass}>
+                    {char}
+                  </div>
+                )
+              })}
             </div>
 
             <div className="zigzag-rows-container">
-                {Array.from({ length: numRows }).map((_, rIdx) => {
-                    const isCurrentRow = step?.curRow === rIdx && step?.phase !== 'done'
-                    const rowContent = step?.rows?.[rIdx] || ''
+              {Array.from({ length: numRows }).map((_, rIdx) => {
+                const isCurrentRow = step?.curRow === rIdx && step?.phase !== 'done'
+                const rowContent = step?.rows?.[rIdx] || ''
 
-                    let rowClass = "zigzag-row-block "
-                    if (isCurrentRow) rowClass += "active "
+                let rowClass = "zigzag-row-block "
+                if (isCurrentRow) rowClass += "active "
 
-                    return (
-                        <div key={rIdx} className={rowClass}>
-                            <div className="zigzag-row-label">
-                                Row {rIdx}
-                                {isCurrentRow && <div className="zigzag-row-indicator">◀</div>}
-                            </div>
-                            <div className="zigzag-row-chars">
-                                {rowContent.split('').map((c, cIdx) => {
-                                    const isNewlyAdded = isCurrentRow && cIdx === rowContent.length - 1 && step?.phase === 'append'
-                                    
-                                    return (
-                                        <motion.div 
-                                            key={cIdx} 
-                                            className="zigzag-row-char"
-                                            initial={isNewlyAdded ? { scale: 0, opacity: 0 } : false}
-                                            animate={{ scale: 1, opacity: 1 }}
-                                        >
-                                            {c}
-                                        </motion.div>
-                                    )
-                                })}
-                            </div>
-                        </div>
-                    )
-                })}
+                return (
+                  <div key={rIdx} className={rowClass}>
+                    <div className="zigzag-row-label">
+                      Row {rIdx}
+                      {isCurrentRow && <div className="zigzag-row-indicator">◀</div>}
+                    </div>
+                    <div className="zigzag-row-chars">
+                      {rowContent.split('').map((c, cIdx) => {
+                        const isNewlyAdded = isCurrentRow && cIdx === rowContent.length - 1 && step?.phase === 'append'
+
+                        return (
+                          <motion.div
+                            key={cIdx}
+                            className="zigzag-row-char"
+                            initial={isNewlyAdded ? { scale: 0, opacity: 0 } : false}
+                            animate={{ scale: 1, opacity: 1 }}
+                          >
+                            {c}
+                          </motion.div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )
+              })}
             </div>
-            
+
           </div>
         </div>
 
         <div className="zigzag-panel" style={{ flex: 1 }}>
           <div className="zigzag-panel-head">State & Result</div>
           <div className="zigzag-panel-body" style={{ gap: 16 }}>
-            
+
             <div className="zigzag-var-card">
-                <span className="zigzag-var-title">goingDown</span>
-                <div className={\`zigzag-var-val \${step?.goingDown ? 'true' : 'false'}\`}>
-                    {step?.goingDown === null ? 'null' : step?.goingDown ? 'True (↓)' : 'False (↑)'}
-                </div>
+              <span className="zigzag-var-title">goingDown</span>
+              <div className={`zigzag-var-val \${step?.goingDown ? 'true' : 'false'}`}>
+                {step?.goingDown === null ? 'null' : step?.goingDown ? 'True (↓)' : 'False (↑)'}
+              </div>
             </div>
 
             <div className="zigzag-var-card">
-                <span className="zigzag-var-title">curRow</span>
-                <div className="zigzag-var-val">
-                    {step?.curRow ?? 'null'}
-                </div>
+              <span className="zigzag-var-title">curRow</span>
+              <div className="zigzag-var-val">
+                {step?.curRow ?? 'null'}
+              </div>
             </div>
 
             <div className="zigzag-result-box" style={{ marginTop: 'auto' }}>
-                <span className="zigzag-result-label">Result String</span>
-                <div className="zigzag-result-val">
-                    {step?.res ? `"${step.res}"` : <span style={{color: '#475569'}}>(Building rows...)</span>}
-                </div>
+              <span className="zigzag-result-label">Result String</span>
+              <div className="zigzag-result-val">
+                {step?.res ? `"${step.res}"` : <span style={{ color: '#475569' }}>(Building rows...)</span>}
+              </div>
             </div>
 
           </div>
@@ -252,7 +252,7 @@ export default function ZigzagConversionVisualizer() {
         <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
       </div>
 
-      <div className={\`zigzag-status \${step?.phase === 'done' ? 'success' : step?.phase === 'bounce' ? 'bounce' : ''}\`}>
+      <div className={`zigzag-status \${step?.phase === 'done' ? 'success' : step?.phase === 'bounce' ? 'bounce' : ''}`}>
         {step?.message ?? 'Press Play or Step to begin.'}
       </div>
 

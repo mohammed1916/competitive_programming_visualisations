@@ -6,15 +6,15 @@ import { usePlaybackState } from '../../hooks/usePlaybackState'
 import './LongestPalindromeVisualizer.css'
 
 const SOLUTION_CODE = [
-  { line: 1,  text: 'class Solution:' },
-  { line: 2,  text: '    def longestPalindrome(self, s: str) -> str:' },
-  { line: 3,  text: '        res = ""' },
-  { line: 4,  text: '        resLen = 0' },
-  { line: 5,  text: '        ' },
-  { line: 6,  text: '        for i in range(len(s)):' },
-  { line: 7,  text: '            # odd length' },
-  { line: 8,  text: '            l, r = i, i' },
-  { line: 9,  text: '            while l >= 0 and r < len(s) and s[l] == s[r]:' },
+  { line: 1, text: 'class Solution:' },
+  { line: 2, text: '    def longestPalindrome(self, s: str) -> str:' },
+  { line: 3, text: '        res = ""' },
+  { line: 4, text: '        resLen = 0' },
+  { line: 5, text: '        ' },
+  { line: 6, text: '        for i in range(len(s)):' },
+  { line: 7, text: '            # odd length' },
+  { line: 8, text: '            l, r = i, i' },
+  { line: 9, text: '            while l >= 0 and r < len(s) and s[l] == s[r]:' },
   { line: 10, text: '                if (r - l + 1) > resLen:' },
   { line: 11, text: '                    res = s[l:r+1]' },
   { line: 12, text: '                    resLen = r - l + 1' },
@@ -37,11 +37,11 @@ function generateSteps(s) {
   const steps = []
 
   if (!s) {
-      steps.push({
-          phase: 'done', i: null, l: null, r: null, res: "", resLen: 0,
-          activeLine: 25, message: 'Empty string. Return empty result.'
-      })
-      return steps
+    steps.push({
+      phase: 'done', i: null, l: null, r: null, res: "", resLen: 0,
+      activeLine: 25, message: 'Empty string. Return empty result.'
+    })
+    return steps
   }
 
   let res = ""
@@ -55,7 +55,7 @@ function generateSteps(s) {
   for (let i = 0; i < s.length; i++) {
     steps.push({
       phase: 'loop', i, l: null, r: null, res, resLen, mode: null,
-      activeLine: 6, message: \`Check center at index i = \${i} ('\${s[i]}').\`
+      activeLine: 6, message: `Check center at index i = \${i} ('\${s[i]}').`
     })
 
     // Odd length
@@ -63,43 +63,43 @@ function generateSteps(s) {
     let r = i
     steps.push({
       phase: 'odd_init', i, l, r, res, resLen, mode: 'odd',
-      activeLine: 8, message: \`[Odd Length] Initialize pointers l = \${l}, r = \${r}.\`
+      activeLine: 8, message: `[Odd Length] Initialize pointers l = \${l}, r = \${r}.`
     })
 
     while (true) {
+      steps.push({
+        phase: 'odd_check', i, l, r, res, resLen, mode: 'odd',
+        activeLine: 9, message: `Check bounds and if s[l] == s[r] ('\${s[l]}' == '\${s[r]}').`
+      })
+
+      if (l >= 0 && r < s.length && s[l] === s[r]) {
         steps.push({
-            phase: 'odd_check', i, l, r, res, resLen, mode: 'odd',
-            activeLine: 9, message: \`Check bounds and if s[l] == s[r] ('\${s[l]}' == '\${s[r]}').\`
+          phase: 'odd_match', i, l, r, res, resLen, mode: 'odd',
+          activeLine: 10, message: `Match found! Is current length (\${r - l + 1}) > resLen (\${resLen})?`
         })
 
-        if (l >= 0 && r < s.length && s[l] === s[r]) {
-            steps.push({
-                phase: 'odd_match', i, l, r, res, resLen, mode: 'odd',
-                activeLine: 10, message: \`Match found! Is current length (\${r - l + 1}) > resLen (\${resLen})?\`
-            })
-
-            if ((r - l + 1) > resLen) {
-                res = s.substring(l, r + 1)
-                resLen = r - l + 1
-                steps.push({
-                    phase: 'odd_update', i, l, r, res, resLen, mode: 'odd',
-                    activeLine: 12, message: \`Yes! Update res = "\${res}", resLen = \${resLen}.\`
-                })
-            }
-
-            l -= 1
-            r += 1
-            steps.push({
-                phase: 'odd_expand', i, l, r, res, resLen, mode: 'odd',
-                activeLine: 14, message: \`Expand pointers outward: l = \${l}, r = \${r}.\`
-            })
-        } else {
-            steps.push({
-                phase: 'odd_break', i, l, r, res, resLen, mode: 'odd',
-                activeLine: 9, message: l < 0 || r >= s.length ? \`Out of bounds. Stop expanding.\` : \`Mismatch ('\${s[l]}' != '\${s[r]}'). Stop expanding.\`
-            })
-            break
+        if ((r - l + 1) > resLen) {
+          res = s.substring(l, r + 1)
+          resLen = r - l + 1
+          steps.push({
+            phase: 'odd_update', i, l, r, res, resLen, mode: 'odd',
+            activeLine: 12, message: `Yes! Update res = "\${res}", resLen = \${resLen}.`
+          })
         }
+
+        l -= 1
+        r += 1
+        steps.push({
+          phase: 'odd_expand', i, l, r, res, resLen, mode: 'odd',
+          activeLine: 14, message: `Expand pointers outward: l = \${l}, r = \${r}.`
+        })
+      } else {
+        steps.push({
+          phase: 'odd_break', i, l, r, res, resLen, mode: 'odd',
+          activeLine: 9, message: l < 0 || r >= s.length ? `Out of bounds. Stop expanding.` : `Mismatch ('\${s[l]}' != '\${s[r]}'). Stop expanding.`
+        })
+        break
+      }
     }
 
     // Even length
@@ -107,49 +107,49 @@ function generateSteps(s) {
     r = i + 1
     steps.push({
       phase: 'even_init', i, l, r, res, resLen, mode: 'even',
-      activeLine: 17, message: \`[Even Length] Initialize pointers l = \${l}, r = \${r}.\`
+      activeLine: 17, message: `[Even Length] Initialize pointers l = \${l}, r = \${r}.`
     })
 
     while (true) {
+      steps.push({
+        phase: 'even_check', i, l, r, res, resLen, mode: 'even',
+        activeLine: 18, message: `Check bounds and if s[l] == s[r] (\${l>=0&&r<s.length ? "'" + s[l] + "' == '" + s[r] + "'" : 'out of bounds'}).`
+      })
+
+      if (l >= 0 && r < s.length && s[l] === s[r]) {
         steps.push({
-            phase: 'even_check', i, l, r, res, resLen, mode: 'even',
-            activeLine: 18, message: \`Check bounds and if s[l] == s[r] (\${l>=0&&r<s.length ? "'" + s[l] + "' == '" + s[r] + "'" : 'out of bounds'}).\`
+          phase: 'even_match', i, l, r, res, resLen, mode: 'even',
+          activeLine: 19, message: `Match found! Is current length (\${r - l + 1}) > resLen (\${resLen})?`
         })
 
-        if (l >= 0 && r < s.length && s[l] === s[r]) {
-            steps.push({
-                phase: 'even_match', i, l, r, res, resLen, mode: 'even',
-                activeLine: 19, message: \`Match found! Is current length (\${r - l + 1}) > resLen (\${resLen})?\`
-            })
-
-            if ((r - l + 1) > resLen) {
-                res = s.substring(l, r + 1)
-                resLen = r - l + 1
-                steps.push({
-                    phase: 'even_update', i, l, r, res, resLen, mode: 'even',
-                    activeLine: 21, message: \`Yes! Update res = "\${res}", resLen = \${resLen}.\`
-                })
-            }
-
-            l -= 1
-            r += 1
-            steps.push({
-                phase: 'even_expand', i, l, r, res, resLen, mode: 'even',
-                activeLine: 23, message: \`Expand pointers outward: l = \${l}, r = \${r}.\`
-            })
-        } else {
-            steps.push({
-                phase: 'even_break', i, l, r, res, resLen, mode: 'even',
-                activeLine: 18, message: l < 0 || r >= s.length ? \`Out of bounds. Stop expanding.\` : \`Mismatch ('\${s[l]}' != '\${s[r]}'). Stop expanding.\`
-            })
-            break
+        if ((r - l + 1) > resLen) {
+          res = s.substring(l, r + 1)
+          resLen = r - l + 1
+          steps.push({
+            phase: 'even_update', i, l, r, res, resLen, mode: 'even',
+            activeLine: 21, message: `Yes! Update res = "\${res}", resLen = \${resLen}.`
+          })
         }
+
+        l -= 1
+        r += 1
+        steps.push({
+          phase: 'even_expand', i, l, r, res, resLen, mode: 'even',
+          activeLine: 23, message: `Expand pointers outward: l = \${l}, r = \${r}.`
+        })
+      } else {
+        steps.push({
+          phase: 'even_break', i, l, r, res, resLen, mode: 'even',
+          activeLine: 18, message: l < 0 || r >= s.length ? `Out of bounds. Stop expanding.` : `Mismatch ('\${s[l]}' != '\${s[r]}'). Stop expanding.`
+        })
+        break
+      }
     }
   }
 
   steps.push({
     phase: 'done', i: null, l: null, r: null, res, resLen, mode: null,
-    activeLine: 25, message: \`Loop finished. Return res = "\${res}".\`
+    activeLine: 25, message: `Loop finished. Return res = "\${res}".`
   })
 
   return steps
@@ -216,44 +216,44 @@ export default function LongestPalindromeVisualizer() {
             </div>
 
             <div className="lpal-mode-indicator">
-                {step?.mode === 'odd' && <span className="lpal-badge odd">ODD LENGTH CENTER</span>}
-                {step?.mode === 'even' && <span className="lpal-badge even">EVEN LENGTH CENTER</span>}
+              {step?.mode === 'odd' && <span className="lpal-badge odd">ODD LENGTH CENTER</span>}
+              {step?.mode === 'even' && <span className="lpal-badge even">EVEN LENGTH CENTER</span>}
             </div>
 
             <div className="lpal-string-container">
-                {s.split('').map((char, idx) => {
-                    const isI = step?.i === idx
-                    const isL = step?.l === idx
-                    const isR = step?.r === idx
-                    const inRange = step?.l !== null && step?.r !== null && idx >= step.l && idx <= step.r && step.phase !== 'even_check' && step.phase !== 'odd_check'
-                    
-                    let cellClass = "lpal-cell "
-                    if (isI && !inRange) cellClass += "center-i "
-                    if (inRange) cellClass += "in-range "
-                    if ((isL || isR) && (step.phase === 'odd_check' || step.phase === 'even_check')) cellClass += "checking "
-                    if ((isL || isR) && (step.phase === 'odd_match' || step.phase === 'even_match')) cellClass += "match "
+              {s.split('').map((char, idx) => {
+                const isI = step?.i === idx
+                const isL = step?.l === idx
+                const isR = step?.r === idx
+                const inRange = step?.l !== null && step?.r !== null && idx >= step.l && idx <= step.r && step.phase !== 'even_check' && step.phase !== 'odd_check'
 
-                    return (
-                        <div key={idx} className="lpal-cell-wrapper">
-                            <span className="lpal-index">{idx}</span>
-                            <div className={cellClass}>
-                                {char}
-                            </div>
-                            <div className="lpal-ptr-container">
-                                {isL && isR && <div className="lpal-ptr both">L,R</div>}
-                                {isL && !isR && <div className="lpal-ptr l">L</div>}
-                                {isR && !isL && <div className="lpal-ptr r">R</div>}
-                                {isI && !isL && !isR && <div className="lpal-ptr i">i</div>}
-                            </div>
-                        </div>
-                    )
-                })}
+                let cellClass = "lpal-cell "
+                if (isI && !inRange) cellClass += "center-i "
+                if (inRange) cellClass += "in-range "
+                if ((isL || isR) && (step.phase === 'odd_check' || step.phase === 'even_check')) cellClass += "checking "
+                if ((isL || isR) && (step.phase === 'odd_match' || step.phase === 'even_match')) cellClass += "match "
+
+                return (
+                  <div key={idx} className="lpal-cell-wrapper">
+                    <span className="lpal-index">{idx}</span>
+                    <div className={cellClass}>
+                      {char}
+                    </div>
+                    <div className="lpal-ptr-container">
+                      {isL && isR && <div className="lpal-ptr both">L,R</div>}
+                      {isL && !isR && <div className="lpal-ptr l">L</div>}
+                      {isR && !isL && <div className="lpal-ptr r">R</div>}
+                      {isI && !isL && !isR && <div className="lpal-ptr i">i</div>}
+                    </div>
+                  </div>
+                )
+              })}
             </div>
 
             <div className="lpal-pointers-legend">
-                <div className="lpal-legend-item"><div className="lpal-ptr i">i</div> Center</div>
-                <div className="lpal-legend-item"><div className="lpal-ptr l">L</div> Left</div>
-                <div className="lpal-legend-item"><div className="lpal-ptr r">R</div> Right</div>
+              <div className="lpal-legend-item"><div className="lpal-ptr i">i</div> Center</div>
+              <div className="lpal-legend-item"><div className="lpal-ptr l">L</div> Left</div>
+              <div className="lpal-legend-item"><div className="lpal-ptr r">R</div> Right</div>
             </div>
 
           </div>
@@ -262,20 +262,20 @@ export default function LongestPalindromeVisualizer() {
         <div className="lpal-panel" style={{ flex: 1 }}>
           <div className="lpal-panel-head">Best Result Found</div>
           <div className="lpal-panel-body" style={{ gap: 16 }}>
-            
+
             <div className="lpal-result-box">
-                <span className="lpal-result-label">Max Palindrome String (res)</span>
-                <div className={\`lpal-result-val \${step?.phase === 'odd_update' || step?.phase === 'even_update' ? 'highlight' : ''}\`}>
-                    "{step?.res || ''}"
-                </div>
-                {step?.res === "" && <span style={{ color: '#475569', fontSize: 13, fontStyle: 'italic', marginTop: 8 }}>Empty</span>}
+              <span className="lpal-result-label">Max Palindrome String (res)</span>
+              <div className={`lpal-result-val \${step?.phase === 'odd_update' || step?.phase === 'even_update' ? 'highlight' : ''}`}>
+                "{step?.res || ''}"
+              </div>
+              {step?.res === "" && <span style={{ color: '#475569', fontSize: 13, fontStyle: 'italic', marginTop: 8 }}>Empty</span>}
             </div>
 
             <div className="lpal-result-box len">
-                <span className="lpal-result-label">Max Length (resLen)</span>
-                <div className={\`lpal-result-val num \${step?.phase === 'odd_update' || step?.phase === 'even_update' ? 'highlight' : ''}\`}>
-                    {step?.resLen ?? 0}
-                </div>
+              <span className="lpal-result-label">Max Length (resLen)</span>
+              <div className={`lpal-result-val num \${step?.phase === 'odd_update' || step?.phase === 'even_update' ? 'highlight' : ''}`}>
+                {step?.resLen ?? 0}
+              </div>
             </div>
 
           </div>
@@ -286,7 +286,7 @@ export default function LongestPalindromeVisualizer() {
         <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
       </div>
 
-      <div className={\`lpal-status \${step?.phase === 'done' ? 'success' : step?.phase === 'odd_update' || step?.phase === 'even_update' ? 'update' : ''}\`}>
+      <div className={`lpal-status \${step?.phase === 'done' ? 'success' : step?.phase === 'odd_update' || step?.phase === 'even_update' ? 'update' : ''}`}>
         {step?.message ?? 'Press Play or Step to begin.'}
       </div>
 
