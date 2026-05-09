@@ -19,6 +19,8 @@ import SpiralMatrix from './problems/SpiralMatrix'
 import CombinationSum from './problems/CombinationSum'
 import MatrixIterationBasics from './problems/MatrixIterationBasics'
 import ContainerWithMostWater from './problems/ContainerWithMostWater'
+import AddTwoNumbers from './problems/AddTwoNumbers'
+import ReverseInteger from './problems/ReverseInteger'
 import ProblemScaffold from './components/panels/ProblemScaffold'
 import './App.css'
 
@@ -38,6 +40,28 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ['Array', 'Hash Table'],
     accent: '#22c55e',
     component: TwoSum,
+  },
+  {
+    id: 'lc-2',
+    number: '2',
+    title: 'Add Two Numbers',
+    slug: 'add-two-numbers',
+    description: 'Add two numbers represented by linked lists node by node, carrying over tens.',
+    difficulty: 'Medium',
+    tags: ['Linked List', 'Math'],
+    accent: '#a855f7',
+    component: AddTwoNumbers,
+  },
+  {
+    id: 'lc-7',
+    number: '7',
+    title: 'Reverse Integer',
+    slug: 'reverse-integer',
+    description: 'Pop and push digits while carefully avoiding 32-bit integer overflows.',
+    difficulty: 'Medium',
+    tags: ['Math'],
+    accent: '#ef4444',
+    component: ReverseInteger,
   },
   {
     id: 'lc-11',
