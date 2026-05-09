@@ -176,7 +176,7 @@ export default function ReverseIntegerVisualizer() {
                 </div>
 
                 <div className="revin-pop-area">
-                    {step?.digit !== null && step?.phase !== 'init' && step?.phase !== 'loop' && step?.phase !== 'done' && (
+                    {step && step.digit !== null && step.phase !== 'init' && step.phase !== 'loop' && step.phase !== 'done' && (
                         <motion.div 
                             className="revin-popped-digit"
                             initial={step.phase === 'pop' ? { y: -20, opacity: 0 } : false}
