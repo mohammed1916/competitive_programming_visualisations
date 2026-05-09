@@ -5,114 +5,157 @@ import PlaybackControls from '../../components/PlaybackControls'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import './MergeTwoSortedListsVisualizer.css'
 
-// ─── Solution code ────────────────────────────────────────────────────────────
 const SOLUTION_CODE = [
-  { line: 1,  text: 'class Solution(object):' },
+  { line: 1,  text: 'class Solution:' },
   { line: 2,  text: '    def mergeTwoLists(self, list1, list2):' },
-  { line: 3,  text: '        dummy = ListNode(0)' },
-  { line: 4,  text: '        curr = dummy' },
-  { line: 5,  text: '        while list1 and list2:' },
-  { line: 6,  text: '            if list1.val <= list2.val:' },
-  { line: 7,  text: '                curr.next = list1' },
-  { line: 8,  text: '                list1 = list1.next' },
-  { line: 9,  text: '            else:' },
-  { line: 10, text: '                curr.next = list2' },
-  { line: 11, text: '                list2 = list2.next' },
-  { line: 12, text: '            curr = curr.next' },
-  { line: 13, text: '        curr.next = list1 or list2' },
-  { line: 14, text: '        return dummy.next' },
+  { line: 3,  text: '        dummy = ListNode()' },
+  { line: 4,  text: '        tail = dummy' },
+  { line: 5,  text: '        ' },
+  { line: 6,  text: '        while list1 and list2:' },
+  { line: 7,  text: '            if list1.val < list2.val:' },
+  { line: 8,  text: '                tail.next = list1' },
+  { line: 9,  text: '                list1 = list1.next' },
+  { line: 10, text: '            else:' },
+  { line: 11, text: '                tail.next = list2' },
+  { line: 12, text: '                list2 = list2.next' },
+  { line: 13, text: '            tail = tail.next' },
+  { line: 14, text: '            ' },
+  { line: 15, text: '        if list1:' },
+  { line: 16, text: '            tail.next = list1' },
+  { line: 17, text: '        elif list2:' },
+  { line: 18, text: '            tail.next = list2' },
+  { line: 19, text: '            ' },
+  { line: 20, text: '        return dummy.next' },
 ]
 
-// ─── Step generator ───────────────────────────────────────────────────────────
 function generateSteps(arr1, arr2) {
   const steps = []
-  let i1 = 0, i2 = 0
-  const merged = []
 
+  let l1 = 0
+  let l2 = 0
+  
+  // The merged list stores indices or values. We can store { from: 'l1'/'l2', idx: number, val: number }
+  const merged = []
+  
   steps.push({
-    phase: 'init',
-    i1, i2, merged: [],
-    activeLine: 3,
-    message: 'Create dummy node, curr points to it.',
+    phase: 'init', l1, l2, merged: [...merged],
+    activeLine: 4, message: 'Initialize dummy node and set tail = dummy.'
   })
 
-  while (i1 < arr1.length && i2 < arr2.length) {
-    const v1 = arr1[i1], v2 = arr2[i2]
-
+  while (l1 < arr1.length && l2 < arr2.length) {
     steps.push({
-      phase: 'compare',
-      i1, i2, merged: [...merged],
-      v1, v2,
-      activeLine: 6,
-      message: `Compare list1.val=${v1} and list2.val=${v2}`,
+      phase: 'while_check', l1, l2, merged: [...merged],
+      activeLine: 6, message: \`Check if list1 (\${l1 < arr1.length ? 'not empty' : 'empty'}) and list2 (\${l2 < arr2.length ? 'not empty' : 'empty'}).\`
     })
 
-    if (v1 <= v2) {
-      merged.push({ val: v1, src: 1 })
+    const val1 = arr1[l1]
+    const val2 = arr2[l2]
+
+    steps.push({
+      phase: 'compare', l1, l2, merged: [...merged],
+      activeLine: 7, message: \`Compare list1.val (\${val1}) with list2.val (\${val2}).\`
+    })
+
+    if (val1 < val2) {
+      merged.push({ from: 'l1', idx: l1, val: val1 })
       steps.push({
-        phase: 'pick1',
-        i1, i2, merged: [...merged],
-        activeLine: 7,
-        message: `${v1} ≤ ${v2}: append ${v1} from list1, advance list1`,
+        phase: 'append_l1', l1, l2, merged: [...merged],
+        activeLine: 8, message: \`\${val1} < \${val2}, so tail.next = list1.\`
       })
-      i1++
+      l1++
+      steps.push({
+        phase: 'advance_l1', l1, l2, merged: [...merged],
+        activeLine: 9, message: \`Advance list1 to next node.\`
+      })
     } else {
-      merged.push({ val: v2, src: 2 })
+      merged.push({ from: 'l2', idx: l2, val: val2 })
       steps.push({
-        phase: 'pick2',
-        i1, i2, merged: [...merged],
-        activeLine: 10,
-        message: `${v2} < ${v1}: append ${v2} from list2, advance list2`,
+        phase: 'append_l2', l1, l2, merged: [...merged],
+        activeLine: 11, message: \`\${val1} >= \${val2}, so tail.next = list2.\`
       })
-      i2++
+      l2++
+      steps.push({
+        phase: 'advance_l2', l1, l2, merged: [...merged],
+        activeLine: 12, message: \`Advance list2 to next node.\`
+      })
+    }
+
+    steps.push({
+      phase: 'advance_tail', l1, l2, merged: [...merged],
+      activeLine: 13, message: 'Advance tail = tail.next.'
+    })
+  }
+
+  steps.push({
+    phase: 'while_end', l1, l2, merged: [...merged],
+    activeLine: 6, message: 'One of the lists is empty. Exit loop.'
+  })
+
+  steps.push({
+    phase: 'check_rem_l1', l1, l2, merged: [...merged],
+    activeLine: 15, message: \`Check if list1 has remaining nodes (\${l1 < arr1.length}).\`
+  })
+
+  if (l1 < arr1.length) {
+    while(l1 < arr1.length) {
+        merged.push({ from: 'l1', idx: l1, val: arr1[l1] })
+        l1++
+    }
+    steps.push({
+      phase: 'append_rem_l1', l1, l2, merged: [...merged],
+      activeLine: 16, message: 'Append remaining nodes of list1 to tail.'
+    })
+  } else {
+    steps.push({
+      phase: 'check_rem_l2', l1, l2, merged: [...merged],
+      activeLine: 17, message: \`Check if list2 has remaining nodes (\${l2 < arr2.length}).\`
+    })
+    
+    if (l2 < arr2.length) {
+        while(l2 < arr2.length) {
+            merged.push({ from: 'l2', idx: l2, val: arr2[l2] })
+            l2++
+        }
+        steps.push({
+          phase: 'append_rem_l2', l1, l2, merged: [...merged],
+          activeLine: 18, message: 'Append remaining nodes of list2 to tail.'
+        })
     }
   }
 
-  // append remainder
-  while (i1 < arr1.length) {
-    merged.push({ val: arr1[i1], src: 1 })
-    i1++
-  }
-  while (i2 < arr2.length) {
-    merged.push({ val: arr2[i2], src: 2 })
-    i2++
-  }
-
   steps.push({
-    phase: 'done',
-    i1: arr1.length,
-    i2: arr2.length,
-    merged: [...merged],
-    activeLine: 14,
-    message: `Done! Merged: [${merged.map((n) => n.val).join(' → ')}]`,
+    phase: 'done', l1, l2, merged: [...merged],
+    activeLine: 20, message: 'Return dummy.next (head of merged list).'
   })
+
   return steps
 }
 
-// ─── Examples ─────────────────────────────────────────────────────────────────
 const EXAMPLES = [
-  { label: 'Basic',    l1: [1, 2, 4], l2: [1, 3, 4] },
-  { label: 'One empty', l1: [], l2: [0] },
-  { label: 'Both empty', l1: [], l2: [] },
-  { label: 'Longer',   l1: [1, 3, 5, 7], l2: [2, 4, 6, 8] },
+  { label: 'Standard', list1: [1, 2, 4], list2: [1, 3, 4] },
+  { label: 'Different Sizes', list1: [1, 2, 4, 8, 9], list2: [3, 5] },
+  { label: 'Empty List1', list1: [], list2: [0] },
+  { label: 'Both Empty', list1: [], list2: [] },
 ]
 
-// ─── Component ────────────────────────────────────────────────────────────────
 export default function MergeTwoSortedListsVisualizer() {
   const [l1Input, setL1Input] = useState('[1, 2, 4]')
   const [l2Input, setL2Input] = useState('[1, 3, 4]')
-  const { arr1, arr2, inputError } = useMemo(() => {
+
+  const { list1, list2, inputError } = useMemo(() => {
     try {
-      const a1 = JSON.parse(l1Input)
-      const a2 = JSON.parse(l2Input)
-      if (!Array.isArray(a1) || !Array.isArray(a2)) throw new Error()
-      return { arr1: a1, arr2: a2, inputError: '' }
-    } catch {
-      return { arr1: [1, 2, 4], arr2: [1, 3, 4], inputError: 'Invalid list' }
+      let arr1 = JSON.parse(l1Input)
+      let arr2 = JSON.parse(l2Input)
+      if (!Array.isArray(arr1) || !Array.isArray(arr2)) throw new Error('Both inputs must be arrays')
+      arr1 = arr1.map(Number).sort((a,b)=>a-b)
+      arr2 = arr2.map(Number).sort((a,b)=>a-b)
+      return { list1: arr1, list2: arr2, inputError: '' }
+    } catch (e) {
+      return { list1: [1,2,4], list2: [1,3,4], inputError: 'Invalid input. Using default.' }
     }
   }, [l1Input, l2Input])
 
-  const steps = useMemo(() => generateSteps(arr1, arr2), [arr1, arr2])
+  const steps = useMemo(() => generateSteps(list1, list2), [list1, list2])
 
   const {
     stepIndex, stepForward, stepBack, togglePlay,
@@ -122,151 +165,157 @@ export default function MergeTwoSortedListsVisualizer() {
   const step = stepIndex >= 0 ? steps[stepIndex] : null
 
   const applyExample = useCallback((ex) => {
-    setL1Input(JSON.stringify(ex.l1))
-    setL2Input(JSON.stringify(ex.l2))
+    setL1Input(JSON.stringify(ex.list1))
+    setL2Input(JSON.stringify(ex.list2))
     handleReset()
   }, [handleReset])
 
-  function node1State(idx) {
-    if (!step) return 'idle'
-    if (step.phase === 'done' || idx < step.i1) return 'used'
-    if (idx === step.i1) return 'active'
-    return 'idle'
-  }
-
-  function node2State(idx) {
-    if (!step) return 'idle'
-    if (step.phase === 'done' || idx < step.i2) return 'used'
-    if (idx === step.i2) return 'active'
-    return 'idle'
-  }
-
   return (
-    <div className="ml-shell">
-      {/* ── top: lists ── */}
-      <div className="ml-top">
-        {/* examples + inputs */}
-        <div className="ml-panel">
-          <div className="ml-panel-head">
-            Input Lists
+    <div className="mtsl-shell">
+      <div className="mtsl-top">
+        <div className="mtsl-panel" style={{ flex: 1.5 }}>
+          <div className="mtsl-panel-head">
+            Linked Lists
             {inputError && <span style={{ color: '#f87171', marginLeft: 8 }}>{inputError}</span>}
-            <span className="ml-badge" style={{ background: '#1e293b', color: '#93c5fd' }}>Linked List</span>
           </div>
-          <div className="ml-panel-body">
-            <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+          <div className="mtsl-panel-body">
+            <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
               {EXAMPLES.map((ex) => (
-                <button key={ex.label} onClick={() => applyExample(ex)} style={{
-                  padding: '3px 10px', borderRadius: 99, fontSize: 11, cursor: 'pointer',
-                  background: '#1e293b', border: '1px solid #334155', color: '#94a3b8',
-                }}>
+                <button
+                  key={ex.label}
+                  onClick={() => applyExample(ex)}
+                  className="mtsl-example-btn"
+                >
                   {ex.label}
                 </button>
               ))}
             </div>
-            <div style={{ display: 'flex', gap: 10, marginBottom: 14, alignItems: 'center' }}>
-              <span style={{ fontSize: 12, color: '#64748b', whiteSpace: 'nowrap' }}>list1</span>
-              <input value={l1Input} onChange={(e) => { setL1Input(e.target.value); handleReset() }}
-                style={{ flex: 1, padding: '5px 10px', borderRadius: 7, border: '1px solid #334155',
-                  background: '#0f172a', color: '#f8fafc', fontFamily: 'monospace', fontSize: 13 }} />
-              <span style={{ fontSize: 12, color: '#64748b', whiteSpace: 'nowrap' }}>list2</span>
-              <input value={l2Input} onChange={(e) => { setL2Input(e.target.value); handleReset() }}
-                style={{ flex: 1, padding: '5px 10px', borderRadius: 7, border: '1px solid #334155',
-                  background: '#0f172a', color: '#f8fafc', fontFamily: 'monospace', fontSize: 13 }} />
+
+            <div style={{ display: 'flex', gap: 12, marginBottom: 24, alignItems: 'center' }}>
+              <span style={{ color: '#f43f5e', fontSize: 13, fontFamily: 'monospace', fontWeight: 'bold' }}>list1=</span>
+              <input
+                value={l1Input}
+                onChange={(e) => { setL1Input(e.target.value); handleReset() }}
+                placeholder="[1, 2, 4]"
+                className="mtsl-input"
+                style={{ flex: 1, margin: 0, borderColor: 'rgba(244, 63, 94, 0.3)' }}
+              />
+              <span style={{ color: '#0ea5e9', fontSize: 13, fontFamily: 'monospace', fontWeight: 'bold' }}>list2=</span>
+              <input
+                value={l2Input}
+                onChange={(e) => { setL2Input(e.target.value); handleReset() }}
+                placeholder="[1, 3, 4]"
+                className="mtsl-input"
+                style={{ flex: 1, margin: 0, borderColor: 'rgba(14, 165, 233, 0.3)' }}
+              />
             </div>
 
-            {/* list1 nodes */}
-            <div style={{ marginBottom: 6, fontSize: 11, color: '#64748b' }}>list1</div>
-            <div className="ml-list-row">
-              {arr1.length === 0
-                ? <span style={{ color: '#475569', fontSize: 12 }}>null</span>
-                : arr1.map((val, idx) => (
-                  <div className="ml-node" key={idx}>
-                    <motion.div
-                      className={`ml-node-box ${node1State(idx)}`}
-                      animate={{ scale: node1State(idx) === 'active' ? 1.12 : 1 }}
-                      transition={{ type: 'spring', stiffness: 400, damping: 24 }}
-                    >{val}</motion.div>
-                    {idx < arr1.length - 1 && <div className="ml-arrow">→</div>}
-                  </div>
-                ))
-              }
-            </div>
+            <div className="mtsl-lists-container">
+                {/* List 1 */}
+                <div className="mtsl-list-row">
+                    <div className="mtsl-list-label" style={{ color: '#f43f5e' }}>list1</div>
+                    <div className="mtsl-list-nodes">
+                        {list1.map((val, idx) => {
+                            const isProcessed = step?.merged?.some(m => m.from === 'l1' && m.idx === idx)
+                            const isCurrent = step?.l1 === idx
+                            const isComparing = step?.phase === 'compare' && isCurrent
 
-            {/* list2 nodes */}
-            <div style={{ marginTop: 12, marginBottom: 6, fontSize: 11, color: '#64748b' }}>list2</div>
-            <div className="ml-list-row">
-              {arr2.length === 0
-                ? <span style={{ color: '#475569', fontSize: 12 }}>null</span>
-                : arr2.map((val, idx) => (
-                  <div className="ml-node" key={idx}>
-                    <motion.div
-                      className={`ml-node-box ${node2State(idx)}`}
-                      animate={{ scale: node2State(idx) === 'active' ? 1.12 : 1 }}
-                      transition={{ type: 'spring', stiffness: 400, damping: 24 }}
-                    >{val}</motion.div>
-                    {idx < arr2.length - 1 && <div className="ml-arrow">→</div>}
-                  </div>
-                ))
-              }
-            </div>
+                            let cellClass = "mtsl-node l1 "
+                            if (isProcessed) cellClass += "processed "
+                            if (isCurrent && !isProcessed) cellClass += "current "
+                            if (isComparing) cellClass += "comparing "
 
-            {/* Merged output */}
-            {step && step.merged.length > 0 && (
-              <>
-                <div style={{ marginTop: 14, marginBottom: 6, fontSize: 11, color: '#22c55e' }}>merged</div>
-                <div className="ml-merged-row">
-                  {step.merged.map((node, idx) => {
-                    const isLatest = idx === step.merged.length - 1 && step.phase !== 'done'
-                    return (
-                      <div className="ml-merged-node" key={idx}>
-                        <motion.div
-                          className={`ml-merged-box${isLatest ? ' latest' : ''}`}
-                          initial={{ opacity: 0, y: -8 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.2 }}
-                        >{node.val}</motion.div>
-                        {idx < step.merged.length - 1 && <div className="ml-arrow" style={{ color: '#22c55e' }}>→</div>}
-                      </div>
-                    )
-                  })}
+                            return (
+                                <div key={\`l1-\${idx}\`} className="mtsl-node-wrapper">
+                                    <div className={cellClass}>
+                                        {val}
+                                    </div>
+                                    {idx < list1.length - 1 && <div className={\`mtsl-node-arrow \${isProcessed ? 'processed' : ''}\`}>→</div>}
+                                </div>
+                            )
+                        })}
+                        {list1.length === 0 && <span style={{ color: '#64748b', fontStyle: 'italic', fontSize: 12 }}>null</span>}
+                        {step?.l1 >= list1.length && list1.length > 0 && <span style={{ color: '#64748b', fontStyle: 'italic', fontSize: 12, marginLeft: 8 }}>null</span>}
+                    </div>
                 </div>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
 
-      {/* ── middle: code + vars ── */}
-      <div className="ml-middle">
-        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
-        <div className="ml-panel">
-          <div className="ml-panel-head">Variables</div>
-          <div className="ml-panel-body">
-            <div className="ml-vars">
-              <div className="ml-var-row">
-                <span className="ml-var-name">list1 ptr</span>
-                <span className="ml-var-val">{step ? (step.i1 < arr1.length ? `val=${arr1[step.i1]}` : 'null') : '–'}</span>
-              </div>
-              <div className="ml-var-row">
-                <span className="ml-var-name">list2 ptr</span>
-                <span className="ml-var-val">{step ? (step.i2 < arr2.length ? `val=${arr2[step.i2]}` : 'null') : '–'}</span>
-              </div>
-              <div className="ml-var-row">
-                <span className="ml-var-name">merged len</span>
-                <span className="ml-var-val">{step?.merged?.length ?? '–'}</span>
-              </div>
+                {/* List 2 */}
+                <div className="mtsl-list-row">
+                    <div className="mtsl-list-label" style={{ color: '#0ea5e9' }}>list2</div>
+                    <div className="mtsl-list-nodes">
+                        {list2.map((val, idx) => {
+                            const isProcessed = step?.merged?.some(m => m.from === 'l2' && m.idx === idx)
+                            const isCurrent = step?.l2 === idx
+                            const isComparing = step?.phase === 'compare' && isCurrent
+
+                            let cellClass = "mtsl-node l2 "
+                            if (isProcessed) cellClass += "processed "
+                            if (isCurrent && !isProcessed) cellClass += "current "
+                            if (isComparing) cellClass += "comparing "
+
+                            return (
+                                <div key={\`l2-\${idx}\`} className="mtsl-node-wrapper">
+                                    <div className={cellClass}>
+                                        {val}
+                                    </div>
+                                    {idx < list2.length - 1 && <div className={\`mtsl-node-arrow \${isProcessed ? 'processed' : ''}\`}>→</div>}
+                                </div>
+                            )
+                        })}
+                        {list2.length === 0 && <span style={{ color: '#64748b', fontStyle: 'italic', fontSize: 12 }}>null</span>}
+                        {step?.l2 >= list2.length && list2.length > 0 && <span style={{ color: '#64748b', fontStyle: 'italic', fontSize: 12, marginLeft: 8 }}>null</span>}
+                    </div>
+                </div>
             </div>
+
+            <div className="mtsl-merged-container">
+                <div className="mtsl-merged-header">
+                    <span className="mtsl-merged-title">Merged List (dummy.next)</span>
+                    <span className="mtsl-tail-indicator">tail pointer →</span>
+                </div>
+                <div className="mtsl-list-nodes merged-area">
+                    <div className="mtsl-node-wrapper">
+                        <div className="mtsl-node dummy">D</div>
+                        {step?.merged?.length > 0 && <div className="mtsl-node-arrow">→</div>}
+                    </div>
+                    
+                    <AnimatePresence mode="popLayout">
+                        {step?.merged?.map((m, idx) => {
+                            const isLast = idx === step.merged.length - 1
+                            const isNewlyAdded = isLast && (step.phase.startsWith('append') || step.phase.startsWith('advance_tail'))
+                            
+                            return (
+                                <motion.div 
+                                    key={\`merged-\${idx}-\${m.from}-\${m.idx}\`}
+                                    layout
+                                    initial={{ opacity: 0, scale: 0.5, x: -20 }}
+                                    animate={{ opacity: 1, scale: 1, x: 0 }}
+                                    className="mtsl-node-wrapper"
+                                >
+                                    <div className={\`mtsl-node \${m.from} \${isNewlyAdded ? 'pulse' : ''}\`}>
+                                        {m.val}
+                                    </div>
+                                    {idx < step.merged.length - 1 && <div className="mtsl-node-arrow">→</div>}
+                                </motion.div>
+                            )
+                        })}
+                    </AnimatePresence>
+                </div>
+            </div>
+
           </div>
         </div>
       </div>
 
-      {/* ── status ── */}
-      <div className={`ml-status${step?.phase === 'done' ? ' done' : ''}`}>
+      <div className="mtsl-middle">
+        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+      </div>
+
+      <div className={\`mtsl-status \${step?.phase === 'done' ? 'success' : step?.phase === 'compare' ? 'compare' : ''}\`}>
         {step?.message ?? 'Press Play or Step to begin.'}
       </div>
 
-      {/* ── dock ── */}
-      <div className="ml-dock">
+      <div className="mtsl-dock">
         <PlaybackControls
           isPlaying={isPlaying}
           isDone={isDone}

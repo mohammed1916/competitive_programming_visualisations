@@ -1,0 +1,339 @@
+.atoi-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 16px;
+  overflow: hidden;
+}
+
+.atoi-top {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  gap: 16px;
+}
+
+.atoi-middle {
+  display: flex;
+  height: 240px;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.atoi-panel {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.atoi-panel-head {
+  padding: 12px 16px;
+  background: var(--surface-3);
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.atoi-panel-body {
+  padding: 16px;
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.atoi-example-btn {
+  padding: 4px 12px;
+  border-radius: 99px;
+  font-size: 12px;
+  cursor: pointer;
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #94a3b8;
+  transition: all 0.2s ease;
+}
+
+.atoi-example-btn:hover {
+  background: #334155;
+  color: #f8fafc;
+}
+
+.atoi-input {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: #f8fafc;
+  font-family: monospace;
+  font-size: 16px;
+}
+
+.atoi-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.atoi-lstrip-alert {
+  background: rgba(168, 85, 247, 0.1);
+  border: 1px solid #a855f7;
+  color: #d8b4fe;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 16px;
+  font-family: monospace;
+}
+
+.atoi-string-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+  min-height: 80px;
+  align-items: flex-start;
+  padding: 16px;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+}
+
+.atoi-char-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 44px;
+}
+
+.atoi-index {
+  font-size: 11px;
+  color: #64748b;
+  margin-bottom: 6px;
+  font-family: monospace;
+}
+
+.atoi-char {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1e293b;
+  border: 2px solid #334155;
+  border-radius: 6px;
+  color: #f8fafc;
+  font-size: 20px;
+  font-weight: 600;
+  font-family: monospace;
+  transition: all 0.3s ease;
+}
+
+.atoi-char.space {
+  color: #475569;
+}
+
+.atoi-char.active {
+  background: rgba(14, 165, 233, 0.2);
+  border-color: #0ea5e9;
+  color: #38bdf8;
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+}
+
+.atoi-char.processed {
+  opacity: 0.5;
+  border-color: #475569;
+}
+
+.atoi-ptr-container {
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 6px;
+}
+
+.atoi-ptr {
+  font-size: 11px;
+  font-weight: bold;
+  font-family: monospace;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #0ea5e9;
+  color: white;
+}
+
+.atoi-type-label {
+  font-size: 10px;
+  font-family: monospace;
+  margin-top: 4px;
+  height: 14px;
+}
+
+.atoi-math-box {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.atoi-math-formula {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: monospace;
+  font-size: 14px;
+}
+
+.atoi-math-formula.vals {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.atoi-math-formula .var { color: #94a3b8; }
+.atoi-math-formula .op { color: #64748b; }
+.atoi-math-formula .val { color: #f8fafc; }
+
+.atoi-math-formula .highlight { color: #22c55e; }
+.atoi-math-formula .new { color: #0ea5e9; }
+
+.atoi-var-row {
+  display: flex;
+  gap: 12px;
+}
+
+.atoi-var-card {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.atoi-var-card.half { flex: 1; }
+
+.atoi-var-card.res {
+  border-left: 4px solid #0ea5e9;
+}
+
+.atoi-var-title {
+  font-size: 12px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.atoi-var-val {
+  font-family: monospace;
+  font-size: 24px;
+  font-weight: bold;
+  color: #f8fafc;
+}
+
+.atoi-var-val.neg { color: #ef4444; }
+.atoi-var-val.pos { color: #22c55e; }
+.atoi-var-val.large { font-size: 32px; color: #38bdf8; word-break: break-all; }
+
+.atoi-bounds-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #1e293b;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+}
+
+.atoi-bound {
+  display: flex;
+  justify-content: space-between;
+  font-family: monospace;
+  font-size: 12px;
+}
+
+.atoi-bound .label { color: #94a3b8; }
+.atoi-bound .val { color: #f8fafc; font-weight: bold; }
+
+.atoi-clamp-alert {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid #ef4444;
+  color: #f87171;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: bold;
+  text-align: center;
+  animation: atoi-flash 1s infinite alternate;
+}
+
+@keyframes atoi-flash {
+  from { box-shadow: 0 0 5px rgba(239, 68, 68, 0.2); }
+  to { box-shadow: 0 0 15px rgba(239, 68, 68, 0.6); }
+}
+
+.atoi-final-result {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid #22c55e;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.atoi-final-result .label {
+  font-size: 12px;
+  color: #4ade80;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.atoi-final-result .val {
+  font-size: 36px;
+  font-weight: bold;
+  font-family: monospace;
+  color: #22c55e;
+}
+
+.atoi-final-result .val.clamped {
+  color: #ef4444;
+}
+
+.atoi-status {
+  padding: 12px 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+  color: var(--text-main);
+  font-family: monospace;
+  font-size: 13px;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.atoi-status.success { border-left-color: #22c55e; background: rgba(34, 197, 94, 0.1); }
+.atoi-status.clamp { border-left-color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+
+.atoi-dock {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 8px 16px;
+  flex-shrink: 0;
+}
