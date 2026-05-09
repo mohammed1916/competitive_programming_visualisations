@@ -1,0 +1,2 @@
+import MedianOfTwoSortedArraysVisualizer from './MedianOfTwoSortedArraysVisualizer';
+export default MedianOfTwoSortedArraysVisualizer;
