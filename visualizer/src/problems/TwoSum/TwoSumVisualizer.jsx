@@ -33,46 +33,46 @@ function generateSteps(nums, target) {
   const prevMap = {}
 
   steps.push({
-    phase: 'init', i: null, prevMap: {...prevMap}, diff: null,
+    phase: 'init', i: null, prevMap: { ...prevMap }, diff: null,
     activeLine: 3, message: 'Initialize empty hash map to store previously seen values and their indices.'
   })
 
   for (let i = 0; i < nums.length; i++) {
     const n = nums[i]
-    
+
     steps.push({
-      phase: 'loop', i, prevMap: {...prevMap}, diff: null, n,
-      activeLine: 5, message: \`Check element nums[\${i}] = \${n}.\`
+      phase: 'loop', i, prevMap: { ...prevMap }, diff: null, n,
+      activeLine: 5, message: `Check element nums[\${i}] = \${n}.`
     })
 
     const diff = target - n
     steps.push({
-      phase: 'calc_diff', i, prevMap: {...prevMap}, diff, n,
-      activeLine: 6, message: \`Calculate diff = target (\${target}) - n (\${n}) = \${diff}.\`
+      phase: 'calc_diff', i, prevMap: { ...prevMap }, diff, n,
+      activeLine: 6, message: `Calculate diff = target (\${target}) - n (\${n}) = \${diff}.`
     })
 
     steps.push({
-      phase: 'check_map', i, prevMap: {...prevMap}, diff, n,
-      activeLine: 7, message: \`Check if diff (\${diff}) is in prevMap.\`
+      phase: 'check_map', i, prevMap: { ...prevMap }, diff, n,
+      activeLine: 7, message: `Check if diff (\${diff}) is in prevMap.`
     })
 
     if (diff in prevMap) {
       steps.push({
-        phase: 'found', i, prevMap: {...prevMap}, diff, n, matchIdx: prevMap[diff],
-        activeLine: 8, message: \`Match found! \${diff} is at index \${prevMap[diff]}. Return [\${prevMap[diff]}, \${i}].\`
+        phase: 'found', i, prevMap: { ...prevMap }, diff, n, matchIdx: prevMap[diff],
+        activeLine: 8, message: `Match found! \${diff} is at index \${prevMap[diff]}. Return [\${prevMap[diff]}, \${i}].`
       })
       return steps
     } else {
       prevMap[n] = i
       steps.push({
-        phase: 'add_map', i, prevMap: {...prevMap}, diff, n,
-        activeLine: 9, message: \`Not found. Add \${n} to prevMap at index \${i}.\`
+        phase: 'add_map', i, prevMap: { ...prevMap }, diff, n,
+        activeLine: 9, message: `Not found. Add \${n} to prevMap at index \${i}.`
       })
     }
   }
 
   steps.push({
-    phase: 'done', i: null, prevMap: {...prevMap}, diff: null,
+    phase: 'done', i: null, prevMap: { ...prevMap }, diff: null,
     activeLine: 11, message: 'No two sum solution found. Return [].'
   })
 
@@ -165,15 +165,15 @@ export default function TwoSumVisualizer() {
                 return (
                   <div key={idx} className="twosum-cell-wrapper">
                     <span className="twosum-index">{idx}</span>
-                    <motion.div 
-                        className={\`twosum-cell \${isActive ? 'active' : ''} \${isMatch ? 'match' : ''} \${isStored && !isActive && !isMatch ? 'stored' : ''}\`}
-                        animate={isActive ? { y: -5 } : { y: 0 }}
+                    <motion.div
+                      className={`twosum-cell \${isActive ? 'active' : ''} \${isMatch ? 'match' : ''} \${isStored && !isActive && !isMatch ? 'stored' : ''}`}
+                      animate={isActive ? { y: -5 } : { y: 0 }}
                     >
                       {num}
                     </motion.div>
                     <div className="twosum-ptr-container">
-                        {isActive && <div className="twosum-ptr">i</div>}
-                        {isMatch && step.matchIdx === idx && <div className="twosum-ptr match">match</div>}
+                      {isActive && <div className="twosum-ptr">i</div>}
+                      {isMatch && step.matchIdx === idx && <div className="twosum-ptr match">match</div>}
                     </div>
                   </div>
                 )
@@ -181,24 +181,24 @@ export default function TwoSumVisualizer() {
             </div>
 
             {step && step.phase !== 'init' && step.i !== null && (
-                <div className="twosum-formula-box">
-                    <div className="twosum-formula">
-                        <span className="var">target</span>
-                        <span className="op">-</span>
-                        <span className="var">nums[i]</span>
-                        <span className="op">=</span>
-                        <span className="var diff">diff</span>
-                    </div>
-                    <div className="twosum-formula vals">
-                        <span className="val">{target}</span>
-                        <span className="op">-</span>
-                        <span className="val">{step.n}</span>
-                        <span className="op">=</span>
-                        <span className={\`val diff \${step.diff !== null ? 'visible' : ''} \${step.phase === 'found' ? 'match' : ''}\`}>
-                            {step.diff}
-                        </span>
-                    </div>
+              <div className="twosum-formula-box">
+                <div className="twosum-formula">
+                  <span className="var">target</span>
+                  <span className="op">-</span>
+                  <span className="var">nums[i]</span>
+                  <span className="op">=</span>
+                  <span className="var diff">diff</span>
                 </div>
+                <div className="twosum-formula vals">
+                  <span className="val">{target}</span>
+                  <span className="op">-</span>
+                  <span className="val">{step.n}</span>
+                  <span className="op">=</span>
+                  <span className={`val diff \${step.diff !== null ? 'visible' : ''} \${step.phase === 'found' ? 'match' : ''}`}>
+                    {step.diff}
+                  </span>
+                </div>
+              </div>
             )}
           </div>
         </div>
@@ -207,33 +207,33 @@ export default function TwoSumVisualizer() {
           <div className="twosum-panel-head">Hash Map (prevMap)</div>
           <div className="twosum-panel-body">
             <div className="twosum-map-container">
-                <div className="twosum-map-headers">
-                    <span>Key (Value)</span>
-                    <span>Val (Index)</span>
-                </div>
-                <AnimatePresence>
-                    {step?.prevMap && Object.entries(step.prevMap).map(([val, idx]) => {
-                        const isChecking = step.diff !== null && Number(val) === step.diff
-                        const isMatch = step.phase === 'found' && Number(val) === step.diff
+              <div className="twosum-map-headers">
+                <span>Key (Value)</span>
+                <span>Val (Index)</span>
+              </div>
+              <AnimatePresence>
+                {step?.prevMap && Object.entries(step.prevMap).map(([val, idx]) => {
+                  const isChecking = step.diff !== null && Number(val) === step.diff
+                  const isMatch = step.phase === 'found' && Number(val) === step.diff
 
-                        return (
-                            <motion.div 
-                                key={val}
-                                layout
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                className={\`twosum-map-row \${isChecking ? 'checking' : ''} \${isMatch ? 'match' : ''}\`}
-                            >
-                                <span className="twosum-map-key">{val}</span>
-                                <span className="twosum-map-arrow">→</span>
-                                <span className="twosum-map-val">{idx}</span>
-                            </motion.div>
-                        )
-                    })}
-                </AnimatePresence>
-                {(!step?.prevMap || Object.keys(step.prevMap).length === 0) && (
-                    <div className="twosum-empty-map">Map is empty</div>
-                )}
+                  return (
+                    <motion.div
+                      key={val}
+                      layout
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className={`twosum-map-row \${isChecking ? 'checking' : ''} \${isMatch ? 'match' : ''}`}
+                    >
+                      <span className="twosum-map-key">{val}</span>
+                      <span className="twosum-map-arrow">→</span>
+                      <span className="twosum-map-val">{idx}</span>
+                    </motion.div>
+                  )
+                })}
+              </AnimatePresence>
+              {(!step?.prevMap || Object.keys(step.prevMap).length === 0) && (
+                <div className="twosum-empty-map">Map is empty</div>
+              )}
             </div>
           </div>
         </div>
@@ -243,7 +243,7 @@ export default function TwoSumVisualizer() {
         <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
       </div>
 
-      <div className={\`twosum-status \${step?.phase === 'found' ? 'success' : step?.phase === 'done' ? 'fail' : ''}\`}>
+      <div className={`twosum-status \${step?.phase === 'found' ? 'success' : step?.phase === 'done' ? 'fail' : ''}`}>
         {step?.message ?? 'Press Play or Step to begin.'}
       </div>
 

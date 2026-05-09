@@ -6,15 +6,15 @@ import { usePlaybackState } from '../../hooks/usePlaybackState'
 import './BinarySearchVisualizer.css'
 
 const SOLUTION_CODE = [
-  { line: 1,  text: 'class Solution:' },
-  { line: 2,  text: '    def search(self, nums: List[int], target: int) -> int:' },
-  { line: 3,  text: '        left, right = 0, len(nums) - 1' },
-  { line: 4,  text: '        ' },
-  { line: 5,  text: '        while left <= right:' },
-  { line: 6,  text: '            mid = left + (right - left) // 2' },
-  { line: 7,  text: '            ' },
-  { line: 8,  text: '            if nums[mid] == target:' },
-  { line: 9,  text: '                return mid' },
+  { line: 1, text: 'class Solution:' },
+  { line: 2, text: '    def search(self, nums: List[int], target: int) -> int:' },
+  { line: 3, text: '        left, right = 0, len(nums) - 1' },
+  { line: 4, text: '        ' },
+  { line: 5, text: '        while left <= right:' },
+  { line: 6, text: '            mid = left + (right - left) // 2' },
+  { line: 7, text: '            ' },
+  { line: 8, text: '            if nums[mid] == target:' },
+  { line: 9, text: '                return mid' },
   { line: 10, text: '            elif nums[mid] < target:' },
   { line: 11, text: '                left = mid + 1' },
   { line: 12, text: '            else:' },
@@ -25,7 +25,7 @@ const SOLUTION_CODE = [
 
 function generateSteps(nums, target) {
   const steps = []
-  
+
   if (!nums || nums.length === 0) {
     steps.push({
       phase: 'done', left: 0, right: -1, mid: null,
@@ -39,62 +39,62 @@ function generateSteps(nums, target) {
 
   steps.push({
     phase: 'init', left, right, mid: null,
-    activeLine: 3, message: \`Initialize left = 0, right = \${right} (\${nums.length} - 1).\`
+    activeLine: 3, message: `Initialize left = 0, right = \${right} (\${nums.length} - 1).`
   })
 
   while (left <= right) {
     steps.push({
       phase: 'while_check', left, right, mid: null,
-      activeLine: 5, message: \`Check if left (\${left}) <= right (\${right}). Yes, continue.\`
+      activeLine: 5, message: `Check if left (\${left}) <= right (\${right}). Yes, continue.`
     })
 
     const mid = Math.floor(left + (right - left) / 2)
     steps.push({
       phase: 'calc_mid', left, right, mid,
-      activeLine: 6, message: \`Calculate mid = \${left} + (\${right} - \${left}) // 2 = \${mid}.\`
+      activeLine: 6, message: `Calculate mid = \${left} + (\${right} - \${left}) // 2 = \${mid}.`
     })
 
     steps.push({
       phase: 'check_target', left, right, mid,
-      activeLine: 8, message: \`Is nums[mid] (\${nums[mid]}) == target (\${target})?\`
+      activeLine: 8, message: `Is nums[mid] (\${nums[mid]}) == target (\${target})?`
     })
 
     if (nums[mid] === target) {
       steps.push({
         phase: 'found', left, right, mid, foundIndex: mid,
-        activeLine: 9, message: \`Target found at index \${mid}! Return \${mid}.\`
+        activeLine: 9, message: `Target found at index \${mid}! Return \${mid}.`
       })
       return steps
     }
 
     steps.push({
       phase: 'check_less', left, right, mid,
-      activeLine: 10, message: \`No. Is nums[mid] (\${nums[mid]}) < target (\${target})?\`
+      activeLine: 10, message: `No. Is nums[mid] (\${nums[mid]}) < target (\${target})?`
     })
 
     if (nums[mid] < target) {
       left = mid + 1
       steps.push({
         phase: 'update_left', left, right, mid,
-        activeLine: 11, message: \`Yes, target must be in the right half. Update left = mid + 1 = \${left}.\`
+        activeLine: 11, message: `Yes, target must be in the right half. Update left = mid + 1 = \${left}.`
       })
     } else {
       steps.push({
         phase: 'check_greater', left, right, mid,
-        activeLine: 12, message: \`No, nums[mid] (\${nums[mid]}) > target (\${target}).\`
+        activeLine: 12, message: `No, nums[mid] (\${nums[mid]}) > target (\${target}).`
       })
 
       right = mid - 1
       steps.push({
         phase: 'update_right', left, right, mid,
-        activeLine: 13, message: \`Target must be in the left half. Update right = mid - 1 = \${right}.\`
+        activeLine: 13, message: `Target must be in the left half. Update right = mid - 1 = \${right}.`
       })
     }
   }
 
   steps.push({
     phase: 'done', left, right, mid: null, foundIndex: -1,
-    activeLine: 15, message: \`Loop ends (left > right). Target not found, return -1.\`
+    activeLine: 15, message: `Loop ends (left > right). Target not found, return -1.`
   })
 
   return steps
@@ -117,11 +117,11 @@ export default function BinarySearchVisualizer() {
       const t = Number(targetInput)
       if (!Array.isArray(n)) throw new Error('nums must be an array')
       if (isNaN(t)) throw new Error('target must be a number')
-      
+
       // Binary search requires sorted array, we'll sort it if it isn't, but ideally users provide sorted input
       const isSorted = n.every((val, i, arr) => !i || val >= arr[i - 1])
       if (!isSorted) {
-          return { nums: [...n].sort((a,b)=>a-b), target: t, inputError: 'Input array was automatically sorted.' }
+        return { nums: [...n].sort((a, b) => a - b), target: t, inputError: 'Input array was automatically sorted.' }
       }
       return { nums: n, target: t, inputError: '' }
     } catch (e) {
@@ -184,51 +184,51 @@ export default function BinarySearchVisualizer() {
             </div>
 
             <div className="bs-pointers-legend">
-                <div className="bs-legend-item left"><div className="bs-legend-swatch" /> Left</div>
-                <div className="bs-legend-item mid"><div className="bs-legend-swatch" /> Mid</div>
-                <div className="bs-legend-item right"><div className="bs-legend-swatch" /> Right</div>
+              <div className="bs-legend-item left"><div className="bs-legend-swatch" /> Left</div>
+              <div className="bs-legend-item mid"><div className="bs-legend-swatch" /> Mid</div>
+              <div className="bs-legend-item right"><div className="bs-legend-swatch" /> Right</div>
             </div>
 
             <div className="bs-array-container">
-                {nums.map((num, i) => {
-                    const isLeft = step?.left === i
-                    const isRight = step?.right === i
-                    const isMid = step?.mid === i
-                    const isOutOfBounds = step && (i < step.left || i > step.right)
-                    const isFound = step?.phase === 'found' && isMid
-                    
-                    let cellClass = "bs-cell "
-                    if (isLeft) cellClass += "left "
-                    if (isRight) cellClass += "right "
-                    if (isMid) cellClass += "mid "
-                    if (isFound) cellClass += "found "
-                    if (isOutOfBounds && !isFound) cellClass += "out-of-bounds "
+              {nums.map((num, i) => {
+                const isLeft = step?.left === i
+                const isRight = step?.right === i
+                const isMid = step?.mid === i
+                const isOutOfBounds = step && (i < step.left || i > step.right)
+                const isFound = step?.phase === 'found' && isMid
 
-                    return (
-                        <div key={i} className="bs-cell-wrapper">
-                            <div className="bs-index">{i}</div>
-                            <div className={cellClass}>
-                                {num}
-                            </div>
-                            <div className="bs-pointers">
-                                {isLeft && <div className="bs-ptr left">L</div>}
-                                {isMid && <div className="bs-ptr mid">M</div>}
-                                {isRight && <div className="bs-ptr right">R</div>}
-                            </div>
-                        </div>
-                    )
-                })}
+                let cellClass = "bs-cell "
+                if (isLeft) cellClass += "left "
+                if (isRight) cellClass += "right "
+                if (isMid) cellClass += "mid "
+                if (isFound) cellClass += "found "
+                if (isOutOfBounds && !isFound) cellClass += "out-of-bounds "
+
+                return (
+                  <div key={i} className="bs-cell-wrapper">
+                    <div className="bs-index">{i}</div>
+                    <div className={cellClass}>
+                      {num}
+                    </div>
+                    <div className="bs-pointers">
+                      {isLeft && <div className="bs-ptr left">L</div>}
+                      {isMid && <div className="bs-ptr mid">M</div>}
+                      {isRight && <div className="bs-ptr right">R</div>}
+                    </div>
+                  </div>
+                )
+              })}
             </div>
-            
+
             <div className="bs-stats">
-                <div className="bs-stat-box">
-                    <span className="bs-stat-label">Search Space Size</span>
-                    <span className="bs-stat-val">{step ? Math.max(0, step.right - step.left + 1) : nums.length}</span>
-                </div>
-                <div className="bs-stat-box">
-                    <span className="bs-stat-label">Target</span>
-                    <span className="bs-stat-val" style={{ color: '#eab308' }}>{target}</span>
-                </div>
+              <div className="bs-stat-box">
+                <span className="bs-stat-label">Search Space Size</span>
+                <span className="bs-stat-val">{step ? Math.max(0, step.right - step.left + 1) : nums.length}</span>
+              </div>
+              <div className="bs-stat-box">
+                <span className="bs-stat-label">Target</span>
+                <span className="bs-stat-val" style={{ color: '#eab308' }}>{target}</span>
+              </div>
             </div>
 
           </div>
@@ -239,7 +239,7 @@ export default function BinarySearchVisualizer() {
         <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
       </div>
 
-      <div className={\`bs-status \${step?.phase === 'found' ? 'success' : step?.phase === 'done' ? 'fail' : ''}\`}>
+      <div className={`bs-status \${step?.phase === 'found' ? 'success' : step?.phase === 'done' ? 'fail' : ''}`}>
         {step?.message ?? 'Press Play or Step to begin.'}
       </div>
 
