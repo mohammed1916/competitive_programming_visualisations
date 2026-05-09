@@ -260,7 +260,7 @@ export default function AddTwoNumbersVisualizer() {
                 </div>
             </div>
 
-            {(step?.v1 !== null && step?.v2 !== null) && (
+            {step && step.v1 !== null && step.v2 !== null && (
               <div className="atn-math-box">
                   <div className="atn-math-row">
                       <span>v1</span> + <span>v2</span> + <span>carry</span> = <span>sum</span>
