@@ -1,994 +1,494 @@
-import { useCallback, useMemo, useState } from 'react'
-import { motion } from 'framer-motion'
+import { useState, useCallback, useMemo } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import './CourseScheduleVisualizer.css'
 
-const MIN_ZOOM = 0.5
-const MAX_ZOOM = 2.0
-const ZOOM_STEP = 0.1
-
 const SOLUTION_CODE = [
-  { line: 1, text: 'from collections import deque' },
-  { line: 2, text: '' },
-  { line: 3, text: 'class Solution(object):' },
-  { line: 4, text: '    def canFinish(self, numCourses, prerequisites):' },
-  { line: 5, text: '        graph = [[] for _ in range(numCourses)]' },
-  { line: 6, text: '        indegree = [0] * numCourses' },
-  { line: 7, text: '' },
-  { line: 8, text: '        for course, prereq in prerequisites:' },
-  { line: 9, text: '            graph[prereq].append(course)' },
-  { line: 10, text: '            indegree[course] += 1' },
-  { line: 11, text: '' },
-  { line: 12, text: '        queue = deque(i for i in range(numCourses) if indegree[i] == 0)' },
-  { line: 13, text: '        taken = 0' },
-  { line: 14, text: '' },
-  { line: 15, text: '        while queue:' },
-  { line: 16, text: '            course = queue.popleft()' },
-  { line: 17, text: '            taken += 1' },
-  { line: 18, text: '' },
-  { line: 19, text: '            for neighbor in graph[course]:' },
-  { line: 20, text: '                indegree[neighbor] -= 1' },
-  { line: 21, text: '                if indegree[neighbor] == 0:' },
-  { line: 22, text: '                    queue.append(neighbor)' },
-  { line: 23, text: '' },
-  { line: 24, text: '        return taken == numCourses' },
+  { line: 1,  text: 'class Solution:' },
+  { line: 2,  text: '    def canFinish(self, numCourses: int, prerequisites: List[List[int]]) -> bool:' },
+  { line: 3,  text: '        adj = {i: [] for i in range(numCourses)}' },
+  { line: 4,  text: '        indegree = [0] * numCourses' },
+  { line: 5,  text: '        ' },
+  { line: 6,  text: '        for crs, pre in prerequisites:' },
+  { line: 7,  text: '            adj[pre].append(crs)' },
+  { line: 8,  text: '            indegree[crs] += 1' },
+  { line: 9,  text: '            ' },
+  { line: 10, text: '        queue = [i for i in range(numCourses) if indegree[i] == 0]' },
+  { line: 11, text: '        visited = 0' },
+  { line: 12, text: '        ' },
+  { line: 13, text: '        while queue:' },
+  { line: 14, text: '            node = queue.pop(0)' },
+  { line: 15, text: '            visited += 1' },
+  { line: 16, text: '            for neighbor in adj[node]:' },
+  { line: 17, text: '                indegree[neighbor] -= 1' },
+  { line: 18, text: '                if indegree[neighbor] == 0:' },
+  { line: 19, text: '                    queue.append(neighbor)' },
+  { line: 20, text: '                    ' },
+  { line: 21, text: '        return visited == numCourses' },
 ]
 
-const DEFAULT_COURSES = 4
-const DEFAULT_PREREQS = '[[1,0],[2,0],[3,1],[3,2]]'
-
-const EXAMPLES = [
-  {
-    label: 'Acyclic chain',
-    numCourses: 2,
-    prerequisites: '[[1,0]]',
-    note: 'Single dep, completable.',
-  },
-  {
-    label: 'Simple cycle',
-    numCourses: 2,
-    prerequisites: '[[1,0],[0,1]]',
-    note: 'Mutual block, not completable.',
-  },
-  {
-    label: 'Diamond DAG',
-    numCourses: 4,
-    prerequisites: '[[1,0],[2,0],[3,1],[3,2]]',
-    note: 'Queue merges at course 3.',
-  },
-  {
-    label: 'No prereqs',
-    numCourses: 5,
-    prerequisites: '[]',
-    note: 'All start in queue at once.',
-  },
-  {
-    label: 'Hidden cycle',
-    numCourses: 4,
-    prerequisites: '[[1,0],[2,1],[0,2],[3,1]]',
-    note: 'Cycle among 0-1-2 also blocks course 3.',
-  },
-]
-
-const PHASE_META = {
-  'build-edge': { label: 'Build Graph', color: 'blue' },
-  'push': { label: 'Push Edge', color: 'blue' },
-  'access': { label: 'Access', color: 'purple' },
-  'init-queue': { label: 'Init Queue', color: 'amber' },
-  'pop': { label: 'Dequeue', color: 'orange' },
-  'reduce': { label: 'Reduce', color: 'slate' },
-  'enqueue': { label: 'Enqueue', color: 'amber' },
-  'final': { label: 'Complete', color: 'green' },
-}
-
-function parsePrerequisites(raw) {
-  try {
-    const parsed = JSON.parse(raw)
-    if (!Array.isArray(parsed)) return { error: 'Prerequisites must be a JSON array of pairs.' }
-    for (const pair of parsed) {
-      if (!Array.isArray(pair) || pair.length !== 2) {
-        return { error: 'Each prerequisite must be a pair like [a,b].' }
-      }
-      if (!pair.every((value) => Number.isInteger(value))) {
-        return { error: 'Course ids in prerequisites must be integers.' }
-      }
-    }
-    return { value: parsed }
-  } catch {
-    return { error: 'Prerequisites must be valid JSON, for example [[1,0],[2,1]].' }
-  }
-}
-
-function cloneGraph(graph) {
-  return graph.map((neighbors) => [...neighbors])
-}
-
-function findCycleCoreNodes(graph) {
-  const n = graph.length
-  const disc = Array(n).fill(-1)
-  const low = Array(n).fill(0)
-  const onStack = Array(n).fill(false)
-  const stack = []
-  const cycleCore = new Set()
-  let time = 0
-
-  const dfs = (u) => {
-    disc[u] = time
-    low[u] = time
-    time += 1
-    stack.push(u)
-    onStack[u] = true
-
-    for (const v of graph[u]) {
-      if (disc[v] === -1) {
-        dfs(v)
-        low[u] = Math.min(low[u], low[v])
-      } else if (onStack[v]) {
-        low[u] = Math.min(low[u], disc[v])
-      }
-    }
-
-    if (low[u] === disc[u]) {
-      const component = []
-      let w = -1
-      while (w !== u) {
-        w = stack.pop()
-        onStack[w] = false
-        component.push(w)
-      }
-
-      if (component.length > 1) {
-        component.forEach((node) => cycleCore.add(node))
-      } else if (graph[u].includes(u)) {
-        cycleCore.add(u)
-      }
-    }
-  }
-
-  for (let i = 0; i < n; i++) {
-    if (disc[i] === -1) dfs(i)
-  }
-
-  return cycleCore
-}
-
-function getBlockedEdges(graph, blockedSet) {
-  const blockedEdges = []
-  graph.forEach((neighbors, prereq) => {
-    neighbors.forEach((course) => {
-      if (blockedSet.has(prereq) && blockedSet.has(course)) {
-        blockedEdges.push([prereq, course])
-      }
-    })
-  })
-  return blockedEdges
-}
-
-function getCodeHighlight(phase, isFinalFailure) {
-  if (phase === 'build-edge') return { activeLine: 9, relatedLines: [8, 9, 10] }
-  if (phase === 'push') return { activeLine: 9, relatedLines: [8, 9, 10] }
-  if (phase === 'access') return { activeLine: 19, relatedLines: [18, 19, 20, 21] }
-  if (phase === 'init-queue') return { activeLine: 12, relatedLines: [12, 13] }
-  if (phase === 'pop') return { activeLine: 17, relatedLines: [15, 16, 17] }
-  if (phase === 'reduce') return { activeLine: 20, relatedLines: [19, 20, 21, 22] }
-  if (phase === 'enqueue') return { activeLine: 22, relatedLines: [19, 20, 21, 22] }
-  // Final step: if failed, highlight the while loop and return check
-  if (isFinalFailure) return { activeLine: 24, relatedLines: [15, 16, 17, 20, 21, 22, 24] }
-  return { activeLine: 24, relatedLines: [24] }
-}
-
-function withCode(step) {
-  const isFinalFailure = step.phase === 'final' && step.result === false
-  const code = getCodeHighlight(step.phase, isFinalFailure)
-  return { ...step, activeLine: code.activeLine, relatedLines: code.relatedLines }
-}
-
-function clamp(value, min, max) {
-  return Math.min(Math.max(value, min), max)
-}
-
-function buildStepDesc(phase, info) {
-  const {
-    prereq,
-    course,
-    neighbor,
-    newVal,
-    queue,
-    takenCount,
-    numCourses,
-    result,
-    blockedCourses,
-    cycleCore,
-    blockedByCycle,
-  } = info
-  switch (phase) {
-    case 'build-edge':
-      return `about to append ${course} to graph[${prereq}]`
-    case 'push':
-      return `graph[${prereq}].append(${course})  →  indegree[${course}] += 1  →  indegree[${course}] = ${newVal}`
-    case 'access':
-      return `accessing graph[${course}] neighbor ${neighbor}`
-    case 'init-queue': {
-      const seeds = queue.join(', ')
-      return queue.length > 0
-        ? `for i in range(${numCourses}): check indegree[i] == 0  →  courses [${seeds}] satisfy this  →  queue.extend([${seeds}])`
-        : `for i in range(${numCourses}): check indegree[i] == 0  →  all indegrees > 0  →  queue stays empty (possible cycle)`
-    }
-    case 'pop':
-      return `course = queue.popleft()  →  course = ${course}  |  taken += 1  →  taken = ${takenCount} / ${numCourses}`
-    case 'reduce':
-      return `for neighbor in graph[${course}]: neighbor = ${neighbor}  |  indegree[${neighbor}] -= 1  →  indegree[${neighbor}] = ${newVal}  |  check indegree[${neighbor}] == 0?  →  false  →  skip enqueue`
-    case 'enqueue':
-      return `for neighbor in graph[${course}]: neighbor = ${neighbor}  |  indegree[${neighbor}] -= 1  →  indegree[${neighbor}] = 0  |  check indegree[${neighbor}] == 0?  →  true  →  queue.append(${neighbor})`
-    case 'final':
-      if (result) {
-        return `return taken == numCourses  →  ${takenCount} == ${numCourses}  →  true`
-      }
-      return `return taken == numCourses  →  ${takenCount} == ${numCourses}  →  false  |  blocked = [${blockedCourses.join(', ')}]  |  cycle core = [${cycleCore.join(', ')}]  |  blocked by cycle = [${blockedByCycle.join(', ')}]`
-    default:
-      return ''
-  }
-}
-
-function generateCourseSteps(numCourses, prerequisites) {
-  const graph = Array.from({ length: numCourses }, () => [])
-  const indegree = Array(numCourses).fill(0)
+function generateSteps(numCourses, prerequisites) {
   const steps = []
-
-  prerequisites.forEach(([course, prereq], index) => {
-    // record intent to modify graph
-    steps.push(withCode({
-      phase: 'build-edge',
-      edgeIndex: index,
-      activeCourse: course,
-      activeNeighbor: course,
-      activePrereq: prereq,
-      graph: cloneGraph(graph),
-      indegree: [...indegree],
-      queue: [],
-      takenOrder: [],
-      takenCount: 0,
-      description: buildStepDesc('build-edge', { prereq, course, newVal: indegree[course] }),
-      result: null,
-      event: null,
-      queueSnapshot: [],
-    }))
-
-    // perform the append and record the mutation as its own step
-    graph[prereq].push(course)
-    indegree[course] += 1
-    steps.push(withCode({
-      phase: 'push',
-      edgeIndex: index,
-      activeCourse: course,
-      activeNeighbor: course,
-      activePrereq: prereq,
-      graph: cloneGraph(graph),
-      indegree: [...indegree],
-      queue: [],
-      takenOrder: [],
-      takenCount: 0,
-      description: buildStepDesc('push', { prereq, course, newVal: indegree[course] }),
-      result: null,
-      event: 'push',
-      queueSnapshot: [],
-    }))
-  })
-
-  const queue = []
-  for (let course = 0; course < numCourses; course++) {
-    if (indegree[course] === 0) queue.push(course)
+  
+  if (numCourses <= 0) {
+    steps.push({
+      phase: 'done', adj: {}, indegree: [], queue: [], visited: 0,
+      activeLine: 21, message: 'Invalid number of courses.'
+    })
+    return steps
   }
 
-  steps.push(withCode({
-    phase: 'init-queue',
-    activeCourse: null,
-    activeNeighbor: null,
-    activePrereq: null,
-    graph: cloneGraph(graph),
-    indegree: [...indegree],
-    queue: [...queue],
-    takenOrder: [],
-    takenCount: 0,
-    description: buildStepDesc('init-queue', { queue: [...queue], numCourses }),
-    result: null,
-    event: 'init',
-    queueSnapshot: [...queue],
-  }))
+  const adj = {}
+  const indegree = new Array(numCourses).fill(0)
+  
+  for (let i = 0; i < numCourses; i++) {
+    adj[i] = []
+  }
 
-  const takenOrder = []
+  steps.push({
+    phase: 'init', adj: JSON.parse(JSON.stringify(adj)), indegree: [...indegree], queue: [], visited: 0,
+    activeLine: 4, message: \`Initialize adjacency list and indegree array for \${numCourses} courses.\`
+  })
 
+  // Build graph
+  for (const [crs, pre] of prerequisites) {
+    steps.push({
+      phase: 'build_graph_read', adj: JSON.parse(JSON.stringify(adj)), indegree: [...indegree], queue: [], visited: 0,
+      currEdge: [crs, pre],
+      activeLine: 6, message: \`Read prerequisite: must take \${pre} before \${crs}.\`
+    })
+
+    if (!adj[pre]) adj[pre] = [] // Handle invalid inputs gracefully in visualizer
+    adj[pre].push(crs)
+    
+    steps.push({
+      phase: 'build_graph_adj', adj: JSON.parse(JSON.stringify(adj)), indegree: [...indegree], queue: [], visited: 0,
+      currEdge: [crs, pre],
+      activeLine: 7, message: \`Add directed edge \${pre} -> \${crs} to adjacency list.\`
+    })
+
+    if (crs < numCourses && crs >= 0) indegree[crs]++
+
+    steps.push({
+      phase: 'build_graph_indegree', adj: JSON.parse(JSON.stringify(adj)), indegree: [...indegree], queue: [], visited: 0,
+      currEdge: [crs, pre],
+      activeLine: 8, message: \`Increment indegree for course \${crs} (now \${indegree[crs]}).\`
+    })
+  }
+
+  // Initialize Queue
+  const queue = []
+  for (let i = 0; i < numCourses; i++) {
+    if (indegree[i] === 0) queue.push(i)
+  }
+
+  steps.push({
+    phase: 'init_queue', adj: JSON.parse(JSON.stringify(adj)), indegree: [...indegree], queue: [...queue], visited: 0,
+    activeLine: 10, message: \`Find all courses with 0 prerequisites and add to queue: [\${queue.join(', ')}].\`
+  })
+
+  let visited = 0
+  steps.push({
+    phase: 'init_visited', adj: JSON.parse(JSON.stringify(adj)), indegree: [...indegree], queue: [...queue], visited,
+    activeLine: 11, message: \`Initialize visited count to \${visited}.\`
+  })
+
+  const processedNodes = []
+
+  // Process Queue
   while (queue.length > 0) {
-    const course = queue.shift()
-    takenOrder.push(course)
+    steps.push({
+      phase: 'while_check', adj: JSON.parse(JSON.stringify(adj)), indegree: [...indegree], queue: [...queue], visited, processedNodes: [...processedNodes],
+      activeLine: 13, message: \`Queue is not empty (length \${queue.length}). Continue topological sort.\`
+    })
 
-    steps.push(withCode({
-      phase: 'pop',
-      activeCourse: course,
-      activeNeighbor: null,
-      activePrereq: null,
-      graph: cloneGraph(graph),
-      indegree: [...indegree],
-      queue: [...queue],
-      takenOrder: [...takenOrder],
-      takenCount: takenOrder.length,
-      description: buildStepDesc('pop', { course, takenCount: takenOrder.length, numCourses }),
-      result: null,
-      event: 'dequeue',
-      queueSnapshot: [...queue],
-    }))
+    const node = queue.shift()
+    processedNodes.push(node)
 
-    // iterate by index so we can record an explicit 'access' step
-    for (let ni = 0; ni < graph[course].length; ni++) {
-      const neighbor = graph[course][ni]
+    steps.push({
+      phase: 'pop_node', adj: JSON.parse(JSON.stringify(adj)), indegree: [...indegree], queue: [...queue], visited, processedNodes: [...processedNodes],
+      currNode: node,
+      activeLine: 14, message: \`Pop course \${node} from queue. You can take this course now!\`
+    })
 
-      // record access to graph[course] -> neighbor before mutating indegree
-      steps.push(withCode({
-        phase: 'access',
-        activeCourse: course,
-        activeNeighbor: neighbor,
-        activePrereq: course,
-        graph: cloneGraph(graph),
-        indegree: [...indegree],
-        queue: [...queue],
-        takenOrder: [...takenOrder],
-        takenCount: takenOrder.length,
-        description: buildStepDesc('access', { course, neighbor }),
-        result: null,
-        event: 'access',
-        queueSnapshot: [...queue],
-      }))
+    visited++
+    steps.push({
+      phase: 'inc_visited', adj: JSON.parse(JSON.stringify(adj)), indegree: [...indegree], queue: [...queue], visited, processedNodes: [...processedNodes],
+      currNode: node,
+      activeLine: 15, message: \`Increment visited count to \${visited}.\`
+    })
 
-      indegree[neighbor] -= 1
-      const becameZero = indegree[neighbor] === 0
+    const neighbors = adj[node] || []
+    
+    if (neighbors.length === 0) {
+        steps.push({
+            phase: 'no_neighbors', adj: JSON.parse(JSON.stringify(adj)), indegree: [...indegree], queue: [...queue], visited, processedNodes: [...processedNodes],
+            currNode: node,
+            activeLine: 16, message: \`Course \${node} has no dependent courses.\`
+        })
+    }
 
-      steps.push(withCode({
-        phase: becameZero ? 'enqueue' : 'reduce',
-        activeCourse: course,
-        activeNeighbor: neighbor,
-        activePrereq: course,
-        graph: cloneGraph(graph),
-        indegree: [...indegree],
-        queue: [...queue],
-        takenOrder: [...takenOrder],
-        takenCount: takenOrder.length,
-        description: buildStepDesc(becameZero ? 'enqueue' : 'reduce', {
-          course, neighbor, newVal: indegree[neighbor],
-        }),
-        result: null,
-        event: becameZero ? 'enqueue' : 'reduce',
-        queueSnapshot: [...queue],
-      }))
+    for (const neighbor of neighbors) {
+      steps.push({
+        phase: 'visit_neighbor', adj: JSON.parse(JSON.stringify(adj)), indegree: [...indegree], queue: [...queue], visited, processedNodes: [...processedNodes],
+        currNode: node, currNeighbor: neighbor,
+        activeLine: 16, message: \`Examine dependent course \${neighbor} (requires \${node}).\`
+      })
 
-      if (becameZero) queue.push(neighbor)
+      indegree[neighbor]--
+      steps.push({
+        phase: 'dec_indegree', adj: JSON.parse(JSON.stringify(adj)), indegree: [...indegree], queue: [...queue], visited, processedNodes: [...processedNodes],
+        currNode: node, currNeighbor: neighbor,
+        activeLine: 17, message: \`Decrement indegree for \${neighbor} (now \${indegree[neighbor]}).\`
+      })
+
+      steps.push({
+        phase: 'check_neighbor_indegree', adj: JSON.parse(JSON.stringify(adj)), indegree: [...indegree], queue: [...queue], visited, processedNodes: [...processedNodes],
+        currNode: node, currNeighbor: neighbor,
+        activeLine: 18, message: \`Check if \${neighbor} has any remaining prerequisites (indegree == 0?).\`
+      })
+
+      if (indegree[neighbor] === 0) {
+        queue.push(neighbor)
+        steps.push({
+          phase: 'enqueue_neighbor', adj: JSON.parse(JSON.stringify(adj)), indegree: [...indegree], queue: [...queue], visited, processedNodes: [...processedNodes],
+          currNode: node, currNeighbor: neighbor,
+          activeLine: 19, message: \`Course \${neighbor} has 0 remaining prerequisites! Add to queue.\`
+        })
+      }
     }
   }
 
-  const result = takenOrder.length === numCourses
-  const blockedCourses = indegree
-    .map((value, course) => (value > 0 ? course : null))
-    .filter((course) => course !== null)
-  const cycleCoreSet = findCycleCoreNodes(graph)
-  const cycleCore = blockedCourses.filter((course) => cycleCoreSet.has(course))
-  const blockedByCycle = blockedCourses.filter((course) => !cycleCoreSet.has(course))
-  const blockedSet = new Set(blockedCourses)
-  const blockedEdges = getBlockedEdges(graph, blockedSet)
-
-  steps.push(withCode({
-    phase: 'final',
-    activeCourse: null,
-    activeNeighbor: null,
-    activePrereq: null,
-    graph: cloneGraph(graph),
-    indegree: [...indegree],
-    queue: [...queue],
-    takenOrder: [...takenOrder],
-    takenCount: takenOrder.length,
-    description: buildStepDesc('final', {
-      takenCount: takenOrder.length,
-      numCourses,
-      result,
-      blockedCourses,
-      cycleCore,
-      blockedByCycle,
-    }),
-    result,
-    blockedCourses,
-    cycleCore,
-    blockedByCycle,
-    blockedEdges,
-  }))
+  const success = visited === numCourses
+  steps.push({
+    phase: 'done', adj: JSON.parse(JSON.stringify(adj)), indegree: [...indegree], queue: [...queue], visited, processedNodes: [...processedNodes],
+    success,
+    activeLine: 21, message: success 
+        ? \`Visited (\${visited}) == numCourses (\${numCourses}). All courses can be finished!\`
+        : \`Visited (\${visited}) != numCourses (\${numCourses}). Cycle detected, cannot finish all courses!\`
+  })
 
   return steps
 }
 
-// ── GraphView ─────────────────────────────────────────────────────────────────
+const EXAMPLES = [
+  { label: 'Simple Path', numCourses: 2, prerequisites: [[1, 0]] },
+  { label: 'Cycle (Fail)', numCourses: 2, prerequisites: [[1, 0], [0, 1]] },
+  { label: 'Complex DAG', numCourses: 6, prerequisites: [[1, 0], [2, 0], [3, 1], [3, 2], [5, 3], [4, 3]] },
+  { label: 'Disconnected', numCourses: 4, prerequisites: [[1, 0], [3, 2]] },
+]
 
-const NODE_R = 26
-const GRAPH_VW = 480
-const GRAPH_VH = 360
+// Simple directed graph layout engine for small graphs (force-directed or circular)
+function calculateNodePositions(numCourses, width = 400, height = 300) {
+    const positions = {}
+    const cx = width / 2
+    const cy = height / 2
+    const radius = Math.min(width, height) * 0.35
 
-function computeNodePositions(numCourses) {
-  const cx = GRAPH_VW / 2
-  const cy = GRAPH_VH / 2
-  return Array.from({ length: numCourses }, (_, course) => {
-    if (numCourses === 1) return { course, x: cx, y: cy }
-    const radius = numCourses <= 3 ? 90 : numCourses <= 6 ? 135 : 155
-    const angle = (course / numCourses) * Math.PI * 2 - Math.PI / 2
-    return { course, x: cx + Math.cos(angle) * radius, y: cy + Math.sin(angle) * radius }
-  })
+    for (let i = 0; i < numCourses; i++) {
+        const angle = (i / numCourses) * 2 * Math.PI - Math.PI / 2
+        positions[i] = {
+            x: cx + radius * Math.cos(angle),
+            y: cy + radius * Math.sin(angle)
+        }
+    }
+    return positions
 }
-
-function GraphView({ numCourses, step, zoom, onZoomChange }) {
-  const nodes = computeNodePositions(numCourses)
-  const nodeLookup = new Map(nodes.map((n) => [n.course, n]))
-  const isFailureFinal = step?.phase === 'final' && step?.result === false
-  const blockedSet = new Set(step?.blockedCourses ?? [])
-  const cycleCoreSet = new Set(step?.cycleCore ?? [])
-  const blockedEdgeSet = new Set((step?.blockedEdges ?? []).map(([from, to]) => `${from}->${to}`))
-
-  const edges = []
-  step?.graph?.forEach((nbrs, prereq) => {
-    nbrs.forEach((course) => edges.push({ prereq, course }))
-  })
-
-  const handleWheel = (e) => {
-    if (!e.ctrlKey) return
-    e.preventDefault()
-    const delta = e.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP
-    onZoomChange((z) => clamp(Number((z + delta).toFixed(2)), MIN_ZOOM, MAX_ZOOM))
-  }
-
-  return (
-    <div className={`cs-graph-wrap ${isFailureFinal ? 'failure-final' : ''}`} onWheel={handleWheel}>
-      {/* Zoom toolbar */}
-      <div className="cs-graph-toolbar">
-        <button
-          type="button"
-          className="cs-icon-btn"
-          onClick={() => onZoomChange((z) => clamp(Number((z - ZOOM_STEP).toFixed(2)), MIN_ZOOM, MAX_ZOOM))}
-          aria-label="Zoom out"
-        >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
-            <path d="M5 12h14" />
-          </svg>
-        </button>
-        <span className="cs-zoom-label mono">{Math.round(zoom * 100)}%</span>
-        <button
-          type="button"
-          className="cs-icon-btn"
-          onClick={() => onZoomChange((z) => clamp(Number((z + ZOOM_STEP).toFixed(2)), MIN_ZOOM, MAX_ZOOM))}
-          aria-label="Zoom in"
-        >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
-            <path d="M12 5v14M5 12h14" />
-          </svg>
-        </button>
-        <span className="cs-zoom-hint">Ctrl + scroll</span>
-      </div>
-
-      {/* SVG */}
-      <div className="cs-graph-stage" style={{ transform: `scale(${zoom})`, transformOrigin: 'top center' }}>
-        <svg
-          className="cs-graph-svg"
-          viewBox={`0 0 ${GRAPH_VW} ${GRAPH_VH}`}
-          role="img"
-          aria-label="Course dependency graph"
-        >
-          <defs>
-            <marker id="cs-arr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
-              <path d="M0,0 L0,6 L8,3 z" className="cs-arrowhead" />
-            </marker>
-            <marker id="cs-arr-active" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
-              <path d="M0,0 L0,6 L8,3 z" className="cs-arrowhead active" />
-            </marker>
-          </defs>
-
-          {/* Edges — trimmed so they don't overlap node circles */}
-          {edges.map(({ prereq, course }, i) => {
-            const from = nodeLookup.get(prereq)
-            const to = nodeLookup.get(course)
-            if (!from || !to) return null
-            const isActive = step?.activePrereq === prereq && step?.activeNeighbor === course
-            const edgePhase = step?.phase
-            const edgeEvent = step?.event
-            const isCycleEdge = blockedEdgeSet.has(`${prereq}->${course}`)
-            const edgeExtraClass = isActive && (edgePhase === 'access' ? 'access' : edgeEvent === 'push' ? 'push' : '')
-            const dx = to.x - from.x, dy = to.y - from.y
-            const dist = Math.sqrt(dx * dx + dy * dy) || 1
-            const nx = dx / dist, ny = dy / dist
-            const x1 = from.x + nx * (NODE_R + 3)
-            const y1 = from.y + ny * (NODE_R + 3)
-            const x2 = to.x - nx * (NODE_R + 9)
-            const y2 = to.y - ny * (NODE_R + 9)
-            return (
-              <line
-                key={`e-${prereq}-${course}-${i}`}
-                x1={x1} y1={y1} x2={x2} y2={y2}
-                className={`cs-edge ${isActive ? 'active' : ''} ${isCycleEdge ? 'cycle' : ''} ${edgeExtraClass || ''}`}
-                markerEnd={isActive ? 'url(#cs-arr-active)' : 'url(#cs-arr)'}
-              />
-            )
-          })}
-
-          {/* Nodes */}
-          {nodes.map(({ course, x, y }) => {
-            const indegree = step?.indegree?.[course] ?? 0
-            const inQueue = step?.queue?.includes(course)
-            const taken = step?.takenOrder?.includes(course)
-            const active = step?.activeCourse === course || step?.activeNeighbor === course
-            const isCycleCore = cycleCoreSet.has(course)
-            const isCycleLocked = blockedSet.has(course) && !isCycleCore
-            // determine extra classes for visualizing 'access' and 'push' events
-            const nodePhase = step?.phase
-            const nodeEvent = step?.event
-            const extraNodeClass = active && (nodePhase === 'access' ? 'access' : nodeEvent === 'push' ? 'push' : '')
-            const stateClass = [
-              active ? 'active' : taken ? 'taken' : inQueue ? 'queued' : '',
-              isCycleCore ? 'cycle-core' : '',
-              isCycleLocked ? 'cycle-locked' : '',
-              extraNodeClass,
-            ].filter(Boolean).join(' ')
-            return (
-              <g key={`n-${course}`} transform={`translate(${x},${y})`}>
-                <circle className={`cs-node ${stateClass}`} r={NODE_R} />
-                <text className="cs-node-num" textAnchor="middle" dy="5">{course}</text>
-                <text className="cs-node-deg" textAnchor="middle" dy={NODE_R + 14}>{`in=${indegree}`}</text>
-              </g>
-            )
-          })}
-        </svg>
-      </div>
-
-      {/* Legend */}
-      <div className="cs-graph-legend">
-        <span className="cs-legend-item cs-legend-default">Default</span>
-        <span className="cs-legend-item cs-legend-queued">In Queue</span>
-        <span className="cs-legend-item cs-legend-taken">Taken</span>
-        <span className="cs-legend-item cs-legend-active">Active</span>
-        <span className="cs-legend-item cs-legend-cycle-core">Cycle Core</span>
-        <span className="cs-legend-item cs-legend-cycle-locked">Blocked by Cycle</span>
-      </div>
-    </div>
-  )
-}
-
-// ── CodePanel ─────────────────────────────────────────────────────────────────
-
-// ── Main Component ────────────────────────────────────────────────────────────
 
 export default function CourseScheduleVisualizer() {
-  const [courseInput, setCourseInput] = useState(String(DEFAULT_COURSES))
-  const [prereqInput, setPrereqInput] = useState(DEFAULT_PREREQS)
-  const [numCourses, setNumCourses] = useState(DEFAULT_COURSES)
-  const [prerequisites, setPrerequisites] = useState(() => JSON.parse(DEFAULT_PREREQS))
-  const [steps, setSteps] = useState(() => generateCourseSteps(DEFAULT_COURSES, JSON.parse(DEFAULT_PREREQS)))
-  const [attemptedSubmit, setAttemptedSubmit] = useState(false)
-  const [graphZoom, setGraphZoom] = useState(1)
-  const [leftWidth, setLeftWidth] = useState(560)
-  const [showIOGuide, setShowIOGuide] = useState(false)
+  const [numCoursesInput, setNumCoursesInput] = useState('6')
+  const [prereqInput, setPrereqInput] = useState('[[1, 0], [2, 0], [3, 1], [3, 2], [5, 3], [4, 3]]')
 
-  // Playback state hook
+  const { numCourses, prerequisites, inputError } = useMemo(() => {
+    try {
+      const nc = parseInt(numCoursesInput, 10)
+      const pr = JSON.parse(prereqInput)
+      if (isNaN(nc) || nc <= 0 || nc > 15) throw new Error('numCourses must be 1-15')
+      if (!Array.isArray(pr)) throw new Error('Prerequisites must be a 2D array')
+      return { numCourses: nc, prerequisites: pr, inputError: '' }
+    } catch (e) {
+      return { numCourses: 2, prerequisites: [[1, 0]], inputError: e.message || 'Invalid input' }
+    }
+  }, [numCoursesInput, prereqInput])
+
+  const steps = useMemo(() => generateSteps(numCourses, prerequisites), [numCourses, prerequisites])
+
   const {
-    stepIndex,
-    setStepIndex,
-    isPlaying,
-    setIsPlaying,
-    speed,
-    setSpeed,
-    stepForward,
-    stepBack,
-    togglePlay,
-    handleReset,
-    isDone,
-  } = usePlaybackState(steps.length, 520)
+    stepIndex, stepForward, stepBack, togglePlay,
+    handleReset, isPlaying, speed, setSpeed, isDone,
+  } = usePlaybackState(steps.length)
 
-  const startDrag = (e) => {
-    e.preventDefault()
-    const startX = e.clientX
-    const startW = leftWidth
-    document.body.classList.add('resizing-panel')
-    const onMove = (ev) => {
-      const dx = ev.clientX - startX
-      const next = Math.max(360, Math.min(1100, startW + dx))
-      setLeftWidth(next)
-    }
-    const onUp = () => {
-      document.body.classList.remove('resizing-panel')
-      window.removeEventListener('pointermove', onMove)
-      window.removeEventListener('pointerup', onUp)
-    }
-    window.addEventListener('pointermove', onMove)
-    window.addEventListener('pointerup', onUp)
-  }
+  const step = stepIndex >= 0 ? steps[stepIndex] : null
 
-  // ── Validation ──────────────────────────────────────────────────────────────
-  const parsedCourses = Number(courseInput)
-  const coursesValid = Number.isInteger(parsedCourses) && parsedCourses >= 1 && parsedCourses <= 12
-  const parsedPrereqs = parsePrerequisites(prereqInput)
-  const prereqValue = useMemo(() => parsedPrereqs.value ?? [], [parsedPrereqs.value])
-  const prereqRangeValid = coursesValid && parsedPrereqs.value
-    ? prereqValue.every(([a, b]) => a >= 0 && a < parsedCourses && b >= 0 && b < parsedCourses)
-    : false
+  const applyExample = useCallback((ex) => {
+    setNumCoursesInput(String(ex.numCourses))
+    setPrereqInput(JSON.stringify(ex.prerequisites))
+    handleReset()
+  }, [handleReset])
 
-  const inputError = attemptedSubmit && !coursesValid
-    ? 'numCourses must be an integer between 1 and 12.'
-    : attemptedSubmit && parsedPrereqs.error
-      ? parsedPrereqs.error
-      : attemptedSubmit && !prereqRangeValid
-        ? 'Every course id must be between 0 and numCourses − 1.'
-        : null
+  const nodePositions = useMemo(() => calculateNodePositions(numCourses), [numCourses])
 
-  // ── Derived ─────────────────────────────────────────────────────────────────
-  const currentStep = stepIndex >= 0 ? steps[stepIndex] : null
-  const progress = steps.length > 0 ? ((stepIndex + 1) / steps.length) * 100 : 0
-  const phaseMeta = currentStep ? PHASE_META[currentStep.phase] : null
-  const blockedCourses = currentStep?.blockedCourses ?? []
-  const cycleCore = currentStep?.cycleCore ?? []
-  const blockedByCycle = currentStep?.blockedByCycle ?? []
-
-  // ── Handlers ────────────────────────────────────────────────────────────────
-  const handleVisualize = useCallback(() => {
-    setAttemptedSubmit(true)
-    if (!coursesValid || parsedPrereqs.error || !prereqRangeValid) return
-    setNumCourses(parsedCourses)
-    setPrerequisites(prereqValue)
-    setSteps(generateCourseSteps(parsedCourses, prereqValue))
-    setStepIndex(-1)
-    setIsPlaying(false)
-  }, [coursesValid, parsedCourses, parsedPrereqs.error, prereqRangeValid, prereqValue])
-
-  const applyExample = useCallback((example) => {
-    setCourseInput(String(example.numCourses))
-    setPrereqInput(example.prerequisites)
-    setNumCourses(example.numCourses)
-    const parsed = JSON.parse(example.prerequisites)
-    setPrerequisites(parsed)
-    setSteps(generateCourseSteps(example.numCourses, parsed))
-    setStepIndex(-1)
-    setIsPlaying(false)
-    setAttemptedSubmit(false)
-  }, [])
-
-  // ── Render ──────────────────────────────────────────────────────────────────
-  const isActiveExample = (ex) => numCourses === ex.numCourses && prereqInput === ex.prerequisites
+  // Extract edges from current adjacency list
+  const activeEdges = useMemo(() => {
+      if (!step) return []
+      const edges = []
+      for (const [u, neighbors] of Object.entries(step.adj)) {
+          for (const v of neighbors) {
+              edges.push({ u: Number(u), v: Number(v) })
+          }
+      }
+      return edges
+  }, [step])
 
   return (
-    <div className="cs">
-
-      {/* ── Input card ── */}
-      <div className="cs-card cs-input-card">
-        <div className="cs-input-row">
-          <div className="cs-field">
-            <label className="cs-label">Courses</label>
-            <input
-              className={`cs-input cs-input-sm ${attemptedSubmit && !coursesValid ? 'has-error' : ''}`}
-              value={courseInput}
-              onChange={(e) => {
-                setCourseInput(e.target.value.replace(/[^0-9]/g, ''))
-                if (attemptedSubmit) setAttemptedSubmit(false)
-              }}
-              inputMode="numeric"
-              aria-label="Number of courses"
-            />
+    <div className="course-schedule-shell">
+      <div className="cs-top">
+        <div className="cs-panel" style={{ flex: 1.5 }}>
+          <div className="cs-panel-head">
+            Graph View
+            {inputError && <span style={{ color: '#f87171', marginLeft: 8 }}>{inputError}</span>}
           </div>
+          <div className="cs-panel-body">
+            <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
+              {EXAMPLES.map((ex) => (
+                <button
+                  key={ex.label}
+                  onClick={() => applyExample(ex)}
+                  className="cs-example-btn"
+                >
+                  {ex.label}
+                </button>
+              ))}
+            </div>
 
-          <div className="cs-field cs-field-grow">
-            <label className="cs-label">
-              Prerequisites <span className="cs-label-hint">[[course, prereq], …] JSON</span>
-            </label>
-            <textarea
-              className={`cs-input cs-textarea mono ${attemptedSubmit && (parsedPrereqs.error || !prereqRangeValid) ? 'has-error' : ''}`}
-              value={prereqInput}
-              onChange={(e) => {
-                setPrereqInput(e.target.value)
-                if (attemptedSubmit) setAttemptedSubmit(false)
-              }}
-              rows={2}
-              aria-label="Prerequisites JSON"
-            />
-          </div>
-
-          <button className="cs-btn cs-btn-primary" onClick={handleVisualize}>
-            Visualize
-          </button>
-        </div>
-
-        <div className="cs-support-row">
-          <p className={`cs-hint ${inputError ? 'error' : ''}`}>
-            {inputError || "Kahn's algorithm — BFS topological sort. Max 12 courses."}
-          </p>
-          <div className="cs-meta-row">
-            <span className="cs-pill mono">{courseInput || 0} courses</span>
-            <span className="cs-pill mono">{prerequisites.length} edges</span>
-          </div>
-        </div>
-
-        <div className="cs-examples">
-          {EXAMPLES.map((ex) => (
-            <button
-              key={ex.label}
-              type="button"
-              className={`cs-example-chip ${isActiveExample(ex) ? 'active' : ''}`}
-              onClick={() => applyExample(ex)}
-            >
-              <span className="cs-chip-label">{ex.label}</span>
-              <span className="cs-chip-note">{ex.note}</span>
-              <span className="cs-chip-courses mono">{ex.numCourses}c</span>
-            </button>
-          ))}
-        </div>
-
-        <div className="cs-io-guide-wrap">
-          <button
-            type="button"
-            className="cs-btn cs-btn-ghost cs-btn-sm"
-            onClick={() => setShowIOGuide((v) => !v)}
-            aria-expanded={showIOGuide}
-            aria-controls="cs-io-guide"
-          >
-            {showIOGuide ? 'Hide Input/Output Guide' : 'View Input/Output Guide'}
-          </button>
-
-          {showIOGuide && (
-            <div id="cs-io-guide" className="cs-io-guide-card" role="region" aria-label="Input output guide">
-              <div className="cs-io-section">
-                <div className="cs-section-label">Expected Input (Visualizer)</div>
-                <p className="cs-io-text">Enter number of courses and prerequisite edges in JSON:</p>
-                <div className="cs-io-code mono">
-                  {"Courses: 4nPrerequisites: [[1,0],[2,0],[3,1],[3,2]]".split('n').map((l, i, arr) => (
-                    <span key={i}>{l}{i < arr.length - 1 && <br />}</span>
-                  ))}
+            <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, width: '80px' }}>
+                    <span style={{ fontSize: 11, color: '#94a3b8' }}>numCourses</span>
+                    <input
+                        value={numCoursesInput}
+                        onChange={(e) => { setNumCoursesInput(e.target.value); handleReset() }}
+                        className="cs-input"
+                    />
                 </div>
-              </div>
-
-              <div className="cs-io-section">
-                <div className="cs-section-label">Expected Output</div>
-                <p className="cs-io-text">Final verdict is a boolean: <span className="mono">true</span> if all courses can be completed, otherwise <span className="mono">false</span>.</p>
-              </div>
-
-              <div className="cs-io-section">
-                <div className="cs-section-label">Competitive Programming Input (stdin)</div>
-                <p className="cs-io-text">Typical format:</p>
-                <div className="cs-io-code mono">
-                  {"n mncourse1 prereq1ncourse2 prereq2n...ncoursem prereqm".split('n').map((l, i, arr) => (
-                    <span key={i}>{l}{i < arr.length - 1 && <br />}</span>
-                  ))}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
+                    <span style={{ fontSize: 11, color: '#94a3b8' }}>prerequisites</span>
+                    <input
+                        value={prereqInput}
+                        onChange={(e) => { setPrereqInput(e.target.value); handleReset() }}
+                        className="cs-input"
+                    />
                 </div>
-                <p className="cs-io-text">Python parsing with <span className="mono">int(input())</span> style:</p>
-                <div className="cs-io-code mono">
-                  {`n, m = map(int, input().split())nprerequisites = []nfor _ in range(m):n    c, p = map(int, input().split())n    prerequisites.append([c, p])nn# call: canFinish(n, prerequisites)`
-                    .split('n')
-                    .map((l, i, arr) => <span key={i}>{l}{i < arr.length - 1 && <br />}</span>)}
-                </div>
-              </div>
             </div>
-          )}
-        </div>
-      </div>
 
-      {/* ── Progress band ── */}
-      <div className="cs-progress-band">
-        <div className="cs-progress-track">
-          <motion.div
-            className="cs-progress-fill"
-            animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.14 }}
-          />
-        </div>
-        <div className="cs-step-info">
-          <span className="cs-step-counter">
-            {stepIndex < 0
-              ? 'Not started — press Play or step forward'
-              : isDone
-                ? `Done — canFinish = ${String(currentStep?.result)}`
-                : `Step ${stepIndex + 1} / ${steps.length}`}
-          </span>
-          {phaseMeta && (
-            <span className={`cs-phase-badge phase-${phaseMeta.color}`}>
-              {phaseMeta.label}
-            </span>
-          )}
-        </div>
-      </div>
+            <div className="cs-graph-container">
+                <svg width="100%" height="100%" viewBox="0 0 400 300">
+                    <defs>
+                        <marker id="arrow" viewBox="0 0 10 10" refX="22" refY="5"
+                            markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b" />
+                        </marker>
+                        <marker id="arrow-active" viewBox="0 0 10 10" refX="22" refY="5"
+                            markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 0 L 10 5 L 0 10 z" fill="#3b82f6" />
+                        </marker>
+                    </defs>
 
-      {/* ── Main two-column layout ── */}
-      <div className="cs-main">
+                    {/* Draw static prerequisite edges initially if we are building the graph */}
+                    {(!step || step.phase.startsWith('build')) && prerequisites.map((p, i) => {
+                        const pre = p[1], crs = p[0]
+                        const isCurrentBuildEdge = step?.currEdge && step.currEdge[0] === crs && step.currEdge[1] === pre
+                        const isBuilt = step?.adj[pre]?.includes(crs)
+                        if (!nodePositions[pre] || !nodePositions[crs]) return null
+                        
+                        return (
+                            <line 
+                                key={\`pre-\${i}\`}
+                                x1={nodePositions[pre].x} y1={nodePositions[pre].y}
+                                x2={nodePositions[crs].x} y2={nodePositions[crs].y}
+                                stroke={isCurrentBuildEdge ? '#3b82f6' : isBuilt ? '#64748b' : 'rgba(100, 116, 139, 0.2)'}
+                                strokeWidth={isCurrentBuildEdge ? 3 : 2}
+                                strokeDasharray={isBuilt ? "none" : "4 4"}
+                                markerEnd={isBuilt || isCurrentBuildEdge ? "url(#arrow)" : ""}
+                            />
+                        )
+                    })}
 
-        {/* Resizable shell: left (graph) and right (variables) */}
-        <div className="cs-content-shell" style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-          <div className="cs-col-left" style={{ width: `${leftWidth}px`, flex: '0 0 auto' }}>
-            <div className="cs-card cs-graph-card">
-              <div className="cs-card-head">
-                <div>
-                  <div className="cs-section-label">Dependency Graph</div>
-                  <p className="cs-card-sub">Edges: prerequisite → course unlocked</p>
-                </div>
-                <div className="cs-verdict">
-                  <span className="cs-verdict-label">Result</span>
-                  <span className={`cs-verdict-value mono ${currentStep?.result === false ? 'fail' : currentStep?.result === true ? 'pass' : ''}`}>
-                    {currentStep?.result == null ? '—' : String(currentStep.result)}
-                  </span>
-                </div>
-              </div>
-              <GraphView
-                numCourses={numCourses}
-                step={currentStep}
-                zoom={graphZoom}
-                onZoomChange={setGraphZoom}
-              />
+                    {/* Draw actual adjacency list edges when sorting */}
+                    {step && !step.phase.startsWith('build') && activeEdges.map((edge, i) => {
+                        const {u, v} = edge
+                        const isCurrentEval = step.currNode === u && step.currNeighbor === v
+                        if (!nodePositions[u] || !nodePositions[v]) return null
+                        return (
+                            <line 
+                                key={\`edge-\${i}\`}
+                                x1={nodePositions[u].x} y1={nodePositions[u].y}
+                                x2={nodePositions[v].x} y2={nodePositions[v].y}
+                                stroke={isCurrentEval ? '#3b82f6' : '#64748b'}
+                                strokeWidth={isCurrentEval ? 3 : 2}
+                                markerEnd={isCurrentEval ? "url(#arrow-active)" : "url(#arrow)"}
+                                className={isCurrentEval ? 'pulse-line' : ''}
+                            />
+                        )
+                    })}
+
+                    {Array.from({ length: numCourses }).map((_, i) => {
+                        const pos = nodePositions[i]
+                        const indegree = step?.indegree[i] ?? 0
+                        const isProcessed = step?.processedNodes?.includes(i)
+                        const isInQueue = step?.queue?.includes(i)
+                        const isCurrentNode = step?.currNode === i
+                        const isCurrentNeighbor = step?.currNeighbor === i
+                        const isCycle = step?.phase === 'done' && !step?.success && !isProcessed
+
+                        let fill = '#1e293b'
+                        let stroke = '#334155'
+                        
+                        if (isProcessed) { fill = '#0f766e'; stroke = '#14b8a6' }
+                        else if (isCurrentNode) { fill = '#1d4ed8'; stroke = '#60a5fa' }
+                        else if (isInQueue) { fill = '#0369a1'; stroke = '#38bdf8' }
+                        else if (isCycle) { fill = '#7f1d1d'; stroke = '#ef4444' }
+                        else if (isCurrentNeighbor) { stroke = '#a855f7' }
+                        else if (indegree === 0 && step && !step.phase.startsWith('build')) { stroke = '#eab308' } // Ready but not in queue (transient)
+
+                        return (
+                            <g key={i} transform={\`translate(\${pos.x}, \${pos.y})\`}>
+                                <motion.circle 
+                                    r="16" 
+                                    fill={fill} 
+                                    stroke={stroke} 
+                                    strokeWidth="2"
+                                    animate={{ 
+                                        scale: isCurrentNode ? 1.2 : 1,
+                                        fill, stroke
+                                    }}
+                                />
+                                <text textAnchor="middle" dy=".3em" fill="#f8fafc" fontSize="12" fontFamily="monospace">{i}</text>
+                                
+                                {/* Indegree badge */}
+                                {step && !isProcessed && (
+                                    <g transform="translate(12, -12)">
+                                        <circle r="8" fill="#334155" stroke="#0f172a" />
+                                        <text textAnchor="middle" dy=".3em" fill={indegree === 0 ? "#4ade80" : "#f43f5e"} fontSize="10" fontWeight="bold">
+                                            {indegree}
+                                        </text>
+                                    </g>
+                                )}
+                            </g>
+                        )
+                    })}
+                </svg>
+            </div>
+            <div className="cs-graph-legend">
+                <div className="cs-legend-item"><div className="cs-dot processed" /> Processed</div>
+                <div className="cs-legend-item"><div className="cs-dot current" /> Current</div>
+                <div className="cs-legend-item"><div className="cs-dot queue" /> In Queue</div>
+                <div className="cs-legend-item"><div className="cs-dot cycle" /> Cycle (Unreachable)</div>
             </div>
           </div>
+        </div>
 
-          {/* Move: Queue/Taken and In-degree into left column below graph */}
-          <div className="cs-card cs-state-card" style={{ marginTop: '0.9rem' }}>
-            <div className="cs-state-section">
-              <div className="cs-section-label">Queue</div>
-              <div className="cs-token-row">
-                {(currentStep?.queue ?? []).length > 0
-                  ? currentStep.queue.map((c) => (
-                    <span key={c} className="cs-token cs-token-queue mono">{c}</span>
-                  ))
-                  : <span className="cs-empty">Empty</span>}
-              </div>
-            </div>
-            <div className="cs-state-divider" />
-            <div className="cs-state-section">
-              <div className="cs-section-label">Taken Order</div>
-              <div className="cs-token-row">
-                {(currentStep?.takenOrder ?? []).length > 0
-                  ? currentStep.takenOrder.map((c) => (
-                    <span key={c} className="cs-token cs-token-taken mono">{c}</span>
-                  ))
-                  : <span className="cs-empty">None yet</span>}
-              </div>
-            </div>
-          </div>
-
-          <div className={`cs-card cs-indegree-card ${currentStep?.phase === 'final' && currentStep?.result === false ? 'failure-final' : ''}`} style={{ marginTop: '0.9rem' }}>
-            <div className="cs-section-label">In-degree Table</div>
-            <div className="cs-indegree-row">
-              {Array.from({ length: numCourses }, (_, course) => {
-                const val = currentStep?.indegree?.[course] ?? 0
-                const isActive = currentStep?.activeNeighbor === course || currentStep?.activeCourse === course
-                const isCycleCore = cycleCore.includes(course)
-                const isCycleLocked = blockedByCycle.includes(course)
-                return (
-                  <div key={course} className={`cs-deg-item ${isActive ? 'active' : ''} ${val === 0 ? 'zero' : ''} ${isCycleCore ? 'cycle-core' : ''} ${isCycleLocked ? 'cycle-locked' : ''}`}>
-                    <span className="cs-deg-course mono">{course}</span>
-                    <span className="cs-deg-val mono">{val}</span>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-
-          {currentStep?.phase === 'final' && currentStep?.result === false && (
-            <div className="cs-card cs-cycle-insight-card" style={{ marginTop: '0.9rem' }}>
-              <div className="cs-section-label">Cycle Insight</div>
-              <p className="cs-cycle-line">
-                Unfinished courses: <span className="mono">[{blockedCourses.join(', ')}]</span>
-              </p>
-              <p className="cs-cycle-line">
-                Cycle core: <span className="mono">[{cycleCore.join(', ')}]</span>
-              </p>
-              <p className="cs-cycle-line">
-                Blocked by cycle: <span className="mono">[{blockedByCycle.join(', ')}]</span>
-              </p>
-            </div>
-          )}
-
-          {/* <div className="cs-card cs-step-card">
-            <p className="cs-step-text">
-              {currentStep?.description || 'Press Play or step through the algorithm.'}
-            </p>
-          </div> */}
-          {/* splitter */}
-          <button
-            type="button"
-            className="panel-splitter"
-            aria-label="Resize graph and variable panels"
-            onPointerDown={startDrag}
-            style={{ alignSelf: 'stretch', marginTop: '8px' }}
-          >
-            <span className="panel-splitter-grip" aria-hidden="true">
-              <span />
-              <span />
-              <span />
-            </span>
-          </button>
-
-          {/* Right column: Debug panels */}
-          <div className="cs-col-right" style={{ flex: '1 1 auto' }}>
-            <div className="cs-card cs-graph-json-card">
-              <div className="cs-section-label">Graph JSON</div>
-              <pre className="cs-graph-json mono">{JSON.stringify(currentStep?.graph ?? Array.from({ length: numCourses }, () => []), null, 2)}</pre>
-            </div>
-
-            <div className="cs-card cs-queue-timeline-card">
-              <div className="cs-section-label">Queue Timeline</div>
-              <div className="cs-queue-timeline">
-                {steps.map((s, idx) => {
-                  const isCur = idx === stepIndex
-                  const was = steps[idx - 1]
-                  let changed = null
-                  if (s.event === 'dequeue') changed = { type: 'dequeue', value: was?.queue?.[0] ?? null }
-                  if (s.event === 'enqueue') changed = { type: 'enqueue', value: null }
-                  if (s.event === 'init') changed = { type: 'init', value: null }
-                  return (
-                    <div
-                      key={idx}
-                      className={`cs-queue-snap ${isCur ? 'cur' : ''} ${idx < stepIndex ? 'past' : ''}`}
-                      onClick={() => setStepIndex(idx)}
-                      role="button"
-                      tabIndex={0}
-                    >
-                      <div className="cs-queue-index">{idx + 1}</div>
-                      <div className="cs-queue-list mono">
-                        {(s.queueSnapshot || []).map((q, i) => (
-                          <span key={q} className={`cs-queue-item ${changed && changed.type === 'dequeue' && i === 0 ? 'deq' : ''}`}>{q}</span>
-                        ))}
-                        {(s.queueSnapshot || []).length === 0 && '—'}
-                      </div>
-                      <div className="cs-queue-event">
-                        {s.event === 'enqueue' && <span className="cs-evt plus">+</span>}
-                        {s.event === 'dequeue' && <span className="cs-evt minus">−</span>}
-                        {s.event === 'init' && <span className="cs-evt init">●</span>}
-                      </div>
+        <div className="cs-panel" style={{ flex: 1 }}>
+            <div className="cs-panel-head">State & Queue</div>
+            <div className="cs-panel-body">
+                <div className="cs-section">
+                    <span className="cs-section-title">Queue</span>
+                    <div className="cs-queue-container">
+                        <AnimatePresence mode="popLayout">
+                            {step?.queue?.map((node, i) => (
+                                <motion.div 
+                                    key={\`q-\${node}-\${i}\`}
+                                    className="cs-queue-item"
+                                    layout
+                                    initial={{ opacity: 0, scale: 0.5, x: 20 }}
+                                    animate={{ opacity: 1, scale: 1, x: 0 }}
+                                    exit={{ opacity: 0, scale: 0.5, y: -20 }}
+                                    transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                                >
+                                    {node}
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
+                        {(!step || !step.queue || step.queue.length === 0) && (
+                            <span style={{ color: '#475569', fontStyle: 'italic', fontSize: 13 }}>Empty</span>
+                        )}
                     </div>
-                  )
-                })}
-              </div>
+                </div>
+
+                <div className="cs-section">
+                    <span className="cs-section-title">Indegrees</span>
+                    <div className="cs-indegree-grid">
+                        {step?.indegree?.map((deg, i) => {
+                            const isProcessed = step?.processedNodes?.includes(i)
+                            const isHighlight = step?.currNeighbor === i || step?.currNode === i
+                            if (isProcessed) return null
+                            return (
+                                <div key={i} className={\`cs-indegree-item \${isHighlight ? 'highlight' : ''}\`}>
+                                    <span className="cs-node-id">{i}</span>
+                                    <span className={\`cs-deg-val \${deg === 0 ? 'zero' : ''}\`}>{deg}</span>
+                                </div>
+                            )
+                        })}
+                    </div>
+                </div>
+
+                <div className="cs-section" style={{ flex: 1 }}>
+                    <span className="cs-section-title">Adjacency List</span>
+                    <div className="cs-adj-list">
+                        {step && Object.entries(step.adj).map(([node, neighbors]) => {
+                            if (neighbors.length === 0) return null
+                            return (
+                                <div key={node} className="cs-adj-row">
+                                    <span className="cs-adj-node">{node}</span>
+                                    <span className="cs-adj-arrow">→</span>
+                                    <div className="cs-adj-neighbors">
+                                        {neighbors.map((n, i) => (
+                                            <span key={i} className="cs-adj-neighbor">{n}</span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )
+                        })}
+                        {(!step || Object.values(step.adj).every(n => n.length === 0)) && (
+                            <span style={{ color: '#475569', fontStyle: 'italic', fontSize: 13 }}>No edges</span>
+                        )}
+                    </div>
+                </div>
+
+                <div className="cs-visited-card">
+                    <span className="cs-visited-label">Visited Courses</span>
+                    <span className={\`cs-visited-val \${step?.phase === 'done' ? (step?.success ? 'success' : 'fail') : ''}\`}>
+                        {step?.visited ?? 0} <span style={{ fontSize: 16, color: '#64748b' }}>/ {numCourses}</span>
+                    </span>
+                </div>
             </div>
-
-          </div>
-
         </div>
       </div>
 
-      {/* ── Controls bar ── */}
-      <PlaybackControls
-        className="cs-controls"
-        buttonsGroupClassName="cs-controls-play"
-        speedOuterClassName="cs-controls-options"
-        speedWrapClassName="cs-speed-wrap"
-        speedLabelClassName="cs-label"
-        buttonClassName="cs-btn"
-        ghostButtonClassName="cs-btn-ghost"
-        playButtonClassName="cs-btn-play"
-        iconButtonClassName="cs-btn-icon"
-        onReset={handleReset}
-        onPrev={stepBack}
-        onPlayToggle={togglePlay}
-        onNext={stepForward}
-        resetDisabled={stepIndex < 0}
-        prevDisabled={stepIndex < 0}
-        nextDisabled={isDone}
-        isPlaying={isPlaying}
-        isDone={isDone}
-        prevLabel="‹ Prev"
-        playLabel="▶ Play"
-        pauseLabel="⏸ Pause"
-        replayLabel="↺ Replay"
-        nextLabel="Next ›"
-        renderResetContent={() => (
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-            <path d="M3 3v5h5" />
-          </svg>
-        )}
-        resetTitle="Reset"
-        speed={speed}
-        speedRangeValue={1480 - speed}
-        onSpeedChange={(e) => setSpeed(1480 - Number(e.target.value))}
-      />
+      <div className="course-schedule-middle">
+        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+      </div>
 
-      {/* ── Code panel (always visible) ── */}
-      <CodeTracePanel step={currentStep} codeLines={SOLUTION_CODE} />
+      <div className={\`cs-status \${step?.phase === 'done' ? (step?.success ? 'success' : 'fail') : step?.phase === 'enqueue_neighbor' ? 'enqueue' : ''}\`}>
+        {step?.message ?? 'Press Play or Step to begin.'}
+      </div>
 
+      <div className="cs-dock">
+        <PlaybackControls
+          isPlaying={isPlaying}
+          isDone={isDone}
+          speed={speed}
+          onPlayToggle={togglePlay}
+          onPrev={stepBack}
+          onNext={stepForward}
+          onReset={handleReset}
+          prevDisabled={stepIndex < 0}
+          nextDisabled={isDone}
+          resetDisabled={stepIndex < 0}
+          onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+        />
+      </div>
     </div>
   )
 }
-
