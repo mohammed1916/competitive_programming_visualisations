@@ -20,6 +20,7 @@ import SpiralMatrix from "./problems/SpiralMatrix";
 import CombinationSum from "./problems/CombinationSum";
 import MatrixIterationBasics from "./problems/MatrixIterationBasics";
 import ContainerWithMostWater from "./problems/ContainerWithMostWater";
+import RottingOranges from "./problems/RottingOranges";
 import AddTwoNumbers from "./problems/AddTwoNumbers";
 import PalindromeNumber from "./problems/PalindromeNumber";
 import MedianOfTwoSortedArrays from "./problems/MedianOfTwoSortedArrays";
@@ -236,6 +237,18 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ["Graph", "Topological Sort", "BFS"],
     accent: "#0ea5e9",
     component: CourseScheduleII,
+  },
+  {
+    id: "lc-994",
+    number: "994",
+    title: "Rotting Oranges",
+    slug: "rotting-oranges",
+    description:
+      "Run multi-source BFS over the grid, propagating rotting level by level until all fresh oranges are processed.",
+    difficulty: "Medium",
+    tags: ["Array", "BFS", "Matrix", "Graph"],
+    accent: "#f97316",
+    component: RottingOranges,
   },
   {
     id: "lc-5",
