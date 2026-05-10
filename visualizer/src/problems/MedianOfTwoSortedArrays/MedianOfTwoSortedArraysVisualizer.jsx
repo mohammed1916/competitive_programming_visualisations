@@ -368,16 +368,90 @@ function MetricCard({ label, value, tone }) {
 }
 
 function TapeMark({ label, value, left, tone }) {
+  const isCut = tone === "partition";
+
   return (
     <motion.div
+      layout
       className={`median-marker ${tone || ""}`}
       style={{ left }}
-      initial={{ opacity: 0, y: -8 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: -8, scale: isCut ? 0.9 : 1 }}
+      animate={{
+        opacity: 1,
+        y: 0,
+        scale: isCut ? [1, 1.06, 1] : 1,
+      }}
+      transition={{
+        layout: { type: "spring", stiffness: 420, damping: 32 },
+        duration: isCut ? 1.1 : 0.18,
+        repeat: isCut ? Infinity : 0,
+        repeatType: "mirror",
+        ease: "easeInOut",
+      }}
     >
       <span className="median-marker-label">{label}</span>
       <span className="median-marker-value">{value}</span>
     </motion.div>
+  );
+}
+
+function ComparisonBoard({ step }) {
+  const leftAStatus =
+    step?.conditionA === undefined ? "idle" : step.conditionA ? "pass" : "fail";
+  const leftBStatus =
+    step?.conditionB === undefined ? "idle" : step.conditionB ? "pass" : "fail";
+  const focusClass =
+    step?.phase === "move_left"
+      ? "focus-left"
+      : step?.phase === "move_right"
+        ? "focus-right"
+        : step?.phase === "found"
+          ? "focus-both"
+          : "idle";
+
+  return (
+    <div className="median-compare-board">
+      <div className="median-compare-title">Partition comparisons</div>
+      <div className="median-compare-grid">
+        <div className={`median-compare-row ${focusClass} ${leftAStatus}`}>
+          <div className="median-compare-side left">
+            <span className="median-compare-key">leftA</span>
+            <span className="median-compare-value">
+              {formatValue(step?.maxLeftA)}
+            </span>
+          </div>
+          <div className={`median-compare-arrow ${leftAStatus}`}>
+            <span className="median-compare-arrow-line">→</span>
+            <span className="median-compare-arrow-caption">must be ≤</span>
+          </div>
+          <div className="median-compare-side right">
+            <span className="median-compare-key">rightB</span>
+            <span className="median-compare-value">
+              {formatValue(step?.minRightB)}
+            </span>
+          </div>
+        </div>
+
+        <div className={`median-compare-row ${focusClass} ${leftBStatus}`}>
+          <div className="median-compare-side left">
+            <span className="median-compare-key">leftB</span>
+            <span className="median-compare-value">
+              {formatValue(step?.maxLeftB)}
+            </span>
+          </div>
+          <div className={`median-compare-arrow ${leftBStatus}`}>
+            <span className="median-compare-arrow-line">→</span>
+            <span className="median-compare-arrow-caption">must be ≤</span>
+          </div>
+          <div className="median-compare-side right">
+            <span className="median-compare-key">rightA</span>
+            <span className="median-compare-value">
+              {formatValue(step?.minRightA)}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -727,12 +801,14 @@ export default function MedianOfTwoSortedArraysVisualizer() {
                     ? "Even total length: average the largest value on the left and the smallest value on the right."
                     : "Odd total length: the median is the largest value on the left half."
                   : step?.phase === "move_left"
-                    ? "Cut A is too far right, so shift left."
+                    ? "Cut A is too far right, so shift left. The leftA → rightB check failed."
                     : step?.phase === "move_right"
-                      ? "Cut A is too far left, so shift right."
+                      ? "Cut A is too far left, so shift right. The leftB → rightA check failed."
                       : "Watch the partitions move until both sides match."}
               </div>
             </div>
+
+            <ComparisonBoard step={step} />
 
             <div className="median-metric-grid">
               <MetricCard
