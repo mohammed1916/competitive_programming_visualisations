@@ -26,6 +26,8 @@ import MinimumWindowSubstring from "./problems/MinimumWindowSubstring";
 import WordSearch from "./problems/WordSearch";
 import DailyTemperatures from "./problems/DailyTemperatures";
 import KthLargestElement from "./problems/KthLargestElement";
+import RedundantConnection from "./problems/RedundantConnection";
+import ImplementTrie from "./problems/ImplementTrie";
 import AddTwoNumbers from "./problems/AddTwoNumbers";
 import PalindromeNumber from "./problems/PalindromeNumber";
 import MedianOfTwoSortedArrays from "./problems/MedianOfTwoSortedArrays";
@@ -314,6 +316,30 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ["Array", "Heap", "Priority Queue", "Divide and Conquer"],
     accent: "#0ea5e9",
     component: KthLargestElement,
+  },
+  {
+    id: "lc-684",
+    number: "684",
+    title: "Redundant Connection",
+    slug: "redundant-connection",
+    description:
+      "Use Union-Find to detect the first edge that forms a cycle in an undirected graph.",
+    difficulty: "Medium",
+    tags: ["Graph", "Union Find", "Tree"],
+    accent: "#ef4444",
+    component: RedundantConnection,
+  },
+  {
+    id: "lc-208",
+    number: "208",
+    title: "Implement Trie (Prefix Tree)",
+    slug: "implement-trie-prefix-tree",
+    description:
+      "Build and query a prefix tree with insert, search, and startsWith operations.",
+    difficulty: "Medium",
+    tags: ["String", "Design", "Trie", "Hash Table"],
+    accent: "#22c55e",
+    component: ImplementTrie,
   },
   {
     id: "lc-5",
