@@ -39,6 +39,11 @@ const EXAMPLES = [
   { label: "One Empty", nums1: [], nums2: [1] },
   { label: "Duplicates", nums1: [0, 0], nums2: [0, 0] },
   { label: "Swap Needed", nums1: [8, 9, 10, 11], nums2: [1, 2, 3] },
+  {
+    label: "Large Input",
+    nums1: [1, 3, 5, 7, 9, 11, 13, 15, 17, 19],
+    nums2: [1, 1, 1, 1, 1, 1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20],
+  },
 ];
 
 function parseArrayInput(text) {
