@@ -21,6 +21,8 @@ import CombinationSum from "./problems/CombinationSum";
 import MatrixIterationBasics from "./problems/MatrixIterationBasics";
 import ContainerWithMostWater from "./problems/ContainerWithMostWater";
 import RottingOranges from "./problems/RottingOranges";
+import HouseRobber from "./problems/HouseRobber";
+import MinimumWindowSubstring from "./problems/MinimumWindowSubstring";
 import AddTwoNumbers from "./problems/AddTwoNumbers";
 import PalindromeNumber from "./problems/PalindromeNumber";
 import MedianOfTwoSortedArrays from "./problems/MedianOfTwoSortedArrays";
@@ -249,6 +251,30 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ["Array", "BFS", "Matrix", "Graph"],
     accent: "#f97316",
     component: RottingOranges,
+  },
+  {
+    id: "lc-198",
+    number: "198",
+    title: "House Robber",
+    slug: "house-robber",
+    description:
+      "Use rolling dynamic programming states to choose between robbing the current house or skipping it.",
+    difficulty: "Medium",
+    tags: ["Array", "Dynamic Programming"],
+    accent: "#a855f7",
+    component: HouseRobber,
+  },
+  {
+    id: "lc-76",
+    number: "76",
+    title: "Minimum Window Substring",
+    slug: "minimum-window-substring",
+    description:
+      "Use a sliding window with character frequency accounting to find the smallest valid substring containing all target characters.",
+    difficulty: "Hard",
+    tags: ["String", "Sliding Window", "Hash Table"],
+    accent: "#22c55e",
+    component: MinimumWindowSubstring,
   },
   {
     id: "lc-5",

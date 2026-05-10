@@ -1,0 +1,29 @@
+.mws-shell { display: grid; gap: 12px; }
+.mws-top { display: grid; grid-template-columns: 1.45fr 1fr; gap: 12px; }
+.mws-panel { border: 1px solid #334155; border-radius: 12px; overflow: hidden; background: rgba(15,23,42,.72); }
+.mws-head { padding: 10px 12px; border-bottom: 1px solid #334155; color: #e2e8f0; font-size: 13px; font-weight: 700; }
+.mws-body { padding: 12px; display: grid; gap: 10px; }
+.mws-examples { display: flex; flex-wrap: wrap; gap: 6px; }
+.mws-chip { border-radius: 999px; border: 1px solid #334155; background: rgba(30,41,59,.8); color: #cbd5e1; padding: 4px 10px; cursor: pointer; }
+.mws-inputs { display: flex; gap: 8px; }
+.mws-input { border: 1px solid #334155; border-radius: 8px; background: #0f172a; color: #f8fafc; padding: 8px 10px; width: 100%; font-family: monospace; }
+.mws-input.small { max-width: 120px; }
+.mws-string { display: flex; flex-wrap: wrap; gap: 6px; }
+.mws-char { min-width: 36px; border: 1px solid #334155; border-radius: 8px; background: rgba(30,41,59,.7); display: grid; place-items: center; padding: 6px 4px; position: relative; }
+.mws-char.window { background: rgba(168,85,247,.14); border-color: rgba(168,85,247,.5); }
+.mws-char.best { box-shadow: 0 0 0 1px rgba(34,197,94,.65) inset; }
+.mws-char.left, .mws-char.right { box-shadow: 0 0 0 2px rgba(56,189,248,.7) inset; }
+.mws-char span { color: #f8fafc; font-weight: 700; }
+.mws-char small { color: #94a3b8; font-size: 10px; }
+.mws-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.mws-metrics div { border: 1px solid #334155; border-radius: 8px; background: #0f172a; padding: 8px; display: grid; gap: 2px; }
+.mws-metrics span { color: #94a3b8; font-size: 11px; text-transform: uppercase; }
+.mws-metrics strong { color: #f8fafc; font-size: 14px; font-family: monospace; }
+.mws-freq-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.mws-freq { border: 1px solid #334155; border-radius: 8px; background: #0f172a; padding: 8px; min-width: 62px; display: grid; place-items: center; }
+.mws-freq.ok { border-color: rgba(34,197,94,.45); background: rgba(34,197,94,.1); }
+.mws-freq span { color: #cbd5e1; font-weight: 700; }
+.mws-freq strong { color: #f8fafc; font-family: monospace; font-size: 12px; }
+.mws-status { border: 1px solid #334155; border-radius: 8px; background: rgba(15,23,42,.7); padding: 10px 12px; color: #cbd5e1; font-family: monospace; font-size: 13px; }
+.mws-status.ok { border-color: rgba(34,197,94,.45); color: #86efac; }
+@media (max-width: 980px) { .mws-top { grid-template-columns: 1fr; } }
