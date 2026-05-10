@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, Component } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import CourseSchedule from "./problems/CourseSchedule";
+import CourseScheduleII from "./problems/CourseScheduleII";
 import LongestPalindrome from "./problems/LongestPalindrome";
 import LRUCache from "./problems/LRUCache";
 import StringToIntegerAtoi from "./problems/StringToIntegerAtoi";
@@ -223,6 +224,18 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ["Graph", "Topological Sort"],
     accent: "#f97316",
     component: CourseSchedule,
+  },
+  {
+    id: "lc-210",
+    number: "210",
+    title: "Course Schedule II",
+    slug: "course-schedule-ii",
+    description:
+      "Run Kahn's topological sort to build a valid course ordering, or return [] when a cycle blocks completion.",
+    difficulty: "Medium",
+    tags: ["Graph", "Topological Sort", "BFS"],
+    accent: "#0ea5e9",
+    component: CourseScheduleII,
   },
   {
     id: "lc-5",
