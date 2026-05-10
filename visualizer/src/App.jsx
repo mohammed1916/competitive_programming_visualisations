@@ -24,6 +24,8 @@ import RottingOranges from "./problems/RottingOranges";
 import HouseRobber from "./problems/HouseRobber";
 import MinimumWindowSubstring from "./problems/MinimumWindowSubstring";
 import WordSearch from "./problems/WordSearch";
+import DailyTemperatures from "./problems/DailyTemperatures";
+import KthLargestElement from "./problems/KthLargestElement";
 import AddTwoNumbers from "./problems/AddTwoNumbers";
 import PalindromeNumber from "./problems/PalindromeNumber";
 import MedianOfTwoSortedArrays from "./problems/MedianOfTwoSortedArrays";
@@ -288,6 +290,30 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ["Array", "Backtracking", "Matrix", "DFS", "String"],
     accent: "#14b8a6",
     component: WordSearch,
+  },
+  {
+    id: "lc-739",
+    number: "739",
+    title: "Daily Temperatures",
+    slug: "daily-temperatures",
+    description:
+      "Use a decreasing monotonic stack of indices to resolve the next warmer day in linear time.",
+    difficulty: "Medium",
+    tags: ["Array", "Stack", "Monotonic Stack"],
+    accent: "#f97316",
+    component: DailyTemperatures,
+  },
+  {
+    id: "lc-215",
+    number: "215",
+    title: "Kth Largest Element in an Array",
+    slug: "kth-largest-element-in-an-array",
+    description:
+      "Maintain a size-k min-heap while scanning numbers; heap root is the kth largest.",
+    difficulty: "Medium",
+    tags: ["Array", "Heap", "Priority Queue", "Divide and Conquer"],
+    accent: "#0ea5e9",
+    component: KthLargestElement,
   },
   {
     id: "lc-5",
