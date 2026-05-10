@@ -28,6 +28,8 @@ import DailyTemperatures from "./problems/DailyTemperatures";
 import KthLargestElement from "./problems/KthLargestElement";
 import RedundantConnection from "./problems/RedundantConnection";
 import ImplementTrie from "./problems/ImplementTrie";
+import MergeKSortedLists from "./problems/MergeKSortedLists";
+import LargestRectangleInHistogram from "./problems/LargestRectangleInHistogram";
 import AddTwoNumbers from "./problems/AddTwoNumbers";
 import PalindromeNumber from "./problems/PalindromeNumber";
 import MedianOfTwoSortedArrays from "./problems/MedianOfTwoSortedArrays";
@@ -340,6 +342,30 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ["String", "Design", "Trie", "Hash Table"],
     accent: "#22c55e",
     component: ImplementTrie,
+  },
+  {
+    id: "lc-23",
+    number: "23",
+    title: "Merge k Sorted Lists",
+    slug: "merge-k-sorted-lists",
+    description:
+      "Use a min-heap over current list heads to repeatedly pick the global minimum in O(N log k).",
+    difficulty: "Hard",
+    tags: ["Linked List", "Heap", "Divide and Conquer"],
+    accent: "#a855f7",
+    component: MergeKSortedLists,
+  },
+  {
+    id: "lc-84",
+    number: "84",
+    title: "Largest Rectangle in Histogram",
+    slug: "largest-rectangle-in-histogram",
+    description:
+      "Use a monotonic increasing stack to compute maximal rectangle areas when bars are popped.",
+    difficulty: "Hard",
+    tags: ["Array", "Stack", "Monotonic Stack"],
+    accent: "#f97316",
+    component: LargestRectangleInHistogram,
   },
   {
     id: "lc-5",
