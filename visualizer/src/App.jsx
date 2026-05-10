@@ -23,6 +23,7 @@ import ContainerWithMostWater from "./problems/ContainerWithMostWater";
 import RottingOranges from "./problems/RottingOranges";
 import HouseRobber from "./problems/HouseRobber";
 import MinimumWindowSubstring from "./problems/MinimumWindowSubstring";
+import WordSearch from "./problems/WordSearch";
 import AddTwoNumbers from "./problems/AddTwoNumbers";
 import PalindromeNumber from "./problems/PalindromeNumber";
 import MedianOfTwoSortedArrays from "./problems/MedianOfTwoSortedArrays";
@@ -275,6 +276,18 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ["String", "Sliding Window", "Hash Table"],
     accent: "#22c55e",
     component: MinimumWindowSubstring,
+  },
+  {
+    id: "lc-79",
+    number: "79",
+    title: "Word Search",
+    slug: "word-search",
+    description:
+      "Use DFS + backtracking to trace a path in the grid that matches the target word character by character.",
+    difficulty: "Medium",
+    tags: ["Array", "Backtracking", "Matrix", "DFS", "String"],
+    accent: "#14b8a6",
+    component: WordSearch,
   },
   {
     id: "lc-5",
