@@ -1,0 +1,280 @@
+.btbs-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    height: 100%;
+}
+
+.btbs-panel {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex: 1;
+    min-height: 0;
+}
+
+.btbs-head {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--surface3);
+    flex-shrink: 0;
+}
+
+.btbs-error {
+    color: #f87171;
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.btbs-body {
+    padding: 14px;
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.btbs-top-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.btbs-examples {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.btbs-chip {
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+
+.btbs-chip:hover {
+    background: #334155;
+    color: var(--text);
+}
+
+.btbs-input {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #334155;
+    background: #0f172a;
+    color: var(--text);
+    font-family: monospace;
+    font-size: 13px;
+    min-width: 200px;
+}
+
+.btbs-input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+/* ── Stats ── */
+.btbs-stats {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btbs-stat {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.btbs-stat.best {
+    flex: 1;
+}
+
+.btbs-stat-label {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.btbs-stat-val {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.btbs-stat-val.profit {
+    color: var(--success);
+}
+
+/* ── Bar chart ── */
+.btbs-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    padding: 8px 0 0;
+    min-height: 200px;
+}
+
+.btbs-bar-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.btbs-price-label {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.btbs-bar {
+    width: 36px;
+    background: #1e3a5f;
+    border-radius: 4px 4px 0 0;
+    border: 2px solid #334155;
+    transition: background 0.2s, border-color 0.2s;
+    min-height: 4px;
+}
+
+.btbs-bar.curr {
+    background: rgba(251, 191, 36, 0.3);
+    border-color: var(--warning);
+}
+
+.btbs-bar.minbar {
+    background: rgba(56, 189, 248, 0.25);
+    border-color: var(--info);
+}
+
+.btbs-bar.sellbar {
+    background: rgba(249, 115, 22, 0.25);
+    border-color: #f97316;
+}
+
+.btbs-bar.bestbuy {
+    background: rgba(56, 189, 248, 0.35);
+    border-color: var(--info);
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+}
+
+.btbs-bar.bestsell {
+    background: rgba(34, 197, 94, 0.35);
+    border-color: var(--success);
+    box-shadow: 0 0 10px var(--success-glow);
+}
+
+.btbs-day {
+    font-size: 10px;
+    color: var(--text-dim);
+    font-family: monospace;
+}
+
+.btbs-bar-ptrs {
+    min-height: 18px;
+    display: flex;
+    gap: 2px;
+    flex-direction: column;
+    align-items: center;
+}
+
+.btbs-ptr {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+.buy-ptr {
+    background: rgba(56, 189, 248, 0.2);
+    color: var(--info);
+}
+
+.sell-ptr {
+    background: rgba(249, 115, 22, 0.2);
+    color: #f97316;
+}
+
+.bestbuy-ptr {
+    background: rgba(56, 189, 248, 0.3);
+    color: var(--info);
+}
+
+.bestsell-ptr {
+    background: rgba(34, 197, 94, 0.3);
+    color: var(--success);
+}
+
+/* ── Profit annotation ── */
+.btbs-profit-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--text-muted);
+    flex-wrap: wrap;
+}
+
+.btbs-profit-box.improved {
+    border-color: rgba(34, 197, 94, 0.4);
+    background: rgba(34, 197, 94, 0.07);
+}
+
+.btbs-profit-num {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.btbs-profit-num.pos {
+    color: var(--success);
+}
+
+.btbs-new-best {
+    font-size: 12px;
+    color: var(--success);
+    font-weight: 600;
+}
+
+/* ── Status ── */
+.btbs-status {
+    padding: 8px 14px;
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.btbs-status.ok {
+    color: var(--success);
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+.btbs-status.zero {
+    color: var(--text-dim);
+}

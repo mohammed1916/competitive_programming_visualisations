@@ -39,6 +39,11 @@ import ReverseLinkedList from "./problems/ReverseLinkedList";
 import ProductOfArrayExceptSelf from "./problems/ProductOfArrayExceptSelf";
 import JumpGame from "./problems/JumpGame";
 import CoinChange from "./problems/CoinChange";
+import BestTimeBuySellStock from "./problems/BestTimeBuySellStock";
+import ValidAnagram from "./problems/ValidAnagram";
+import LongestIncreasingSubsequence from "./problems/LongestIncreasingSubsequence";
+import LinkedListCycle from "./problems/LinkedListCycle";
+import MinStack from "./problems/MinStack";
 import ProblemScaffold from "./components/panels/ProblemScaffold";
 import "./App.css";
 
@@ -503,6 +508,66 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ["Array", "Dynamic Programming", "BFS"],
     accent: "#eab308",
     component: CoinChange,
+  },
+  {
+    id: "lc-121",
+    number: "121",
+    title: "Best Time to Buy and Sell Stock",
+    slug: "best-time-to-buy-and-sell-stock",
+    description:
+      "Single pass: track the running minimum price and compute the best profit at each step.",
+    difficulty: "Easy",
+    tags: ["Array", "Dynamic Programming"],
+    accent: "#22c55e",
+    component: BestTimeBuySellStock,
+  },
+  {
+    id: "lc-141",
+    number: "141",
+    title: "Linked List Cycle",
+    slug: "linked-list-cycle",
+    description:
+      "Floyd's tortoise and hare: move slow one step and fast two steps — if they meet a cycle exists.",
+    difficulty: "Easy",
+    tags: ["Linked List", "Two Pointers"],
+    accent: "#f97316",
+    component: LinkedListCycle,
+  },
+  {
+    id: "lc-155",
+    number: "155",
+    title: "Min Stack",
+    slug: "min-stack",
+    description:
+      "Design a stack that supports push, pop, top, and getMin in O(1) using a parallel min-tracking stack.",
+    difficulty: "Medium",
+    tags: ["Stack", "Design"],
+    accent: "#0ea5e9",
+    component: MinStack,
+  },
+  {
+    id: "lc-242",
+    number: "242",
+    title: "Valid Anagram",
+    slug: "valid-anagram",
+    description:
+      "Increment character counts for s, decrement for t — any negative count means t has an extra character.",
+    difficulty: "Easy",
+    tags: ["String", "Hash Table", "Sorting"],
+    accent: "#14b8a6",
+    component: ValidAnagram,
+  },
+  {
+    id: "lc-300",
+    number: "300",
+    title: "Longest Increasing Subsequence",
+    slug: "longest-increasing-subsequence",
+    description:
+      "O(n²) DP: dp[i] = length of LIS ending at index i, computed by checking all previous elements.",
+    difficulty: "Medium",
+    tags: ["Array", "Dynamic Programming", "Binary Search"],
+    accent: "#a855f7",
+    component: LongestIncreasingSubsequence,
   },
 ];
 

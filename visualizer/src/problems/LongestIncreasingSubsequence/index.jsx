@@ -1,0 +1,2 @@
+import LongestIncreasingSubsequenceVisualizer from './LongestIncreasingSubsequenceVisualizer'
+export default LongestIncreasingSubsequenceVisualizer

@@ -1,0 +1,256 @@
+.lis-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    height: 100%;
+}
+
+.lis-panel {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex: 1;
+    min-height: 0;
+}
+
+.lis-head {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--surface3);
+    flex-shrink: 0;
+}
+
+.lis-error {
+    color: #f87171;
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.lis-body {
+    padding: 14px;
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.lis-top-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.lis-examples {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.lis-chip {
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+
+.lis-chip:hover {
+    background: #334155;
+    color: var(--text);
+}
+
+.lis-input {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #334155;
+    background: #0f172a;
+    color: var(--text);
+    font-family: monospace;
+    font-size: 13px;
+    min-width: 220px;
+}
+
+.lis-input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+/* ── Arrays ── */
+.lis-arrays {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 8px 0;
+    align-items: center;
+}
+
+.lis-row-label {
+    font-size: 12px;
+    font-weight: 700;
+    font-family: monospace;
+    color: var(--text-muted);
+    padding-right: 8px;
+}
+
+.lis-array-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 4px 0 8px;
+}
+
+.lis-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.lis-cell {
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: monospace;
+    border: 2px solid #334155;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.nums-cell {
+    background: #1e293b;
+    color: var(--text);
+}
+
+.nums-cell.curr-i {
+    border-color: var(--warning);
+    background: rgba(251, 191, 36, 0.12);
+    color: var(--warning);
+}
+
+.nums-cell.curr-j {
+    border-color: var(--info);
+    background: rgba(56, 189, 248, 0.10);
+    color: var(--info);
+}
+
+.nums-cell.max-cell {
+    border-color: var(--success);
+    background: rgba(34, 197, 94, 0.12);
+    color: var(--success);
+    box-shadow: 0 0 10px var(--success-glow);
+}
+
+.dp-cell {
+    background: rgba(30, 41, 59, 0.6);
+    color: var(--text-muted);
+    border-style: dashed;
+}
+
+.dp-cell.curr-i {
+    border-color: var(--warning);
+    background: rgba(251, 191, 36, 0.1);
+    color: var(--warning);
+    border-style: solid;
+}
+
+.dp-cell.max-dp {
+    border-color: var(--success);
+    background: rgba(34, 197, 94, 0.12);
+    color: var(--success);
+    border-style: solid;
+    box-shadow: 0 0 10px var(--success-glow);
+}
+
+.lis-idx {
+    font-size: 10px;
+    color: var(--text-dim);
+    font-family: monospace;
+}
+
+.lis-ptrs {
+    display: flex;
+    gap: 2px;
+    min-height: 18px;
+}
+
+.lis-ptr {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 4px;
+}
+
+.ptr-i {
+    background: rgba(251, 191, 36, 0.2);
+    color: var(--warning);
+}
+
+.ptr-j {
+    background: rgba(56, 189, 248, 0.2);
+    color: var(--info);
+}
+
+/* ── Comparison box ── */
+.lis-cmp-box {
+    padding: 10px 14px;
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.lis-cmp-box.match {
+    border-color: rgba(34, 197, 94, 0.35);
+    background: rgba(34, 197, 94, 0.06);
+}
+
+.lis-cmp-box.no-match {
+    border-color: rgba(248, 113, 113, 0.25);
+    background: rgba(248, 113, 113, 0.05);
+}
+
+/* ── Result ── */
+.lis-result {
+    padding: 10px 14px;
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: 8px;
+    color: var(--success);
+    font-size: 15px;
+    font-weight: 700;
+    text-align: center;
+}
+
+/* ── Status ── */
+.lis-status {
+    padding: 8px 14px;
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.lis-status.done {
+    color: var(--primary-l);
+    border-color: rgba(139, 92, 246, 0.3);
+}
