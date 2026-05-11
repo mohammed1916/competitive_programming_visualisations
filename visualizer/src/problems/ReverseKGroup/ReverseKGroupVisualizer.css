@@ -1,0 +1,189 @@
+.rkg-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    font-family: inherit;
+}
+
+.rkg-examples {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.rkg-chip {
+    background: #313244;
+    color: #cdd6f4;
+    border: 2px solid #45475a;
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.rkg-chip.active,
+.rkg-chip:hover {
+    border-color: #f38ba8;
+    color: #f38ba8;
+}
+
+.rkg-panel {
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+
+.rkg-panel-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c7086;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+}
+
+.rkg-list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px;
+    min-height: 50px;
+}
+
+.rkg-node-row {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.rkg-node {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    font-weight: 700;
+    border-radius: 8px;
+    border: 2px solid #45475a;
+    background: #252535;
+    color: #cdd6f4;
+}
+
+.rkg-node.in-group {
+    border-color: #f38ba8;
+    background: #1a0010;
+    color: #f38ba8;
+}
+
+.rkg-node.kth {
+    border-color: #f9e2af;
+    background: #1a1200;
+    color: #f9e2af;
+    box-shadow: 0 0 8px #f9e2af55;
+}
+
+.rkg-node.res {
+    border-color: #a6e3a1;
+    background: #001a08;
+    color: #a6e3a1;
+}
+
+.rkg-arrow {
+    color: #6c7086;
+    font-size: 14px;
+    padding: 0 2px;
+}
+
+.rkg-trackers {
+    display: flex;
+    gap: 10px;
+}
+
+.rkg-tracker {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    padding: 10px 4px;
+}
+
+.rkg-tracker-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c7086;
+    text-transform: uppercase;
+    text-align: center;
+}
+
+.rkg-tracker-val {
+    font-size: 20px;
+    font-weight: 700;
+    color: #cdd6f4;
+}
+
+.rkg-tracker-val.rkg-small {
+    font-size: 14px;
+}
+
+.rkg-tracker-val.rkg-phase {
+    font-size: 13px;
+}
+
+.rkg-tracker-val.rkg-phase.init {
+    color: #89b4fa;
+}
+
+.rkg-tracker-val.rkg-phase.find {
+    color: #f9e2af;
+}
+
+.rkg-tracker-val.rkg-phase.found {
+    color: #fab387;
+}
+
+.rkg-tracker-val.rkg-phase.reverse {
+    color: #f38ba8;
+}
+
+.rkg-tracker-val.rkg-phase.reversed {
+    color: #cba6f7;
+}
+
+.rkg-tracker-val.rkg-phase.advance {
+    color: #89dceb;
+}
+
+.rkg-tracker-val.rkg-phase.done {
+    color: #a6e3a1;
+}
+
+.rkg-tracker-val.rkg-phase.short {
+    color: #6c7086;
+}
+
+.rkg-result {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    background: #1a0010;
+    border: 2px solid #f38ba8;
+    color: #f38ba8;
+}
+
+.rkg-status {
+    padding: 8px 12px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #a6adc8;
+    min-height: 36px;
+}

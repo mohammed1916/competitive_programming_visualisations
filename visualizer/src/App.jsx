@@ -126,6 +126,11 @@ import ReverseBits from "./problems/ReverseBits";
 import PlusOne from "./problems/PlusOne";
 import ReverseString from "./problems/ReverseString";
 import LengthOfLastWord from "./problems/LengthOfLastWord";
+import ReverseKGroup from "./problems/ReverseKGroup";
+import FirstMissingPositive from "./problems/FirstMissingPositive";
+import Candy from "./problems/Candy";
+import SerializeDeserialize from "./problems/SerializeDeserialize";
+import LongestIncreasingPath from "./problems/LongestIncreasingPath";
 import ProblemScaffold from "./components/panels/ProblemScaffold";
 import "./App.css";
 
@@ -1478,6 +1483,56 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ["String"],
     accent: "#f9e2af",
     component: LengthOfLastWord,
+  },
+  {
+    id: "reverse-k-group",
+    number: 25,
+    title: "Reverse Nodes in k-Group",
+    description: "Reverse every k consecutive nodes in a linked list. If fewer than k nodes remain, leave them as-is.",
+    difficulty: "Hard",
+    tags: ["Linked List", "Recursion"],
+    accent: "#f38ba8",
+    component: ReverseKGroup,
+  },
+  {
+    id: "first-missing-positive",
+    number: 41,
+    title: "First Missing Positive",
+    description: "Find the smallest missing positive integer in O(n) time and O(1) space using cyclic sort.",
+    difficulty: "Hard",
+    tags: ["Array", "Hash Table"],
+    accent: "#89b4fa",
+    component: FirstMissingPositive,
+  },
+  {
+    id: "candy",
+    number: 135,
+    title: "Candy",
+    description: "Distribute minimum candies to children so higher-rated neighbors always get more. Two-pass greedy.",
+    difficulty: "Hard",
+    tags: ["Array", "Greedy"],
+    accent: "#f9e2af",
+    component: Candy,
+  },
+  {
+    id: "serialize-deserialize",
+    number: 297,
+    title: "Serialize and Deserialize Binary Tree",
+    description: "Encode a binary tree to a string and decode it back using preorder DFS with null markers.",
+    difficulty: "Hard",
+    tags: ["Tree", "DFS", "BFS", "Design"],
+    accent: "#89dceb",
+    component: SerializeDeserialize,
+  },
+  {
+    id: "longest-increasing-path",
+    number: 329,
+    title: "Longest Increasing Path in a Matrix",
+    description: "Find the longest strictly increasing path in a matrix using DFS with memoization.",
+    difficulty: "Hard",
+    tags: ["Matrix", "DFS", "Memoization", "DP"],
+    accent: "#cba6f7",
+    component: LongestIncreasingPath,
   },
 ];
 

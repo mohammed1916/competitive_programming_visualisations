@@ -1,0 +1,210 @@
+.fmp-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    font-family: inherit;
+}
+
+.fmp-examples {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.fmp-chip {
+    background: #313244;
+    color: #cdd6f4;
+    border: 2px solid #45475a;
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.fmp-chip.active,
+.fmp-chip:hover {
+    border-color: #89b4fa;
+    color: #89b4fa;
+}
+
+.fmp-panel {
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+
+.fmp-panel-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c7086;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+}
+
+.fmp-arr {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    min-height: 80px;
+}
+
+.fmp-cell-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+}
+
+.fmp-cell {
+    width: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    border-radius: 8px;
+    border: 2px solid #45475a;
+    background: #252535;
+    color: #cdd6f4;
+}
+
+.fmp-cell.i-cell {
+    border-color: #89b4fa;
+    background: #001030;
+    color: #89b4fa;
+}
+
+.fmp-cell.j-cell {
+    border-color: #f9e2af;
+    background: #1a1200;
+    color: #f9e2af;
+}
+
+.fmp-cell.correct {
+    border-color: #a6e3a166;
+    background: #001a0866;
+    color: #a6e3a1;
+}
+
+.fmp-cell.missing-slot {
+    border-color: #f38ba8;
+    background: #1a0010;
+    color: #f38ba8;
+    box-shadow: 0 0 10px #f38ba866;
+}
+
+.fmp-expected {
+    font-size: 9px;
+    color: #45475a;
+}
+
+.fmp-idx {
+    font-size: 10px;
+    color: #6c7086;
+}
+
+.fmp-ptrs {
+    display: flex;
+    gap: 2px;
+    min-height: 18px;
+}
+
+.fmp-ptr {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 3px;
+}
+
+.fmp-ptr.fmp-i {
+    background: #001030;
+    color: #89b4fa;
+}
+
+.fmp-ptr.fmp-j {
+    background: #1a1200;
+    color: #f9e2af;
+}
+
+.fmp-trackers {
+    display: flex;
+    gap: 10px;
+}
+
+.fmp-tracker {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    padding: 10px 0;
+}
+
+.fmp-tracker-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c7086;
+    text-transform: uppercase;
+}
+
+.fmp-tracker-val {
+    font-size: 20px;
+    font-weight: 700;
+    color: #cdd6f4;
+}
+
+.fmp-tracker-val.fmp-phase {
+    font-size: 13px;
+}
+
+.fmp-tracker-val.fmp-phase.init {
+    color: #89b4fa;
+}
+
+.fmp-tracker-val.fmp-phase.place {
+    color: #f9e2af;
+}
+
+.fmp-tracker-val.fmp-phase.swap {
+    color: #fab387;
+}
+
+.fmp-tracker-val.fmp-phase.swapped {
+    color: #cba6f7;
+}
+
+.fmp-tracker-val.fmp-phase.scan {
+    color: #89dceb;
+}
+
+.fmp-tracker-val.fmp-phase.found {
+    color: #f38ba8;
+}
+
+.fmp-result {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    background: #001030;
+    border: 2px solid #89b4fa;
+    color: #89b4fa;
+}
+
+.fmp-status {
+    padding: 8px 12px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #a6adc8;
+    min-height: 36px;
+}

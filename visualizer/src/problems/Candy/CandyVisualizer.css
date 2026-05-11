@@ -1,0 +1,32 @@
+.cy-shell { display: flex; flex-direction: column; gap: 12px; padding: 16px; font-family: inherit; }
+.cy-examples { display: flex; gap: 8px; flex-wrap: wrap; }
+.cy-chip { background: #313244; color: #cdd6f4; border: 2px solid #45475a; border-radius: 6px; padding: 4px 12px; font-size: 12px; cursor: pointer; }
+.cy-chip.active, .cy-chip:hover { border-color: #f9e2af; color: #f9e2af; }
+.cy-panel { background: #1e1e2e; border: 1px solid #313244; border-radius: 10px; padding: 12px 14px; }
+.cy-panel-label { font-size: 11px; font-weight: 700; color: #6c7086; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+.cy-chart { display: flex; gap: 8px; align-items: flex-end; min-height: 110px; padding-bottom: 4px; }
+.cy-col { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.cy-bar-wrap { display: flex; align-items: flex-end; height: 90px; }
+.cy-bar { width: 36px; border-radius: 4px 4px 0 0; background: #585b70; display: flex; align-items: flex-start; justify-content: center; min-height: 8px; transition: background 0.2s; }
+.cy-bar.left-active { background: #89b4fa; }
+.cy-bar.right-active { background: #cba6f7; }
+.cy-bar.done-bar { background: #a6e3a1; }
+.cy-bar-val { font-size: 11px; font-weight: 700; color: #1e1e2e; padding-top: 2px; }
+.cy-rating { font-size: 13px; font-weight: 700; color: #cdd6f4; }
+.cy-rating.active-rating { color: #f9e2af; }
+.cy-idx { font-size: 10px; color: #6c7086; }
+.cy-ptr { font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 3px; margin-top: 1px; }
+.cy-ptr.left-ptr { background: #001030; color: #89b4fa; }
+.cy-ptr.right-ptr { background: #1a0a30; color: #cba6f7; }
+.cy-trackers { display: flex; gap: 10px; }
+.cy-tracker { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; background: #1e1e2e; border: 1px solid #313244; border-radius: 8px; padding: 10px 0; }
+.cy-tracker-label { font-size: 11px; font-weight: 700; color: #6c7086; text-transform: uppercase; }
+.cy-tracker-val { font-size: 20px; font-weight: 700; color: #cdd6f4; }
+.cy-tracker-val.cy-total { color: #f9e2af; }
+.cy-tracker-val.cy-phase { font-size: 13px; }
+.cy-tracker-val.cy-phase.init { color: #89b4fa; }
+.cy-tracker-val.cy-phase.left { color: #89b4fa; }
+.cy-tracker-val.cy-phase.right { color: #cba6f7; }
+.cy-tracker-val.cy-phase.done { color: #a6e3a1; }
+.cy-result { padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 700; background: #0e0a00; border: 2px solid #f9e2af; color: #f9e2af; }
+.cy-status { padding: 8px 12px; background: #1e1e2e; border: 1px solid #313244; border-radius: 8px; font-size: 13px; color: #a6adc8; min-height: 36px; }
