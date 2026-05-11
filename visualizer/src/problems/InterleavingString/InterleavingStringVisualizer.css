@@ -1,0 +1,156 @@
+.is-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    font-family: inherit;
+}
+
+.is-examples {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.is-chip {
+    background: #313244;
+    color: #cdd6f4;
+    border: 2px solid #45475a;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.is-chip.active,
+.is-chip:hover {
+    border-color: #cba6f7;
+    color: #cba6f7;
+}
+
+.is-strings {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    font-size: 14px;
+}
+
+.is-str-lbl {
+    font-weight: 700;
+    margin-right: 2px;
+}
+
+.is-str-lbl.s1 {
+    color: #89b4fa;
+}
+
+.is-str-lbl.s2 {
+    color: #a6e3a1;
+}
+
+.is-str-lbl.s3 {
+    color: #f9e2af;
+}
+
+.is-str-val {
+    font-family: monospace;
+    color: #cdd6f4;
+}
+
+.is-panel {
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 10px;
+    padding: 12px 14px;
+    overflow-x: auto;
+}
+
+.is-panel-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c7086;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+}
+
+.is-table-wrap {
+    overflow-x: auto;
+}
+
+.is-table {
+    border-collapse: collapse;
+}
+
+.is-th {
+    padding: 6px 10px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #6c7086;
+    text-align: center;
+    min-width: 36px;
+}
+
+.is-th.s1ch {
+    color: #89b4fa;
+}
+
+.is-th.s2ch {
+    color: #a6e3a1;
+}
+
+.is-td {
+    padding: 5px 8px;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    min-width: 36px;
+    height: 36px;
+    border: 1px solid #313244;
+    border-radius: 4px;
+}
+
+.is-td.true {
+    background: #002010;
+    color: #a6e3a1;
+}
+
+.is-td.false {
+    background: #1e1e2e;
+    color: #45475a;
+}
+
+.is-td.cur {
+    border-color: #f9e2af;
+    box-shadow: 0 0 10px #f9e2af55;
+}
+
+.is-result {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 15px;
+    text-align: center;
+}
+
+.is-result.true {
+    background: #002010;
+    border: 2px solid #a6e3a1;
+    color: #a6e3a1;
+}
+
+.is-result.false {
+    background: #3d0000;
+    border: 2px solid #f38ba8;
+    color: #f38ba8;
+}
+
+.is-status {
+    padding: 8px 12px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #a6adc8;
+    min-height: 36px;
+}

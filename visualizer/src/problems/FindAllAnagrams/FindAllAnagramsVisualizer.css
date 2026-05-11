@@ -1,0 +1,192 @@
+.faa-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    font-family: inherit;
+}
+
+.faa-examples {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.faa-chip {
+    background: #313244;
+    color: #cdd6f4;
+    border: 2px solid #45475a;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.faa-chip.active,
+.faa-chip:hover {
+    border-color: #fab387;
+    color: #fab387;
+}
+
+.faa-panel {
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+
+.faa-panel-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c7086;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+    font-family: monospace;
+}
+
+.faa-chars-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.faa-ch {
+    position: relative;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 700;
+    border-radius: 6px;
+    border: 2px solid #45475a;
+    background: #313244;
+    color: #cdd6f4;
+    font-family: monospace;
+}
+
+.faa-ch.window {
+    border-color: #89b4fa;
+    background: #0d1424;
+    color: #89b4fa;
+}
+
+.faa-ch.match {
+    border-color: #a6e3a1;
+    background: #002010;
+    color: #a6e3a1;
+    box-shadow: 0 0 10px #a6e3a155;
+}
+
+.faa-ch.result-start {
+    border-color: #fab387;
+}
+
+.faa-ch-tick {
+    position: absolute;
+    top: -8px;
+    right: -6px;
+    font-size: 10px;
+    color: #a6e3a1;
+}
+
+.faa-freq-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.faa-freq-panel {
+    flex: 1;
+    min-width: 140px;
+}
+
+.faa-result-panel {
+    flex: 1;
+    min-width: 100px;
+}
+
+.faa-freq-bars {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.faa-freq-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+}
+
+.faa-freq-char {
+    font-size: 14px;
+    font-weight: 700;
+    color: #6c7086;
+    font-family: monospace;
+}
+
+.faa-freq-val {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.faa-freq-val.need {
+    background: #0d1424;
+    border: 2px solid #89b4fa;
+    color: #89b4fa;
+}
+
+.faa-freq-val.have.ok {
+    background: #002010;
+    border: 2px solid #a6e3a1;
+    color: #a6e3a1;
+}
+
+.faa-freq-val.have.diff {
+    background: #2a1000;
+    border: 2px solid #fab387;
+    color: #fab387;
+}
+
+.faa-result-indices {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+    min-height: 34px;
+}
+
+.faa-idx-badge {
+    background: #002010;
+    border: 2px solid #a6e3a1;
+    color: #a6e3a1;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.faa-empty {
+    color: #45475a;
+    font-size: 13px;
+    font-style: italic;
+}
+
+.faa-status {
+    padding: 8px 12px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #a6adc8;
+    min-height: 36px;
+}

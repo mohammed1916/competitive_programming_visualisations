@@ -96,6 +96,11 @@ import SortColors from "./problems/SortColors";
 import CopyListRandom from "./problems/CopyListRandom";
 import SortList from "./problems/SortList";
 import DecodeString from "./problems/DecodeString";
+import ValidSudoku from "./problems/ValidSudoku";
+import InterleavingString from "./problems/InterleavingString";
+import CloneGraph from "./problems/CloneGraph";
+import FindAllAnagrams from "./problems/FindAllAnagrams";
+import PermutationInString from "./problems/PermutationInString";
 import ProblemScaffold from "./components/panels/ProblemScaffold";
 import "./App.css";
 
@@ -1148,6 +1153,56 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ["String", "Stack", "Recursion"],
     accent: "#cba6f7",
     component: DecodeString,
+  },
+  {
+    id: "valid-sudoku",
+    number: 36,
+    title: "Valid Sudoku",
+    description: "Determine if a 9x9 Sudoku board is valid by checking rows, columns, and 3x3 boxes.",
+    difficulty: "Medium",
+    tags: ["Array", "Hash Table", "Matrix"],
+    accent: "#f38ba8",
+    component: ValidSudoku,
+  },
+  {
+    id: "interleaving-string",
+    number: 97,
+    title: "Interleaving String",
+    description: "Check if s3 is formed by interleaving s1 and s2 using 2D DP.",
+    difficulty: "Medium",
+    tags: ["String", "DP"],
+    accent: "#cba6f7",
+    component: InterleavingString,
+  },
+  {
+    id: "clone-graph",
+    number: 133,
+    title: "Clone Graph",
+    description: "Return a deep copy of a connected undirected graph using BFS.",
+    difficulty: "Medium",
+    tags: ["Graph", "BFS", "Hash Map"],
+    accent: "#a6e3a1",
+    component: CloneGraph,
+  },
+  {
+    id: "find-all-anagrams",
+    number: 438,
+    title: "Find All Anagrams in a String",
+    description: "Find all start indices of anagrams of p in s using a sliding window.",
+    difficulty: "Medium",
+    tags: ["String", "Sliding Window", "Hash Map"],
+    accent: "#fab387",
+    component: FindAllAnagrams,
+  },
+  {
+    id: "permutation-in-string",
+    number: 567,
+    title: "Permutation in String",
+    description: "Check if any permutation of s1 is a substring of s2 using a sliding window.",
+    difficulty: "Medium",
+    tags: ["String", "Sliding Window", "Two Pointers"],
+    accent: "#89b4fa",
+    component: PermutationInString,
   },
 ];
 
