@@ -1,0 +1,148 @@
+.clr-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    font-family: inherit;
+}
+
+.clr-controls-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.clr-examples {
+    display: flex;
+    gap: 8px;
+}
+
+.clr-chip {
+    background: #313244;
+    color: #cdd6f4;
+    border: 2px solid #45475a;
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.clr-chip.active,
+.clr-chip:hover {
+    border-color: #89dceb;
+    color: #89dceb;
+}
+
+.clr-panel {
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+
+.clr-panel-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c7086;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+}
+
+.clr-list-col {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.clr-row-label {
+    font-size: 11px;
+    color: #6c7086;
+    font-family: monospace;
+}
+
+.clr-nodes-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.clr-node-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.clr-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 8px;
+    border-radius: 10px;
+    border: 2px solid #45475a;
+    background: #313244;
+    min-width: 60px;
+}
+
+.clr-node.orig {
+    border-color: #89b4fa;
+    background: #0d1424;
+}
+
+.clr-node.orig.active {
+    border-color: #f9e2af;
+    box-shadow: 0 0 10px #f9e2af44;
+}
+
+.clr-node.clone {
+    border-color: #a6e3a1;
+    background: #002010;
+}
+
+.clr-node.clone.active {
+    border-color: #f9e2af;
+    box-shadow: 0 0 10px #f9e2af44;
+}
+
+.clr-node.clone.wired {
+    border-color: #cba6f7;
+    background: #1a1030;
+}
+
+.clr-node-idx {
+    font-size: 10px;
+    color: #6c7086;
+}
+
+.clr-node-val {
+    font-size: 18px;
+    font-weight: 700;
+    color: #cdd6f4;
+}
+
+.clr-node-rnd {
+    font-size: 10px;
+    font-weight: 700;
+    color: #f38ba8;
+}
+
+.clr-arrow {
+    font-size: 18px;
+    color: #45475a;
+}
+
+.clr-arrow.clone-arrow {
+    color: #a6e3a1;
+}
+
+.clr-status {
+    padding: 8px 12px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #a6adc8;
+    min-height: 36px;
+}

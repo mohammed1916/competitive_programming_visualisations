@@ -1,0 +1,196 @@
+.ds-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    font-family: inherit;
+}
+
+.ds-controls-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.ds-examples {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.ds-chip {
+    background: #313244;
+    color: #cdd6f4;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.ds-chip:hover {
+    background: #45475a;
+}
+
+.ds-input {
+    background: #11111b;
+    color: #cdd6f4;
+    border: 1px solid #45475a;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 13px;
+    width: 200px;
+    font-family: monospace;
+}
+
+.ds-panel {
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+
+.ds-panel-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c7086;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+}
+
+.ds-chars-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.ds-ch {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    border-radius: 7px;
+    border: 2px solid #45475a;
+    font-family: monospace;
+}
+
+.ds-ch.digit {
+    background: #1e0d00;
+    border-color: #fab387;
+    color: #fab387;
+}
+
+.ds-ch.open {
+    background: #0d1424;
+    border-color: #89b4fa;
+    color: #89b4fa;
+}
+
+.ds-ch.close {
+    background: #0d1424;
+    border-color: #89b4fa;
+    color: #89b4fa;
+}
+
+.ds-ch.letter {
+    background: #1a1030;
+    border-color: #cba6f7;
+    color: #cba6f7;
+}
+
+.ds-ch.current {
+    box-shadow: 0 0 14px #f9e2af88;
+    border-color: #f9e2af !important;
+    color: #f9e2af !important;
+    background: #2a2000 !important;
+}
+
+.ds-stack-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    min-height: 52px;
+}
+
+.ds-stack-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    background: #313244;
+    border: 2px solid #45475a;
+}
+
+.ds-stack-item.top {
+    border-color: #f9e2af;
+    background: #2a2000;
+}
+
+.ds-stack-k {
+    font-size: 12px;
+    font-weight: 700;
+    color: #fab387;
+    font-family: monospace;
+}
+
+.ds-stack-prev {
+    font-size: 13px;
+    font-weight: 700;
+    color: #cba6f7;
+    font-family: monospace;
+}
+
+.ds-empty {
+    color: #45475a;
+    font-size: 14px;
+    font-style: italic;
+    align-self: center;
+}
+
+.ds-state-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.ds-state-box {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    padding: 8px 14px;
+}
+
+.ds-state-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c7086;
+    text-transform: uppercase;
+}
+
+.ds-state-val {
+    font-size: 16px;
+    font-weight: 700;
+    color: #a6e3a1;
+    font-family: monospace;
+}
+
+.ds-status {
+    padding: 8px 12px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #a6adc8;
+    min-height: 36px;
+}

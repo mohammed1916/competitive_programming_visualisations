@@ -1,0 +1,145 @@
+.ii-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    font-family: inherit;
+}
+
+.ii-controls-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.ii-examples {
+    display: flex;
+    gap: 8px;
+}
+
+.ii-chip {
+    background: #313244;
+    color: #cdd6f4;
+    border: 2px solid #45475a;
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.ii-chip.active,
+.ii-chip:hover {
+    border-color: #fab387;
+    color: #fab387;
+}
+
+.ii-new-tag {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fab387;
+    font-family: monospace;
+}
+
+.ii-panel {
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+
+.ii-panel-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c7086;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+}
+
+.ii-bars-col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-x: auto;
+}
+
+.ii-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ii-bar-idx {
+    font-size: 11px;
+    color: #6c7086;
+    font-family: monospace;
+    width: 32px;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.ii-bar-idx.new {
+    color: #fab387;
+}
+
+.ii-bar-track {
+    position: relative;
+    height: 34px;
+    flex-shrink: 0;
+}
+
+.ii-bar {
+    position: absolute;
+    height: 30px;
+    top: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 6px;
+    font-family: monospace;
+    white-space: nowrap;
+    padding: 0 6px;
+    min-width: 24px;
+}
+
+.ii-bar.interval {
+    background: #1a1030;
+    border: 2px solid #89b4fa;
+    color: #89b4fa;
+}
+
+.ii-bar.interval.active {
+    background: #1e0a30;
+    border-color: #cba6f7;
+    color: #cba6f7;
+    box-shadow: 0 0 10px #cba6f744;
+}
+
+.ii-bar.interval.done {
+    opacity: 0.4;
+}
+
+.ii-bar.new-iv {
+    background: #1e0d00;
+    border: 2px solid #fab387;
+    color: #fab387;
+}
+
+.ii-bar.result {
+    background: #002010;
+    border: 2px solid #a6e3a1;
+    color: #a6e3a1;
+}
+
+.ii-status {
+    padding: 8px 12px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #a6adc8;
+    min-height: 36px;
+}

@@ -91,6 +91,11 @@ import SetMatrixZeroes from "./problems/SetMatrixZeroes";
 import Search2DMatrix from "./problems/Search2DMatrix";
 import ReorderList from "./problems/ReorderList";
 import PalindromePartitioning from "./problems/PalindromePartitioning";
+import InsertInterval from "./problems/InsertInterval";
+import SortColors from "./problems/SortColors";
+import CopyListRandom from "./problems/CopyListRandom";
+import SortList from "./problems/SortList";
+import DecodeString from "./problems/DecodeString";
 import ProblemScaffold from "./components/panels/ProblemScaffold";
 import "./App.css";
 
@@ -1093,6 +1098,56 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ["String", "Backtracking", "DP"],
     accent: "#cba6f7",
     component: PalindromePartitioning,
+  },
+  {
+    id: "insert-interval",
+    number: 57,
+    title: "Insert Interval",
+    description: "Insert a new interval into a list of non-overlapping intervals and merge if necessary.",
+    difficulty: "Medium",
+    tags: ["Array", "Intervals"],
+    accent: "#fab387",
+    component: InsertInterval,
+  },
+  {
+    id: "sort-colors",
+    number: 75,
+    title: "Sort Colors",
+    description: "Sort an array of 0s, 1s, and 2s in-place using the Dutch National Flag algorithm.",
+    difficulty: "Medium",
+    tags: ["Array", "Two Pointers", "Sorting"],
+    accent: "#89b4fa",
+    component: SortColors,
+  },
+  {
+    id: "copy-list-random",
+    number: 138,
+    title: "Copy List with Random Pointer",
+    description: "Deep copy a linked list where each node has a random pointer to any node or null.",
+    difficulty: "Medium",
+    tags: ["Linked List", "Hash Map"],
+    accent: "#89dceb",
+    component: CopyListRandom,
+  },
+  {
+    id: "sort-list",
+    number: 148,
+    title: "Sort List",
+    description: "Sort a linked list in O(n log n) time using merge sort.",
+    difficulty: "Medium",
+    tags: ["Linked List", "Sorting", "Divide and Conquer"],
+    accent: "#a6e3a1",
+    component: SortList,
+  },
+  {
+    id: "decode-string",
+    number: 394,
+    title: "Decode String",
+    description: "Decode an encoded string where k[encoded_string] means the string is repeated k times.",
+    difficulty: "Medium",
+    tags: ["String", "Stack", "Recursion"],
+    accent: "#cba6f7",
+    component: DecodeString,
   },
 ];
 
