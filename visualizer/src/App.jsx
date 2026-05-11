@@ -111,6 +111,11 @@ import WordLadder from "./problems/WordLadder";
 import GasStation from "./problems/GasStation";
 import FindPeakElement from "./problems/FindPeakElement";
 import MinSizeSubarraySum from "./problems/MinSizeSubarraySum";
+import MergeSortedArray from "./problems/MergeSortedArray";
+import SingleNumber from "./problems/SingleNumber";
+import IntersectionTwoLinkedLists from "./problems/IntersectionTwoLinkedLists";
+import HappyNumber from "./problems/HappyNumber";
+import ContainsDuplicate from "./problems/ContainsDuplicate";
 import ProblemScaffold from "./components/panels/ProblemScaffold";
 import "./App.css";
 
@@ -1313,6 +1318,56 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ["Array", "Sliding Window"],
     accent: "#cba6f7",
     component: MinSizeSubarraySum,
+  },
+  {
+    id: "merge-sorted-array",
+    number: 88,
+    title: "Merge Sorted Array",
+    description: "Merge two sorted arrays in-place by filling from the back using three pointers.",
+    difficulty: "Easy",
+    tags: ["Array", "Two Pointers", "Sorting"],
+    accent: "#89b4fa",
+    component: MergeSortedArray,
+  },
+  {
+    id: "single-number",
+    number: 136,
+    title: "Single Number",
+    description: "Find the element that appears only once in an array using XOR bit manipulation.",
+    difficulty: "Easy",
+    tags: ["Array", "Bit Manipulation"],
+    accent: "#cba6f7",
+    component: SingleNumber,
+  },
+  {
+    id: "intersection-two-linked-lists",
+    number: 160,
+    title: "Intersection of Two Linked Lists",
+    description: "Find the node where two linked lists intersect using the two-pointer alignment trick.",
+    difficulty: "Easy",
+    tags: ["Linked List", "Two Pointers", "Hash Table"],
+    accent: "#a6e3a1",
+    component: IntersectionTwoLinkedLists,
+  },
+  {
+    id: "happy-number",
+    number: 202,
+    title: "Happy Number",
+    description: "Determine if a number is happy by summing squared digits until reaching 1 or detecting a cycle.",
+    difficulty: "Easy",
+    tags: ["Hash Table", "Math", "Cycle Detection"],
+    accent: "#f9e2af",
+    component: HappyNumber,
+  },
+  {
+    id: "contains-duplicate",
+    number: 217,
+    title: "Contains Duplicate",
+    description: "Return true if any value appears at least twice in the array, using a hash set.",
+    difficulty: "Easy",
+    tags: ["Array", "Hash Set", "Sorting"],
+    accent: "#f38ba8",
+    component: ContainsDuplicate,
   },
 ];
 

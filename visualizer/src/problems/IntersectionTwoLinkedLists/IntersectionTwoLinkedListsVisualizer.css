@@ -1,0 +1,21 @@
+.itll-shell { display: flex; flex-direction: column; gap: 12px; padding: 16px; font-family: inherit; }
+.itll-examples { display: flex; gap: 8px; flex-wrap: wrap; }
+.itll-chip { background: #313244; color: #cdd6f4; border: 2px solid #45475a; border-radius: 6px; padding: 4px 12px; font-size: 12px; cursor: pointer; }
+.itll-chip.active, .itll-chip:hover { border-color: #89b4fa; color: #89b4fa; }
+.itll-panel { background: #1e1e2e; border: 1px solid #313244; border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 14px; }
+.itll-panel-label { font-size: 11px; font-weight: 700; color: #6c7086; text-transform: uppercase; letter-spacing: 0.08em; }
+.itll-list-block { display: flex; flex-direction: column; gap: 4px; }
+.itll-list-label { font-size: 12px; font-weight: 700; }
+.itll-list-row { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+.itll-node-wrap { display: flex; align-items: center; gap: 4px; position: relative; flex-direction: column; }
+.itll-node { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; border-radius: 8px; border: 2px solid #45475a; background: #252535; color: #cdd6f4; }
+.itll-node.shared { border-color: #a6e3a155; background: #002010; color: #a6e3a1; }
+.itll-node.ptr { border-color: #cba6f7; box-shadow: 0 0 8px #cba6f766; }
+.itll-ptr-label { font-size: 9px; font-weight: 700; color: #cba6f7; margin-top: 2px; }
+.itll-arrow { font-size: 16px; color: #585b70; }
+.itll-null { font-size: 12px; color: #45475a; }
+.itll-shared-note { font-size: 11px; color: #a6e3a1; background: #002010; border-radius: 6px; padding: 4px 10px; }
+.itll-result { padding: 10px 14px; border-radius: 8px; font-size: 15px; font-weight: 700; }
+.itll-result.ok { background: #001a08; border: 2px solid #a6e3a1; color: #a6e3a1; }
+.itll-result.none { background: #1a0808; border: 2px solid #f38ba8; color: #f38ba8; }
+.itll-status { padding: 8px 12px; background: #1e1e2e; border: 1px solid #313244; border-radius: 8px; font-size: 13px; color: #a6adc8; min-height: 36px; }

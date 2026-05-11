@@ -1,0 +1,22 @@
+.hn-shell { display: flex; flex-direction: column; gap: 12px; padding: 16px; font-family: inherit; }
+.hn-examples { display: flex; gap: 8px; flex-wrap: wrap; }
+.hn-chip { background: #313244; color: #cdd6f4; border: 2px solid #45475a; border-radius: 6px; padding: 4px 12px; font-size: 12px; cursor: pointer; }
+.hn-chip.active, .hn-chip:hover { border-color: #f9e2af; color: #f9e2af; }
+.hn-panel { background: #1e1e2e; border: 1px solid #313244; border-radius: 10px; padding: 12px 14px; }
+.hn-panel-label { font-size: 11px; font-weight: 700; color: #6c7086; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+.hn-chain { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; min-height: 56px; }
+.hn-chain-item { display: flex; align-items: center; gap: 4px; }
+.hn-node { width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; border-radius: 10px; border: 2px solid #45475a; background: #252535; color: #cdd6f4; }
+.hn-node.cur { border-color: #f9e2af; background: #1a1500; color: #f9e2af; }
+.hn-node.one { border-color: #a6e3a1; background: #002010; color: #a6e3a1; }
+.hn-node.cycle { border-color: #f38ba8; background: #1a0808; color: #f38ba8; }
+.hn-arrow { font-size: 18px; color: #585b70; }
+.hn-seen { display: flex; gap: 6px; flex-wrap: wrap; min-height: 36px; align-items: center; }
+.hn-seen-item { padding: 4px 12px; border-radius: 6px; font-size: 13px; font-weight: 700; background: #252535; border: 1px solid #45475a; color: #cdd6f4; }
+.hn-seen-item.cycle { border-color: #f38ba8; color: #f38ba8; background: #1a0808; }
+.hn-empty { color: #45475a; font-size: 13px; font-style: italic; }
+.hn-expr { font-size: 14px; color: #89b4fa; background: #0a1020; border: 1px solid #89b4fa33; border-radius: 8px; padding: 8px 14px; font-family: monospace; }
+.hn-result { padding: 10px 14px; border-radius: 8px; font-size: 15px; font-weight: 700; }
+.hn-result.happy { background: #001a08; border: 2px solid #a6e3a1; color: #a6e3a1; }
+.hn-result.sad { background: #1a0808; border: 2px solid #f38ba8; color: #f38ba8; }
+.hn-status { padding: 8px 12px; background: #1e1e2e; border: 1px solid #313244; border-radius: 8px; font-size: 13px; color: #a6adc8; min-height: 36px; }

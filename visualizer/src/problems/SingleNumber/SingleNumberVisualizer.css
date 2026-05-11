@@ -1,0 +1,27 @@
+.sn-shell { display: flex; flex-direction: column; gap: 12px; padding: 16px; font-family: inherit; }
+.sn-examples { display: flex; gap: 8px; flex-wrap: wrap; }
+.sn-chip { background: #313244; color: #cdd6f4; border: 2px solid #45475a; border-radius: 6px; padding: 4px 12px; font-size: 12px; cursor: pointer; }
+.sn-chip.active, .sn-chip:hover { border-color: #cba6f7; color: #cba6f7; }
+.sn-panel { background: #1e1e2e; border: 1px solid #313244; border-radius: 10px; padding: 12px 14px; }
+.sn-panel-label { font-size: 11px; font-weight: 700; color: #6c7086; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+.sn-arr { display: flex; gap: 8px; flex-wrap: wrap; }
+.sn-cell-col { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.sn-cell { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; border-radius: 8px; border: 2px solid #45475a; background: #252535; color: #cdd6f4; }
+.sn-cell.cur { border-color: #cba6f7; background: #1a0a2e; color: #cba6f7; }
+.sn-bin { font-size: 10px; color: #6c7086; font-family: monospace; letter-spacing: 2px; }
+.sn-xor-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.sn-xor-operand { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.sn-xor-operand.result { border: 2px solid #cba6f744; border-radius: 8px; padding: 8px 12px; }
+.sn-xor-label { font-size: 11px; color: #6c7086; }
+.sn-bits-row { display: flex; gap: 4px; }
+.sn-bit { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; border-radius: 5px; font-size: 13px; font-weight: 700; font-family: monospace; border: 1px solid #45475a; }
+.sn-bit.one { background: #1a1535; color: #cba6f7; border-color: #cba6f7; }
+.sn-bit.zero { background: #1e1e2e; color: #45475a; }
+.sn-bit.cur.one { background: #102030; color: #89b4fa; border-color: #89b4fa; }
+.sn-bit.cur.zero { background: #1e1e2e; color: #45475a; }
+.sn-bit.result.one { background: #20103a; color: #cba6f7; border-color: #cba6f7; }
+.sn-dec { font-size: 16px; font-weight: 700; color: #cdd6f4; }
+.sn-dec.result { font-size: 22px; color: #cba6f7; }
+.sn-xor-sym { font-size: 16px; font-weight: 700; color: #f38ba8; }
+.sn-result { padding: 10px 14px; border-radius: 8px; font-size: 15px; font-weight: 700; background: #1a0a2e; border: 2px solid #cba6f7; color: #cba6f7; }
+.sn-status { padding: 8px 12px; background: #1e1e2e; border: 1px solid #313244; border-radius: 8px; font-size: 13px; color: #a6adc8; min-height: 36px; }
