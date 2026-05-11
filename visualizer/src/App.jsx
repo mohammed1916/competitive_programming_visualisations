@@ -56,6 +56,11 @@ import MajorityElement from "./problems/MajorityElement";
 import MaxProductSubarray from "./problems/MaxProductSubarray";
 import MaxDepthBinaryTree from "./problems/MaxDepthBinaryTree";
 import InvertBinaryTree from "./problems/InvertBinaryTree";
+import RemoveNthNode from "./problems/RemoveNthNode";
+import BinaryTreeLevelOrder from "./problems/BinaryTreeLevelOrder";
+import DiameterBinaryTree from "./problems/DiameterBinaryTree";
+import CountingBits from "./problems/CountingBits";
+import LCABST from "./problems/LCABST";
 import ProblemScaffold from "./components/panels/ProblemScaffold";
 import "./App.css";
 
@@ -708,6 +713,56 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ["Tree", "DFS", "BFS", "Binary Tree"],
     accent: "#89dceb",
     component: InvertBinaryTree,
+  },
+  {
+    number: "19",
+    title: "Remove Nth Node From End of List",
+    description:
+      "Use a dummy head and two pointers. Advance fast by n+1 steps, then co-move fast and slow until fast is null. slow.next is the node to delete. O(n) one-pass.",
+    difficulty: "Medium",
+    tags: ["Linked List", "Two Pointers"],
+    accent: "#89b4fa",
+    component: RemoveNthNode,
+  },
+  {
+    number: "102",
+    title: "Binary Tree Level Order Traversal",
+    description:
+      "BFS with a queue. At each iteration snapshot queue length, process exactly that many nodes, appending their values to the current level. Push children for the next level. O(n) time.",
+    difficulty: "Medium",
+    tags: ["Tree", "BFS", "Binary Tree"],
+    accent: "#89b4fa",
+    component: BinaryTreeLevelOrder,
+  },
+  {
+    number: "543",
+    title: "Diameter of Binary Tree",
+    description:
+      "Post-order DFS: at each node compute left depth and right depth. Update global diameter with left+right. Return 1+max(left,right) to parent. O(n) time.",
+    difficulty: "Easy",
+    tags: ["Tree", "DFS", "Binary Tree"],
+    accent: "#cba6f7",
+    component: DiameterBinaryTree,
+  },
+  {
+    number: "338",
+    title: "Counting Bits",
+    description:
+      "DP: dp[i] = dp[i>>1] + (i&1). Shifting right divides by 2 (same bit count minus the LSB), and (i&1) adds back the least-significant bit. Fills the array in O(n) time.",
+    difficulty: "Easy",
+    tags: ["Dynamic Programming", "Bit Manipulation"],
+    accent: "#f9e2af",
+    component: CountingBits,
+  },
+  {
+    number: "235",
+    title: "Lowest Common Ancestor of a BST",
+    description:
+      "Walk from root: if both p and q are less than current node go left; if both greater go right; otherwise the current node is the split point and the LCA. O(h) time.",
+    difficulty: "Medium",
+    tags: ["Tree", "DFS", "BST", "Binary Search Tree"],
+    accent: "#cba6f7",
+    component: LCABST,
   },
 ];
 

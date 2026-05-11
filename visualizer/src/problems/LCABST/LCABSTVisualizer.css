@@ -1,0 +1,267 @@
+.lca-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    font-family: inherit;
+}
+
+.lca-top {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.lca-panel {
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 10px;
+    overflow: hidden;
+    flex: 1;
+    min-width: 260px;
+}
+
+.lca-panel.main {
+    flex: 2;
+}
+
+.lca-head {
+    padding: 10px 14px;
+    background: #181825;
+    font-size: 13px;
+    font-weight: 600;
+    color: #cdd6f4;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.lca-error {
+    color: #f38ba8;
+    font-size: 11px;
+}
+
+.lca-body {
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.lca-examples {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.lca-chip {
+    background: #313244;
+    color: #cdd6f4;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.lca-chip:hover {
+    background: #45475a;
+}
+
+.lca-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.lca-input {
+    background: #11111b;
+    color: #cdd6f4;
+    border: 1px solid #45475a;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 13px;
+}
+
+.lca-input.wide {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.lca-input.small {
+    width: 64px;
+    margin-left: 4px;
+}
+
+.lca-pq {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    font-size: 13px;
+    color: #a6adc8;
+}
+
+.lca-canvas {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    background: #11111b;
+    flex-shrink: 0;
+}
+
+.lca-node {
+    position: absolute;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #313244;
+    border: 2px solid #45475a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 700;
+    color: #cdd6f4;
+}
+
+.lca-node.active {
+    border-color: #f9e2af;
+    background: #2a2a3e;
+    box-shadow: 0 0 12px #f9e2af55;
+}
+
+.lca-node.visited {
+    border-color: #6c7086;
+    opacity: 0.6;
+}
+
+.lca-node.lca {
+    border-color: #cba6f7;
+    background: #2a1d3e;
+    box-shadow: 0 0 16px #cba6f755;
+}
+
+.lca-node.p-node {
+    border-color: #89b4fa;
+}
+
+.lca-node.q-node {
+    border-color: #f38ba8;
+}
+
+.lca-node.p-node.q-node {
+    border-color: #f9e2af;
+}
+
+.lca-tag {
+    position: absolute;
+    top: -12px;
+    font-size: 9px;
+    font-weight: 800;
+    border-radius: 4px;
+    padding: 1px 4px;
+}
+
+.p-tag {
+    background: #89b4fa;
+    color: #1e1e2e;
+    left: 0;
+}
+
+.q-tag {
+    background: #f38ba8;
+    color: #1e1e2e;
+    right: 0;
+}
+
+.lca-tag-badge {
+    background: #cba6f7;
+    color: #1e1e2e;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+}
+
+.lca-targets {
+    display: flex;
+    gap: 12px;
+}
+
+.lca-target {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px;
+    border-radius: 8px;
+    background: #11111b;
+}
+
+.lca-target.p {
+    border: 2px solid #89b4fa;
+}
+
+.lca-target.q {
+    border: 2px solid #f38ba8;
+}
+
+.lca-target strong {
+    font-size: 24px;
+    color: #cdd6f4;
+}
+
+.lca-label {
+    font-size: 11px;
+    color: #6c7086;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.lca-phase {
+    text-align: center;
+    font-size: 14px;
+    color: #a6adc8;
+    min-height: 24px;
+}
+
+.lca-dir {
+    color: #89b4fa;
+    font-weight: 600;
+}
+
+.lca-found {
+    color: #cba6f7;
+    font-weight: 700;
+}
+
+.lca-result {
+    text-align: center;
+    padding: 8px 12px;
+    background: #313244;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #6c7086;
+}
+
+.lca-result.ok {
+    background: #2a1d3e;
+    color: #cba6f7;
+    font-weight: 700;
+}
+
+.lca-status {
+    padding: 8px 12px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #a6adc8;
+    min-height: 36px;
+}
+
+.lca-status.ok {
+    color: #cba6f7;
+    border-color: #cba6f7;
+}
