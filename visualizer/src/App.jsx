@@ -136,6 +136,11 @@ import MaximalRectangle from "./problems/MaximalRectangle";
 import TextJustification from "./problems/TextJustification";
 import SkylineProblem from "./problems/SkylineProblem";
 import BasicCalculator from "./problems/BasicCalculator";
+import SudokuSolver from "./problems/SudokuSolver";
+import WildcardMatching from "./problems/WildcardMatching";
+import DistinctSubsequences from "./problems/DistinctSubsequences";
+import PalindromePartitioningII from "./problems/PalindromePartitioningII";
+import BestTimeBuySellStockIV from "./problems/BestTimeBuySellStockIV";
 import ProblemScaffold from "./components/panels/ProblemScaffold";
 import "./App.css";
 
@@ -1588,6 +1593,56 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ["Math", "String", "Stack", "Recursion"],
     accent: "#cba6f7",
     component: BasicCalculator,
+  },
+  {
+    id: "sudoku-solver",
+    number: 37,
+    title: "Sudoku Solver",
+    description: "Solve a Sudoku puzzle by backtracking: try digits 1–9 in each empty cell, validate, and undo on failure.",
+    difficulty: "Hard",
+    tags: ["Array", "Backtracking", "Matrix"],
+    accent: "#a6e3a1",
+    component: SudokuSolver,
+  },
+  {
+    id: "wildcard-matching",
+    number: 44,
+    title: "Wildcard Matching",
+    description: "Match a string against a pattern with '?' (any char) and '*' (any sequence) using 2D DP.",
+    difficulty: "Hard",
+    tags: ["String", "DP", "Greedy"],
+    accent: "#f5c2e7",
+    component: WildcardMatching,
+  },
+  {
+    id: "distinct-subsequences",
+    number: 115,
+    title: "Distinct Subsequences",
+    description: "Count distinct ways to form t as a subsequence of s using 2D DP (skip or use each char).",
+    difficulty: "Hard",
+    tags: ["String", "DP"],
+    accent: "#89dceb",
+    component: DistinctSubsequences,
+  },
+  {
+    id: "palindrome-partitioning-ii",
+    number: 132,
+    title: "Palindrome Partitioning II",
+    description: "Find the minimum number of cuts to partition a string so every part is a palindrome.",
+    difficulty: "Hard",
+    tags: ["String", "DP"],
+    accent: "#fab387",
+    component: PalindromePartitioningII,
+  },
+  {
+    id: "best-time-buy-sell-stock-iv",
+    number: 188,
+    title: "Best Time to Buy and Sell Stock IV",
+    description: "Maximize profit with at most k transactions using 2D DP tracking transactions × days.",
+    difficulty: "Hard",
+    tags: ["Array", "DP"],
+    accent: "#f9e2af",
+    component: BestTimeBuySellStockIV,
   },
 ];
 

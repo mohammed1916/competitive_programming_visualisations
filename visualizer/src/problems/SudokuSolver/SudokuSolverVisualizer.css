@@ -1,0 +1,29 @@
+.su-shell { display: flex; flex-direction: column; gap: 12px; padding: 16px; font-family: inherit; }
+.su-panel { background: #1e1e2e; border: 1px solid #313244; border-radius: 10px; padding: 12px 14px; }
+.su-panel-label { font-size: 11px; font-weight: 700; color: #6c7086; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+.su-grid { display: grid; grid-template-columns: repeat(9, 36px); grid-template-rows: repeat(9, 36px); gap: 2px; }
+.su-cell { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; border-radius: 3px; border: 1px solid #313244; }
+.su-cell.fixed  { background: #252535; color: #cdd6f4; }
+.su-cell.mutable { background: #1a1a2a; color: #89b4fa; }
+.su-cell.box-border-r { border-bottom: 2px solid #585b70; }
+.su-cell.box-border-c { border-right: 2px solid #585b70; }
+.su-cell.active-place    { background: #001530; border-color: #89b4fa; color: #89b4fa !important; }
+.su-cell.active-recurse  { background: #001530; border-color: #a6e3a1; color: #a6e3a1 !important; }
+.su-cell.active-backtrack { background: #200010; border-color: #f38ba8; color: #f38ba8 !important; }
+.su-cell.active-skip     { background: #252535; border-color: #45475a; }
+.su-cell.active-done     { background: #001a00; border-color: #a6e3a1; }
+.su-trackers { display: flex; gap: 8px; flex-wrap: wrap; }
+.su-tracker { flex: 1; min-width: 70px; display: flex; flex-direction: column; align-items: center; gap: 4px; background: #1e1e2e; border: 1px solid #313244; border-radius: 8px; padding: 10px 0; }
+.su-tracker-label { font-size: 11px; font-weight: 700; color: #6c7086; text-transform: uppercase; }
+.su-tracker-val { font-size: 18px; font-weight: 700; color: #cdd6f4; }
+.su-tracker-val.su-digit { color: #89b4fa; font-size: 22px; }
+.su-tracker-val.su-small { font-size: 12px; }
+.su-tracker-val.su-phase { font-size: 12px; }
+.su-tracker-val.su-phase.init      { color: #89b4fa; }
+.su-tracker-val.su-phase.place     { color: #89b4fa; }
+.su-tracker-val.su-phase.skip      { color: #45475a; }
+.su-tracker-val.su-phase.recurse   { color: #a6e3a1; }
+.su-tracker-val.su-phase.backtrack { color: #f38ba8; }
+.su-tracker-val.su-phase.done      { color: #a6e3a1; }
+.su-result { padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 700; background: #001a00; border: 2px solid #a6e3a1; color: #a6e3a1; }
+.su-status { padding: 8px 12px; background: #1e1e2e; border: 1px solid #313244; border-radius: 8px; font-size: 13px; color: #a6adc8; min-height: 36px; }
