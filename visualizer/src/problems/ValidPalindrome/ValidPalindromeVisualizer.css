@@ -1,0 +1,149 @@
+.vp-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    font-family: inherit;
+}
+
+.vp-controls-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.vp-examples {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.vp-chip {
+    background: #313244;
+    color: #cdd6f4;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.vp-chip:hover {
+    background: #45475a;
+}
+
+.vp-input {
+    flex: 1;
+    min-width: 220px;
+    background: #11111b;
+    color: #cdd6f4;
+    border: 1px solid #45475a;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 13px;
+}
+
+.vp-panel {
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 10px;
+    padding: 14px;
+}
+
+.vp-panel-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c7086;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+}
+
+.vp-chars-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.vp-char {
+    position: relative;
+    width: 38px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    font-weight: 700;
+    border-radius: 7px;
+    background: #313244;
+    color: #cdd6f4;
+    border: 2px solid #45475a;
+}
+
+.vp-char.between {
+    background: #1e2a1e;
+    border-color: #a6e3a1;
+    color: #a6e3a1;
+}
+
+.vp-char.ptr-l {
+    background: #1e2640;
+    border-color: #89b4fa;
+    color: #89b4fa;
+}
+
+.vp-char.ptr-r {
+    background: #2a1e40;
+    border-color: #cba6f7;
+    color: #cba6f7;
+}
+
+.vp-char.palindrome {
+    background: #1a2a1e;
+    border-color: #a6e3a1;
+    color: #a6e3a1;
+}
+
+.vp-char.bad {
+    background: #2a1e1e;
+    border-color: #f38ba8;
+    color: #f38ba8;
+}
+
+.vp-ptr-label {
+    position: absolute;
+    bottom: -18px;
+    font-size: 9px;
+    font-weight: 900;
+    color: #f9e2af;
+}
+
+.vp-result {
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.vp-result.true {
+    background: #1a2a1e;
+    color: #a6e3a1;
+    border: 1px solid #a6e3a1;
+}
+
+.vp-result.false {
+    background: #2a1e1e;
+    color: #f38ba8;
+    border: 1px solid #f38ba8;
+}
+
+.vp-status {
+    padding: 8px 12px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #a6adc8;
+    min-height: 36px;
+}

@@ -76,6 +76,11 @@ import Permutations from "./problems/Permutations";
 import SubtreeOfAnotherTree from "./problems/SubtreeOfAnotherTree";
 import ConstructBinaryTree from "./problems/ConstructBinaryTree";
 import BinaryTreeMaxPath from "./problems/BinaryTreeMaxPath";
+import ValidPalindrome from "./problems/ValidPalindrome";
+import EncodeDecodeStrings from "./problems/EncodeDecodeStrings";
+import FindMedianDataStream from "./problems/FindMedianDataStream";
+import LongestRepeatingCharReplace from "./problems/LongestRepeatingCharReplace";
+import SubarraySumEqualsK from "./problems/SubarraySumEqualsK";
 import ProblemScaffold from "./components/panels/ProblemScaffold";
 import "./App.css";
 
@@ -933,6 +938,51 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ["Tree", "DFS", "DP"],
     accent: "#f38ba8",
     component: BinaryTreeMaxPath,
+  },
+  {
+    number: 125,
+    title: "Valid Palindrome",
+    description: "Determine if a string is a palindrome considering only alphanumeric characters.",
+    difficulty: "Easy",
+    tags: ["Two Pointers", "String"],
+    accent: "#89dceb",
+    component: ValidPalindrome,
+  },
+  {
+    number: 271,
+    title: "Encode and Decode Strings",
+    description: "Design an algorithm to encode and decode a list of strings.",
+    difficulty: "Medium",
+    tags: ["Array", "String", "Design"],
+    accent: "#fab387",
+    component: EncodeDecodeStrings,
+  },
+  {
+    number: 295,
+    title: "Find Median from Data Stream",
+    description: "Design a data structure that supports adding numbers and finding the median.",
+    difficulty: "Hard",
+    tags: ["Heap", "Design", "Two Pointers"],
+    accent: "#f38ba8",
+    component: FindMedianDataStream,
+  },
+  {
+    number: 424,
+    title: "Longest Repeating Character Replacement",
+    description: "Find the length of the longest substring with at most k replacements.",
+    difficulty: "Medium",
+    tags: ["Sliding Window", "String"],
+    accent: "#a6e3a1",
+    component: LongestRepeatingCharReplace,
+  },
+  {
+    number: 560,
+    title: "Subarray Sum Equals K",
+    description: "Find the total number of subarrays whose sum equals k.",
+    difficulty: "Medium",
+    tags: ["Array", "Hash Map", "Prefix Sum"],
+    accent: "#cba6f7",
+    component: SubarraySumEqualsK,
   },
 ];
 
