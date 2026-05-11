@@ -106,6 +106,11 @@ import JumpGameII from "./problems/JumpGameII";
 import EditDistance from "./problems/EditDistance";
 import RotateArray from "./problems/RotateArray";
 import PartitionEqualSubset from "./problems/PartitionEqualSubset";
+import FlattenBinaryTree from "./problems/FlattenBinaryTree";
+import WordLadder from "./problems/WordLadder";
+import GasStation from "./problems/GasStation";
+import FindPeakElement from "./problems/FindPeakElement";
+import MinSizeSubarraySum from "./problems/MinSizeSubarraySum";
 import ProblemScaffold from "./components/panels/ProblemScaffold";
 import "./App.css";
 
@@ -1258,6 +1263,56 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ["Array", "DP"],
     accent: "#f9e2af",
     component: PartitionEqualSubset,
+  },
+  {
+    id: "flatten-binary-tree",
+    number: 114,
+    title: "Flatten Binary Tree to Linked List",
+    description: "Flatten a binary tree in-place to a linked list in pre-order traversal using a Morris-like approach.",
+    difficulty: "Medium",
+    tags: ["Binary Tree", "DFS", "Linked List"],
+    accent: "#89dceb",
+    component: FlattenBinaryTree,
+  },
+  {
+    id: "word-ladder",
+    number: 127,
+    title: "Word Ladder",
+    description: "Find shortest transformation sequence from beginWord to endWord using BFS on a word list.",
+    difficulty: "Hard",
+    tags: ["BFS", "Hash Set", "String"],
+    accent: "#89b4fa",
+    component: WordLadder,
+  },
+  {
+    id: "gas-station",
+    number: 134,
+    title: "Gas Station",
+    description: "Find the starting gas station index to complete a circular route using the greedy total-tank approach.",
+    difficulty: "Medium",
+    tags: ["Array", "Greedy"],
+    accent: "#fab387",
+    component: GasStation,
+  },
+  {
+    id: "find-peak-element",
+    number: 162,
+    title: "Find Peak Element",
+    description: "Find a peak element in an array in O(log n) using binary search on slope direction.",
+    difficulty: "Medium",
+    tags: ["Array", "Binary Search"],
+    accent: "#a6e3a1",
+    component: FindPeakElement,
+  },
+  {
+    id: "min-size-subarray-sum",
+    number: 209,
+    title: "Minimum Size Subarray Sum",
+    description: "Find the minimal length contiguous subarray whose sum is >= target using a sliding window.",
+    difficulty: "Medium",
+    tags: ["Array", "Sliding Window"],
+    accent: "#cba6f7",
+    component: MinSizeSubarraySum,
   },
 ];
 

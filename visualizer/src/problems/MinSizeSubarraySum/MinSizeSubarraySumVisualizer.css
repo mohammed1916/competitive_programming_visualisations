@@ -1,0 +1,28 @@
+.ms-shell { display: flex; flex-direction: column; gap: 12px; padding: 16px; font-family: inherit; }
+.ms-examples { display: flex; gap: 8px; flex-wrap: wrap; }
+.ms-chip { background: #313244; color: #cdd6f4; border: 2px solid #45475a; border-radius: 6px; padding: 4px 12px; font-size: 12px; cursor: pointer; }
+.ms-chip.active, .ms-chip:hover { border-color: #cba6f7; color: #cba6f7; }
+.ms-target-row { display: flex; gap: 10px; align-items: center; font-size: 14px; }
+.ms-label { font-size: 11px; font-weight: 700; color: #6c7086; text-transform: uppercase; }
+.ms-target-val { font-size: 20px; font-weight: 700; color: #cba6f7; }
+.ms-panel { background: #1e1e2e; border: 1px solid #313244; border-radius: 10px; padding: 12px 14px; }
+.ms-panel-label { font-size: 11px; font-weight: 700; color: #6c7086; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+.ms-array { display: flex; gap: 6px; flex-wrap: wrap; align-items: flex-end; }
+.ms-cell-col { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.ms-cell { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; border-radius: 7px; border: 2px solid #45475a; background: #252535; color: #cdd6f4; }
+.ms-cell.window { border-color: #cba6f7; background: #1a0a2e; color: #cba6f7; }
+.ms-cell.left { border-left-width: 4px; border-left-color: #f38ba8; }
+.ms-cell.right { border-right-width: 4px; border-right-color: #a6e3a1; }
+.ms-idx { font-size: 10px; color: #6c7086; }
+.ms-ptrs { display: flex; flex-direction: column; align-items: center; gap: 1px; min-height: 24px; }
+.ms-ptr { font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 3px; }
+.ms-ptr.l { background: #2a0a0a; color: #f38ba8; }
+.ms-ptr.r { background: #002a0a; color: #a6e3a1; }
+.ms-trackers { display: flex; gap: 10px; }
+.ms-tracker { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; background: #1e1e2e; border: 1px solid #313244; border-radius: 8px; padding: 10px 0; }
+.ms-tracker-label { font-size: 11px; font-weight: 700; color: #6c7086; text-transform: uppercase; }
+.ms-tracker-val { font-size: 18px; font-weight: 700; color: #cdd6f4; }
+.ms-result { padding: 10px 14px; border-radius: 8px; font-size: 15px; font-weight: 700; }
+.ms-result.ok { background: #001a08; border: 2px solid #a6e3a1; color: #a6e3a1; }
+.ms-result.fail { background: #1a0808; border: 2px solid #f38ba8; color: #f38ba8; }
+.ms-status { padding: 8px 12px; background: #1e1e2e; border: 1px solid #313244; border-radius: 8px; font-size: 13px; color: #a6adc8; min-height: 36px; }

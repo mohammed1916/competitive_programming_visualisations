@@ -1,0 +1,25 @@
+.gs-shell { display: flex; flex-direction: column; gap: 12px; padding: 16px; font-family: inherit; }
+.gs-examples { display: flex; gap: 8px; flex-wrap: wrap; }
+.gs-chip { background: #313244; color: #cdd6f4; border: 2px solid #45475a; border-radius: 6px; padding: 4px 12px; font-size: 12px; cursor: pointer; }
+.gs-chip.active, .gs-chip:hover { border-color: #fab387; color: #fab387; }
+.gs-panel { background: #1e1e2e; border: 1px solid #313244; border-radius: 10px; padding: 12px 14px; }
+.gs-panel-label { font-size: 11px; font-weight: 700; color: #6c7086; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+.gs-stations { display: flex; gap: 8px; flex-wrap: wrap; }
+.gs-station { display: flex; flex-direction: column; align-items: center; gap: 3px; background: #252535; border: 2px solid #45475a; border-radius: 8px; padding: 8px 12px; min-width: 56px; position: relative; }
+.gs-station.cur { border-color: #fab387; background: #1a0e06; }
+.gs-station.start { border-color: #a6e3a1 !important; }
+.gs-idx { font-size: 11px; color: #6c7086; }
+.gs-gas { font-size: 13px; color: #a6e3a1; }
+.gs-cost { font-size: 13px; color: #f38ba8; }
+.gs-diff { font-size: 14px; font-weight: 700; margin-top: 2px; }
+.gs-diff.pos { color: #a6e3a1; }
+.gs-diff.neg { color: #f38ba8; }
+.gs-start-flag { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); font-size: 10px; color: #a6e3a1; font-weight: 700; white-space: nowrap; }
+.gs-trackers { display: flex; gap: 10px; }
+.gs-tracker { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; background: #1e1e2e; border: 1px solid #313244; border-radius: 8px; padding: 10px 0; }
+.gs-tracker-label { font-size: 11px; font-weight: 700; color: #6c7086; text-transform: uppercase; }
+.gs-tracker-val { font-size: 20px; font-weight: 700; color: #cdd6f4; }
+.gs-result { padding: 10px 14px; border-radius: 8px; font-size: 15px; font-weight: 700; }
+.gs-result.ok { background: #001a08; border: 2px solid #a6e3a1; color: #a6e3a1; }
+.gs-result.fail { background: #1a0808; border: 2px solid #f38ba8; color: #f38ba8; }
+.gs-status { padding: 8px 12px; background: #1e1e2e; border: 1px solid #313244; border-radius: 8px; font-size: 13px; color: #a6adc8; min-height: 36px; }
