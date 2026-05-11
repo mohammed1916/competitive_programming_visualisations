@@ -121,6 +121,11 @@ import PascalsTriangle from "./problems/PascalsTriangle";
 import PalindromeLinkedList from "./problems/PalindromeLinkedList";
 import MissingNumber from "./problems/MissingNumber";
 import MoveZeroes from "./problems/MoveZeroes";
+import NumberOf1Bits from "./problems/NumberOf1Bits";
+import ReverseBits from "./problems/ReverseBits";
+import PlusOne from "./problems/PlusOne";
+import ReverseString from "./problems/ReverseString";
+import LengthOfLastWord from "./problems/LengthOfLastWord";
 import ProblemScaffold from "./components/panels/ProblemScaffold";
 import "./App.css";
 
@@ -1423,6 +1428,56 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ["Array", "Two Pointers"],
     accent: "#f9e2af",
     component: MoveZeroes,
+  },
+  {
+    id: "number-of-1-bits",
+    number: 191,
+    title: "Number of 1 Bits",
+    description: "Count the number of set bits (1s) in the binary representation of an unsigned 32-bit integer.",
+    difficulty: "Easy",
+    tags: ["Bit Manipulation"],
+    accent: "#cba6f7",
+    component: NumberOf1Bits,
+  },
+  {
+    id: "reverse-bits",
+    number: 190,
+    title: "Reverse Bits",
+    description: "Reverse the bits of a given 32-bit unsigned integer by repeatedly extracting the LSB and building the result.",
+    difficulty: "Easy",
+    tags: ["Bit Manipulation", "Divide and Conquer"],
+    accent: "#89dceb",
+    component: ReverseBits,
+  },
+  {
+    id: "plus-one",
+    number: 66,
+    title: "Plus One",
+    description: "Increment a large integer represented as a digit array by one, handling carry propagation.",
+    difficulty: "Easy",
+    tags: ["Array", "Math"],
+    accent: "#fab387",
+    component: PlusOne,
+  },
+  {
+    id: "reverse-string",
+    number: 344,
+    title: "Reverse String",
+    description: "Reverse a character array in-place using two pointers, swapping from the outside in.",
+    difficulty: "Easy",
+    tags: ["Array", "Two Pointers", "String"],
+    accent: "#a6e3a1",
+    component: ReverseString,
+  },
+  {
+    id: "length-of-last-word",
+    number: 58,
+    title: "Length of Last Word",
+    description: "Find the length of the last word in a string by scanning from the right, skipping trailing spaces.",
+    difficulty: "Easy",
+    tags: ["String"],
+    accent: "#f9e2af",
+    component: LengthOfLastWord,
   },
 ];
 

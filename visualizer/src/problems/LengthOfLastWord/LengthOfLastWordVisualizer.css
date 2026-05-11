@@ -1,0 +1,30 @@
+.lw-shell { display: flex; flex-direction: column; gap: 12px; padding: 16px; font-family: inherit; }
+.lw-examples { display: flex; gap: 8px; flex-wrap: wrap; }
+.lw-chip { background: #313244; color: #cdd6f4; border: 2px solid #45475a; border-radius: 6px; padding: 4px 12px; font-size: 12px; cursor: pointer; }
+.lw-chip.active, .lw-chip:hover { border-color: #f9e2af; color: #f9e2af; }
+.lw-panel { background: #1e1e2e; border: 1px solid #313244; border-radius: 10px; padding: 12px 14px; }
+.lw-panel-label { font-size: 11px; font-weight: 700; color: #6c7086; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+.lw-chars { display: flex; flex-wrap: wrap; gap: 4px; align-items: flex-end; min-height: 72px; }
+.lw-char-col { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.lw-char { width: 28px; height: 34px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; border-radius: 5px; border: 1px solid #45475a; background: #252535; color: #cdd6f4; font-family: monospace; }
+.lw-char.space { color: #45475a; background: #1a1a2a; }
+.lw-char.skip-cell { border-color: #6c7086; background: #202030; color: #6c7086; }
+.lw-char.count-cell { border-color: #f9e2af; background: #1a1000; color: #f9e2af; }
+.lw-char.word-cell { border-color: #89b4fa66; background: #001020; color: #89b4fa; }
+.lw-char.done-cell { border-color: #a6e3a1; background: #001a08; color: #a6e3a1; }
+.lw-idx { font-size: 9px; color: #6c7086; }
+.lw-ptr { font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 3px; }
+.lw-ptr.skip-ptr { background: #202030; color: #6c7086; }
+.lw-ptr.count-ptr { background: #1a1000; color: #f9e2af; }
+.lw-trackers { display: flex; gap: 10px; }
+.lw-tracker { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; background: #1e1e2e; border: 1px solid #313244; border-radius: 8px; padding: 10px 0; }
+.lw-tracker-label { font-size: 11px; font-weight: 700; color: #6c7086; text-transform: uppercase; }
+.lw-tracker-val { font-size: 20px; font-weight: 700; color: #cdd6f4; }
+.lw-tracker-val.lw-len { color: #f9e2af; }
+.lw-tracker-val.lw-phase { font-size: 13px; }
+.lw-tracker-val.lw-phase.skip { color: #6c7086; }
+.lw-tracker-val.lw-phase.count { color: #f9e2af; }
+.lw-tracker-val.lw-phase.done { color: #a6e3a1; }
+.lw-tracker-val.lw-phase.init { color: #89b4fa; }
+.lw-result { padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 700; background: #0e0a00; border: 2px solid #f9e2af; color: #f9e2af; }
+.lw-status { padding: 8px 12px; background: #1e1e2e; border: 1px solid #313244; border-radius: 8px; font-size: 13px; color: #a6adc8; min-height: 36px; }
