@@ -1,0 +1,168 @@
+.mz-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    font-family: inherit;
+}
+
+.mz-examples {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.mz-chip {
+    background: #313244;
+    color: #cdd6f4;
+    border: 2px solid #45475a;
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.mz-chip.active,
+.mz-chip:hover {
+    border-color: #f9e2af;
+    color: #f9e2af;
+}
+
+.mz-panel {
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+
+.mz-panel-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c7086;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+}
+
+.mz-arr {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.mz-cell-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.mz-cell {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    font-weight: 700;
+    border-radius: 7px;
+    border: 2px solid #45475a;
+    background: #252535;
+    color: #cdd6f4;
+}
+
+.mz-cell.i-cell {
+    border-color: #fab387;
+    background: #1a0e06;
+    color: #fab387;
+}
+
+.mz-cell.k-cell {
+    border-color: #a6e3a1;
+    background: #002010;
+    color: #a6e3a1;
+}
+
+.mz-cell.zero {
+    border-color: #313244;
+    background: #1a1a2a;
+    color: #45475a;
+}
+
+.mz-idx {
+    font-size: 10px;
+    color: #6c7086;
+}
+
+.mz-ptrs {
+    display: flex;
+    gap: 2px;
+    min-height: 20px;
+}
+
+.mz-ptr {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 3px;
+}
+
+.mz-ptr.i {
+    background: #2a1200;
+    color: #fab387;
+}
+
+.mz-ptr.k {
+    background: #002010;
+    color: #a6e3a1;
+}
+
+.mz-trackers {
+    display: flex;
+    gap: 10px;
+}
+
+.mz-tracker {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    padding: 10px 0;
+}
+
+.mz-tracker-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c7086;
+    text-transform: uppercase;
+}
+
+.mz-tracker-val {
+    font-size: 20px;
+    font-weight: 700;
+    color: #cdd6f4;
+}
+
+.mz-result {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    background: #001a08;
+    border: 2px solid #a6e3a1;
+    color: #a6e3a1;
+}
+
+.mz-status {
+    padding: 8px 12px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #a6adc8;
+    min-height: 36px;
+}

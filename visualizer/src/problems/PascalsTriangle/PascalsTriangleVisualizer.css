@@ -1,0 +1,14 @@
+.pt-shell { display: flex; flex-direction: column; gap: 12px; padding: 16px; font-family: inherit; }
+.pt-examples { display: flex; gap: 8px; flex-wrap: wrap; }
+.pt-chip { background: #313244; color: #cdd6f4; border: 2px solid #45475a; border-radius: 6px; padding: 4px 12px; font-size: 12px; cursor: pointer; }
+.pt-chip.active, .pt-chip:hover { border-color: #89dceb; color: #89dceb; }
+.pt-panel { background: #1e1e2e; border: 1px solid #313244; border-radius: 10px; padding: 16px 14px; }
+.pt-panel-label { font-size: 11px; font-weight: 700; color: #6c7086; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+.pt-triangle { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.pt-row { display: flex; gap: 6px; justify-content: center; }
+.pt-cell { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; border-radius: 8px; border: 2px solid #45475a; background: #252535; color: #cdd6f4; }
+.pt-cell.cur-row { border-color: #89dceb; background: #041820; color: #89dceb; }
+.pt-cell.prev  { border-color: #fab387; background: #150a03; color: #fab387; }
+.pt-cell.building { border-color: #cba6f766; background: #120a20; color: #cba6f7; border-style: dashed; }
+.pt-sum-expr { font-size: 14px; color: #fab387; background: #150a03; border: 1px solid #fab38744; border-radius: 8px; padding: 8px 14px; font-family: monospace; }
+.pt-status { padding: 8px 12px; background: #1e1e2e; border: 1px solid #313244; border-radius: 8px; font-size: 13px; color: #a6adc8; min-height: 36px; }

@@ -1,0 +1,25 @@
+.pll-shell { display: flex; flex-direction: column; gap: 12px; padding: 16px; font-family: inherit; }
+.pll-examples { display: flex; gap: 8px; flex-wrap: wrap; }
+.pll-chip { background: #313244; color: #cdd6f4; border: 2px solid #45475a; border-radius: 6px; padding: 4px 12px; font-size: 12px; cursor: pointer; }
+.pll-chip.active, .pll-chip:hover { border-color: #f5c2e7; color: #f5c2e7; }
+.pll-panel { background: #1e1e2e; border: 1px solid #313244; border-radius: 10px; padding: 12px 14px; }
+.pll-panel-label { font-size: 11px; font-weight: 700; color: #6c7086; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+.pll-list { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; min-height: 56px; }
+.pll-node-wrap { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.pll-node { width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 700; border-radius: 8px; border: 2px solid #45475a; background: #252535; color: #cdd6f4; }
+.pll-node.slow   { border-color: #a6e3a1; background: #002010; color: #a6e3a1; }
+.pll-node.fast   { border-color: #89b4fa; background: #0a1020; color: #89b4fa; }
+.pll-node.second { border-color: #f5c2e744; background: #1a0a18; color: #f5c2e7; }
+.pll-node.reversed { border-color: #cba6f7; background: #120a20; color: #cba6f7; }
+.pll-node.cmp    { border-color: #f9e2af; background: #1a1500; color: #f9e2af; box-shadow: 0 0 8px #f9e2af66; }
+.pll-node.mismatch { border-color: #f38ba8; background: #1a0808; color: #f38ba8; }
+.pll-arrow { font-size: 16px; color: #585b70; }
+.pll-null { font-size: 12px; color: #45475a; margin-left: 4px; }
+.pll-ptrs { display: flex; gap: 2px; min-height: 18px; }
+.pll-ptr { font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 3px; }
+.pll-ptr.slow { background: #002010; color: #a6e3a1; }
+.pll-ptr.fast { background: #0a1020; color: #89b4fa; }
+.pll-result { padding: 10px 14px; border-radius: 8px; font-size: 15px; font-weight: 700; }
+.pll-result.ok   { background: #001a08; border: 2px solid #a6e3a1; color: #a6e3a1; }
+.pll-result.fail { background: #1a0808; border: 2px solid #f38ba8; color: #f38ba8; }
+.pll-status { padding: 8px 12px; background: #1e1e2e; border: 1px solid #313244; border-radius: 8px; font-size: 13px; color: #a6adc8; min-height: 36px; }

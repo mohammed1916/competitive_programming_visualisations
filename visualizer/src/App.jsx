@@ -116,6 +116,11 @@ import SingleNumber from "./problems/SingleNumber";
 import IntersectionTwoLinkedLists from "./problems/IntersectionTwoLinkedLists";
 import HappyNumber from "./problems/HappyNumber";
 import ContainsDuplicate from "./problems/ContainsDuplicate";
+import RemoveDuplicates from "./problems/RemoveDuplicates";
+import PascalsTriangle from "./problems/PascalsTriangle";
+import PalindromeLinkedList from "./problems/PalindromeLinkedList";
+import MissingNumber from "./problems/MissingNumber";
+import MoveZeroes from "./problems/MoveZeroes";
 import ProblemScaffold from "./components/panels/ProblemScaffold";
 import "./App.css";
 
@@ -1368,6 +1373,56 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ["Array", "Hash Set", "Sorting"],
     accent: "#f38ba8",
     component: ContainsDuplicate,
+  },
+  {
+    id: "remove-duplicates",
+    number: 26,
+    title: "Remove Duplicates from Sorted Array",
+    description: "Remove duplicates in-place from a sorted array using two pointers (read/write) and return the new length.",
+    difficulty: "Easy",
+    tags: ["Array", "Two Pointers"],
+    accent: "#89b4fa",
+    component: RemoveDuplicates,
+  },
+  {
+    id: "pascals-triangle",
+    number: 118,
+    title: "Pascal's Triangle",
+    description: "Generate the first numRows of Pascal's triangle where each cell is the sum of the two cells above it.",
+    difficulty: "Easy",
+    tags: ["Array", "DP"],
+    accent: "#89dceb",
+    component: PascalsTriangle,
+  },
+  {
+    id: "palindrome-linked-list",
+    number: 234,
+    title: "Palindrome Linked List",
+    description: "Check if a linked list is a palindrome by finding the middle, reversing the second half, and comparing.",
+    difficulty: "Easy",
+    tags: ["Linked List", "Two Pointers", "Recursion"],
+    accent: "#f5c2e7",
+    component: PalindromeLinkedList,
+  },
+  {
+    id: "missing-number",
+    number: 268,
+    title: "Missing Number",
+    description: "Find the missing number in range [0,n] using the Gauss summation formula: expected − actual sum.",
+    difficulty: "Easy",
+    tags: ["Array", "Math", "Bit Manipulation"],
+    accent: "#a6e3a1",
+    component: MissingNumber,
+  },
+  {
+    id: "move-zeroes",
+    number: 283,
+    title: "Move Zeroes",
+    description: "Move all zeroes to the end of the array in-place while maintaining the relative order of non-zero elements.",
+    difficulty: "Easy",
+    tags: ["Array", "Two Pointers"],
+    accent: "#f9e2af",
+    component: MoveZeroes,
   },
 ];
 

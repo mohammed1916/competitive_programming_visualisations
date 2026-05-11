@@ -1,0 +1,158 @@
+.rd-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    font-family: inherit;
+}
+
+.rd-examples {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.rd-chip {
+    background: #313244;
+    color: #cdd6f4;
+    border: 2px solid #45475a;
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.rd-chip.active,
+.rd-chip:hover {
+    border-color: #89b4fa;
+    color: #89b4fa;
+}
+
+.rd-panel {
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.rd-panel-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c7086;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.rd-arr {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.rd-cell-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.rd-cell {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    font-weight: 700;
+    border-radius: 7px;
+    border: 2px solid #45475a;
+    background: #252535;
+    color: #cdd6f4;
+}
+
+.rd-cell.i-cell {
+    border-color: #fab387;
+    background: #1a0e06;
+    color: #fab387;
+}
+
+.rd-cell.k-cell {
+    border-color: #a6e3a1;
+    background: #002010;
+    color: #a6e3a1;
+}
+
+.rd-cell.result {
+    border-color: #89b4fa44;
+    background: #0a1222;
+    color: #89b4fa;
+}
+
+.rd-idx {
+    font-size: 10px;
+    color: #6c7086;
+}
+
+.rd-ptrs {
+    display: flex;
+    gap: 2px;
+    min-height: 20px;
+}
+
+.rd-ptr {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 3px;
+}
+
+.rd-ptr.i {
+    background: #2a1200;
+    color: #fab387;
+}
+
+.rd-ptr.k {
+    background: #002010;
+    color: #a6e3a1;
+}
+
+.rd-divider-row {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.rd-divider-label {
+    font-size: 10px;
+    color: #6c7086;
+}
+
+.rd-divider-bar {
+    height: 3px;
+    background: #89b4fa66;
+    border-radius: 2px;
+    transition: width 0.3s;
+}
+
+.rd-result {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    background: #001a08;
+    border: 2px solid #a6e3a1;
+    color: #a6e3a1;
+}
+
+.rd-status {
+    padding: 8px 12px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #a6adc8;
+    min-height: 36px;
+}
