@@ -101,6 +101,11 @@ import InterleavingString from "./problems/InterleavingString";
 import CloneGraph from "./problems/CloneGraph";
 import FindAllAnagrams from "./problems/FindAllAnagrams";
 import PermutationInString from "./problems/PermutationInString";
+import NextPermutation from "./problems/NextPermutation";
+import JumpGameII from "./problems/JumpGameII";
+import EditDistance from "./problems/EditDistance";
+import RotateArray from "./problems/RotateArray";
+import PartitionEqualSubset from "./problems/PartitionEqualSubset";
 import ProblemScaffold from "./components/panels/ProblemScaffold";
 import "./App.css";
 
@@ -1203,6 +1208,56 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ["String", "Sliding Window", "Two Pointers"],
     accent: "#89b4fa",
     component: PermutationInString,
+  },
+  {
+    id: "next-permutation",
+    number: 31,
+    title: "Next Permutation",
+    description: "Rearrange numbers into the lexicographically next greater permutation in-place.",
+    difficulty: "Medium",
+    tags: ["Array", "Two Pointers"],
+    accent: "#f9e2af",
+    component: NextPermutation,
+  },
+  {
+    id: "jump-game-ii",
+    number: 45,
+    title: "Jump Game II",
+    description: "Return the minimum number of jumps to reach the last index using a greedy approach.",
+    difficulty: "Medium",
+    tags: ["Array", "Greedy"],
+    accent: "#a6e3a1",
+    component: JumpGameII,
+  },
+  {
+    id: "edit-distance",
+    number: 72,
+    title: "Edit Distance",
+    description: "Find the minimum edit distance between two strings using 2D DP.",
+    difficulty: "Medium",
+    tags: ["String", "DP"],
+    accent: "#89b4fa",
+    component: EditDistance,
+  },
+  {
+    id: "rotate-array",
+    number: 189,
+    title: "Rotate Array",
+    description: "Rotate an array to the right by k steps in-place using three reverses.",
+    difficulty: "Medium",
+    tags: ["Array", "Two Pointers"],
+    accent: "#cba6f7",
+    component: RotateArray,
+  },
+  {
+    id: "partition-equal-subset",
+    number: 416,
+    title: "Partition Equal Subset Sum",
+    description: "Determine if an array can be split into two subsets with equal sum using DP.",
+    difficulty: "Medium",
+    tags: ["Array", "DP"],
+    accent: "#f9e2af",
+    component: PartitionEqualSubset,
   },
 ];
 
