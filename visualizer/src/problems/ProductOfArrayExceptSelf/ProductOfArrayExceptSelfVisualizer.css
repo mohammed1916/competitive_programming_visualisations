@@ -1,0 +1,219 @@
+.poaes-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+}
+
+.poaes-panel {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex: 1;
+  min-height: 0;
+}
+
+.poaes-head {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--surface3);
+  flex-shrink: 0;
+}
+
+.poaes-error {
+  color: #f87171;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.poaes-body {
+  padding: 14px;
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.poaes-row-top {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.poaes-examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.poaes-chip {
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  background: rgba(30, 41, 59, 0.8);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+.poaes-chip:hover { background: #334155; color: var(--text); }
+
+.poaes-input {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: var(--text);
+  font-family: monospace;
+  font-size: 13px;
+  min-width: 200px;
+}
+.poaes-input:focus { outline: none; border-color: var(--primary); }
+
+/* ── Pass indicator bar ── */
+.poaes-pass-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.poaes-pass-badge {
+  padding: 4px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  transition: all 0.2s;
+}
+.poaes-pass-badge.active-left  { background: rgba(56,189,248,0.15); border-color: rgba(56,189,248,0.4); color: var(--info); }
+.poaes-pass-badge.active-right { background: rgba(249,115,22,0.15); border-color: rgba(249,115,22,0.4); color: #f97316; }
+
+.poaes-accum {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px 12px;
+}
+.poaes-accum-label { font-size: 11px; color: var(--text-muted); }
+.poaes-accum-val   { font-size: 14px; font-weight: 700; color: var(--text); min-width: 28px; text-align: right; }
+.poaes-accum-sep   { width: 1px; height: 18px; background: var(--border); margin: 0 4px; }
+
+/* ── Array rows ── */
+.poaes-array-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.poaes-row-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  font-family: monospace;
+  min-width: 44px;
+  padding-top: 12px;
+}
+
+.poaes-array {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.poaes-cell-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.poaes-cell {
+  width: 54px;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: monospace;
+  border: 2px solid #334155;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.input-cell {
+  background: #1e293b;
+  color: var(--text);
+}
+.input-cell.active {
+  border-color: var(--info);
+  background: rgba(56,189,248,0.12);
+  color: var(--info);
+}
+
+.output-cell {
+  background: rgba(30,41,59,0.6);
+  color: var(--text-muted);
+  border-style: dashed;
+}
+.output-cell.active {
+  border-color: #f97316;
+  background: rgba(249,115,22,0.12);
+  color: #f97316;
+  border-style: solid;
+}
+.output-cell.final {
+  border-color: var(--success);
+  background: rgba(34,197,94,0.12);
+  color: var(--success);
+  border-style: solid;
+  box-shadow: 0 0 10px var(--success-glow);
+}
+
+.poaes-idx {
+  font-size: 10px;
+  color: var(--text-dim);
+  font-family: monospace;
+}
+
+/* ── Equation explainer ── */
+.poaes-eq-box {
+  padding: 10px 14px;
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.eq-prefix { color: var(--info); font-weight: 700; }
+.eq-suffix { color: #f97316;    font-weight: 700; }
+
+/* ── Status ── */
+.poaes-status {
+  padding: 8px 14px;
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.poaes-status.done { color: var(--success); border-color: rgba(34,197,94,0.3); }

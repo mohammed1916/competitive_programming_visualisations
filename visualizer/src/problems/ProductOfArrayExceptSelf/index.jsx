@@ -1,0 +1,2 @@
+import ProductOfArrayExceptSelfVisualizer from './ProductOfArrayExceptSelfVisualizer'
+export default ProductOfArrayExceptSelfVisualizer

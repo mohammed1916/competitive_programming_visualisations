@@ -34,6 +34,11 @@ import AddTwoNumbers from "./problems/AddTwoNumbers";
 import PalindromeNumber from "./problems/PalindromeNumber";
 import MedianOfTwoSortedArrays from "./problems/MedianOfTwoSortedArrays";
 import ReverseInteger from "./problems/ReverseInteger";
+import ThreeSum from "./problems/ThreeSum";
+import ReverseLinkedList from "./problems/ReverseLinkedList";
+import ProductOfArrayExceptSelf from "./problems/ProductOfArrayExceptSelf";
+import JumpGame from "./problems/JumpGame";
+import CoinChange from "./problems/CoinChange";
 import ProblemScaffold from "./components/panels/ProblemScaffold";
 import "./App.css";
 
@@ -438,6 +443,66 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ["String", "Simulation"],
     accent: "#3b82f6",
     component: StringToIntegerAtoi,
+  },
+  {
+    id: "lc-15",
+    number: "15",
+    title: "3Sum",
+    slug: "3sum",
+    description:
+      "Sort the array, fix one element with i, then use two converging pointers l and r to find all unique zero-sum triplets in O(n²).",
+    difficulty: "Medium",
+    tags: ["Array", "Two Pointers", "Sorting"],
+    accent: "#0ea5e9",
+    component: ThreeSum,
+  },
+  {
+    id: "lc-55",
+    number: "55",
+    title: "Jump Game",
+    slug: "jump-game",
+    description:
+      "Track the furthest reachable index (maxReach) greedily. If you ever step past it, return false — otherwise return true.",
+    difficulty: "Medium",
+    tags: ["Array", "Greedy", "Dynamic Programming"],
+    accent: "#22c55e",
+    component: JumpGame,
+  },
+  {
+    id: "lc-206",
+    number: "206",
+    title: "Reverse Linked List",
+    slug: "reverse-linked-list",
+    description:
+      "Iteratively reverse a singly linked list by flipping each next pointer while tracking prev, curr, and next.",
+    difficulty: "Easy",
+    tags: ["Linked List", "Recursion"],
+    accent: "#a855f7",
+    component: ReverseLinkedList,
+  },
+  {
+    id: "lc-238",
+    number: "238",
+    title: "Product of Array Except Self",
+    slug: "product-of-array-except-self",
+    description:
+      "Two-pass O(n) solution: a left-to-right prefix sweep followed by a right-to-left suffix sweep — no division required.",
+    difficulty: "Medium",
+    tags: ["Array", "Prefix Sum"],
+    accent: "#f97316",
+    component: ProductOfArrayExceptSelf,
+  },
+  {
+    id: "lc-322",
+    number: "322",
+    title: "Coin Change",
+    slug: "coin-change",
+    description:
+      "Bottom-up DP: build dp[0..amount] where dp[a] is the fewest coins needed. For each amount try every coin denomination.",
+    difficulty: "Medium",
+    tags: ["Array", "Dynamic Programming", "BFS"],
+    accent: "#eab308",
+    component: CoinChange,
   },
 ];
 
