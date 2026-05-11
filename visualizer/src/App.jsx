@@ -48,6 +48,10 @@ import SearchInRotatedSortedArray from "./problems/SearchInRotatedSortedArray";
 import DecodeWays from "./problems/DecodeWays";
 import UniquePaths from "./problems/UniquePaths";
 import WordBreak from "./problems/WordBreak";
+import TwoSumII from "./problems/TwoSumII";
+import GroupAnagrams from "./problems/GroupAnagrams";
+import LongestConsecutiveSequence from "./problems/LongestConsecutiveSequence";
+import FindMinRotatedSortedArray from "./problems/FindMinRotatedSortedArray";
 import ProblemScaffold from "./components/panels/ProblemScaffold";
 import "./App.css";
 
@@ -620,6 +624,46 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ["String", "Dynamic Programming", "Trie"],
     accent: "#14b8a6",
     component: WordBreak,
+  },
+  {
+    number: "167",
+    title: "Two Sum II - Input Array Is Sorted",
+    description:
+      "Two-pointer approach: start lo=0, hi=n-1. If sum matches target return; if sum too small move lo right; if too large move hi left. O(n) time, O(1) space.",
+    difficulty: "Medium",
+    tags: ["Array", "Two Pointers", "Binary Search"],
+    accent: "#0ea5e9",
+    component: TwoSumII,
+  },
+  {
+    number: "49",
+    title: "Group Anagrams",
+    description:
+      "Sort each word to form a canonical key. Words with the same sorted key are anagrams. Collect groups in a hash map keyed by the sorted characters.",
+    difficulty: "Medium",
+    tags: ["Array", "Hash Table", "String", "Sorting"],
+    accent: "#f97316",
+    component: GroupAnagrams,
+  },
+  {
+    number: "128",
+    title: "Longest Consecutive Sequence",
+    description:
+      "Insert all numbers into a hash set. For each number that is the start of a sequence (num-1 not in set), count consecutive elements. Track best length. O(n) time.",
+    difficulty: "Medium",
+    tags: ["Array", "Hash Table", "Union Find"],
+    accent: "#a855f7",
+    component: LongestConsecutiveSequence,
+  },
+  {
+    number: "153",
+    title: "Find Minimum in Rotated Sorted Array",
+    description:
+      "Binary search: if nums[mid] > nums[hi] the minimum is in the right half (lo=mid+1), otherwise it's in the left half including mid (hi=mid). Loop ends when lo==hi.",
+    difficulty: "Medium",
+    tags: ["Array", "Binary Search"],
+    accent: "#14b8a6",
+    component: FindMinRotatedSortedArray,
   },
 ];
 
