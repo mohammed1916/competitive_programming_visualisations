@@ -81,6 +81,11 @@ import EncodeDecodeStrings from "./problems/EncodeDecodeStrings";
 import FindMedianDataStream from "./problems/FindMedianDataStream";
 import LongestRepeatingCharReplace from "./problems/LongestRepeatingCharReplace";
 import SubarraySumEqualsK from "./problems/SubarraySumEqualsK";
+import TopKFrequent from "./problems/TopKFrequent";
+import GenerateParentheses from "./problems/GenerateParentheses";
+import LetterCombinations from "./problems/LetterCombinations";
+import SlidingWindowMaximum from "./problems/SlidingWindowMaximum";
+import EvalRPN from "./problems/EvalRPN";
 import ProblemScaffold from "./components/panels/ProblemScaffold";
 import "./App.css";
 
@@ -983,6 +988,56 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ["Array", "Hash Map", "Prefix Sum"],
     accent: "#cba6f7",
     component: SubarraySumEqualsK,
+  },
+  {
+    id: "lc-347",
+    number: 347,
+    title: "Top K Frequent Elements",
+    description: "Return the k most frequent elements from an integer array using bucket sort.",
+    difficulty: "Medium",
+    tags: ["Array", "Hash Map", "Bucket Sort", "Heap"],
+    accent: "#cba6f7",
+    component: TopKFrequent,
+  },
+  {
+    id: "lc-22",
+    number: 22,
+    title: "Generate Parentheses",
+    description: "Generate all combinations of well-formed parentheses for n pairs.",
+    difficulty: "Medium",
+    tags: ["String", "Backtracking"],
+    accent: "#89b4fa",
+    component: GenerateParentheses,
+  },
+  {
+    id: "lc-17",
+    number: 17,
+    title: "Letter Combinations of a Phone Number",
+    description: "Return all possible letter combinations a digit string could represent.",
+    difficulty: "Medium",
+    tags: ["String", "Hash Map", "Backtracking"],
+    accent: "#fab387",
+    component: LetterCombinations,
+  },
+  {
+    id: "lc-239",
+    number: 239,
+    title: "Sliding Window Maximum",
+    description: "Return the maximum value in each sliding window of size k using a monotonic deque.",
+    difficulty: "Hard",
+    tags: ["Array", "Sliding Window", "Deque", "Monotonic Queue"],
+    accent: "#f9e2af",
+    component: SlidingWindowMaximum,
+  },
+  {
+    id: "lc-150",
+    number: 150,
+    title: "Evaluate Reverse Polish Notation",
+    description: "Evaluate the value of an arithmetic expression in Reverse Polish Notation using a stack.",
+    difficulty: "Medium",
+    tags: ["Array", "Stack", "Math"],
+    accent: "#a6e3a1",
+    component: EvalRPN,
   },
 ];
 

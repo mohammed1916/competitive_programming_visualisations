@@ -1,0 +1,133 @@
+.gp-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    font-family: inherit;
+}
+
+.gp-controls-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.gp-examples {
+    display: flex;
+    gap: 8px;
+}
+
+.gp-chip {
+    background: #313244;
+    color: #cdd6f4;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.gp-chip:hover,
+.gp-chip.active {
+    background: #1e2640;
+    color: #89b4fa;
+    border: 1px solid #89b4fa;
+}
+
+.gp-n-display {
+    font-size: 16px;
+    font-weight: 700;
+    color: #89b4fa;
+}
+
+.gp-panel {
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+
+.gp-panel-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c7086;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+}
+
+.gp-str-row {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    align-items: center;
+    min-height: 52px;
+}
+
+.gp-char {
+    width: 40px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 900;
+    border-radius: 8px;
+    border: 2px solid;
+}
+
+.gp-char.open {
+    background: #1e2640;
+    border-color: #89b4fa;
+    color: #89b4fa;
+}
+
+.gp-char.close {
+    background: #2a1e3a;
+    border-color: #cba6f7;
+    color: #cba6f7;
+}
+
+.gp-char.new {
+    box-shadow: 0 0 10px currentColor;
+}
+
+.gp-empty-str {
+    color: #45475a;
+    font-size: 18px;
+    font-style: italic;
+}
+
+.gp-res-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.gp-res-item {
+    background: #313244;
+    border: 2px solid #45475a;
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #cdd6f4;
+    font-family: monospace;
+}
+
+.gp-res-item.latest {
+    background: #1e2640;
+    border-color: #89b4fa;
+    color: #89b4fa;
+}
+
+.gp-status {
+    padding: 8px 12px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #a6adc8;
+    min-height: 36px;
+}
