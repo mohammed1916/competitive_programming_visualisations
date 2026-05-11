@@ -1,0 +1,2 @@
+import SearchInRotatedSortedArrayVisualizer from './SearchInRotatedSortedArrayVisualizer'
+export default SearchInRotatedSortedArrayVisualizer

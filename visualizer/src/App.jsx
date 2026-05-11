@@ -44,6 +44,10 @@ import ValidAnagram from "./problems/ValidAnagram";
 import LongestIncreasingSubsequence from "./problems/LongestIncreasingSubsequence";
 import LinkedListCycle from "./problems/LinkedListCycle";
 import MinStack from "./problems/MinStack";
+import SearchInRotatedSortedArray from "./problems/SearchInRotatedSortedArray";
+import DecodeWays from "./problems/DecodeWays";
+import UniquePaths from "./problems/UniquePaths";
+import WordBreak from "./problems/WordBreak";
 import ProblemScaffold from "./components/panels/ProblemScaffold";
 import "./App.css";
 
@@ -568,6 +572,54 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ["Array", "Dynamic Programming", "Binary Search"],
     accent: "#a855f7",
     component: LongestIncreasingSubsequence,
+  },
+  {
+    id: "lc-33",
+    number: "33",
+    title: "Search in Rotated Sorted Array",
+    slug: "search-in-rotated-sorted-array",
+    description:
+      "Binary search on a rotated sorted array: determine which half is sorted, then decide which side the target falls in.",
+    difficulty: "Medium",
+    tags: ["Array", "Binary Search"],
+    accent: "#f97316",
+    component: SearchInRotatedSortedArray,
+  },
+  {
+    id: "lc-91",
+    number: "91",
+    title: "Decode Ways",
+    slug: "decode-ways",
+    description:
+      "1D DP: dp[i] counts decodings of s[0..i-1]. Each position can decode one or two digits if they map to a valid letter.",
+    difficulty: "Medium",
+    tags: ["String", "Dynamic Programming"],
+    accent: "#eab308",
+    component: DecodeWays,
+  },
+  {
+    id: "lc-62",
+    number: "62",
+    title: "Unique Paths",
+    slug: "unique-paths",
+    description:
+      "2D DP: dp[r][c] = dp[r-1][c] + dp[r][c-1]. Fill the grid from top-left; each cell sums paths from above and left.",
+    difficulty: "Medium",
+    tags: ["Math", "Dynamic Programming"],
+    accent: "#0ea5e9",
+    component: UniquePaths,
+  },
+  {
+    id: "lc-139",
+    number: "139",
+    title: "Word Break",
+    slug: "word-break",
+    description:
+      "DP: dp[i]=True if s[0..i-1] can be segmented. For each i try all splits s[j:i] and check if dp[j] and the word is in the dictionary.",
+    difficulty: "Medium",
+    tags: ["String", "Dynamic Programming", "Trie"],
+    accent: "#14b8a6",
+    component: WordBreak,
   },
 ];
 

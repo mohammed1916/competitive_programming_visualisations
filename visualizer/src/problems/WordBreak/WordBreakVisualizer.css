@@ -1,0 +1,309 @@
+.wb-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    height: 100%;
+}
+
+.wb-top {
+    display: grid;
+    grid-template-columns: 1.7fr 1fr;
+    gap: 12px;
+    flex: 1;
+    min-height: 0;
+}
+
+.wb-panel {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.wb-head {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    background: var(--surface3);
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.wb-error {
+    font-size: 12px;
+    color: #f87171;
+    font-weight: 400;
+}
+
+.wb-body {
+    padding: 14px;
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.wb-examples {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.wb-chip {
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+
+.wb-chip:hover {
+    background: #334155;
+    color: var(--text);
+}
+
+.wb-inputs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.wb-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.wb-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.wb-input {
+    padding: 7px 11px;
+    border-radius: 7px;
+    border: 1px solid #334155;
+    background: #0f172a;
+    color: var(--text);
+    font-family: monospace;
+    font-size: 13px;
+    min-width: 120px;
+}
+
+.wb-input.wide {
+    min-width: 220px;
+}
+
+.wb-input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+/* ── String row ── */
+.wb-str-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.wb-char {
+    width: 36px;
+    height: 42px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: monospace;
+    background: #1e293b;
+    border: 2px solid #334155;
+    color: var(--text);
+    transition: background 0.2s, border-color 0.2s;
+    gap: 2px;
+}
+
+.wb-char.in-slice {
+    border-color: rgba(56, 189, 248, 0.5);
+    background: rgba(56, 189, 248, 0.08);
+}
+
+.wb-char.match {
+    border-color: var(--success);
+    background: rgba(34, 197, 94, 0.12);
+    color: var(--success);
+}
+
+.wb-char.reachable {
+    border-bottom: 2px solid var(--success);
+}
+
+.wb-char-idx {
+    font-size: 9px;
+    color: var(--text-dim);
+}
+
+/* ── DP row ── */
+.wb-dp-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.wb-dp-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+}
+
+.wb-dp-cell {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: monospace;
+    border: 2px solid #334155;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.wb-dp-cell.false {
+    background: rgba(30, 41, 59, 0.5);
+    color: var(--text-dim);
+    border-style: dashed;
+}
+
+.wb-dp-cell.true {
+    background: rgba(34, 197, 94, 0.1);
+    color: var(--success);
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+.wb-dp-cell.curr-i {
+    border-color: var(--warning);
+    background: rgba(251, 191, 36, 0.1);
+    color: var(--warning);
+    border-style: solid;
+}
+
+.wb-dp-cell.curr-j {
+    border-color: var(--info);
+    background: rgba(56, 189, 248, 0.1);
+    border-style: solid;
+}
+
+.wb-dp-cell.result {
+    border-color: var(--success);
+    background: rgba(34, 197, 94, 0.18);
+    color: var(--success);
+    box-shadow: 0 0 10px var(--success-glow);
+    border-style: solid;
+}
+
+.wb-dp-idx {
+    font-size: 9px;
+    color: var(--text-dim);
+    font-family: monospace;
+}
+
+/* ── Slice box ── */
+.wb-slice-box {
+    padding: 8px 12px;
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.wb-slice-box.match {
+    border-color: rgba(34, 197, 94, 0.3);
+    background: rgba(34, 197, 94, 0.06);
+}
+
+.wb-in {
+    color: var(--success);
+    font-weight: 700;
+}
+
+.wb-out {
+    color: var(--error);
+    font-weight: 700;
+}
+
+/* ── Word dict panel ── */
+.wb-word {
+    padding: 6px 12px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-muted);
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.wb-word.active {
+    border-color: var(--success);
+    background: rgba(34, 197, 94, 0.1);
+    color: var(--success);
+}
+
+/* ── Result ── */
+.wb-result {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.wb-result.ok {
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: var(--success);
+}
+
+.wb-result.fail {
+    background: rgba(248, 113, 113, 0.1);
+    border: 1px solid rgba(248, 113, 113, 0.3);
+    color: var(--error);
+}
+
+/* ── Status ── */
+.wb-status {
+    padding: 8px 14px;
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.wb-status.ok {
+    color: var(--success);
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+.wb-status.fail {
+    color: var(--error);
+    border-color: rgba(248, 113, 113, 0.3);
+}

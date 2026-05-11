@@ -1,0 +1,272 @@
+.sirsa-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    height: 100%;
+}
+
+.sirsa-panel {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex: 1;
+    min-height: 0;
+}
+
+.sirsa-head {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    background: var(--surface3);
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sirsa-error {
+    color: #f87171;
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.sirsa-body {
+    padding: 14px;
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.sirsa-top-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sirsa-examples {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.sirsa-chip {
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+
+.sirsa-chip:hover {
+    background: #334155;
+    color: var(--text);
+}
+
+.sirsa-inputs {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+.sirsa-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sirsa-label {
+    font-size: 11px;
+    font-weight: 700;
+    font-family: monospace;
+    color: var(--text-muted);
+}
+
+.sirsa-input {
+    padding: 7px 11px;
+    border-radius: 7px;
+    border: 1px solid #334155;
+    background: #0f172a;
+    color: var(--text);
+    font-family: monospace;
+    font-size: 13px;
+    min-width: 200px;
+}
+
+.sirsa-input.narrow {
+    min-width: 80px;
+}
+
+.sirsa-input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+/* ── Array ── */
+.sirsa-array-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px 0;
+}
+
+.sirsa-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.sirsa-cell {
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: monospace;
+    background: #1e293b;
+    border: 2px solid #334155;
+    color: var(--text);
+    transition: background 0.2s, border-color 0.2s, opacity 0.2s;
+}
+
+.sirsa-cell.mid {
+    border-color: var(--warning);
+    background: rgba(251, 191, 36, 0.12);
+    color: var(--warning);
+}
+
+.sirsa-cell.found {
+    border-color: var(--success);
+    background: rgba(34, 197, 94, 0.15);
+    color: var(--success);
+    box-shadow: 0 0 12px var(--success-glow);
+}
+
+.sirsa-cell.sorted-left {
+    border-color: rgba(56, 189, 248, 0.5);
+    background: rgba(56, 189, 248, 0.08);
+}
+
+.sirsa-cell.sorted-right {
+    border-color: rgba(168, 85, 247, 0.5);
+    background: rgba(168, 85, 247, 0.08);
+}
+
+.sirsa-cell.dim {
+    opacity: 0.3;
+}
+
+.sirsa-cell.eliminated {
+    opacity: 0.25;
+    border-style: dashed;
+}
+
+.sirsa-idx {
+    font-size: 10px;
+    color: var(--text-dim);
+    font-family: monospace;
+}
+
+.sirsa-ptrs {
+    display: flex;
+    gap: 2px;
+    min-height: 18px;
+}
+
+.sirsa-ptr {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 4px;
+}
+
+.lo-ptr {
+    background: rgba(56, 189, 248, 0.2);
+    color: var(--info);
+}
+
+.mid-ptr {
+    background: rgba(251, 191, 36, 0.2);
+    color: var(--warning);
+}
+
+.hi-ptr {
+    background: rgba(168, 85, 247, 0.2);
+    color: #c084fc;
+}
+
+/* ── Half badge ── */
+.sirsa-half-badge {
+    padding: 6px 14px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.sirsa-half-badge.left {
+    background: rgba(56, 189, 248, 0.1);
+    color: var(--info);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+}
+
+.sirsa-half-badge.right {
+    background: rgba(168, 85, 247, 0.1);
+    color: #c084fc;
+    border: 1px solid rgba(168, 85, 247, 0.25);
+}
+
+/* ── Result ── */
+.sirsa-result {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.sirsa-result.found {
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: var(--success);
+}
+
+.sirsa-result.not-found {
+    background: rgba(248, 113, 113, 0.1);
+    border: 1px solid rgba(248, 113, 113, 0.3);
+    color: var(--error);
+}
+
+/* ── Status ── */
+.sirsa-status {
+    padding: 8px 14px;
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.sirsa-status.ok {
+    color: var(--success);
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+.sirsa-status.fail {
+    color: var(--error);
+    border-color: rgba(248, 113, 113, 0.3);
+}
