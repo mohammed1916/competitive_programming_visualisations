@@ -1,0 +1,164 @@
+.s2m-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    font-family: inherit;
+}
+
+.s2m-controls-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.s2m-examples {
+    display: flex;
+    gap: 8px;
+}
+
+.s2m-chip {
+    background: #313244;
+    color: #cdd6f4;
+    border: 2px solid #45475a;
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.s2m-chip.active,
+.s2m-chip:hover {
+    border-color: #cba6f7;
+    color: #cba6f7;
+}
+
+.s2m-target-tag {
+    font-size: 14px;
+    font-weight: 700;
+    color: #cba6f7;
+    font-family: monospace;
+}
+
+.s2m-panel {
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+
+.s2m-panel-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c7086;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+}
+
+.s2m-grid {
+    display: grid;
+    gap: 5px;
+}
+
+.s2m-cell {
+    width: 60px;
+    height: 56px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    border-radius: 8px;
+    background: #313244;
+    border: 2px solid #45475a;
+}
+
+.s2m-val {
+    font-size: 17px;
+    font-weight: 700;
+    color: #cdd6f4;
+}
+
+.s2m-flat {
+    font-size: 10px;
+    color: #6c7086;
+}
+
+.s2m-cell.in-range {
+    background: #1a1030;
+    border-color: #cba6f7;
+}
+
+.s2m-cell.in-range .s2m-val {
+    color: #cba6f7;
+}
+
+.s2m-cell.mid {
+    background: #1e0a30;
+    border-color: #f9e2af;
+    box-shadow: 0 0 12px #f9e2af44;
+}
+
+.s2m-cell.mid .s2m-val {
+    color: #f9e2af;
+    font-size: 20px;
+}
+
+.s2m-cell.found {
+    background: #002010;
+    border-color: #a6e3a1;
+    box-shadow: 0 0 14px #a6e3a166;
+}
+
+.s2m-cell.found .s2m-val {
+    color: #a6e3a1;
+    font-size: 20px;
+}
+
+.s2m-cell.out {
+    opacity: 0.35;
+}
+
+.s2m-ptrs {
+    display: flex;
+    gap: 16px;
+    padding: 4px 0;
+}
+
+.s2m-ptr {
+    font-size: 13px;
+    font-weight: 700;
+    font-family: monospace;
+    padding: 4px 10px;
+    border-radius: 6px;
+}
+
+.s2m-ptr.lo {
+    background: #0d1424;
+    color: #89b4fa;
+    border: 1px solid #89b4fa55;
+}
+
+.s2m-ptr.mid {
+    background: #1e0a30;
+    color: #f9e2af;
+    border: 1px solid #f9e2af55;
+}
+
+.s2m-ptr.hi {
+    background: #1a0030;
+    color: #cba6f7;
+    border: 1px solid #cba6f755;
+}
+
+.s2m-status {
+    padding: 8px 12px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #a6adc8;
+    min-height: 36px;
+}

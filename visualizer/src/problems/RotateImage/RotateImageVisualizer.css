@@ -1,0 +1,104 @@
+.ri-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    font-family: inherit;
+}
+
+.ri-controls-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.ri-examples {
+    display: flex;
+    gap: 8px;
+}
+
+.ri-chip {
+    background: #313244;
+    color: #cdd6f4;
+    border: 2px solid #45475a;
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.ri-chip.active,
+.ri-chip:hover {
+    border-color: #f9e2af;
+    color: #f9e2af;
+}
+
+.ri-panels {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.ri-panel {
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+
+.ri-panel-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c7086;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+}
+
+.ri-grid {
+    display: grid;
+    gap: 4px;
+}
+
+.ri-cell {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 700;
+    border-radius: 8px;
+    background: #313244;
+    border: 2px solid #45475a;
+    color: #cdd6f4;
+}
+
+.ri-cell.row-hi {
+    background: #1e1800;
+    border-color: #f9e2af;
+    color: #f9e2af;
+}
+
+.ri-cell.swapping {
+    background: #1a0d00;
+    border-color: #fab387;
+    color: #fab387;
+}
+
+.ri-cell.swapped {
+    background: #002010;
+    border-color: #a6e3a1;
+    color: #a6e3a1;
+}
+
+.ri-status {
+    padding: 8px 12px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #a6adc8;
+    min-height: 36px;
+}

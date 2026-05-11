@@ -86,6 +86,11 @@ import GenerateParentheses from "./problems/GenerateParentheses";
 import LetterCombinations from "./problems/LetterCombinations";
 import SlidingWindowMaximum from "./problems/SlidingWindowMaximum";
 import EvalRPN from "./problems/EvalRPN";
+import RotateImage from "./problems/RotateImage";
+import SetMatrixZeroes from "./problems/SetMatrixZeroes";
+import Search2DMatrix from "./problems/Search2DMatrix";
+import ReorderList from "./problems/ReorderList";
+import PalindromePartitioning from "./problems/PalindromePartitioning";
 import ProblemScaffold from "./components/panels/ProblemScaffold";
 import "./App.css";
 
@@ -1038,6 +1043,56 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ["Array", "Stack", "Math"],
     accent: "#a6e3a1",
     component: EvalRPN,
+  },
+  {
+    id: "lc-48",
+    number: 48,
+    title: "Rotate Image",
+    description: "Rotate an n×n matrix 90° clockwise in-place using transpose then reverse.",
+    difficulty: "Medium",
+    tags: ["Array", "Matrix", "Math"],
+    accent: "#f9e2af",
+    component: RotateImage,
+  },
+  {
+    id: "lc-73",
+    number: 73,
+    title: "Set Matrix Zeroes",
+    description: "If an element is 0, set its entire row and column to 0 in-place.",
+    difficulty: "Medium",
+    tags: ["Array", "Matrix", "Hash Set"],
+    accent: "#f38ba8",
+    component: SetMatrixZeroes,
+  },
+  {
+    id: "lc-74",
+    number: 74,
+    title: "Search a 2D Matrix",
+    description: "Binary search on a sorted m×n matrix treated as a flattened 1D array.",
+    difficulty: "Medium",
+    tags: ["Array", "Binary Search", "Matrix"],
+    accent: "#cba6f7",
+    component: Search2DMatrix,
+  },
+  {
+    id: "lc-143",
+    number: 143,
+    title: "Reorder List",
+    description: "Reorder a linked list to L0→Ln→L1→Ln-1→… using find-middle, reverse, and merge.",
+    difficulty: "Medium",
+    tags: ["Linked List", "Two Pointers", "Stack"],
+    accent: "#89dceb",
+    component: ReorderList,
+  },
+  {
+    id: "lc-131",
+    number: 131,
+    title: "Palindrome Partitioning",
+    description: "Return all ways to partition a string such that every substring is a palindrome.",
+    difficulty: "Medium",
+    tags: ["String", "Backtracking", "DP"],
+    accent: "#cba6f7",
+    component: PalindromePartitioning,
   },
 ];
 

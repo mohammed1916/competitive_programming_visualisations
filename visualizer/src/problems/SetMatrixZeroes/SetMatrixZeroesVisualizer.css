@@ -1,0 +1,128 @@
+.smz-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    font-family: inherit;
+}
+
+.smz-controls-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.smz-examples {
+    display: flex;
+    gap: 8px;
+}
+
+.smz-chip {
+    background: #313244;
+    color: #cdd6f4;
+    border: 2px solid #45475a;
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.smz-chip.active,
+.smz-chip:hover {
+    border-color: #f9e2af;
+    color: #f9e2af;
+}
+
+.smz-sets-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.smz-set-box {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    padding: 6px 12px;
+}
+
+.smz-set-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c7086;
+    text-transform: uppercase;
+}
+
+.smz-set-val {
+    font-size: 13px;
+    font-weight: 700;
+    color: #f9e2af;
+    font-family: monospace;
+}
+
+.smz-panel {
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+
+.smz-panel-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c7086;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+}
+
+.smz-grid {
+    display: grid;
+    gap: 4px;
+}
+
+.smz-cell {
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    font-weight: 700;
+    border-radius: 8px;
+    background: #313244;
+    border: 2px solid #45475a;
+    color: #cdd6f4;
+}
+
+.smz-cell.active {
+    border-color: #89b4fa;
+    background: #0d1424;
+    color: #89b4fa;
+}
+
+.smz-cell.zero {
+    background: #1a0a0a;
+    border-color: #f38ba8;
+    color: #f38ba8;
+}
+
+.smz-cell.filled {
+    background: #1a0a0a;
+    border-color: #f38ba8;
+    color: #f38ba8;
+    box-shadow: 0 0 10px #f38ba844;
+}
+
+.smz-status {
+    padding: 8px 12px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #a6adc8;
+    min-height: 36px;
+}
