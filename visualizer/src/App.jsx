@@ -61,6 +61,11 @@ import BinaryTreeLevelOrder from "./problems/BinaryTreeLevelOrder";
 import DiameterBinaryTree from "./problems/DiameterBinaryTree";
 import CountingBits from "./problems/CountingBits";
 import LCABST from "./problems/LCABST";
+import ValidateBST from "./problems/ValidateBST";
+import RightSideView from "./problems/RightSideView";
+import LCS from "./problems/LCS";
+import HouseRobberII from "./problems/HouseRobberII";
+import FindDuplicate from "./problems/FindDuplicate";
 import ProblemScaffold from "./components/panels/ProblemScaffold";
 import "./App.css";
 
@@ -763,6 +768,61 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ["Tree", "DFS", "BST", "Binary Search Tree"],
     accent: "#cba6f7",
     component: LCABST,
+  },
+  {
+    number: "98",
+    title: "Validate Binary Search Tree",
+    slug: "validate-binary-search-tree",
+    description:
+      "DFS with (lo, hi) bounds — each node must lie strictly within the range inherited from its ancestors. O(n) time, O(h) space.",
+    difficulty: "Medium",
+    tags: ["Tree", "DFS", "BST"],
+    accent: "#a6e3a1",
+    component: ValidateBST,
+  },
+  {
+    number: "199",
+    title: "Binary Tree Right Side View",
+    slug: "binary-tree-right-side-view",
+    description:
+      "BFS level-by-level; at the end of each level record the last node's value. O(n) time and space.",
+    difficulty: "Medium",
+    tags: ["Tree", "BFS"],
+    accent: "#cba6f7",
+    component: RightSideView,
+  },
+  {
+    number: "1143",
+    title: "Longest Common Subsequence",
+    slug: "longest-common-subsequence",
+    description:
+      "Classic 2-D DP: if characters match, dp[i][j] = dp[i-1][j-1]+1, else max(dp[i-1][j], dp[i][j-1]). O(m·n) time and space.",
+    difficulty: "Medium",
+    tags: ["DP", "String"],
+    accent: "#89b4fa",
+    component: LCS,
+  },
+  {
+    number: "213",
+    title: "House Robber II",
+    slug: "house-robber-ii",
+    description:
+      "Circular arrangement — run House Robber twice (skip last house, then skip first house) and return the maximum. O(n) time, O(1) space.",
+    difficulty: "Medium",
+    tags: ["DP", "Array"],
+    accent: "#fab387",
+    component: HouseRobberII,
+  },
+  {
+    number: "287",
+    title: "Find the Duplicate Number",
+    slug: "find-the-duplicate-number",
+    description:
+      "Floyd's cycle detection on the implicit linked list nums[i]→nums[nums[i]]: phase 1 finds the cycle meeting point, phase 2 finds the entrance (the duplicate). O(n) time, O(1) space.",
+    difficulty: "Medium",
+    tags: ["Array", "Two Pointers", "Floyd's Cycle"],
+    accent: "#f38ba8",
+    component: FindDuplicate,
   },
 ];
 
