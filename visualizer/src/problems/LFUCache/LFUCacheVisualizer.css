@@ -1,0 +1,231 @@
+.lfu-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    font-family: inherit;
+}
+
+.lfu-examples {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.lfu-chip {
+    background: #313244;
+    color: #cdd6f4;
+    border: 2px solid #45475a;
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.lfu-chip.active,
+.lfu-chip:hover {
+    border-color: #f38ba8;
+    color: #f38ba8;
+}
+
+.lfu-panel {
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+
+.lfu-panel-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c7086;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+}
+
+.lfu-row {
+    display: flex;
+    gap: 10px;
+}
+
+.lfu-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.lfu-op {
+    font-family: monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: #cdd6f4;
+}
+
+.lfu-result-val {
+    font-size: 22px;
+    font-weight: 700;
+    color: #45475a;
+}
+
+.lfu-result-val.hit {
+    color: #a6e3a1;
+}
+
+.lfu-result-val.miss {
+    color: #f38ba8;
+}
+
+.lfu-mf {
+    font-size: 22px;
+    font-weight: 700;
+    color: #f9e2af;
+}
+
+.lfu-phase {
+    font-size: 13px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 5px;
+}
+
+.lfu-phase.init {
+    color: #89b4fa;
+}
+
+.lfu-phase.hit {
+    color: #a6e3a1;
+    background: #001a00;
+}
+
+.lfu-phase.miss {
+    color: #f38ba8;
+    background: #1a0000;
+}
+
+.lfu-phase.update {
+    color: #89dceb;
+    background: #00101a;
+}
+
+.lfu-phase.insert {
+    color: #cba6f7;
+    background: #10001a;
+}
+
+.lfu-phase.evict {
+    color: #f38ba8;
+    background: #1a0010;
+}
+
+.lfu-phase.done {
+    color: #a6e3a1;
+}
+
+.lfu-empty {
+    font-size: 13px;
+    color: #45475a;
+}
+
+.lfu-entry {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 7px 12px;
+    border-radius: 6px;
+    background: #252535;
+    border: 1px solid #313244;
+    margin-bottom: 4px;
+}
+
+.lfu-entry.active-hit {
+    background: #001a00;
+    border-color: #a6e3a1;
+}
+
+.lfu-entry.active-miss {
+    background: #1a0000;
+    border-color: #f38ba8;
+}
+
+.lfu-entry.active-update {
+    background: #00101a;
+    border-color: #89dceb;
+}
+
+.lfu-entry.active-insert {
+    background: #10001a;
+    border-color: #cba6f7;
+}
+
+.lfu-entry.active-evict {
+    background: #1a0010;
+    border-color: #f38ba8;
+}
+
+.lfu-entry.evicted {
+    opacity: 0.4;
+}
+
+.lfu-key,
+.lfu-val {
+    font-family: monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: #cdd6f4;
+}
+
+.lfu-freq {
+    font-family: monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: #f9e2af;
+    margin-left: auto;
+}
+
+.lfu-log {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.lfu-log-entry {
+    font-family: monospace;
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: #252535;
+    color: #a6adc8;
+}
+
+.lfu-log-entry.hit {
+    color: #a6e3a1;
+}
+
+.lfu-log-entry.miss {
+    color: #f38ba8;
+}
+
+.lfu-log-entry.update {
+    color: #89dceb;
+}
+
+.lfu-log-entry.insert {
+    color: #cba6f7;
+}
+
+.lfu-log-entry.evict {
+    color: #f38ba8;
+}
+
+.lfu-status {
+    padding: 8px 12px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #a6adc8;
+    min-height: 36px;
+}

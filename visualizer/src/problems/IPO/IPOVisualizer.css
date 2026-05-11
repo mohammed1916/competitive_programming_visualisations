@@ -1,0 +1,161 @@
+.ipo-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    font-family: inherit;
+}
+
+.ipo-examples {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.ipo-chip {
+    background: #313244;
+    color: #cdd6f4;
+    border: 2px solid #45475a;
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.ipo-chip.active,
+.ipo-chip:hover {
+    border-color: #fab387;
+    color: #fab387;
+}
+
+.ipo-panel {
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+
+.ipo-panel-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c7086;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+}
+
+.ipo-row {
+    display: flex;
+    gap: 10px;
+}
+
+.ipo-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.ipo-big {
+    font-size: 26px;
+    font-weight: 700;
+    color: #cdd6f4;
+    font-family: monospace;
+}
+
+.ipo-big.ipo-w {
+    color: #fab387;
+}
+
+.ipo-big.ipo-pick {
+    color: #a6e3a1;
+}
+
+.ipo-projects {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.ipo-proj {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 7px 10px;
+    border-radius: 7px;
+    border: 1px solid #313244;
+    background: #252535;
+}
+
+.ipo-proj.affordable {
+    border-color: #fab387;
+    background: #1a0a00;
+}
+
+.ipo-proj.locked {
+    opacity: 0.5;
+}
+
+.ipo-proj-c {
+    font-family: monospace;
+    font-size: 12px;
+    color: #6c7086;
+}
+
+.ipo-proj-p {
+    font-family: monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fab387;
+}
+
+.ipo-heap {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.ipo-heap-item {
+    font-family: monospace;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 6px;
+    background: #252535;
+    border: 1px solid #45475a;
+    color: #cdd6f4;
+}
+
+.ipo-heap-item.top {
+    background: #1a0a00;
+    border-color: #fab387;
+    color: #fab387;
+}
+
+.ipo-empty {
+    font-size: 13px;
+    color: #45475a;
+}
+
+.ipo-result {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    background: #1a0a00;
+    border: 2px solid #fab387;
+    color: #fab387;
+}
+
+.ipo-status {
+    padding: 8px 12px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #a6adc8;
+    min-height: 36px;
+}

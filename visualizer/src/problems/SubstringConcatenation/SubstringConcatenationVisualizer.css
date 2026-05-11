@@ -1,0 +1,257 @@
+.sc-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    font-family: inherit;
+}
+
+.sc-examples {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.sc-chip {
+    background: #313244;
+    color: #cdd6f4;
+    border: 2px solid #45475a;
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.sc-chip.active,
+.sc-chip:hover {
+    border-color: #cba6f7;
+    color: #cba6f7;
+}
+
+.sc-panel {
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+
+.sc-panel-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c7086;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+}
+
+.sc-words {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.sc-word {
+    font-family: monospace;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 5px;
+    background: #252535;
+    border: 1px solid #cba6f744;
+    color: #cba6f7;
+}
+
+.sc-string {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1px;
+    font-family: monospace;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.sc-ch {
+    padding: 2px 3px;
+    border-radius: 3px;
+    color: #a6adc8;
+    border: 1px solid transparent;
+}
+
+.sc-ch.in-window {
+    background: #1a0020;
+    border-color: #cba6f744;
+    color: #cdd6f4;
+}
+
+.sc-ch.in-word {
+    background: #1a0030;
+    border-color: #cba6f7;
+    color: #cba6f7;
+}
+
+.sc-ch.in-result {
+    background: #001a00;
+    border-color: #a6e3a144;
+    color: #a6e3a1;
+}
+
+.sc-window-label {
+    font-size: 11px;
+    color: #6c7086;
+    margin-top: 6px;
+    font-family: monospace;
+}
+
+.sc-row {
+    display: flex;
+    gap: 10px;
+}
+
+.sc-half {
+    flex: 1;
+}
+
+.sc-freq {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sc-freq-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 3px 8px;
+    border-radius: 5px;
+    background: #252535;
+    border: 1px solid #45475a;
+}
+
+.sc-freq-row.overflow {
+    border-color: #f38ba8;
+    background: #1a0010;
+}
+
+.sc-freq-word {
+    font-family: monospace;
+    font-size: 13px;
+    color: #cdd6f4;
+}
+
+.sc-freq-cnt {
+    font-size: 12px;
+    font-weight: 700;
+    color: #89b4fa;
+}
+
+.sc-freq-row.overflow .sc-freq-cnt {
+    color: #f38ba8;
+}
+
+.sc-result-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.sc-ridx {
+    font-family: monospace;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 5px;
+    background: #001a00;
+    border: 1px solid #a6e3a1;
+    color: #a6e3a1;
+}
+
+.sc-empty {
+    font-size: 12px;
+    color: #45475a;
+}
+
+.sc-trackers {
+    display: flex;
+    gap: 8px;
+}
+
+.sc-tracker {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    padding: 10px 0;
+}
+
+.sc-tracker-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c7086;
+    text-transform: uppercase;
+}
+
+.sc-tracker-val {
+    font-size: 18px;
+    font-weight: 700;
+    color: #cdd6f4;
+}
+
+.sc-tracker-val.sc-phase {
+    font-size: 11px;
+}
+
+.sc-tracker-val.sc-phase.init {
+    color: #89b4fa;
+}
+
+.sc-tracker-val.sc-phase.window {
+    color: #cba6f7;
+}
+
+.sc-tracker-val.sc-phase.check {
+    color: #f9e2af;
+}
+
+.sc-tracker-val.sc-phase.break {
+    color: #f38ba8;
+}
+
+.sc-tracker-val.sc-phase.overflow {
+    color: #f38ba8;
+}
+
+.sc-tracker-val.sc-phase.found {
+    color: #a6e3a1;
+}
+
+.sc-tracker-val.sc-phase.done {
+    color: #a6e3a1;
+}
+
+.sc-tracker-val.sc-matches {
+    color: #a6e3a1;
+}
+
+.sc-result {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    background: #001a00;
+    border: 2px solid #a6e3a1;
+    color: #a6e3a1;
+}
+
+.sc-status {
+    padding: 8px 12px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #a6adc8;
+    min-height: 36px;
+}

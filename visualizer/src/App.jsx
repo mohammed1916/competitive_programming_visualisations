@@ -141,6 +141,11 @@ import WildcardMatching from "./problems/WildcardMatching";
 import DistinctSubsequences from "./problems/DistinctSubsequences";
 import PalindromePartitioningII from "./problems/PalindromePartitioningII";
 import BestTimeBuySellStockIV from "./problems/BestTimeBuySellStockIV";
+import SubstringConcatenation from "./problems/SubstringConcatenation";
+import BestTimeBuySellStockIII from "./problems/BestTimeBuySellStockIII";
+import WordSearchII from "./problems/WordSearchII";
+import LFUCache from "./problems/LFUCache";
+import IPO from "./problems/IPO";
 import ProblemScaffold from "./components/panels/ProblemScaffold";
 import "./App.css";
 
@@ -1643,6 +1648,56 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ["Array", "DP"],
     accent: "#f9e2af",
     component: BestTimeBuySellStockIV,
+  },
+  {
+    id: "substring-concatenation",
+    number: 30,
+    title: "Substring with Concatenation of All Words",
+    description: "Find all start indices of substring(s) equal to a concatenation of each word in words.",
+    difficulty: "Hard",
+    tags: ["Hash Table", "String", "Sliding Window"],
+    accent: "#cba6f7",
+    component: SubstringConcatenation,
+  },
+  {
+    id: "best-time-buy-sell-stock-iii",
+    number: 123,
+    title: "Best Time to Buy and Sell Stock III",
+    description: "Maximize profit with at most two transactions using a one-pass 4-variable state machine.",
+    difficulty: "Hard",
+    tags: ["Array", "DP"],
+    accent: "#a6e3a1",
+    component: BestTimeBuySellStockIII,
+  },
+  {
+    id: "word-search-ii",
+    number: 212,
+    title: "Word Search II",
+    description: "Find all words from a dictionary in a 2D board using a Trie and DFS backtracking.",
+    difficulty: "Hard",
+    tags: ["Array", "Backtracking", "Trie", "Matrix"],
+    accent: "#89b4fa",
+    component: WordSearchII,
+  },
+  {
+    id: "lfu-cache",
+    number: 460,
+    title: "LFU Cache",
+    description: "Design a Least Frequently Used cache with O(1) get and put using freq maps and ordered dicts.",
+    difficulty: "Hard",
+    tags: ["Hash Table", "Linked List", "Design"],
+    accent: "#f38ba8",
+    component: LFUCache,
+  },
+  {
+    id: "ipo",
+    number: 502,
+    title: "IPO",
+    description: "Maximize capital after k projects using a greedy approach with two heaps.",
+    difficulty: "Hard",
+    tags: ["Array", "Greedy", "Heap"],
+    accent: "#fab387",
+    component: IPO,
   },
 ];
 

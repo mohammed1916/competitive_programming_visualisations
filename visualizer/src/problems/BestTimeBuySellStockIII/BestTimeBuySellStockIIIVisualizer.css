@@ -1,0 +1,215 @@
+.bt3-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    font-family: inherit;
+}
+
+.bt3-examples {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.bt3-chip {
+    background: #313244;
+    color: #cdd6f4;
+    border: 2px solid #45475a;
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.bt3-chip.active,
+.bt3-chip:hover {
+    border-color: #a6e3a1;
+    color: #a6e3a1;
+}
+
+.bt3-panel {
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+
+.bt3-panel-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c7086;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+}
+
+.bt3-svg {
+    display: block;
+    overflow: visible;
+}
+
+.bt3-line {
+    fill: none;
+    stroke: #f9e2af;
+    stroke-width: 2;
+}
+
+.bt3-dot {
+    fill: #585b70;
+}
+
+.bt3-dot.active-dot {
+    fill: #f9e2af;
+}
+
+.bt3-price-row {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+}
+
+.bt3-price {
+    font-family: monospace;
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: #252535;
+    color: #a6adc8;
+    border: 1px solid #313244;
+}
+
+.bt3-price.active-price {
+    background: #1a1000;
+    border-color: #f9e2af;
+    color: #f9e2af;
+}
+
+.bt3-states {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.bt3-state-card {
+    flex: 1;
+    min-width: 70px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    padding: 8px 4px;
+}
+
+.bt3-state-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #6c7086;
+    font-family: monospace;
+}
+
+.bt3-state-val {
+    font-size: 20px;
+    font-weight: 700;
+    font-family: monospace;
+}
+
+.bt3-state-val.b1 {
+    color: #89b4fa;
+}
+
+.bt3-state-val.s1 {
+    color: #a6e3a1;
+}
+
+.bt3-state-val.b2 {
+    color: #cba6f7;
+}
+
+.bt3-state-val.s2 {
+    color: #f9e2af;
+}
+
+.bt3-state-desc {
+    font-size: 9px;
+    color: #45475a;
+    text-align: center;
+}
+
+.bt3-trackers {
+    display: flex;
+    gap: 8px;
+}
+
+.bt3-tracker {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    padding: 10px 0;
+}
+
+.bt3-tracker-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c7086;
+    text-transform: uppercase;
+}
+
+.bt3-tracker-val {
+    font-size: 18px;
+    font-weight: 700;
+    color: #cdd6f4;
+}
+
+.bt3-tracker-val.bt3-price-val {
+    color: #f9e2af;
+}
+
+.bt3-tracker-val.bt3-answer {
+    color: #a6e3a1;
+}
+
+.bt3-tracker-val.bt3-phase {
+    font-size: 12px;
+}
+
+.bt3-tracker-val.bt3-phase.init {
+    color: #89b4fa;
+}
+
+.bt3-tracker-val.bt3-phase.update {
+    color: #f9e2af;
+}
+
+.bt3-tracker-val.bt3-phase.done {
+    color: #a6e3a1;
+}
+
+.bt3-result {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    background: #001a00;
+    border: 2px solid #a6e3a1;
+    color: #a6e3a1;
+}
+
+.bt3-status {
+    padding: 8px 12px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #a6adc8;
+    min-height: 36px;
+}
