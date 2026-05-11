@@ -1,0 +1,36 @@
+.sk-shell { display: flex; flex-direction: column; gap: 12px; padding: 16px; font-family: inherit; }
+.sk-examples { display: flex; gap: 8px; flex-wrap: wrap; }
+.sk-chip { background: #313244; color: #cdd6f4; border: 2px solid #45475a; border-radius: 6px; padding: 4px 12px; font-size: 12px; cursor: pointer; }
+.sk-chip.active, .sk-chip:hover { border-color: #a6e3a1; color: #a6e3a1; }
+.sk-panel { background: #1e1e2e; border: 1px solid #313244; border-radius: 10px; padding: 12px 14px; }
+.sk-panel-label { font-size: 11px; font-weight: 700; color: #6c7086; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+.sk-svg { display: block; overflow: visible; }
+.sk-building { fill: #89b4fa22; stroke: #89b4fa55; stroke-width: 1; }
+.sk-skyline { fill: #a6e3a122; stroke: #a6e3a1; stroke-width: 2; }
+.sk-axis { stroke: #45475a; stroke-width: 1; }
+.sk-events { display: flex; flex-wrap: wrap; gap: 6px; }
+.sk-event { font-family: monospace; font-size: 12px; padding: 3px 8px; border-radius: 5px; border: 1px solid #45475a; background: #252535; color: #a6adc8; cursor: default; }
+.sk-event.active-evt { border-color: #a6e3a1; background: #001a00; color: #a6e3a1; }
+.sk-event.start-evt { color: #89b4fa; }
+.sk-event.end-evt   { color: #fab387; }
+.sk-event.active-evt { color: #a6e3a1 !important; }
+.sk-row { display: flex; gap: 10px; }
+.sk-half { flex: 1; }
+.sk-heap { display: flex; flex-wrap: wrap; gap: 5px; }
+.sk-heap-val { background: #252535; border: 1px solid #45475a; border-radius: 5px; padding: 3px 9px; font-family: monospace; font-size: 13px; color: #cdd6f4; }
+.sk-heap-val.top { background: #001a00; border-color: #a6e3a1; color: #a6e3a1; }
+.sk-result { display: flex; flex-wrap: wrap; gap: 5px; }
+.sk-pt { background: #001a00; border: 1px solid #a6e3a144; border-radius: 5px; padding: 3px 9px; font-family: monospace; font-size: 12px; color: #a6e3a1; }
+.sk-trackers { display: flex; gap: 10px; }
+.sk-tracker { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; background: #1e1e2e; border: 1px solid #313244; border-radius: 8px; padding: 10px 0; }
+.sk-tracker-label { font-size: 11px; font-weight: 700; color: #6c7086; text-transform: uppercase; }
+.sk-tracker-val { font-size: 18px; font-weight: 700; color: #cdd6f4; }
+.sk-tracker-val.sk-phase { font-size: 12px; }
+.sk-tracker-val.sk-phase.sort    { color: #89b4fa; }
+.sk-tracker-val.sk-phase.process { color: #f9e2af; }
+.sk-tracker-val.sk-phase.push    { color: #89b4fa; }
+.sk-tracker-val.sk-phase.remove  { color: #fab387; }
+.sk-tracker-val.sk-phase.emit    { color: #a6e3a1; }
+.sk-tracker-val.sk-phase.done    { color: #a6e3a1; }
+.sk-result-box { padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 700; background: #001a00; border: 2px solid #a6e3a1; color: #a6e3a1; }
+.sk-status { padding: 8px 12px; background: #1e1e2e; border: 1px solid #313244; border-radius: 8px; font-size: 13px; color: #a6adc8; min-height: 36px; }

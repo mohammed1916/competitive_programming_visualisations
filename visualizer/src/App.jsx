@@ -131,6 +131,11 @@ import FirstMissingPositive from "./problems/FirstMissingPositive";
 import Candy from "./problems/Candy";
 import SerializeDeserialize from "./problems/SerializeDeserialize";
 import LongestIncreasingPath from "./problems/LongestIncreasingPath";
+import NQueens from "./problems/NQueens";
+import MaximalRectangle from "./problems/MaximalRectangle";
+import TextJustification from "./problems/TextJustification";
+import SkylineProblem from "./problems/SkylineProblem";
+import BasicCalculator from "./problems/BasicCalculator";
 import ProblemScaffold from "./components/panels/ProblemScaffold";
 import "./App.css";
 
@@ -1533,6 +1538,56 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ["Matrix", "DFS", "Memoization", "DP"],
     accent: "#cba6f7",
     component: LongestIncreasingPath,
+  },
+  {
+    id: "n-queens",
+    number: 51,
+    title: "N-Queens",
+    description: "Place N queens on an N×N board so no two attack each other, using backtracking row by row.",
+    difficulty: "Hard",
+    tags: ["Backtracking"],
+    accent: "#f5c2e7",
+    component: NQueens,
+  },
+  {
+    id: "maximal-rectangle",
+    number: 85,
+    title: "Maximal Rectangle",
+    description: "Find the largest rectangle containing only 1s by extending the histogram approach row by row.",
+    difficulty: "Hard",
+    tags: ["Array", "Stack", "DP", "Matrix"],
+    accent: "#fab387",
+    component: MaximalRectangle,
+  },
+  {
+    id: "text-justification",
+    number: 68,
+    title: "Text Justification",
+    description: "Greedily pack words into lines, then distribute spaces evenly for full justification.",
+    difficulty: "Hard",
+    tags: ["Array", "String", "Simulation"],
+    accent: "#89b4fa",
+    component: TextJustification,
+  },
+  {
+    id: "skyline-problem",
+    number: 218,
+    title: "The Skyline Problem",
+    description: "Compute the skyline outline of city buildings using a sweep line with a max-heap.",
+    difficulty: "Hard",
+    tags: ["Array", "Heap", "Divide and Conquer"],
+    accent: "#a6e3a1",
+    component: SkylineProblem,
+  },
+  {
+    id: "basic-calculator",
+    number: 224,
+    title: "Basic Calculator",
+    description: "Evaluate a string expression with +, -, and parentheses using a stack to handle nested scopes.",
+    difficulty: "Hard",
+    tags: ["Math", "String", "Stack", "Recursion"],
+    accent: "#cba6f7",
+    component: BasicCalculator,
   },
 ];
 
