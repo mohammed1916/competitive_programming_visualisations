@@ -1,0 +1,139 @@
+.btmps-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    font-family: inherit;
+}
+
+.btmps-controls-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.btmps-examples {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.btmps-chip {
+    background: #313244;
+    color: #cdd6f4;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.btmps-chip:hover {
+    background: #45475a;
+}
+
+.btmps-input {
+    background: #11111b;
+    color: #cdd6f4;
+    border: 1px solid #45475a;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 13px;
+    width: 260px;
+}
+
+.btmps-max-badge {
+    background: #2a1e1e;
+    border: 1px solid #f38ba8;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #a6adc8;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btmps-val {
+    color: #f38ba8;
+    font-size: 18px;
+}
+
+.btmps-tree-panel {
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 10px;
+    padding: 14px;
+    overflow-x: auto;
+}
+
+.btmps-tree-canvas {
+    position: relative;
+}
+
+.btmps-node {
+    position: absolute;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 2px solid #45475a;
+    background: #313244;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+}
+
+.btmps-node.active {
+    border-color: #f9e2af;
+    background: #2a2a1e;
+}
+
+.btmps-node.computed {
+    border-color: #f38ba8;
+    background: #2a1e1e;
+}
+
+.btmps-node-val {
+    font-size: 14px;
+    font-weight: 700;
+    color: #cdd6f4;
+    line-height: 1;
+}
+
+.btmps-node.active .btmps-node-val {
+    color: #f9e2af;
+}
+
+.btmps-node.computed .btmps-node-val {
+    color: #f38ba8;
+}
+
+.btmps-gain-badge {
+    font-size: 9px;
+    font-weight: 700;
+    color: #a6e3a1;
+    line-height: 1;
+}
+
+.btmps-path-info {
+    background: #1e2a1e;
+    border: 1px solid #a6e3a1;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 13px;
+    color: #a6e3a1;
+}
+
+.btmps-status {
+    padding: 8px 12px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #a6adc8;
+    min-height: 36px;
+}

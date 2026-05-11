@@ -1,0 +1,157 @@
+.sot-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    font-family: inherit;
+}
+
+.sot-controls-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+.sot-examples {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.sot-chip {
+    background: #313244;
+    color: #cdd6f4;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.sot-chip:hover {
+    background: #45475a;
+}
+
+.sot-inputs {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.sot-inputs label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #a6adc8;
+}
+
+.sot-input {
+    background: #11111b;
+    color: #cdd6f4;
+    border: 1px solid #45475a;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 12px;
+    width: 180px;
+}
+
+.sot-error {
+    color: #f38ba8;
+    font-size: 11px;
+}
+
+.sot-trees-row {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.sot-tree-wrap {
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 10px;
+    padding: 12px;
+}
+
+.sot-tree-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c7086;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+}
+
+.sot-tree-canvas {
+    position: relative;
+}
+
+.sot-empty {
+    color: #6c7086;
+    font-size: 13px;
+    padding: 20px;
+}
+
+.sot-node {
+    position: absolute;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 700;
+    color: #cdd6f4;
+    background: #313244;
+}
+
+.sot-node.checking {
+    background: #2a2a1e;
+    color: #f9e2af;
+}
+
+.sot-node.match {
+    background: #1a2a1e;
+    color: #a6e3a1;
+}
+
+.sot-vs {
+    font-size: 22px;
+    font-weight: 700;
+    color: #6c7086;
+    align-self: center;
+}
+
+.sot-result {
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.sot-result.match {
+    background: #1a2a1e;
+    color: #a6e3a1;
+    border: 1px solid #a6e3a1;
+}
+
+.sot-result.no-match {
+    background: #2a1e1e;
+    color: #f38ba8;
+    border: 1px solid #f38ba8;
+}
+
+.sot-status {
+    padding: 8px 12px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #a6adc8;
+    min-height: 36px;
+}

@@ -71,6 +71,11 @@ import LCABinaryTree from "./problems/LCABinaryTree";
 import KthSmallest from "./problems/KthSmallest";
 import NonOverlappingIntervals from "./problems/NonOverlappingIntervals";
 import PalindromicSubstrings from "./problems/PalindromicSubstrings";
+import Subsets from "./problems/Subsets";
+import Permutations from "./problems/Permutations";
+import SubtreeOfAnotherTree from "./problems/SubtreeOfAnotherTree";
+import ConstructBinaryTree from "./problems/ConstructBinaryTree";
+import BinaryTreeMaxPath from "./problems/BinaryTreeMaxPath";
 import ProblemScaffold from "./components/panels/ProblemScaffold";
 import "./App.css";
 
@@ -883,6 +888,51 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ["String", "DP", "Two Pointers"],
     accent: "#cba6f7",
     component: PalindromicSubstrings,
+  },
+  {
+    number: 78,
+    title: "Subsets",
+    description: "Return all possible subsets of a given integer array.",
+    difficulty: "Medium",
+    tags: ["Array", "Backtracking", "Bit Manipulation"],
+    accent: "#89dceb",
+    component: Subsets,
+  },
+  {
+    number: 46,
+    title: "Permutations",
+    description: "Return all possible permutations of a distinct integer array.",
+    difficulty: "Medium",
+    tags: ["Array", "Backtracking"],
+    accent: "#fab387",
+    component: Permutations,
+  },
+  {
+    number: 572,
+    title: "Subtree of Another Tree",
+    description: "Check whether subRoot is a subtree of root.",
+    difficulty: "Easy",
+    tags: ["Tree", "DFS", "String Matching"],
+    accent: "#a6e3a1",
+    component: SubtreeOfAnotherTree,
+  },
+  {
+    number: 105,
+    title: "Construct Binary Tree from Preorder and Inorder Traversal",
+    description: "Build a binary tree given preorder and inorder traversal arrays.",
+    difficulty: "Medium",
+    tags: ["Array", "Tree", "Divide and Conquer"],
+    accent: "#89b4fa",
+    component: ConstructBinaryTree,
+  },
+  {
+    number: 124,
+    title: "Binary Tree Maximum Path Sum",
+    description: "Find the maximum path sum in a binary tree.",
+    difficulty: "Hard",
+    tags: ["Tree", "DFS", "DP"],
+    accent: "#f38ba8",
+    component: BinaryTreeMaxPath,
   },
 ];
 
