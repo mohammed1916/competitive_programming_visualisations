@@ -1,0 +1,169 @@
+.dg-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    font-family: inherit;
+}
+
+.dg-examples {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.dg-chip {
+    background: #313244;
+    color: #cdd6f4;
+    border: 2px solid #45475a;
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.dg-chip.active,
+.dg-chip:hover {
+    border-color: #cba6f7;
+    color: #cba6f7;
+}
+
+.dg-panel {
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+
+.dg-panel-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c7086;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+}
+
+.dg-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.dg-grid {
+    display: grid;
+    gap: 3px;
+}
+
+.dg-cell {
+    width: 46px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: monospace;
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 5px;
+    border: 1px solid #313244;
+}
+
+.dungeon-cell {
+    background: #252535;
+    color: #a6adc8;
+}
+
+.dungeon-cell.negative {
+    background: #1a0010;
+    border-color: #f38ba844;
+    color: #f38ba8;
+}
+
+.dungeon-cell.positive {
+    background: #001a00;
+    border-color: #a6e3a144;
+    color: #a6e3a1;
+}
+
+.dungeon-cell.active-d {
+    border-color: #cba6f7 !important;
+    box-shadow: 0 0 0 2px #cba6f744;
+}
+
+.dp-cell {
+    background: #181825;
+    color: #45475a;
+    border: 1px dashed #313244;
+}
+
+.dp-cell.filled {
+    background: #1a001a;
+    border-color: #cba6f766;
+    color: #cba6f7;
+}
+
+.dp-cell.active-dp {
+    background: #10001a;
+    border-color: #cba6f7;
+    color: #cba6f7;
+}
+
+.dg-trackers {
+    display: flex;
+    gap: 10px;
+}
+
+.dg-tracker {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    padding: 10px 0;
+}
+
+.dg-tracker-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c7086;
+    text-transform: uppercase;
+}
+
+.dg-tracker-val {
+    font-size: 14px;
+    font-weight: 700;
+    color: #cdd6f4;
+    font-family: monospace;
+}
+
+.dg-tracker-val.dg-need {
+    color: #fab387;
+}
+
+.dg-tracker-val.dg-dpval {
+    color: #cba6f7;
+    font-size: 20px;
+}
+
+.dg-result {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    background: #10001a;
+    border: 2px solid #cba6f7;
+    color: #cba6f7;
+}
+
+.dg-status {
+    padding: 8px 12px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #a6adc8;
+    min-height: 36px;
+}

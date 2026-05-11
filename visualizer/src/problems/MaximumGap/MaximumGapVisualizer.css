@@ -1,0 +1,166 @@
+.mg-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    font-family: inherit;
+}
+
+.mg-examples {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.mg-chip {
+    background: #313244;
+    color: #cdd6f4;
+    border: 2px solid #45475a;
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.mg-chip.active,
+.mg-chip:hover {
+    border-color: #89dceb;
+    color: #89dceb;
+}
+
+.mg-panel {
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+
+.mg-panel-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c7086;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+}
+
+.mg-arr {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.mg-num {
+    font-family: monospace;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 5px;
+    background: #252535;
+    border: 1px solid #45475a;
+    color: #cdd6f4;
+}
+
+.mg-buckets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.mg-bucket {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: #252535;
+    border: 1px solid #313244;
+}
+
+.mg-bucket.active-fill {
+    background: #001a1a;
+    border-color: #89dceb;
+}
+
+.mg-bucket.active-scan {
+    background: #1a0a00;
+    border-color: #fab387;
+}
+
+.mg-bi {
+    font-family: monospace;
+    font-size: 11px;
+    color: #6c7086;
+}
+
+.mg-brange {
+    font-family: monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: #cdd6f4;
+}
+
+.mg-empty {
+    font-size: 13px;
+    color: #45475a;
+}
+
+.mg-trackers {
+    display: flex;
+    gap: 10px;
+}
+
+.mg-tracker {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    padding: 10px 0;
+}
+
+.mg-tracker-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c7086;
+    text-transform: uppercase;
+}
+
+.mg-tracker-val {
+    font-size: 15px;
+    font-weight: 700;
+    color: #cdd6f4;
+    font-family: monospace;
+}
+
+.mg-tracker-val.mg-gap {
+    color: #fab387;
+}
+
+.mg-tracker-val.mg-res {
+    color: #89dceb;
+    font-size: 20px;
+}
+
+.mg-result {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    background: #001a1a;
+    border: 2px solid #89dceb;
+    color: #89dceb;
+}
+
+.mg-status {
+    padding: 8px 12px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #a6adc8;
+    min-height: 36px;
+}

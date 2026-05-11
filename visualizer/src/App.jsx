@@ -146,6 +146,11 @@ import BestTimeBuySellStockIII from "./problems/BestTimeBuySellStockIII";
 import WordSearchII from "./problems/WordSearchII";
 import LFUCache from "./problems/LFUCache";
 import IPO from "./problems/IPO";
+import MaxPointsOnALine from "./problems/MaxPointsOnALine";
+import MaximumGap from "./problems/MaximumGap";
+import DungeonGame from "./problems/DungeonGame";
+import BurstBalloons from "./problems/BurstBalloons";
+import RandomizedCollection from "./problems/RandomizedCollection";
 import ProblemScaffold from "./components/panels/ProblemScaffold";
 import "./App.css";
 
@@ -1698,6 +1703,56 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ["Array", "Greedy", "Heap"],
     accent: "#fab387",
     component: IPO,
+  },
+  {
+    id: "max-points-on-a-line",
+    number: 149,
+    title: "Max Points on a Line",
+    description: "Find max points on a single line by fixing an origin and counting normalized slopes to all other points.",
+    difficulty: "Hard",
+    tags: ["Array", "Hash Table", "Math", "Geometry"],
+    accent: "#f38ba8",
+    component: MaxPointsOnALine,
+  },
+  {
+    id: "maximum-gap",
+    number: 164,
+    title: "Maximum Gap",
+    description: "Find the maximum gap between successive elements in sorted order using bucket sort (Radix/Pigeonhole).",
+    difficulty: "Hard",
+    tags: ["Array", "Sorting", "Bucket Sort"],
+    accent: "#89dceb",
+    component: MaximumGap,
+  },
+  {
+    id: "dungeon-game",
+    number: 174,
+    title: "Dungeon Game",
+    description: "Find the minimum initial health to reach the princess using bottom-right DP, computing minimum health needed per cell.",
+    difficulty: "Hard",
+    tags: ["Array", "DP", "Matrix"],
+    accent: "#cba6f7",
+    component: DungeonGame,
+  },
+  {
+    id: "burst-balloons",
+    number: 312,
+    title: "Burst Balloons",
+    description: "Maximize coins from bursting balloons using interval DP: for each window choose the last balloon to burst.",
+    difficulty: "Hard",
+    tags: ["Array", "DP"],
+    accent: "#f9e2af",
+    component: BurstBalloons,
+  },
+  {
+    id: "insert-delete-getrandom-duplicates",
+    number: 381,
+    title: "Insert Delete GetRandom O(1) – Duplicates Allowed",
+    description: "Design a set supporting insert, remove, and getRandom in O(1) with duplicates using array + index map.",
+    difficulty: "Hard",
+    tags: ["Array", "Hash Table", "Math", "Design", "Randomized"],
+    accent: "#94e2d5",
+    component: RandomizedCollection,
   },
 ];
 

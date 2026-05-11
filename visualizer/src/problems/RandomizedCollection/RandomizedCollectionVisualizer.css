@@ -1,0 +1,220 @@
+.rc-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    font-family: inherit;
+}
+
+.rc-examples {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.rc-chip {
+    background: #313244;
+    color: #cdd6f4;
+    border: 2px solid #45475a;
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.rc-chip.active,
+.rc-chip:hover {
+    border-color: #94e2d5;
+    color: #94e2d5;
+}
+
+.rc-panel {
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+
+.rc-panel-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c7086;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+}
+
+.rc-row {
+    display: flex;
+    gap: 10px;
+}
+
+.rc-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.rc-op {
+    font-family: monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: #cdd6f4;
+}
+
+.rc-ret {
+    font-size: 22px;
+    font-weight: 700;
+    color: #45475a;
+    font-family: monospace;
+}
+
+.rc-ret.ok {
+    color: #a6e3a1;
+}
+
+.rc-ret.no {
+    color: #f38ba8;
+}
+
+.rc-ret.rnd {
+    color: #94e2d5;
+}
+
+.rc-phase {
+    font-size: 13px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 5px;
+}
+
+.rc-phase.init {
+    color: #89b4fa;
+}
+
+.rc-phase.insert {
+    color: #a6e3a1;
+    background: #001a00;
+}
+
+.rc-phase.remove {
+    color: #f38ba8;
+    background: #1a0000;
+}
+
+.rc-phase.random {
+    color: #94e2d5;
+    background: #001a1a;
+}
+
+.rc-phase.done {
+    color: #a6e3a1;
+}
+
+.rc-nums {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.rc-num-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    background: #252535;
+    border: 1px solid #45475a;
+}
+
+.rc-num-cell.swap {
+    background: #1a0010;
+    border-color: #f38ba8;
+}
+
+.rc-ci {
+    font-size: 9px;
+    color: #6c7086;
+    font-family: monospace;
+}
+
+.rc-cv {
+    font-size: 15px;
+    font-weight: 700;
+    color: #cdd6f4;
+    font-family: monospace;
+}
+
+.rc-empty {
+    font-size: 13px;
+    color: #45475a;
+}
+
+.rc-idx-map {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.rc-idx-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    font-family: monospace;
+}
+
+.rc-idx-key {
+    font-size: 14px;
+    font-weight: 700;
+    color: #94e2d5;
+    min-width: 20px;
+}
+
+.rc-arrow {
+    color: #45475a;
+}
+
+.rc-idx-vals {
+    font-size: 13px;
+    color: #a6adc8;
+}
+
+.rc-log {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.rc-log-entry {
+    font-family: monospace;
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: #252535;
+    color: #a6adc8;
+}
+
+.rc-log-entry.insert {
+    color: #a6e3a1;
+}
+
+.rc-log-entry.remove {
+    color: #f38ba8;
+}
+
+.rc-log-entry.random {
+    color: #94e2d5;
+}
+
+.rc-status {
+    padding: 8px 12px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #a6adc8;
+    min-height: 36px;
+}

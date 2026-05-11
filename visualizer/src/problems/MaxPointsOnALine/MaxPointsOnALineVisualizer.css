@@ -1,0 +1,190 @@
+.mpl-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    font-family: inherit;
+}
+
+.mpl-examples {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.mpl-chip {
+    background: #313244;
+    color: #cdd6f4;
+    border: 2px solid #45475a;
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.mpl-chip.active,
+.mpl-chip:hover {
+    border-color: #f38ba8;
+    color: #f38ba8;
+}
+
+.mpl-panel {
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+
+.mpl-panel-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c7086;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+}
+
+.mpl-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.mpl-chart-wrap {
+    flex: 0 0 auto;
+}
+
+.mpl-svg {
+    display: block;
+    overflow: hidden;
+    background: #181825;
+    border-radius: 6px;
+}
+
+.mpl-line {
+    stroke: #f38ba866;
+    stroke-width: 1.5;
+    fill: none;
+}
+
+.mpl-dot {
+    fill: #585b70;
+}
+
+.mpl-dot.origin {
+    fill: #f38ba8;
+}
+
+.mpl-dot.partner {
+    fill: #fab387;
+}
+
+.mpl-dot.on-line {
+    fill: #a6e3a1;
+}
+
+.mpl-label {
+    font-size: 10px;
+    fill: #6c7086;
+    font-family: monospace;
+}
+
+.mpl-slopes-wrap {
+    flex: 1;
+    min-width: 140px;
+}
+
+.mpl-slopes {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.mpl-slope-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 5px;
+    background: #252535;
+    border: 1px solid #313244;
+}
+
+.mpl-slope-row.active {
+    background: #1a0010;
+    border-color: #f38ba8;
+}
+
+.mpl-slope-key {
+    font-family: monospace;
+    font-size: 12px;
+    color: #a6adc8;
+}
+
+.mpl-slope-cnt {
+    font-family: monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: #f38ba8;
+}
+
+.mpl-empty {
+    font-size: 13px;
+    color: #45475a;
+}
+
+.mpl-trackers {
+    display: flex;
+    gap: 10px;
+}
+
+.mpl-tracker {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    padding: 10px 0;
+}
+
+.mpl-tracker-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c7086;
+    text-transform: uppercase;
+}
+
+.mpl-tracker-val {
+    font-size: 13px;
+    font-weight: 700;
+    color: #cdd6f4;
+    font-family: monospace;
+}
+
+.mpl-tracker-val.mpl-res {
+    font-size: 22px;
+    color: #f38ba8;
+}
+
+.mpl-result {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    background: #1a0010;
+    border: 2px solid #f38ba8;
+    color: #f38ba8;
+}
+
+.mpl-status {
+    padding: 8px 12px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #a6adc8;
+    min-height: 36px;
+}
