@@ -1,0 +1,251 @@
+.lcabt-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    font-family: inherit;
+}
+
+.lcabt-top {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.lcabt-panel {
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 10px;
+    overflow: hidden;
+    flex: 1;
+    min-width: 260px;
+}
+
+.lcabt-panel.main {
+    flex: 2;
+}
+
+.lcabt-head {
+    padding: 10px 14px;
+    background: #181825;
+    font-size: 13px;
+    font-weight: 600;
+    color: #cdd6f4;
+}
+
+.lcabt-body {
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.lcabt-examples {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.lcabt-chip {
+    background: #313244;
+    color: #cdd6f4;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.lcabt-chip:hover {
+    background: #45475a;
+}
+
+.lcabt-inputs {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.lcabt-inputs label {
+    font-size: 12px;
+    color: #6c7086;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.lcabt-input {
+    background: #11111b;
+    color: #cdd6f4;
+    border: 1px solid #45475a;
+    border-radius: 6px;
+    padding: 5px 8px;
+    font-size: 13px;
+}
+
+.lcabt-input.wide {
+    width: 200px;
+}
+
+.lcabt-input.narrow {
+    width: 50px;
+}
+
+.lcabt-canvas {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    background: #11111b;
+    flex-shrink: 0;
+}
+
+.lcabt-node {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #313244;
+    border: 2px solid #45475a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 700;
+    color: #cdd6f4;
+}
+
+.lcabt-node.active {
+    border-color: #f9e2af;
+    background: #2a2a3e;
+    box-shadow: 0 0 12px #f9e2af55;
+}
+
+.lcabt-node.target {
+    border-color: #89b4fa;
+    background: #1a2a3a;
+}
+
+.lcabt-node.lca {
+    border-color: #cba6f7;
+    background: #2a1e3a;
+    box-shadow: 0 0 16px #cba6f788;
+}
+
+.lcabt-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    font-size: 10px;
+    font-weight: 800;
+    border-radius: 10px;
+    padding: 1px 5px;
+}
+
+.p-badge {
+    background: #89b4fa;
+    color: #11111b;
+}
+
+.q-badge {
+    background: #a6e3a1;
+    color: #11111b;
+    top: 36px;
+}
+
+.lca-badge {
+    background: #cba6f7;
+    color: #11111b;
+    font-size: 9px;
+}
+
+.lcabt-metric {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: #11111b;
+    border-radius: 8px;
+}
+
+.lcabt-label {
+    font-size: 11px;
+    color: #6c7086;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.lcabt-val {
+    font-size: 22px;
+}
+
+.p-color {
+    color: #89b4fa;
+}
+
+.q-color {
+    color: #a6e3a1;
+}
+
+.lcabt-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.lcabt-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #a6adc8;
+}
+
+.lcabt-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid #45475a;
+    background: #313244;
+}
+
+.lcabt-dot.active {
+    border-color: #f9e2af;
+    background: #2a2a3e;
+}
+
+.lcabt-dot.target {
+    border-color: #89b4fa;
+    background: #1a2a3a;
+}
+
+.lcabt-dot.lca {
+    border-color: #cba6f7;
+    background: #2a1e3a;
+}
+
+.lcabt-result {
+    text-align: center;
+    padding: 8px 12px;
+    background: #313244;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #6c7086;
+}
+
+.lcabt-result.done {
+    background: #2a1e3a;
+    color: #cba6f7;
+    font-weight: 700;
+    font-size: 18px;
+}
+
+.lcabt-status {
+    padding: 8px 12px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #a6adc8;
+    min-height: 36px;
+}

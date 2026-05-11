@@ -66,6 +66,11 @@ import RightSideView from "./problems/RightSideView";
 import LCS from "./problems/LCS";
 import HouseRobberII from "./problems/HouseRobberII";
 import FindDuplicate from "./problems/FindDuplicate";
+import BalancedBinaryTree from "./problems/BalancedBinaryTree";
+import LCABinaryTree from "./problems/LCABinaryTree";
+import KthSmallest from "./problems/KthSmallest";
+import NonOverlappingIntervals from "./problems/NonOverlappingIntervals";
+import PalindromicSubstrings from "./problems/PalindromicSubstrings";
 import ProblemScaffold from "./components/panels/ProblemScaffold";
 import "./App.css";
 
@@ -823,6 +828,61 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ["Array", "Two Pointers", "Floyd's Cycle"],
     accent: "#f38ba8",
     component: FindDuplicate,
+  },
+  {
+    number: "110",
+    title: "Balanced Binary Tree",
+    slug: "balanced-binary-tree",
+    description:
+      "Post-order DFS that returns height or -1 if the subtree is unbalanced. Detects imbalance in a single pass. O(n) time, O(h) space.",
+    difficulty: "Easy",
+    tags: ["Tree", "DFS"],
+    accent: "#a6e3a1",
+    component: BalancedBinaryTree,
+  },
+  {
+    number: "236",
+    title: "Lowest Common Ancestor of a Binary Tree",
+    slug: "lowest-common-ancestor-binary-tree",
+    description:
+      "Post-order DFS: return a node if it equals p or q; when both children return non-null the current node is the LCA (split point). O(n) time.",
+    difficulty: "Medium",
+    tags: ["Tree", "DFS", "LCA"],
+    accent: "#cba6f7",
+    component: LCABinaryTree,
+  },
+  {
+    number: "230",
+    title: "Kth Smallest Element in a BST",
+    slug: "kth-smallest-element-in-a-bst",
+    description:
+      "Inorder DFS produces sorted values; stop after the k-th visit. O(k) time on average. Visualises the traversal order with numbered badges.",
+    difficulty: "Medium",
+    tags: ["Tree", "DFS", "BST", "Inorder"],
+    accent: "#89b4fa",
+    component: KthSmallest,
+  },
+  {
+    number: "435",
+    title: "Non-overlapping Intervals",
+    slug: "non-overlapping-intervals",
+    description:
+      "Greedy: sort by end time, keep each non-overlapping interval and skip the rest. Minimum removals = total − kept. O(n log n) time.",
+    difficulty: "Medium",
+    tags: ["Greedy", "Intervals", "Sorting"],
+    accent: "#f9e2af",
+    component: NonOverlappingIntervals,
+  },
+  {
+    number: "647",
+    title: "Palindromic Substrings",
+    slug: "palindromic-substrings",
+    description:
+      "Expand around each center (odd and even) counting palindromes. O(n²) time, O(1) extra space. Visualises L/R expansion with found palindromes.",
+    difficulty: "Medium",
+    tags: ["String", "DP", "Two Pointers"],
+    accent: "#cba6f7",
+    component: PalindromicSubstrings,
   },
 ];
 
