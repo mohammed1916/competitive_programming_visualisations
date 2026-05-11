@@ -52,6 +52,10 @@ import TwoSumII from "./problems/TwoSumII";
 import GroupAnagrams from "./problems/GroupAnagrams";
 import LongestConsecutiveSequence from "./problems/LongestConsecutiveSequence";
 import FindMinRotatedSortedArray from "./problems/FindMinRotatedSortedArray";
+import MajorityElement from "./problems/MajorityElement";
+import MaxProductSubarray from "./problems/MaxProductSubarray";
+import MaxDepthBinaryTree from "./problems/MaxDepthBinaryTree";
+import InvertBinaryTree from "./problems/InvertBinaryTree";
 import ProblemScaffold from "./components/panels/ProblemScaffold";
 import "./App.css";
 
@@ -664,6 +668,46 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ["Array", "Binary Search"],
     accent: "#14b8a6",
     component: FindMinRotatedSortedArray,
+  },
+  {
+    number: "169",
+    title: "Majority Element",
+    description:
+      "Boyer-Moore voting: maintain a candidate and a count. When count reaches 0, switch candidate to the current element. Matching elements increment count; others decrement it. O(n) time, O(1) space.",
+    difficulty: "Easy",
+    tags: ["Array", "Hash Table", "Divide and Conquer", "Sorting"],
+    accent: "#cba6f7",
+    component: MajorityElement,
+  },
+  {
+    number: "152",
+    title: "Maximum Product Subarray",
+    description:
+      "Track curMax and curMin ending at each position (negatives can flip sign). At each element consider num alone, curMax×num, curMin×num as candidates. Update global result with curMax. O(n) time.",
+    difficulty: "Medium",
+    tags: ["Array", "Dynamic Programming"],
+    accent: "#a6e3a1",
+    component: MaxProductSubarray,
+  },
+  {
+    number: "104",
+    title: "Maximum Depth of Binary Tree",
+    description:
+      "Post-order DFS: recursively compute depth of left and right subtrees, return 1 + max(left, right). Base case: null node returns 0. O(n) time.",
+    difficulty: "Easy",
+    tags: ["Tree", "DFS", "BFS", "Binary Tree"],
+    accent: "#f9e2af",
+    component: MaxDepthBinaryTree,
+  },
+  {
+    number: "226",
+    title: "Invert Binary Tree",
+    description:
+      "Post-order DFS: recursively invert left and right subtrees, then swap the two children pointers. Every node's children are swapped exactly once on the way back up. O(n) time.",
+    difficulty: "Easy",
+    tags: ["Tree", "DFS", "BFS", "Binary Tree"],
+    accent: "#89dceb",
+    component: InvertBinaryTree,
   },
 ];
 
