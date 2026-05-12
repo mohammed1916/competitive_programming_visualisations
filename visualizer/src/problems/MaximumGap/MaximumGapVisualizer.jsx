@@ -1,8 +1,10 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
+import Selectable from "../../components/Selectable";
+import { useVisualizationContext } from "../../context/VisualizationContext";
 import "./MaximumGapVisualizer.css";
 
 const SOLUTION_CODE = [
@@ -73,6 +75,10 @@ export default function MaximumGapVisualizer() {
     const step = stepIndex >= 0 ? steps[stepIndex] : null;
     const applyEx = useCallback((e) => { setEx(e); handleReset(); }, [handleReset]);
 
+    // Publish current step to the chatbot
+    const { publishStep } = useVisualizationContext();
+    useEffect(() => { publishStep(step, "Maximum Gap"); }, [step, publishStep]);
+
     const buckets = step?.buckets ?? [];
     const activeB = step?.activeB ?? -1;
     const res = step?.res ?? 0;
@@ -96,7 +102,13 @@ export default function MaximumGapVisualizer() {
                 <div className="mg-panel-label">Input array</div>
                 <div className="mg-arr">
                     {ex.nums.map((v, i) => (
-                        <span key={i} className="mg-num">{v}</span>
+                        <Selectable
+                            key={i}
+                            label={`nums[${i}] = ${v}`}
+                            data={{ index: i, value: v, arrayLength: ex.nums.length, step }}
+                        >
+                            <span className="mg-num">{v}</span>
+                        </Selectable>
                     ))}
                 </div>
             </div>

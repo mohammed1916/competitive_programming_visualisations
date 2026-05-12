@@ -43,7 +43,7 @@ export default function ProblemPage({ problem, onBack, layoutWidth, onLayoutChan
           compact
         />
       </header>
-      <div className="problem-content">
+      <div className="problem-content" data-visualizer-root>
         <ErrorBoundary key={problem.id}>
           {Component ? (
             <Component problem={problem} />
