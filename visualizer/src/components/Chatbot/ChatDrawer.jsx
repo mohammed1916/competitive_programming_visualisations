@@ -93,10 +93,16 @@ export default function ChatDrawer() {
       isStreamingRef.current = true;
       try {
         // Build history for Ollama — use full contextual text for last user message
+        const problemContext = problemTitle
+          ? `The user is currently viewing the "${problemTitle}" problem in the visualizer.`
+          : "The user is in a competitive programming visualizer.";
+        const stepContext = currentStep
+          ? ` They are on a specific algorithm step (step data may be attached to the message).`
+          : "";
         const history = [
           {
             role: "system",
-            text: "You are a helpful coding assistant embedded in a competitive programming visualizer. When the user shares visualizer step data, explain what is happening in the algorithm at that step in clear, concise terms. When asked about code or data structures, be precise and educational.",
+            text: `You are a helpful coding assistant embedded in a competitive programming visualizer. ${problemContext}${stepContext} Answer questions assuming this problem context. When the user asks about "why" or "how" something works, answer in the context of this problem's algorithm. When the user shares visualizer step data, explain what is happening in the algorithm at that step in clear, concise terms. When asked about code or data structures, be precise and educational.`,
           },
           // Previous messages (last 10 pairs for context window)
           ...messages.slice(-20).map((m) => ({ role: m.role, text: m.text, images: m.images })),
