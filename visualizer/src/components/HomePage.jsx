@@ -210,11 +210,12 @@ export default function HomePage({
             onClick={() => onSelect(p)}
             initial={{ opacity: 0, y: 28 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{
-              delay: 0.14 + i * 0.07,
-              type: "spring",
-              stiffness: 260,
-            }}
+            // transition={{
+            //   delay: 0.14 + i * 0.07,
+            //   type: "tween",
+            //   duration: 0.01,
+            //   // ease: "easeOut",
+            // }}
             whileHover={{ y: -5, scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
           >
