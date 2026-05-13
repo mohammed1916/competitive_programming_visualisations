@@ -6,15 +6,15 @@ import { usePlaybackState } from '../../hooks/usePlaybackState'
 import './AddTwoNumbersVisualizer.css'
 
 const SOLUTION_CODE = [
-  { line: 1,  text: 'class Solution:' },
-  { line: 2,  text: '    def addTwoNumbers(self, l1: ListNode, l2: ListNode) -> ListNode:' },
-  { line: 3,  text: '        dummy = ListNode()' },
-  { line: 4,  text: '        curr = dummy' },
-  { line: 5,  text: '        carry = 0' },
-  { line: 6,  text: '        ' },
-  { line: 7,  text: '        while l1 or l2 or carry:' },
-  { line: 8,  text: '            v1 = l1.val if l1 else 0' },
-  { line: 9,  text: '            v2 = l2.val if l2 else 0' },
+  { line: 1, text: 'class Solution:' },
+  { line: 2, text: '    def addTwoNumbers(self, l1: ListNode, l2: ListNode) -> ListNode:' },
+  { line: 3, text: '        dummy = ListNode()' },
+  { line: 4, text: '        curr = dummy' },
+  { line: 5, text: '        carry = 0' },
+  { line: 6, text: '        ' },
+  { line: 7, text: '        while l1 or l2 or carry:' },
+  { line: 8, text: '            v1 = l1.val if l1 else 0' },
+  { line: 9, text: '            v2 = l2.val if l2 else 0' },
   { line: 10, text: '            ' },
   { line: 11, text: '            val = v1 + v2 + carry' },
   { line: 12, text: '            carry = val // 10' },
@@ -31,7 +31,7 @@ const SOLUTION_CODE = [
 
 function generateSteps(list1, list2) {
   const steps = []
-  
+
   let ptr1 = 0
   let ptr2 = 0
   let carry = 0
@@ -68,13 +68,13 @@ function generateSteps(list1, list2) {
 
     const newCarry = Math.floor(sum / 10)
     const val = sum % 10
-    
+
     steps.push({
       phase: 'carry', ptr1, ptr2, carry: newCarry, res: [...res],
       v1, v2, val, sum, prevCarry: carry,
       activeLine: 13, message: 'New carry = ' + newCarry + ', node val = ' + val + '.'
     })
-    
+
     carry = newCarry
     res.push(val)
 
@@ -105,6 +105,7 @@ function generateSteps(list1, list2) {
 
 const EXAMPLES = [
   { label: 'Equal Length', l1: [2, 4, 3], l2: [5, 6, 4] },
+  { label: 'Carry', l1: [2, 4, 9], l2: [5, 6, 4] },
   { label: 'Zeroes', l1: [0], l2: [0] },
   { label: 'Different Length', l1: [9, 9, 9, 9, 9, 9, 9], l2: [9, 9, 9, 9] },
 ]
@@ -188,7 +189,7 @@ export default function AddTwoNumbersVisualizer() {
                     const isCurrent = step?.ptr1 === idx && step?.phase !== 'done'
                     const isProcessed = step?.ptr1 > idx
                     return (
-                      <div key={'l1-'+idx} className="atn-node-wrapper">
+                      <div key={'l1-' + idx} className="atn-node-wrapper">
                         <div className={'atn-node l1 ' + (isCurrent ? 'current' : '') + (isProcessed ? ' processed' : '')}>
                           {val}
                         </div>
@@ -208,7 +209,7 @@ export default function AddTwoNumbersVisualizer() {
                     const isCurrent = step?.ptr2 === idx && step?.phase !== 'done'
                     const isProcessed = step?.ptr2 > idx
                     return (
-                      <div key={'l2-'+idx} className="atn-node-wrapper">
+                      <div key={'l2-' + idx} className="atn-node-wrapper">
                         <div className={'atn-node l2 ' + (isCurrent ? 'current' : '') + (isProcessed ? ' processed' : '')}>
                           {val}
                         </div>
@@ -235,7 +236,7 @@ export default function AddTwoNumbersVisualizer() {
                 {step?.res?.map((val, idx) => {
                   const isNewlyAdded = idx === step.res.length - 1 && step.phase === 'append'
                   return (
-                    <motion.div key={'res-'+idx} className="atn-node-wrapper" initial={isNewlyAdded ? { scale: 0 } : false} animate={{ scale: 1 }}>
+                    <motion.div key={'res-' + idx} className="atn-node-wrapper" initial={isNewlyAdded ? { scale: 0 } : false} animate={{ scale: 1 }}>
                       <div className={'atn-node res ' + (idx === step.res.length - 1 ? 'pulse' : '')}>
                         {val}
                       </div>
@@ -245,37 +246,37 @@ export default function AddTwoNumbersVisualizer() {
                 })}
               </div>
             </div>
-            
+
           </div>
         </div>
 
         <div className="atn-panel" style={{ flex: 1 }}>
           <div className="atn-panel-head">State Variables</div>
           <div className="atn-panel-body" style={{ gap: 16 }}>
-            
+
             <div className="atn-var-card carry">
-                <span className="atn-var-title">carry</span>
-                <div className="atn-var-value">
-                    {step?.carry ?? 0}
-                </div>
+              <span className="atn-var-title">carry</span>
+              <div className="atn-var-value">
+                {step?.carry ?? 0}
+              </div>
             </div>
 
             {step && step.v1 !== null && step.v2 !== null && (
               <div className="atn-math-box">
-                  <div className="atn-math-row">
-                      <span>v1</span> + <span>v2</span> + <span>carry</span> = <span>sum</span>
+                <div className="atn-math-row">
+                  <span>v1</span> + <span>v2</span> + <span>carry</span> = <span>sum</span>
+                </div>
+                <div className="atn-math-row vals">
+                  <span className="val1">{step.v1}</span> +
+                  <span className="val2">{step.v2}</span> +
+                  <span className="val3">{step.phase === 'carry' || step.phase === 'append' || step.phase === 'advance' ? step.prevCarry : step.carry}</span> =
+                  <span className="val4">{step.sum}</span>
+                </div>
+                {step.val !== null && (
+                  <div className="atn-math-res">
+                    node = {step.val}, next carry = {step.carry}
                   </div>
-                  <div className="atn-math-row vals">
-                      <span className="val1">{step.v1}</span> + 
-                      <span className="val2">{step.v2}</span> + 
-                      <span className="val3">{step.phase === 'carry' || step.phase === 'append' || step.phase === 'advance' ? step.prevCarry : step.carry}</span> = 
-                      <span className="val4">{step.sum}</span>
-                  </div>
-                  {step.val !== null && (
-                    <div className="atn-math-res">
-                      node = {step.val}, next carry = {step.carry}
-                    </div>
-                  )}
+                )}
               </div>
             )}
 
