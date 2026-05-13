@@ -8,7 +8,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "refresh:leetcode": "node scripts/fetch-leetcode-catalog.mjs"
+    "refresh:leetcode": "node scripts/fetch-leetcode-catalog.mjs",
+    "refresh:descriptions": "node scripts/fetch-problem-descriptions.mjs"
   },
   "dependencies": {
     "framer-motion": "^12.38.0",

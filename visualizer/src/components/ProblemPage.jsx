@@ -1,10 +1,22 @@
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import ErrorBoundary from "./ErrorBoundary";
 import LayoutControls from "./LayoutControls";
 import ProblemScaffold from "./panels/ProblemScaffold";
+import ProblemInfoPanel, { getProblemDescriptionText } from "./ProblemInfoPanel";
+import { useVisualizationContext } from "../context/VisualizationContext";
 
-export default function ProblemPage({ problem, onBack, layoutWidth, onLayoutChange }) {
+export default function ProblemPage({ problem, onBack, layoutWidth, onLayoutChange, problemDescriptions }) {
   const Component = problem.component;
+  const { publishDescription } = useVisualizationContext();
+
+  // Publish plain-text description so the chatbot can use it
+  useEffect(() => {
+    const text = getProblemDescriptionText(problem.slug, problemDescriptions);
+    publishDescription(text);
+    return () => publishDescription(null);
+  }, [problem.slug, problemDescriptions, publishDescription]);
+
   return (
     <motion.div
       className="problem-page"
@@ -43,6 +55,7 @@ export default function ProblemPage({ problem, onBack, layoutWidth, onLayoutChan
           compact
         />
       </header>
+      <ProblemInfoPanel slug={problem.slug} descriptions={problemDescriptions} />
       <div className="problem-content" data-visualizer-root>
         <ErrorBoundary key={problem.id}>
           {Component ? (
@@ -55,4 +68,5 @@ export default function ProblemPage({ problem, onBack, layoutWidth, onLayoutChan
     </motion.div>
   );
 }
+
 

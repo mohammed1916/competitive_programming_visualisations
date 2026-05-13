@@ -1,0 +1,115 @@
+/* ─── Problem Info Panel ───────────────────────────────────────────────── */
+
+.problem-info-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 1.25rem;
+    background: var(--surface, #1e1e2e);
+    border-bottom: 1px solid var(--border, #2a2a3d);
+}
+
+.problem-info-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text-secondary, #a0a0b8);
+    background: transparent;
+    border: 1px solid var(--border, #2a2a3d);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+    margin: 0.45rem 0;
+}
+
+.problem-info-toggle:hover {
+    color: var(--text, #e0e0f0);
+    border-color: var(--accent, #7c6af7);
+    background: color-mix(in srgb, var(--accent, #7c6af7) 10%, transparent);
+}
+
+.problem-info-toggle.open {
+    color: var(--accent, #7c6af7);
+    border-color: var(--accent, #7c6af7);
+    background: color-mix(in srgb, var(--accent, #7c6af7) 12%, transparent);
+}
+
+.problem-info-toggle svg {
+    flex-shrink: 0;
+    transition: transform 0.2s;
+}
+
+.problem-info-toggle.open svg.chevron {
+    transform: rotate(180deg);
+}
+
+/* Expanded panel */
+.problem-info-panel {
+    overflow: hidden;
+    border-bottom: 1px solid var(--border, #2a2a3d);
+    background: var(--surface-raised, #16161e);
+}
+
+.problem-info-inner {
+    padding: 1.25rem 1.5rem 1.5rem;
+    max-height: 420px;
+    overflow-y: auto;
+    font-size: 0.875rem;
+    line-height: 1.65;
+    color: var(--text, #e0e0f0);
+}
+
+/* Rendered LeetCode HTML */
+.problem-info-inner p {
+    margin: 0 0 0.75rem;
+}
+
+.problem-info-inner ul,
+.problem-info-inner ol {
+    margin: 0 0 0.75rem 1.25rem;
+}
+
+.problem-info-inner li {
+    margin-bottom: 0.25rem;
+}
+
+.problem-info-inner strong {
+    color: var(--text, #fff);
+}
+
+.problem-info-inner pre {
+    background: var(--surface, #1e1e2e);
+    border: 1px solid var(--border, #2a2a3d);
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    overflow-x: auto;
+    font-size: 0.82rem;
+    margin: 0.5rem 0 1rem;
+}
+
+.problem-info-inner code {
+    background: color-mix(in srgb, var(--accent, #7c6af7) 15%, transparent);
+    border-radius: 3px;
+    padding: 0.1em 0.35em;
+    font-size: 0.85em;
+    font-family: monospace;
+}
+
+.problem-info-inner pre code {
+    background: none;
+    padding: 0;
+}
+
+.problem-info-inner img {
+    max-width: 100%;
+    border-radius: 6px;
+}
+
+.problem-info-loading {
+    color: var(--text-secondary, #a0a0b8);
+    font-style: italic;
+    padding: 0.5rem 0;
+}

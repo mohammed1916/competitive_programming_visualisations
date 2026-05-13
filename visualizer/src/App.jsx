@@ -28,6 +28,15 @@ export default function App() {
   const [active, setActive] = useState(null);
   const [track, setTrack] = useState(TRACKS.LEETCODE);
   const [layoutWidth, setLayoutWidth] = useState("full");
+  const [problemDescriptions, setProblemDescriptions] = useState(null);
+
+  // Load problem descriptions (fetched by scripts/fetch-problem-descriptions.mjs)
+  useEffect(() => {
+    fetch("/data/problemDescriptions.json")
+      .then((r) => r.ok ? r.json() : {})
+      .then((data) => setProblemDescriptions(data))
+      .catch(() => setProblemDescriptions({}));
+  }, []);
 
   // Keep browser history in sync so the browser back button works
   useEffect(() => {
@@ -63,6 +72,7 @@ export default function App() {
                 onBack={goBack}
                 layoutWidth={layoutWidth}
                 onLayoutChange={setLayoutWidth}
+                problemDescriptions={problemDescriptions}
               />
             ) : (
               <HomePage

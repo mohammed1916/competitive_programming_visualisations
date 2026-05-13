@@ -9,19 +9,25 @@ const VisualizationContext = createContext(null);
 export function VisualizationProvider({ children }) {
   const [currentStep, setCurrentStep] = useState(null);
   const [problemTitle, setProblemTitle] = useState("");
+  const [problemDescription, setProblemDescription] = useState(null);
 
   const publishStep = useCallback((step, title) => {
     setCurrentStep(step);
     if (title !== undefined) setProblemTitle(title);
   }, []);
 
+  const publishDescription = useCallback((description) => {
+    setProblemDescription(description);
+  }, []);
+
   const clearStep = useCallback(() => {
     setCurrentStep(null);
     setProblemTitle("");
+    setProblemDescription(null);
   }, []);
 
   return (
-    <VisualizationContext.Provider value={{ currentStep, problemTitle, publishStep, clearStep }}>
+    <VisualizationContext.Provider value={{ currentStep, problemTitle, problemDescription, publishStep, publishDescription, clearStep }}>
       {children}
     </VisualizationContext.Provider>
   );
