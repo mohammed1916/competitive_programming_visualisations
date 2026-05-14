@@ -1,26 +1,14 @@
 /**
- * Fetches problem descriptions from LeetCode's GraphQL API for all
- * implemented problems and saves them to public/data/problemDescriptions.json
+ * Fetches problem descriptions from LeetCode's GraphQL API for ALL
+ * free (non-paid) problems in the catalog and saves them to
+ * public/data/problemDescriptions.json
  *
  * Usage: node scripts/fetch-problem-descriptions.mjs
+ * Supports resuming — already-cached slugs are skipped.
  */
 
 import fs from 'node:fs/promises'
 import path from 'node:path'
-
-// All problem numbers that have an implemented visualizer
-const IMPLEMENTED_NUMBERS = new Set([
-    1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 15, 17, 19, 20, 21, 22, 23, 25, 26, 30, 31,
-    33, 36, 37, 39, 41, 42, 44, 45, 46, 48, 49, 51, 53, 54, 55, 56, 57, 58, 62,
-    66, 68, 70, 72, 73, 74, 75, 76, 78, 79, 84, 85, 88, 91, 97, 98, 102, 104,
-    105, 110, 114, 115, 118, 121, 123, 124, 125, 127, 128, 131, 132, 133, 134,
-    135, 136, 138, 139, 141, 143, 146, 148, 149, 150, 152, 153, 155, 160, 162,
-    164, 167, 169, 174, 188, 189, 190, 191, 198, 199, 200, 202, 206, 207, 208,
-    209, 210, 212, 213, 215, 217, 218, 224, 226, 230, 234, 235, 236, 238, 239,
-    242, 268, 271, 283, 287, 295, 297, 300, 312, 322, 329, 338, 344, 347, 381,
-    394, 416, 424, 435, 438, 460, 502, 543, 560, 567, 572, 647, 684, 704, 739,
-    994, 1143,
-])
 
 const GRAPHQL_URL = 'https://leetcode.com/graphql/'
 const QUERY = `
@@ -59,12 +47,6 @@ async function main() {
     const catalogRaw = await fs.readFile(catalogPath, 'utf-8')
     const catalog = JSON.parse(catalogRaw)
 
-    // Build number -> slug map from catalog
-    const slugByNumber = new Map()
-    for (const p of catalog.problems) {
-        slugByNumber.set(Number(p.number), p.slug)
-    }
-
     // Load existing output to allow resuming interrupted runs
     let existing = {}
     try {
@@ -74,22 +56,17 @@ async function main() {
         // fresh start
     }
 
-    const toFetch = [...IMPLEMENTED_NUMBERS]
-        .sort((a, b) => a - b)
-        .filter((num) => {
-            const slug = slugByNumber.get(num)
-            return slug && !existing[slug]
-        })
+    // All free (non-paid) problems from catalog, sorted by number
+    const toFetch = catalog.problems
+        .filter((p) => !p.paidOnly && !existing[p.slug])
+        .sort((a, b) => Number(a.number) - Number(b.number))
 
-    console.log(`Fetching ${toFetch.length} problems (${Object.keys(existing).length} already cached)…`)
+    const totalFree = catalog.problems.filter((p) => !p.paidOnly).length
+    console.log(`Fetching ${toFetch.length} problems (${Object.keys(existing).length}/${totalFree} free problems already cached)…`)
 
     let fetched = 0
-    for (const num of toFetch) {
-        const slug = slugByNumber.get(num)
-        if (!slug) {
-            console.warn(`  [SKIP] No slug found for problem #${num}`)
-            continue
-        }
+    for (const problem of toFetch) {
+        const { number: num, slug } = problem
         try {
             const data = await fetchDescription(slug)
             if (data) {
