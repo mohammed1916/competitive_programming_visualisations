@@ -12,10 +12,12 @@ export default function CodeTracePanel({
   activeLabelSuffix = 'is active',
 }) {
   const codeRef = useRef(null)
+  const lastManualScrollTsRef = useRef(0)
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     if (!step?.activeLine || !codeRef.current) return
+    if (Date.now() - lastManualScrollTsRef.current < 1200) return
     const activeLine = codeRef.current.querySelector(`[data-line="${step.activeLine}"]`)
     activeLine?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
   }, [step])
@@ -29,6 +31,10 @@ export default function CodeTracePanel({
   const handleCopy = async () => {
     await navigator.clipboard.writeText(codeLines.map(({ text }) => text).join('\n'))
     setCopied(true)
+  }
+
+  const markManualScroll = () => {
+    lastManualScrollTsRef.current = Date.now()
   }
 
   return (
@@ -52,7 +58,7 @@ export default function CodeTracePanel({
         </button>
       </div>
 
-      <div className="ctp-scroll" ref={codeRef}>
+      <div className="ctp-scroll" ref={codeRef} onWheel={markManualScroll} onTouchMove={markManualScroll}>
         {codeLines.map(({ line, text }) => {
           const isActive = step?.activeLine === line
           const isRelated = step?.relatedLines?.includes(line)
