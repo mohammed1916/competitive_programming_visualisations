@@ -101,10 +101,7 @@
   gap: 8px;
 }
 
-.ctp-editor-controls {
-  display: flex;
-  gap: 8px;
-}
+
 
 /* Editor controls container: clearer layout and dark-mode friendly visuals */
 .ctp-editor-controls {
@@ -185,15 +182,6 @@
   .ctp-editor-select, .ctp-editor-btn { border-color: #fff; }
 }
 
-.ctp-editor-btn {
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-  color: var(--text, #e5e7eb);
-  padding: 6px 8px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
 .ctp-editor-textarea {
   width: 100%;
   min-height: 160px;
@@ -205,52 +193,6 @@
   padding: 10px;
   border-radius: 8px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', 'Courier New', monospace;
-}
-
-.ctp-editor-select {
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.12);
-  color: var(--text, #e5e7eb);
-  padding: 6px 10px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  line-height: 1;
-  -webkit-appearance: none;
-  appearance: none;
-  box-shadow: none;
-}
-
-.ctp-editor-select:focus {
-  outline: none;
-  border-color: rgba(56,189,248,0.6);
-  box-shadow: 0 0 0 6px rgba(56,189,248,0.06);
-}
-
-/* Improve contrast specifically for high-contrast mode */
-@media (prefers-contrast: more) {
-  .ctp-editor-select {
-    background: #000;
-    color: #fff;
-    border-color: #fff;
-  }
-}
-
-/* Ensure good contrast in light and dark schemes */
-@media (prefers-color-scheme: light) {
-  .ctp-editor-select {
-    background: #ffffff;
-    color: #0b1220;
-    border-color: rgba(2,6,23,0.08);
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  .ctp-editor-select {
-    background: rgba(255,255,255,0.04);
-    color: var(--text, #e5e7eb);
-    border-color: rgba(255,255,255,0.12);
-  }
 }
 
 /* Make the native dropdown arrow visible against backgrounds */
