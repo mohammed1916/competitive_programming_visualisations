@@ -3,7 +3,6 @@ import { motion } from 'framer-motion'
 import './CodeTracePanel.css'
 
 const MonacoEditor = lazy(() => import('@monaco-editor/react'))
-MonacoEditor.editor.setTheme('vs-dark');
 
 export default function CodeTracePanel({
   step,
@@ -54,6 +53,7 @@ export default function CodeTracePanel({
 
   // Editor state
   const [isEditing, setIsEditing] = useState(false)
+  const [editorTheme, setEditorTheme] = useState('vs-dark')
   const initialEditor = () => {
     try {
       const v = window.localStorage.getItem('ctp.editorContent')
@@ -65,12 +65,19 @@ export default function CodeTracePanel({
   const [showComments, setShowComments] = useState(true)
   const commentsText = `# Write your notes here\n# Toggle comments off to edit cleanly.`
   const fileHandleRef = useRef(null)
+  const monacoRef = useRef(null)
 
   useEffect(() => {
     try { window.localStorage.setItem('ctp.editorContent', editorContent) } catch (err) { void err }
   }, [editorContent])
 
   const toggleEdit = () => setIsEditing((v) => !v)
+
+  useEffect(() => {
+    if (monacoRef.current && editorTheme) {
+      try { monacoRef.current.editor.setTheme(editorTheme) } catch (err) { void err }
+    }
+  }, [editorTheme])
 
   async function saveToFile() {
     const data = (showComments ? commentsText + '\n\n' : '') + editorContent
@@ -210,14 +217,23 @@ export default function CodeTracePanel({
             <button className="ctp-editor-btn" onClick={() => setShowComments((s) => !s)}>{showComments ? 'Hide comments' : 'Show comments'}</button>
             <button className="ctp-editor-btn" onClick={loadFromFile}>Load file</button>
             <button className="ctp-editor-btn" onClick={saveToFile}>Save file</button>
+            <label style={{ marginLeft: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+              Theme
+              <select className="ctp-editor-btn" value={editorTheme} onChange={(e) => setEditorTheme(e.target.value)}>
+                <option value="vs">Light</option>
+                <option value="vs-dark">Dark</option>
+                <option value="hc-black">High contrast</option>
+              </select>
+            </label>
           </div>
           <Suspense fallback={<textarea className="ctp-editor-textarea" value={(showComments ? commentsText + '\n\n' : '') + editorContent} onChange={(e) => setEditorContent(e.target.value.replace(/^(?:#.*\n)*/, '').replace(/^\n+/, ''))} />}>
             <MonacoEditor
               height="240px"
               defaultLanguage="python"
               value={(showComments ? commentsText + '\n\n' : '') + editorContent}
-              onChange={(v) => setEditorContent((v ?? '').replace(/^(?:#.*\n)*/, '').replace(/^\n+/, ''))}
+              onChange={(v) => setEditorContent((v ?? '').replace(/^(?:#.*\n)*/,'').replace(/^\n+/,''))}
               options={{ minimap: { enabled: false }, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace' }}
+              onMount={(editor, monaco) => { monacoRef.current = monaco; try { monaco.editor.setTheme(editorTheme) } catch (err) { void err } }}
             />
           </Suspense>
         </div>
