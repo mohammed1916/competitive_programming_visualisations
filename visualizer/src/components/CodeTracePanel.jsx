@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import './CodeTracePanel.css'
 
 const MonacoEditor = lazy(() => import('@monaco-editor/react'))
+MonacoEditor.editor.setTheme('vs-dark');
 
 export default function CodeTracePanel({
   step,
@@ -210,12 +211,12 @@ export default function CodeTracePanel({
             <button className="ctp-editor-btn" onClick={loadFromFile}>Load file</button>
             <button className="ctp-editor-btn" onClick={saveToFile}>Save file</button>
           </div>
-          <Suspense fallback={<textarea className="ctp-editor-textarea" value={(showComments ? commentsText + '\n\n' : '') + editorContent} onChange={(e) => setEditorContent(e.target.value.replace(/^(?:#.*\n)*/,'').replace(/^\n+/,''))} />}>
+          <Suspense fallback={<textarea className="ctp-editor-textarea" value={(showComments ? commentsText + '\n\n' : '') + editorContent} onChange={(e) => setEditorContent(e.target.value.replace(/^(?:#.*\n)*/, '').replace(/^\n+/, ''))} />}>
             <MonacoEditor
               height="240px"
               defaultLanguage="python"
               value={(showComments ? commentsText + '\n\n' : '') + editorContent}
-              onChange={(v) => setEditorContent((v ?? '').replace(/^(?:#.*\n)*/,'').replace(/^\n+/,''))}
+              onChange={(v) => setEditorContent((v ?? '').replace(/^(?:#.*\n)*/, '').replace(/^\n+/, ''))}
               options={{ minimap: { enabled: false }, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace' }}
             />
           </Suspense>
