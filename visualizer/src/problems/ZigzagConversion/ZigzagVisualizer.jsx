@@ -236,7 +236,7 @@ export default function ZigzagVisualizer() {
     setSteps(generateZigzagSteps(nextSource, parsedRows))
     setStepIndex(-1)
     setIsPlaying(false)
-  }, [hasInput, parsedRows, rowsAreValid, sanitizedInput])
+  }, [hasInput, parsedRows, rowsAreValid, sanitizedInput, setIsPlaying, setStepIndex])
 
   const applyExample = useCallback((example) => {
     setInputValue(example.value)
@@ -247,7 +247,7 @@ export default function ZigzagVisualizer() {
     setSteps(generateZigzagSteps(example.value, example.rows))
     setStepIndex(-1)
     setIsPlaying(false)
-  }, [])
+  }, [setIsPlaying, setStepIndex])
 
   return (
     <div className="zv">
