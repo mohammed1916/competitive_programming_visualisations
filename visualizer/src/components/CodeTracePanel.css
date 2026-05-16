@@ -64,7 +64,7 @@
 
 .ctp-scroll {
   max-height: 420px;
-  overflow: auto;
+  overflow: scroll;
   padding: 10px;
 }
 
