@@ -12,8 +12,8 @@
     "refresh:descriptions": "node scripts/fetch-problem-descriptions.mjs"
   },
   "dependencies": {
+    "@monaco-editor/react": "^4.7.0",
     "framer-motion": "^12.38.0",
-    "@monaco-editor/react": "^4.4.6",
     "html2canvas": "^1.4.1",
     "react": "^19.2.5",
     "react-dom": "^19.2.5"
