@@ -49,6 +49,78 @@ export default function CodeTracePanel({
     lastManualScrollTsRef.current = Date.now()
   }
 
+  // Editor state
+  const [isEditing, setIsEditing] = useState(false)
+  const initialEditor = () => {
+    try {
+      const v = window.localStorage.getItem('ctp.editorContent')
+      if (v) return v
+    } catch (err) { void err }
+    return codeLines.map(({ text }) => text).join('\n')
+  }
+  const [editorContent, setEditorContent] = useState(initialEditor)
+  const [showComments, setShowComments] = useState(true)
+  const commentsText = `# Write your notes here\n# Toggle comments off to edit cleanly.`
+  const fileHandleRef = useRef(null)
+
+  useEffect(() => {
+    try { window.localStorage.setItem('ctp.editorContent', editorContent) } catch (err) { void err }
+  }, [editorContent])
+
+  const toggleEdit = () => setIsEditing((v) => !v)
+
+  async function saveToFile() {
+    const data = (showComments ? commentsText + '\n\n' : '') + editorContent
+    // Try File System Access API first
+    try {
+      if (window.showSaveFilePicker) {
+        const handle = fileHandleRef.current || await window.showSaveFilePicker({ suggestedName: 'solution.py', types: [{ description: 'Python', accept: { 'text/plain': ['.py', '.txt'] } }] })
+        fileHandleRef.current = handle
+        const writable = await handle.createWritable()
+        await writable.write(data)
+        await writable.close()
+        return
+      }
+    } catch (err) { void err }
+
+    // Fallback: prompt download
+    const blob = new Blob([data], { type: 'text/plain;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'solution.py'
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  }
+
+  async function loadFromFile() {
+    try {
+      if (window.showOpenFilePicker) {
+        const [handle] = await window.showOpenFilePicker()
+        fileHandleRef.current = handle
+        const file = await handle.getFile()
+        const text = await file.text()
+        // Strip leading comments if present
+        setEditorContent(text.replace(/^\s*#.*(?:\r?\n|$)/gm, '').trim())
+        return
+      }
+    } catch (err) { void err }
+
+    // Fallback: file input
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.py,.txt'
+    input.onchange = async (e) => {
+      const f = e.target.files[0]
+      if (!f) return
+      const t = await f.text()
+      setEditorContent(t)
+    }
+    input.click()
+  }
+
   const startDrag = (e) => {
     e.preventDefault()
     isDraggingRef.current = true
@@ -106,6 +178,9 @@ export default function CodeTracePanel({
           </svg>
           {copied ? 'Copied' : 'Copy code'}
         </button>
+        <button type="button" className="ctp-copy-btn" onClick={toggleEdit} style={{ marginLeft: 8 }}>
+          {isEditing ? 'Close editor' : 'Edit code'}
+        </button>
       </div>
 
       <div className="ctp-scroll" ref={codeRef} onWheel={markManualScroll} onTouchMove={markManualScroll} style={{ height: `${panelHeight}px` }}>
@@ -126,6 +201,16 @@ export default function CodeTracePanel({
           )
         })}
       </div>
+      {isEditing && (
+        <div className="ctp-editor-wrap">
+          <div className="ctp-editor-controls">
+            <button className="ctp-editor-btn" onClick={() => setShowComments((s) => !s)}>{showComments ? 'Hide comments' : 'Show comments'}</button>
+            <button className="ctp-editor-btn" onClick={loadFromFile}>Load file</button>
+            <button className="ctp-editor-btn" onClick={saveToFile}>Save file</button>
+          </div>
+          <textarea className="ctp-editor-textarea" value={(showComments ? commentsText + '\n\n' : '') + editorContent} onChange={(e) => setEditorContent(e.target.value.replace(/^(?:#.*\n)*/,'').replace(/^\n+/,''))} />
+        </div>
+      )}
       <div
         className={`ctp-resizer ${isResizing ? 'active' : ''}`}
         onMouseDown={startDrag}
