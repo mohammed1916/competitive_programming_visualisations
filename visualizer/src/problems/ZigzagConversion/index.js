@@ -1,1 +1,1 @@
-export { default } from './ZigzagConversionVisualizer'
+export { default } from './ZigzagVisualizer'
