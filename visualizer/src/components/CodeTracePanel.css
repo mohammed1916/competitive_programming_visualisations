@@ -4,6 +4,7 @@
   border-radius: 16px;
   overflow: hidden;
   min-width: 0;
+  position: relative;
 }
 
 .ctp-head {
@@ -63,9 +64,33 @@
 }
 
 .ctp-scroll {
-  max-height: 420px;
-  overflow: scroll;
+  /* height is controlled inline from the component (px) */
+  overflow: auto;
   padding: 10px;
+}
+
+.ctp-resizer {
+  height: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: row-resize;
+  user-select: none;
+}
+
+.ctp-resizer-handle {
+  width: 44px;
+  height: 6px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  transition: background 0.12s ease, box-shadow 0.12s ease, transform 0.12s ease;
+}
+
+.ctp-resizer:hover .ctp-resizer-handle,
+.ctp-resizer.active .ctp-resizer-handle {
+  background: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 0 0 6px rgba(56, 189, 248, 0.06);
+  transform: translateY(-1px);
 }
 
 .ctp-row {

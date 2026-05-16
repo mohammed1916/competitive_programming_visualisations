@@ -14,6 +14,18 @@ export default function CodeTracePanel({
   const codeRef = useRef(null)
   const lastManualScrollTsRef = useRef(0)
   const [copied, setCopied] = useState(false)
+  const [panelHeight, setPanelHeight] = useState(() => {
+    try {
+      const v = window.localStorage.getItem('ctp.panelHeight')
+      return v ? Number(v) : 420
+    } catch {
+      return 420
+    }
+  })
+  const isDraggingRef = useRef(false)
+  const startYRef = useRef(0)
+  const startHeightRef = useRef(panelHeight)
+  const [isResizing, setIsResizing] = useState(false)
 
   useEffect(() => {
     if (!step?.activeLine || !codeRef.current) return
@@ -37,6 +49,44 @@ export default function CodeTracePanel({
     lastManualScrollTsRef.current = Date.now()
   }
 
+  const startDrag = (e) => {
+    e.preventDefault()
+    isDraggingRef.current = true
+    setIsResizing(true)
+    startYRef.current = e.touches ? e.touches[0].clientY : e.clientY
+    startHeightRef.current = panelHeight
+    document.body.style.userSelect = 'none'
+  }
+
+  useEffect(() => {
+    const onMove = (e) => {
+      if (!isDraggingRef.current) return
+      const clientY = e.type.startsWith('touch') ? e.touches[0].clientY : e.clientY
+      const delta = clientY - startYRef.current
+      const next = Math.max(120, Math.min(1200, startHeightRef.current + delta))
+      setPanelHeight(next)
+    }
+
+    const onUp = () => {
+      if (!isDraggingRef.current) return
+      isDraggingRef.current = false
+      setIsResizing(false)
+      document.body.style.userSelect = ''
+      try { window.localStorage.setItem('ctp.panelHeight', String(panelHeight)) } catch (err) { void err }
+    }
+
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('touchmove', onMove, { passive: false })
+    window.addEventListener('mouseup', onUp)
+    window.addEventListener('touchend', onUp)
+    return () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('touchmove', onMove)
+      window.removeEventListener('mouseup', onUp)
+      window.removeEventListener('touchend', onUp)
+    }
+  }, [panelHeight])
+
   return (
     <motion.div className="ctp-panel" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.22 }}>
       <div className="ctp-head">
@@ -58,7 +108,7 @@ export default function CodeTracePanel({
         </button>
       </div>
 
-      <div className="ctp-scroll" ref={codeRef} onWheel={markManualScroll} onTouchMove={markManualScroll}>
+      <div className="ctp-scroll" ref={codeRef} onWheel={markManualScroll} onTouchMove={markManualScroll} style={{ height: `${panelHeight}px` }}>
         {codeLines.map(({ line, text }) => {
           const isActive = step?.activeLine === line
           const isRelated = step?.relatedLines?.includes(line)
@@ -75,6 +125,14 @@ export default function CodeTracePanel({
             </motion.div>
           )
         })}
+      </div>
+      <div
+        className={`ctp-resizer ${isResizing ? 'active' : ''}`}
+        onMouseDown={startDrag}
+        onTouchStart={startDrag}
+        aria-hidden="true"
+      >
+        <div className="ctp-resizer-handle" />
       </div>
     </motion.div>
   )
