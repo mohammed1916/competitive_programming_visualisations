@@ -54,6 +54,17 @@ export default function CodeTracePanel({
   // Editor state
   const [isEditing, setIsEditing] = useState(false)
   const [editorTheme, setEditorTheme] = useState('vs-dark')
+  const [editorLanguage, setEditorLanguage] = useState('python')
+  const [fontSize, setFontSize] = useState(() => {
+    try { return Number(window.localStorage.getItem('ctp.fontSize')) || 14 } catch { return 14 }
+  })
+  const [minimapEnabled, setMinimapEnabled] = useState(() => {
+    try { return window.localStorage.getItem('ctp.minimap') === '1' } catch { return false }
+  })
+  const [wordWrap, setWordWrap] = useState(() => {
+    try { return window.localStorage.getItem('ctp.wordWrap') === '1' } catch { return true }
+  })
+  const [readOnly, setReadOnly] = useState(false)
   const initialEditor = () => {
     try {
       const v = window.localStorage.getItem('ctp.editorContent')
@@ -66,6 +77,7 @@ export default function CodeTracePanel({
   const commentsText = `# Write your notes here\n# Toggle comments off to edit cleanly.`
   const fileHandleRef = useRef(null)
   const monacoRef = useRef(null)
+  const editorRef = useRef(null)
 
   useEffect(() => {
     try { window.localStorage.setItem('ctp.editorContent', editorContent) } catch (err) { void err }
@@ -79,8 +91,14 @@ export default function CodeTracePanel({
     }
   }, [editorTheme])
 
+  useEffect(() => {
+    try { window.localStorage.setItem('ctp.fontSize', String(fontSize)) } catch (err) { void err }
+    try { window.localStorage.setItem('ctp.minimap', minimapEnabled ? '1' : '0') } catch (err) { void err }
+    try { window.localStorage.setItem('ctp.wordWrap', wordWrap ? '1' : '0') } catch (err) { void err }
+  }, [fontSize, minimapEnabled, wordWrap])
+
   async function saveToFile() {
-    const data = (showComments ? commentsText + '\n\n' : '') + editorContent
+    const data = (showComments ? commentsText + '\n\n' : '') + (editorRef.current ? editorRef.current.getValue() : editorContent)
     // Try File System Access API first
     try {
       if (window.showSaveFilePicker) {
@@ -113,7 +131,9 @@ export default function CodeTracePanel({
         const file = await handle.getFile()
         const text = await file.text()
         // Strip leading comments if present
-        setEditorContent(text.replace(/^\s*#.*(?:\r?\n|$)/gm, '').trim())
+        const cleaned = text.replace(/^\s*#.*(?:\r?\n|$)/gm, '')
+        setEditorContent(cleaned.trim())
+        if (editorRef.current) editorRef.current.setValue(cleaned.trim())
         return
       }
     } catch (err) { void err }
@@ -127,6 +147,7 @@ export default function CodeTracePanel({
       if (!f) return
       const t = await f.text()
       setEditorContent(t)
+      if (editorRef.current) editorRef.current.setValue(t)
     }
     input.click()
   }
@@ -168,6 +189,19 @@ export default function CodeTracePanel({
       window.removeEventListener('touchend', onUp)
     }
   }, [panelHeight])
+
+  const formatDocument = () => {
+    try {
+      const ed = editorRef.current
+      const mon = monacoRef.current
+      if (!ed || !mon) return
+      const action = ed.getAction && ed.getAction('editor.action.formatDocument')
+      if (action && action.run) action.run()
+      else if (mon && mon.languages && mon.languages.formatting) {
+        // best-effort: nothing to do
+      }
+    } catch (err) { void err }
+  }
 
   return (
     <motion.div className="ctp-panel" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.22 }}>
@@ -224,16 +258,60 @@ export default function CodeTracePanel({
                 <option value="vs-dark">Dark</option>
                 <option value="hc-black">High contrast</option>
               </select>
+            <label style={{ marginLeft: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+              Lang
+              <select className="ctp-editor-select" value={editorLanguage} onChange={(e) => {
+                setEditorLanguage(e.target.value)
+                try { if (monacoRef.current && editorRef.current) monacoRef.current.editor.setModelLanguage(editorRef.current.getModel(), e.target.value) } catch (err) { void err }
+              }}>
+                <option value="python">Python</option>
+                <option value="javascript">JavaScript</option>
+                <option value="typescript">TypeScript</option>
+                <option value="java">Java</option>
+                <option value="csharp">C#</option>
+                <option value="cpp">C++</option>
+                <option value="go">Go</option>
+              </select>
+            </label>
+
+            <label style={{ marginLeft: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+              Font
+              <input className="ctp-editor-select" type="number" min="10" max="28" value={fontSize} onChange={(e) => setFontSize(Number(e.target.value) || 14)} style={{ width: 72 }} />
+            </label>
+
+            <label style={{ marginLeft: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <input type="checkbox" checked={minimapEnabled} onChange={(e) => setMinimapEnabled(e.target.checked)} /> Minimap
+            </label>
+
+            <label style={{ marginLeft: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <input type="checkbox" checked={wordWrap} onChange={(e) => setWordWrap(e.target.checked)} /> Word wrap
+            </label>
+
+            <label style={{ marginLeft: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <input type="checkbox" checked={readOnly} onChange={(e) => setReadOnly(e.target.checked)} /> Read only
+            </label>
+
+            <button className="ctp-editor-btn" onClick={() => formatDocument()} style={{ marginLeft: 8 }}>Format</button>
             </label>
           </div>
           <Suspense fallback={<textarea className="ctp-editor-textarea" value={(showComments ? commentsText + '\n\n' : '') + editorContent} onChange={(e) => setEditorContent(e.target.value.replace(/^(?:#.*\n)*/, '').replace(/^\n+/, ''))} />}>
             <MonacoEditor
               height="240px"
-              defaultLanguage="python"
+              defaultLanguage={editorLanguage}
               value={(showComments ? commentsText + '\n\n' : '') + editorContent}
               onChange={(v) => setEditorContent((v ?? '').replace(/^(?:#.*\n)*/,'').replace(/^\n+/,''))}
-              options={{ minimap: { enabled: false }, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace' }}
-              onMount={(editor, monaco) => { monacoRef.current = monaco; try { monaco.editor.setTheme(editorTheme) } catch (err) { void err } }}
+              options={{ minimap: { enabled: minimapEnabled }, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace', fontSize, wordWrap: wordWrap ? 'on' : 'off', readOnly }}
+              onMount={(editor, monaco) => {
+                monacoRef.current = monaco
+                editorRef.current = editor
+                try { monaco.editor.setTheme(editorTheme) } catch (err) { void err }
+                try { monaco.editor.setModelLanguage(editor.getModel(), editorLanguage) } catch (err) { void err }
+                // keyboard shortcuts
+                try {
+                  editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => { saveToFile() })
+                  editor.addCommand(monaco.KeyMod.Shift | monaco.KeyMod.Alt | monaco.KeyCode.KeyF, () => { formatDocument() })
+                } catch (err) { void err }
+              }}
             />
           </Suspense>
         </div>
