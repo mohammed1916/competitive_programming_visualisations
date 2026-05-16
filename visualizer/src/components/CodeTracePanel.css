@@ -106,6 +106,85 @@
   gap: 8px;
 }
 
+/* Editor controls container: clearer layout and dark-mode friendly visuals */
+.ctp-editor-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+.ctp-editor-controls label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  padding: 4px 6px;
+  border-radius: 8px;
+}
+
+.ctp-editor-btn {
+  min-height: 36px;
+  padding: 6px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  color: var(--text, #e5e7eb);
+  border-radius: 8px;
+  transition: background 0.12s ease, transform 0.08s ease, border-color 0.12s ease;
+}
+
+.ctp-editor-btn:hover {
+  background: rgba(255,255,255,0.06);
+  transform: translateY(-1px);
+  border-color: rgba(255,255,255,0.12);
+}
+
+.ctp-editor-select, .ctp-editor-select[type="number"] {
+  height: 36px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.03);
+  color: var(--text, #e5e7eb);
+  border: 1px solid rgba(255,255,255,0.06);
+  transition: box-shadow 0.12s ease, border-color 0.12s ease;
+}
+
+.ctp-editor-select:focus, .ctp-editor-select[type="number"]:focus, .ctp-editor-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 6px rgba(56,189,248,0.06);
+  border-color: rgba(56,189,248,0.6);
+}
+
+@media (prefers-color-scheme: dark) {
+  .ctp-editor-controls {
+    background: linear-gradient(180deg, rgba(2,6,23,0.6), rgba(2,6,23,0.4));
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .ctp-editor-btn {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .ctp-editor-select, .ctp-editor-select[type="number"] {
+    background: rgba(255,255,255,0.02);
+    color: var(--text, #e5e7eb);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+}
+
+@media (prefers-contrast: more) {
+  .ctp-editor-controls { border-color: #fff; }
+  .ctp-editor-select, .ctp-editor-btn { border-color: #fff; }
+}
+
 .ctp-editor-btn {
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.08);
