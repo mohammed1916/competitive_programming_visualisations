@@ -258,6 +258,7 @@ export default function CodeTracePanel({
                 <option value="vs-dark">Dark</option>
                 <option value="hc-black">High contrast</option>
               </select>
+            </label>
             <label style={{ marginLeft: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
               Lang
               <select className="ctp-editor-select" value={editorLanguage} onChange={(e) => {
@@ -292,7 +293,6 @@ export default function CodeTracePanel({
             </label>
 
             <button className="ctp-editor-btn" onClick={() => formatDocument()} style={{ marginLeft: 8 }}>Format</button>
-            </label>
           </div>
           <Suspense fallback={<textarea className="ctp-editor-textarea" value={(showComments ? commentsText + '\n\n' : '') + editorContent} onChange={(e) => setEditorContent(e.target.value.replace(/^(?:#.*\n)*/, '').replace(/^\n+/, ''))} />}>
             <MonacoEditor
