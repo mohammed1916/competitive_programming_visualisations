@@ -128,6 +128,35 @@
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', 'Courier New', monospace;
 }
 
+.ctp-editor-select {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: var(--text, #e5e7eb);
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  box-shadow: none;
+}
+
+.ctp-editor-select:focus {
+  outline: none;
+  border-color: rgba(56,189,248,0.6);
+  box-shadow: 0 0 0 6px rgba(56,189,248,0.06);
+}
+
+/* Improve contrast specifically for high-contrast mode */
+@media (prefers-contrast: more) {
+  .ctp-editor-select {
+    background: #000;
+    color: #fff;
+    border-color: #fff;
+  }
+}
+
 .ctp-row {
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr);

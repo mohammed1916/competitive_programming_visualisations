@@ -219,7 +219,7 @@ export default function CodeTracePanel({
             <button className="ctp-editor-btn" onClick={saveToFile}>Save file</button>
             <label style={{ marginLeft: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
               Theme
-              <select className="ctp-editor-btn" value={editorTheme} onChange={(e) => setEditorTheme(e.target.value)}>
+              <select className="ctp-editor-select" value={editorTheme} onChange={(e) => setEditorTheme(e.target.value)}>
                 <option value="vs">Light</option>
                 <option value="vs-dark">Dark</option>
                 <option value="hc-black">High contrast</option>
