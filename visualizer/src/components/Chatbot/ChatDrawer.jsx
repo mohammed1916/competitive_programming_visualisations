@@ -228,7 +228,7 @@ export default function ChatDrawer() {
       className={`chat-drawer ${floatingMode ? 'chat-drawer--floating' : 'chat-drawer--docked'}`}
       role="complementary"
       aria-label="AI Chat Assistant"
-      style={floatingMode ? { cursor: 'default' } : {}}
+      style={floatingMode ? { position: 'relative', width: '100%', height: '100%', cursor: 'default' } : { position: 'relative', width: '100%', height: '100%' }}
     >
         {/* Header */}
         <div
