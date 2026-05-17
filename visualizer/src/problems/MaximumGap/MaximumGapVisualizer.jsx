@@ -155,6 +155,10 @@ export default function MaximumGapVisualizer() {
                             data={{ index: i, value: v, arrayLength: ex.nums.length, step }}
                         >
                             <span className="mg-num">{v}</span>
+                            {/* Render any annotations targeting this array element */}
+                            {annotations && annotations.filter(a => a.target === `nums-${i}` || (a.target === 'array-item' && a.index === i)).map(a => (
+                                <div key={a.id} className="mg-annotation">{a.text}</div>
+                            ))}
                         </Selectable>
                     ))}
                 </div>
