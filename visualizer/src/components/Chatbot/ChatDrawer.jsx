@@ -42,6 +42,7 @@ export default function ChatDrawer() {
     attachedContext, attachContext, clearContext,
     isOpen, closeChat,
     selectMode, toggleSelectMode,
+    floatingMode, toggleFloatingMode,
   } = useChatContext();
 
   const { currentStep, problemTitle, problemDescription } = useVisualizationContext();
@@ -53,6 +54,44 @@ export default function ChatDrawer() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Floating position (persisted) and dragging refs — keep hooks unconditionally
+  const [pos, setPos] = useState(() => {
+    try { const s = window.localStorage.getItem('chat.pos'); if (s) return JSON.parse(s); } catch (err) { void err }
+    // default near bottom-right
+    return { x: window.innerWidth - 420, y: window.innerHeight - 520 };
+  });
+  const draggingRef = useRef(false);
+  const dragStartRef = useRef({ x: 0, y: 0, origX: 0, origY: 0 });
+
+  useEffect(() => {
+    const onMove = (e) => {
+      if (!draggingRef.current) return;
+      const clientX = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
+      const clientY = e.type.startsWith('touch') ? e.touches[0].clientY : e.clientY;
+      const dx = clientX - dragStartRef.current.x;
+      const dy = clientY - dragStartRef.current.y;
+      const nx = Math.max(6, Math.min(window.innerWidth - 200, dragStartRef.current.origX + dx));
+      const ny = Math.max(6, Math.min(window.innerHeight - 120, dragStartRef.current.origY + dy));
+      setPos({ x: nx, y: ny });
+    };
+    const onUp = () => {
+      if (!draggingRef.current) return;
+      draggingRef.current = false;
+      try { window.localStorage.setItem('chat.pos', JSON.stringify(pos)); } catch (err) { void err }
+      document.body.style.userSelect = '';
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('touchmove', onMove, { passive: false });
+    window.addEventListener('mouseup', onUp);
+    window.addEventListener('touchend', onUp);
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('touchmove', onMove);
+      window.removeEventListener('mouseup', onUp);
+      window.removeEventListener('touchend', onUp);
+    };
+  }, [pos]);
 
   // Attach current step to context
   const handleAttachStep = useCallback(() => {
@@ -135,15 +174,34 @@ export default function ChatDrawer() {
   );
 
   if (!isOpen) return null;
+  // Floating position (persisted)
+  const startDrag = (e) => {
+    e.preventDefault();
+    draggingRef.current = true;
+    const clientX = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
+    const clientY = e.type.startsWith('touch') ? e.touches[0].clientY : e.clientY;
+    dragStartRef.current = { x: clientX, y: clientY, origX: pos.x, origY: pos.y };
+    document.body.style.userSelect = 'none';
+  };
 
   return (
     <>
       {/* Backdrop (click to close) */}
       <div className="chat-backdrop" onClick={closeChat} />
 
-      <div className="chat-drawer" role="complementary" aria-label="AI Chat Assistant">
+      <div
+        className={`chat-drawer ${floatingMode ? 'chat-drawer--floating' : ''}`}
+        role="complementary"
+        aria-label="AI Chat Assistant"
+        style={floatingMode ? { left: `${pos.x}px`, top: `${pos.y}px`, position: 'fixed' } : {}}
+      >
         {/* Header */}
-        <div className="chat-header">
+        <div
+          className="chat-header"
+          onMouseDown={floatingMode ? startDrag : undefined}
+          onTouchStart={floatingMode ? startDrag : undefined}
+          style={floatingMode ? { cursor: 'move' } : {}}
+        >
           <div className="chat-header-left">
             <span className="chat-header-icon">🤖</span>
             <div>
@@ -152,20 +210,27 @@ export default function ChatDrawer() {
             </div>
           </div>
           <div className="chat-header-actions">
-              <button
-                className={`chat-select-toggle ${selectMode ? 'active' : ''}`}
-                onClick={() => {
-                  toggleSelectMode();
-                  try {
-                    if (!selectMode) document.body.classList.add('chat-select-mode');
-                    else document.body.classList.remove('chat-select-mode');
-                  } catch (err) { void err }
-                }}
-                aria-pressed={selectMode}
-                title="Toggle Select Mode (hover to highlight, click to attach)"
-              >
-                🔍 Select mode
-              </button>
+            <button
+              className={`chat-float-toggle ${floatingMode ? 'active' : ''}`}
+              onClick={() => toggleFloatingMode()}
+              title="Toggle floating chat"
+            >
+              ⛶ Float
+            </button>
+            <button
+              className={`chat-select-toggle ${selectMode ? 'active' : ''}`}
+              onClick={() => {
+                toggleSelectMode();
+                try {
+                  if (!selectMode) document.body.classList.add('chat-select-mode');
+                  else document.body.classList.remove('chat-select-mode');
+                } catch (err) { void err }
+              }}
+              aria-pressed={selectMode}
+              title="Toggle Select Mode (hover to highlight, click to attach)"
+            >
+              🔍 Select mode
+            </button>
             {/* Attach current step button */}
             <button
               className="chat-attach-step-btn"

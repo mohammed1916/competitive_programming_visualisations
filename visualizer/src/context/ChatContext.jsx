@@ -14,6 +14,7 @@ export function ChatProvider({ children }) {
   const [attachedContext, setAttachedContext] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const [selectMode, setSelectMode] = useState(false);
+  const [floatingMode, setFloatingMode] = useState(false);
 
   const openChat = useCallback(() => setIsOpen(true), []);
   const closeChat = useCallback(() => setIsOpen(false), []);
@@ -22,6 +23,10 @@ export function ChatProvider({ children }) {
   const enableSelectMode = useCallback(() => setSelectMode(true), []);
   const disableSelectMode = useCallback(() => setSelectMode(false), []);
   const toggleSelectMode = useCallback(() => setSelectMode((v) => !v), []);
+
+  const enableFloatingMode = useCallback(() => setFloatingMode(true), []);
+  const disableFloatingMode = useCallback(() => setFloatingMode(false), []);
+  const toggleFloatingMode = useCallback(() => setFloatingMode((v) => !v), []);
 
   /** Attach a labelled data payload from any visualizer element or step. */
   const attachContext = useCallback((label, data) => {
@@ -52,6 +57,7 @@ export function ChatProvider({ children }) {
         messages,
         attachedContext,
           selectMode,
+          floatingMode,
         isOpen,
         openChat,
         closeChat,
@@ -59,6 +65,9 @@ export function ChatProvider({ children }) {
           enableSelectMode,
           disableSelectMode,
           toggleSelectMode,
+          enableFloatingMode,
+          disableFloatingMode,
+          toggleFloatingMode,
         attachContext,
         clearContext,
         addMessage,

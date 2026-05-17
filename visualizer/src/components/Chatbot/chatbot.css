@@ -233,6 +233,31 @@
   50% { opacity: 0; }
 }
 
+/* Floating chat styles */
+.chat-drawer--floating {
+  width: 380px;
+  height: 520px;
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(2,6,23,0.6);
+  z-index: 9999;
+  background: var(--chat-bg, #071029);
+  border: 1px solid rgba(255,255,255,0.06);
+  overflow: hidden;
+}
+
+.chat-float-toggle {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 6px 10px;
+  border-radius: 8px;
+  margin-right: 6px;
+  cursor: pointer;
+}
+
+.chat-header[style*="cursor: move"] {
+  user-select: none;
+}
+
 /* ── Context badge ────────────────────────────────────────────────────── */
 .ctx-badge {
   display: inline-flex;
