@@ -17,6 +17,55 @@ export function VisualizationProvider({ children }) {
   const [targets, setTargets] = useState([]);
   const [overlays, setOverlays] = useState([]);
 
+  const validateCommand = useCallback((cmd) => {
+    const errors = [];
+    if (!cmd || typeof cmd !== 'object') {
+      errors.push('Command must be an object');
+      return { valid: false, errors };
+    }
+    const allowed = ['annotate', 'highlight', 'animate'];
+    if (!cmd.action || typeof cmd.action !== 'string' || !allowed.includes(cmd.action)) {
+      errors.push(`Invalid or missing action; allowed: ${allowed.join(', ')}`);
+      return { valid: false, errors };
+    }
+
+    // helper to find target id by type+index
+    const findTargetId = (type, index) => {
+      const t = targets.find((x) => x.type === type && x.index === index);
+      return t ? t.id : null;
+    };
+
+    let normalized = JSON.parse(JSON.stringify(cmd));
+
+    if (cmd.action === 'annotate') {
+      if (!Array.isArray(cmd.labels)) {
+        errors.push('annotate requires labels array');
+      } else {
+        normalized.labels = cmd.labels.map((lab, i) => {
+          const out = { ...lab };
+          if (!lab.target) {
+            errors.push(`labels[${i}]: missing target`);
+            return out;
+          }
+          // if target is a composite like 'bucket' with index field
+          if (!targets.find((t) => t.id === lab.target)) {
+            // try resolve by type+index
+            if (typeof lab.index === 'number') {
+              const resolved = findTargetId(lab.target, lab.index) || findTargetId(lab.target === 'nums' ? 'array-item' : lab.target, lab.index);
+              if (resolved) out.target = resolved;
+              else errors.push(`labels[${i}]: cannot resolve target ${lab.target} with index ${lab.index}`);
+            } else {
+              errors.push(`labels[${i}]: target '${lab.target}' not found`);
+            }
+          }
+          return out;
+        });
+      }
+    }
+
+    return { valid: errors.length === 0, errors, normalized };
+  }, [targets]);
+
   const publishStep = useCallback((step, title) => {
     setCurrentStep(step);
     if (title !== undefined) setProblemTitle(title);
@@ -55,14 +104,17 @@ export function VisualizationProvider({ children }) {
   // Queue/accept/reject flow for assistant-sent commands
   const queueCommand = useCallback((cmd) => {
     const id = Date.now() + Math.floor(Math.random() * 1000);
-    setPendingCommands((p) => [...p, { id, cmd, time: Date.now() }]);
+    const validation = validateCommand(cmd);
+    // store normalized cmd to apply if valid, otherwise keep original
+    const cmdToApply = validation.valid ? validation.normalized : cmd;
+    setPendingCommands((p) => [...p, { id, cmdOriginal: cmd, cmdToApply, time: Date.now(), valid: validation.valid, errors: validation.errors }]);
     return id;
-  }, []);
+  }, [validateCommand]);
 
   const acceptCommand = useCallback((id) => {
     setPendingCommands((p) => {
       const found = p.find(x => x.id === id);
-      if (found) visualizeCommand(found.cmd, id);
+      if (found) visualizeCommand(found.cmdToApply, id);
       return p.filter(x => x.id !== id);
     });
   }, [visualizeCommand]);
