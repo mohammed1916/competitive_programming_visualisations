@@ -59,7 +59,8 @@ export default function ChatDrawer() {
     return () => clearTimeout(t);
   }, [selectMode, toggleSelectMode]);
 
-  const { currentStep, problemTitle, problemDescription } = useVisualizationContext();
+  const viz = useVisualizationContext();
+  const { currentStep, problemTitle, problemDescription, getManifest } = viz;
   const messagesEndRef = useRef(null);
   const isStreamingRef = useRef(false);
   const [isStreaming, setIsStreaming] = useState(false);
@@ -164,10 +165,11 @@ export default function ChatDrawer() {
         const descContext = problemDescription
           ? `\n\nHere is the full problem statement:\n${problemDescription}`
           : "";
+        const manifestText = getManifest ? `\n\nAvailable visualization primitives and targets:\n${JSON.stringify(getManifest(), null, 2)}` : '';
         const history = [
           {
             role: "system",
-            text: `You are a helpful coding assistant embedded in a competitive programming visualizer. ${problemContext}${stepContext}${descContext}\n\nAnswer questions assuming this problem context. When the user asks about "why" or "how" something works, answer in the context of this problem's algorithm. When the user shares visualizer step data, explain what is happening in the algorithm at that step in clear, concise terms. When asked about code or data structures, be precise and educational.`,
+            text: `You are a helpful coding assistant embedded in a competitive programming visualizer. ${problemContext}${stepContext}${descContext}${manifestText}\n\nAnswer questions assuming this problem context. When the user asks about "why" or "how" something works, answer in the context of this problem's algorithm. When the user shares visualizer step data, explain what is happening in the algorithm at that step in clear, concise terms. When asked about code or data structures, be precise and educational.`,
           },
           // Previous messages (last 10 pairs for context window)
           ...messages.slice(-20).map((m) => ({ role: m.role, text: m.text, images: m.images })),

@@ -88,7 +88,24 @@ export default function MaximumGapVisualizer() {
         .map((b, i) => ({ i, min: b[0], max: b[1] }))
         .filter(b => b.min !== Infinity || b.i === activeB);
 
-    const { annotations } = useVisualizationContext();
+    const viz = useVisualizationContext();
+    const { annotations } = viz;
+
+    // Register targets for buckets and array indices so the assistant can reference them
+    useEffect(() => {
+        // register bucket targets
+        visibleBuckets.forEach((b) => {
+            viz.registerTarget && viz.registerTarget({ id: `bucket-${b.i}`, type: 'bucket', index: b.i, label: `Bucket ${b.i}` });
+        });
+        // register array element targets
+        ex.nums.forEach((v, i) => {
+            viz.registerTarget && viz.registerTarget({ id: `nums-${i}`, type: 'array-item', index: i, label: `nums[${i}]`, value: v });
+        });
+        return () => {
+            visibleBuckets.forEach((b) => { viz.registerTarget && viz.registerTarget({ id: `bucket-${b.i}`, remove: true }); });
+            ex.nums.forEach((v, i) => { viz.registerTarget && viz.registerTarget({ id: `nums-${i}`, remove: true }); });
+        };
+    }, [visibleBuckets, ex.nums, viz]);
 
     return (
         <div className="mg-shell">

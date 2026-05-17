@@ -13,6 +13,9 @@ export function VisualizationProvider({ children }) {
   // Visualization commands/annotations published by the chatbot
   const [annotations, setAnnotations] = useState([]);
   const [pendingCommands, setPendingCommands] = useState([]);
+  const [primitives, setPrimitives] = useState([]);
+  const [targets, setTargets] = useState([]);
+  const [overlays, setOverlays] = useState([]);
 
   const publishStep = useCallback((step, title) => {
     setCurrentStep(step);
@@ -66,8 +69,62 @@ export function VisualizationProvider({ children }) {
 
   const rejectCommand = useCallback((id) => setPendingCommands((p) => p.filter(x => x.id !== id)), []);
 
+  // Registry API for visualizers to advertise targets/primitives
+  const registerPrimitive = useCallback((primitive) => {
+    setPrimitives((p) => {
+      if (p.find(x => x.name === primitive.name)) return p;
+      return [...p, primitive];
+    });
+    return () => setPrimitives((p) => p.filter(x => x.name !== primitive.name));
+  }, []);
+
+  const registerTarget = useCallback((target) => {
+    if (target && target.remove) {
+      setTargets((t) => t.filter(x => x.id !== target.id));
+      return () => {};
+    }
+    setTargets((t) => [...t.filter(x => x.id !== target.id), target]);
+    return () => setTargets((t) => t.filter(x => x.id !== target.id));
+  }, []);
+
+  const createOverlay = useCallback((overlay) => {
+    const id = Date.now() + Math.floor(Math.random() * 1000);
+    setOverlays((o) => [...o, { id, ...overlay }]);
+    return id;
+  }, []);
+
+  const removeOverlay = useCallback((id) => setOverlays((o) => o.filter(x => x.id !== id)), []);
+
+  const clearOverlays = useCallback(() => setOverlays([]), []);
+
+  const getManifest = useCallback(() => ({ primitives, targets, overlays }), [primitives, targets, overlays]);
+
   return (
-    <VisualizationContext.Provider value={{ currentStep, problemTitle, problemDescription, publishStep, publishDescription, clearStep, annotations, visualizeCommand, clearAnnotations, pendingCommands, queueCommand, acceptCommand, rejectCommand }}>
+    <VisualizationContext.Provider value={{
+      currentStep,
+      problemTitle,
+      problemDescription,
+      publishStep,
+      publishDescription,
+      clearStep,
+      annotations,
+      visualizeCommand,
+      clearAnnotations,
+      pendingCommands,
+      queueCommand,
+      acceptCommand,
+      rejectCommand,
+      // registry
+      primitives,
+      targets,
+      overlays,
+      registerPrimitive,
+      registerTarget,
+      createOverlay,
+      removeOverlay,
+      clearOverlays,
+      getManifest,
+    }}>
       {children}
     </VisualizationContext.Provider>
   );
