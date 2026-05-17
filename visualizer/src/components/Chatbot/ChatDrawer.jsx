@@ -199,8 +199,14 @@ export default function ChatDrawer() {
 
   return (
     <>
-      {/* Backdrop (click to close) */}
-      <div className="chat-backdrop" onClick={closeChat} />
+      {/* Backdrop (click to close) — ignore when select or floating mode is active */}
+      <div
+        className="chat-backdrop"
+        onClick={() => {
+          if (selectMode || floatingMode) return;
+          closeChat();
+        }}
+      />
 
       <div
         className={`chat-drawer ${floatingMode ? 'chat-drawer--floating' : ''}`}
