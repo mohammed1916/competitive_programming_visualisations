@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState, useCallback, useEffect } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
+import { useVisualizationContext } from "./VisualizationContext";
 
 const ChatContext = createContext(null);
 
@@ -65,6 +66,32 @@ export function ChatProvider({ children }) {
   }, []);
 
   const clearMessages = useCallback(() => setMessages([]), []);
+
+  // Integrate with VisualizationContext to accept structured commands from assistant messages
+  const viz = useVisualizationContext();
+  const processedCmdIdsRef = useRef(new Set());
+
+  useEffect(() => {
+    if (!viz) return;
+    const last = messages.length ? messages[messages.length - 1] : null;
+    if (!last || last.role !== 'assistant' || !last.text) return;
+    if (processedCmdIdsRef.current.has(last.id)) return;
+
+    // Look for fenced JSON blocks marked as ```json or ```viz
+    const m = last.text.match(/```(?:json|viz)\s*([\s\S]*?)```/i);
+    if (!m) return;
+    try {
+      const parsed = JSON.parse(m[1]);
+      // Basic validation: must be an object with an action
+      if (parsed && typeof parsed === 'object' && parsed.action) {
+        // For minimal demo: auto-apply the command
+        viz.visualizeCommand(parsed);
+      }
+    } catch (err) {
+      console.warn('Failed to parse visualization command from assistant message', err);
+    }
+    processedCmdIdsRef.current.add(last.id);
+  }, [messages, viz]);
 
   return (
     <ChatContext.Provider

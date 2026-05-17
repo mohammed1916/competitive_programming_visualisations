@@ -88,6 +88,8 @@ export default function MaximumGapVisualizer() {
         .map((b, i) => ({ i, min: b[0], max: b[1] }))
         .filter(b => b.min !== Infinity || b.i === activeB);
 
+    const { annotations } = useVisualizationContext();
+
     return (
         <div className="mg-shell">
             <div className="mg-examples">
@@ -124,6 +126,10 @@ export default function MaximumGapVisualizer() {
                             transition={{ type: "spring", stiffness: 260, damping: 22 }}>
                             <span className="mg-bi">B{i}</span>
                             <span className="mg-brange">[{min === Infinity ? "∅" : min}, {max === -Infinity ? "∅" : max}]</span>
+                            {/* Render any bucket annotations from the visualization context */}
+                            {annotations && annotations.filter(a => a.target === 'bucket' && a.index === i).map(a => (
+                                <div key={a.id} className="mg-annotation">{a.text}</div>
+                            ))}
                         </motion.div>
                     ))}
                 </div>

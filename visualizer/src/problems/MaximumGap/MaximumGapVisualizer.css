@@ -72,6 +72,16 @@
     gap: 6px;
     align-items: center;
     padding: 6px 10px;
+
+.mg-annotation {
+    margin-top: 6px;
+    font-size: 12px;
+    color: #93c5fd;
+    background: rgba(59,130,246,0.08);
+    padding: 4px 6px;
+    border-radius: 6px;
+    margin-left: 6px;
+}
     border-radius: 6px;
     background: #252535;
     border: 1px solid #313244;
