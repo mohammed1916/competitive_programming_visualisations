@@ -61,7 +61,10 @@ export default function App() {
       const found = IMPLEMENTED_PROBLEMS.find(
         (p) => p.slug === slug || p.id === slug || p.slug === slug.replace(/\//g, "-")
       );
-      if (found) setActive(found);
+      if (found) {
+        const withSlug = found.slug ? found : { ...found, slug: found.id };
+        setActive(withSlug);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
