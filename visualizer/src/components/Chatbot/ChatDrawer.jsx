@@ -203,8 +203,20 @@ export default function ChatDrawer() {
     dragStartRef.current = { x: clientX, y: clientY, origX: pos.x, origY: pos.y };
     document.body.style.userSelect = 'none';
   };
-  const handleResize = ({ width, height }) => {
-    setChatSize((s) => ({ ...s, ...(width ? { width } : {}), ...(height ? { height } : {}) }));
+  const handleResize = (size, type) => {
+    setChatSize((prev) => {
+      const newSize = { ...prev, ...(size.width ? { width: size.width } : {}), ...(size.height ? { height: size.height } : {}) };
+      // Adjust position when resizing from left or top to keep the opposite edge fixed
+      if (floatingMode) {
+        if (type === 'left' && size.width) {
+          setPos((p) => ({ x: Math.max(6, Math.min(window.innerWidth - 200, p.x + (prev.width - size.width))), y: p.y }));
+        }
+        if (type === 'top' && size.height) {
+          setPos((p) => ({ x: p.x, y: Math.max(6, Math.min(window.innerHeight - 120, p.y + (prev.height - size.height))) }));
+        }
+      }
+      return newSize;
+    });
   };
   const handleResizeEnd = () => {
     try { window.localStorage.setItem('chat.size', JSON.stringify(chatSize)); } catch (err) { void err }
@@ -310,7 +322,7 @@ export default function ChatDrawer() {
       {/* Floating: position wrapper + full resizable panel; Docked: resizable panel anchored left */}
       {floatingMode ? (
         <div style={{ position: 'fixed', left: `${pos.x}px`, top: `${pos.y}px`, zIndex: 1000 }}>
-          <ResizablePanel width={chatSize.width} height={chatSize.height} onResize={handleResize} onResizeEnd={handleResizeEnd} handles={['corner','right','top']}>
+          <ResizablePanel width={chatSize.width} height={chatSize.height} onResize={handleResize} onResizeEnd={handleResizeEnd} handles={['left','right','top','bottom','corner']}>
             {chatContent}
           </ResizablePanel>
         </div>

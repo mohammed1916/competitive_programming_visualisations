@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import './ResizablePanel.css'
 
-export default function ResizablePanel({ width, height, minWidth=320, minHeight=260, maxWidth=1400, maxHeight=1200, onResizeStart, onResize, onResizeEnd, children, handles = ['right','corner','top'] }) {
+export default function ResizablePanel({ width, height, minWidth=320, minHeight=260, maxWidth=1400, maxHeight=1200, onResizeStart, onResize, onResizeEnd, children, handles = ['left','right','bottom','top','corner'] }) {
   const nodeRef = useRef(null)
   const stateRef = useRef(null)
 
@@ -14,25 +14,38 @@ export default function ResizablePanel({ width, height, minWidth=320, minHeight=
         const dy = e.clientY - s.startY
         const nextW = Math.max(minWidth, Math.min(maxWidth, s.startWidth + dx))
         const nextH = Math.max(minHeight, Math.min(maxHeight, s.startHeight + dy))
-        onResize && onResize({ width: nextW, height: nextH })
+        onResize && onResize({ width: nextW, height: nextH }, 'corner')
         return
       }
       if (s.type === 'right') {
         const dx = e.clientX - s.startX
         const nextW = Math.max(minWidth, Math.min(maxWidth, s.startWidth + dx))
-        onResize && onResize({ width: nextW })
+        onResize && onResize({ width: nextW }, 'right')
+        return
+      }
+      if (s.type === 'left') {
+        const dx = e.clientX - s.startX
+        const nextW = Math.max(minWidth, Math.min(maxWidth, s.startWidth - dx))
+        onResize && onResize({ width: nextW }, 'left')
         return
       }
       if (s.type === 'top') {
         const dy = e.clientY - s.startY
         const nextH = Math.max(minHeight, Math.min(maxHeight, s.startHeight - dy))
-        onResize && onResize({ height: nextH })
+        onResize && onResize({ height: nextH }, 'top')
+        return
+      }
+      if (s.type === 'bottom') {
+        const dy = e.clientY - s.startY
+        const nextH = Math.max(minHeight, Math.min(maxHeight, s.startHeight + dy))
+        onResize && onResize({ height: nextH }, 'bottom')
         return
       }
     }
 
     const handleUp = () => {
       if (!stateRef.current) return
+      // Consumers can perform snapping behavior in onResizeEnd if desired.
       stateRef.current = null
       document.body.classList.remove('resizing-panel')
       document.body.style.cursor = ''
@@ -57,8 +70,8 @@ export default function ResizablePanel({ width, height, minWidth=320, minHeight=
       startHeight: height,
     }
     document.body.classList.add('resizing-panel')
-    if (type === 'right') document.body.style.cursor = 'ew-resize'
-    else if (type === 'top') document.body.style.cursor = 'ns-resize'
+    if (type === 'right' || type === 'left') document.body.style.cursor = 'ew-resize'
+    else if (type === 'top' || type === 'bottom') document.body.style.cursor = 'ns-resize'
     else document.body.style.cursor = 'nwse-resize'
     onResizeStart && onResizeStart(type)
   }
@@ -69,6 +82,12 @@ export default function ResizablePanel({ width, height, minWidth=320, minHeight=
       {/* Resizing handles */}
       {handles.includes('right') && (
         <div className="resize-handle resize-handle--right" onPointerDown={(e) => start(e, 'right')} />
+      )}
+      {handles.includes('left') && (
+        <div className="resize-handle resize-handle--left" onPointerDown={(e) => start(e, 'left')} />
+      )}
+      {handles.includes('bottom') && (
+        <div className="resize-handle resize-handle--bottom" onPointerDown={(e) => start(e, 'bottom')} />
       )}
       {handles.includes('top') && (
         <div className="resize-handle resize-handle--top" onPointerDown={(e) => start(e, 'top')} />
