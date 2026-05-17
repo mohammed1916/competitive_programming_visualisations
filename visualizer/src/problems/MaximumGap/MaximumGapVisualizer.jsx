@@ -76,7 +76,12 @@ export default function MaximumGapVisualizer() {
     const applyEx = useCallback((e) => { setEx(e); handleReset(); }, [handleReset]);
 
     // Publish current step to the chatbot
-    const { publishStep, publishProblemState } = useVisualizationContext();
+    const {
+        publishStep,
+        publishProblemState,
+        registerTarget,
+        annotations,
+    } = useVisualizationContext();
     useEffect(() => { publishStep(step, "Maximum Gap"); }, [step, publishStep]);
 
     // Publish baseline algorithm state even when playback has not started.
@@ -98,33 +103,35 @@ export default function MaximumGapVisualizer() {
         });
     }, [ex.nums, step, publishProblemState]);
 
-    const buckets = step?.buckets ?? [];
+    const buckets = useMemo(() => step?.buckets ?? [], [step]);
     const activeB = step?.activeB ?? -1;
     const res = step?.res ?? 0;
     const phase = step?.phase ?? "init";
 
-    const visibleBuckets = buckets
-        .map((b, i) => ({ i, min: b[0], max: b[1] }))
-        .filter(b => b.min !== Infinity || b.i === activeB);
-
-    const viz = useVisualizationContext();
-    const { annotations } = viz;
+    const visibleBuckets = useMemo(
+        () => buckets
+            .map((b, i) => ({ i, min: b[0], max: b[1] }))
+            .filter(b => b.min !== Infinity || b.i === activeB),
+        [buckets, activeB]
+    );
 
     // Register targets for buckets and array indices so the assistant can reference them
     useEffect(() => {
+        const cleanups = [];
         // register bucket targets
         visibleBuckets.forEach((b) => {
-            viz.registerTarget && viz.registerTarget({ id: `bucket-${b.i}`, type: 'bucket', index: b.i, label: `Bucket ${b.i}` });
+            if (registerTarget) {
+                cleanups.push(registerTarget({ id: `bucket-${b.i}`, type: 'bucket', index: b.i, label: `Bucket ${b.i}` }));
+            }
         });
         // register array element targets
         ex.nums.forEach((v, i) => {
-            viz.registerTarget && viz.registerTarget({ id: `nums-${i}`, type: 'array-item', index: i, label: `nums[${i}]`, value: v });
+            if (registerTarget) {
+                cleanups.push(registerTarget({ id: `nums-${i}`, type: 'array-item', index: i, label: `nums[${i}]`, value: v }));
+            }
         });
-        return () => {
-            visibleBuckets.forEach((b) => { viz.registerTarget && viz.registerTarget({ id: `bucket-${b.i}`, remove: true }); });
-            ex.nums.forEach((v, i) => { viz.registerTarget && viz.registerTarget({ id: `nums-${i}`, remove: true }); });
-        };
-    }, [visibleBuckets, ex.nums, viz]);
+        return () => cleanups.forEach((fn) => fn && fn());
+    }, [visibleBuckets, ex.nums, registerTarget]);
 
     return (
         <div className="mg-shell">
@@ -163,7 +170,7 @@ export default function MaximumGapVisualizer() {
                             <span className="mg-bi">B{i}</span>
                             <span className="mg-brange">[{min === Infinity ? "∅" : min}, {max === -Infinity ? "∅" : max}]</span>
                             {/* Render any bucket annotations from the visualization context */}
-                            {annotations && annotations.filter(a => a.target === 'bucket' && a.index === i).map(a => (
+                            {annotations && annotations.filter(a => a.target === `bucket-${i}` || (a.target === 'bucket' && a.index === i)).map(a => (
                                 <div key={a.id} className="mg-annotation">{a.text}</div>
                             ))}
                         </motion.div>

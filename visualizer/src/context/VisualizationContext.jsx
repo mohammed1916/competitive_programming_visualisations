@@ -158,10 +158,22 @@ export function VisualizationProvider({ children }) {
 
   const registerTarget = useCallback((target) => {
     if (target && target.remove) {
-      setTargets((t) => t.filter(x => x.id !== target.id));
+      setTargets((t) => {
+        const next = t.filter(x => x.id !== target.id);
+        return next.length === t.length ? t : next;
+      });
       return () => {};
     }
-    setTargets((t) => [...t.filter(x => x.id !== target.id), target]);
+    setTargets((t) => {
+      const idx = t.findIndex((x) => x.id === target.id);
+      if (idx === -1) return [...t, target];
+      const prev = t[idx];
+      const same = prev && Object.keys(target).every((k) => prev[k] === target[k]) && Object.keys(prev).every((k) => prev[k] === target[k]);
+      if (same) return t;
+      const next = [...t];
+      next[idx] = target;
+      return next;
+    });
     return () => setTargets((t) => t.filter(x => x.id !== target.id));
   }, []);
 
