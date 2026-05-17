@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import './ResizablePanel.css'
 import ResizerHandle from './ResizerHandle'
 
-export default function ResizablePanel({ width, height, minWidth = 320, minHeight = 260, maxWidth = 1400, maxHeight = 1200, onResizeStart, onResize, onResizeEnd, children, handles = ['left', 'right', 'bottom', 'top', 'corner'] }) {
+export default function ResizablePanel({ width, height, minWidth = 320, minHeight = 260, maxWidth = 1400, maxHeight = 1200, onResizeStart, onResize, onResizeEnd, children, handles = ['left', 'right', 'bottom', 'top', 'corner'], className = '', style = {} }) {
   const nodeRef = useRef(null)
   const stateRef = useRef(null)
 
@@ -78,7 +78,7 @@ export default function ResizablePanel({ width, height, minWidth = 320, minHeigh
   }
 
   return (
-    <div className="resizable-panel" ref={nodeRef} style={{ width: width ? `${width}px` : undefined, height: height ? `${height}px` : undefined }}>
+    <div className={`resizable-panel ${className}`.trim()} ref={nodeRef} style={{ width: width ? `${width}px` : undefined, height: height ? `${height}px` : undefined, ...style }}>
       <div className="resizable-children">{children}</div>
       {/* Resizing handles */}
       {handles.includes('right') && (

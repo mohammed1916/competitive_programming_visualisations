@@ -327,7 +327,14 @@ export default function ChatDrawer() {
           </ResizablePanel>
         </div>
       ) : (
-        <ResizablePanel width={chatSize.width} onResize={handleResize} onResizeEnd={handleResizeEnd} handles={['right']}>
+        <ResizablePanel
+          width={chatSize.width}
+          onResize={handleResize}
+          onResizeEnd={handleResizeEnd}
+          handles={['left']}
+          className="chat-panel-docked"
+          style={{ position: 'fixed', top: 0, right: 0, height: '100vh', zIndex: 1002 }}
+        >
           {chatContent}
         </ResizablePanel>
       )}

@@ -39,10 +39,29 @@
     width: 14px;
     height: 100%;
     cursor: ew-resize;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .resize-handle--left:hover {
     background: linear-gradient(-90deg, rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.02));
+}
+
+/* Visible pill grip inside left handle */
+.resize-handle--left::after {
+    content: '';
+    width: 4px;
+    height: 44px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.06);
+    transition: background 0.12s ease, box-shadow 0.12s ease;
+    pointer-events: none;
+}
+
+.resize-handle--left:hover::after {
+    background: rgba(255, 255, 255, 0.18);
+    box-shadow: 0 0 0 6px rgba(56, 189, 248, 0.06);
 }
 
 .resize-handle--top {
