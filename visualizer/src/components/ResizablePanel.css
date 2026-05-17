@@ -11,7 +11,7 @@
 
 .resize-handle {
     position: absolute;
-    z-index: 40;
+    z-index: 9999;
     background: transparent;
     transition: background-color 120ms ease;
 }
