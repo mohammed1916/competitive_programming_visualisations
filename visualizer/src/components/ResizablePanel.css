@@ -1,4 +1,33 @@
 .resizable-panel { position: relative; display: flex; flex-direction: column; }
 .resizable-children { width: 100%; height: 100%; }
-/* rp-handle styles removed per request; handles are no longer rendered by ResizablePanel. */
+.resize-handle {
+	position: absolute;
+	z-index: 40;
+	background: transparent;
+}
+.resize-handle::after {
+	content: '';
+	display: block;
+}
+.resize-handle--right {
+	top: 0;
+	right: 0;
+	width: 10px;
+	height: 100%;
+	cursor: ew-resize;
+}
+.resize-handle--top {
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 10px;
+	cursor: ns-resize;
+}
+.resize-handle--corner {
+	right: 0;
+	bottom: 0;
+	width: 16px;
+	height: 16px;
+	cursor: nwse-resize;
+}
 body.resizing-panel, body.resizing-panel * { user-select: none !important }

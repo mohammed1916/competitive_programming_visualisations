@@ -1,7 +1,7 @@
-import React, { useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import './ResizablePanel.css'
 
-export default function ResizablePanel({ width, height, minWidth=320, minHeight=260, maxWidth=1400, maxHeight=1200, onResizeStart, onResize, onResizeEnd, children }) {
+export default function ResizablePanel({ width, height, minWidth=320, minHeight=260, maxWidth=1400, maxHeight=1200, onResizeStart, onResize, onResizeEnd, children, handles = ['right','corner','top'] }) {
   const nodeRef = useRef(null)
   const stateRef = useRef(null)
 
@@ -66,7 +66,16 @@ export default function ResizablePanel({ width, height, minWidth=320, minHeight=
   return (
     <div className="resizable-panel" ref={nodeRef} style={{ width: width ? `${width}px` : undefined, height: height ? `${height}px` : undefined }}>
       <div className="resizable-children">{children}</div>
-      {/* Resizing handles removed per request; keep panel content only. */}
+      {/* Resizing handles */}
+      {handles.includes('right') && (
+        <div className="resize-handle resize-handle--right" onPointerDown={(e) => start(e, 'right')} />
+      )}
+      {handles.includes('top') && (
+        <div className="resize-handle resize-handle--top" onPointerDown={(e) => start(e, 'top')} />
+      )}
+      {handles.includes('corner') && (
+        <div className="resize-handle resize-handle--corner" onPointerDown={(e) => start(e, 'corner')} />
+      )}
     </div>
   )
 }

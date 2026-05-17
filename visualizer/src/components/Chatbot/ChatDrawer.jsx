@@ -4,6 +4,7 @@ import { useVisualizationContext } from "../../context/VisualizationContext";
 import { streamChat } from "../../services/ollama";
 import ChatMessage from "./ChatMessage";
 import ChatInput from "./ChatInput";
+import ResizablePanel from "../ResizablePanel";
 
 /**
  * Formats the current visualizer step as a readable context string
@@ -73,6 +74,12 @@ export default function ChatDrawer() {
     try { const s = window.localStorage.getItem('chat.pos'); if (s) return JSON.parse(s); } catch (err) { void err }
     // default near bottom-right
     return { x: window.innerWidth - 420, y: window.innerHeight - 520 };
+  });
+
+  // Chat size (persisted) — width and height for floating, width for docked
+  const [chatSize, setChatSize] = useState(() => {
+    try { const s = window.localStorage.getItem('chat.size'); if (s) return JSON.parse(s); } catch (err) { void err }
+    return { width: 380, height: 520 };
   });
   const draggingRef = useRef(false);
   const dragStartRef = useRef({ x: 0, y: 0, origX: 0, origY: 0 });
@@ -196,25 +203,21 @@ export default function ChatDrawer() {
     dragStartRef.current = { x: clientX, y: clientY, origX: pos.x, origY: pos.y };
     document.body.style.userSelect = 'none';
   };
+  const handleResize = ({ width, height }) => {
+    setChatSize((s) => ({ ...s, ...(width ? { width } : {}), ...(height ? { height } : {}) }));
+  };
+  const handleResizeEnd = () => {
+    try { window.localStorage.setItem('chat.size', JSON.stringify(chatSize)); } catch (err) { void err }
+  };
 
-  return (
-    <>
-      {/* Backdrop (click to close) — ignore when select or floating mode is active */}
-      <div
-        className="chat-backdrop"
-        style={floatingMode ? { pointerEvents: 'none' } : {}}
-        onClick={() => {
-          if (selectMode || floatingMode) return;
-          closeChat();
-        }}
-      />
-
-      <div
-        className={`chat-drawer ${floatingMode ? 'chat-drawer--floating' : ''}`}
-        role="complementary"
-        aria-label="AI Chat Assistant"
-        style={floatingMode ? { left: `${pos.x}px`, top: `${pos.y}px`, position: 'fixed' } : {}}
-      >
+  // render content (header, messages, input)
+  const chatContent = (
+    <div
+      className={`chat-drawer ${floatingMode ? 'chat-drawer--floating' : 'chat-drawer--docked'}`}
+      role="complementary"
+      aria-label="AI Chat Assistant"
+      style={floatingMode ? { cursor: 'default' } : {}}
+    >
         {/* Header */}
         <div
           className="chat-header"
@@ -290,6 +293,32 @@ export default function ChatDrawer() {
           disabled={isStreaming}
         />
       </div >
+  );
+
+  return (
+    <>
+      {/* Backdrop (click to close) — ignore when select or floating mode is active */}
+      <div
+        className="chat-backdrop"
+        style={floatingMode ? { pointerEvents: 'none' } : {}}
+        onClick={() => {
+          if (selectMode || floatingMode) return;
+          closeChat();
+        }}
+      />
+
+      {/* Floating: position wrapper + full resizable panel; Docked: resizable panel anchored left */}
+      {floatingMode ? (
+        <div style={{ position: 'fixed', left: `${pos.x}px`, top: `${pos.y}px`, zIndex: 1000 }}>
+          <ResizablePanel width={chatSize.width} height={chatSize.height} onResize={handleResize} onResizeEnd={handleResizeEnd} handles={['corner','right','top']}>
+            {chatContent}
+          </ResizablePanel>
+        </div>
+      ) : (
+        <ResizablePanel width={chatSize.width} onResize={handleResize} onResizeEnd={handleResizeEnd} handles={['right']}>
+          {chatContent}
+        </ResizablePanel>
+      )}
     </>
   );
 }
