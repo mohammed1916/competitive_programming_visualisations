@@ -230,81 +230,81 @@ export default function ChatDrawer() {
       aria-label="AI Chat Assistant"
       style={floatingMode ? { position: 'relative', width: '100%', height: '100%', cursor: 'default' } : { position: 'relative', width: '100%', height: '100%' }}
     >
-        {/* Header */}
-        <div
-          className="chat-header"
-          onMouseDown={floatingMode ? startDrag : undefined}
-          onTouchStart={floatingMode ? startDrag : undefined}
-          style={floatingMode ? { cursor: 'move' } : {}}
-        >
-          <div className="chat-header-left">
-            <span className="chat-header-icon">🤖</span>
-            <div>
-              <div className="chat-header-title">Gemma Assistant <span className="chat-shortcut">(Alt+C)</span></div>
-              <div className="chat-header-sub">gemma4:e2b · Ollama</div>
-            </div>
-          </div>
-          <div className="chat-header-actions">
-            <button
-              className={`chat-float-toggle ${floatingMode ? 'active' : ''}`}
-              onClick={() => toggleFloatingMode()}
-              title="Toggle floating chat"
-            >
-              <span className="">⛶</span> {floatingMode ? 'Dock' : 'Float'}
-            </button>
-            <button
-              className={`chat-select-toggle ${selectMode ? 'active' : ''}`}
-              onClick={handleToggleSelectMode}
-              aria-pressed={selectMode}
-              title="Toggle Select Mode (hover to highlight, click to attach)"
-            >
-              🔍 Select mode
-              {selectMode && <span className="chat-select-hint">Select mode ON</span>}
-            </button>
-            <div className="visually-hidden" aria-live="polite">{selectAnnouncement}</div>
-            {/* Attach current step button */}
-            <button
-              className="chat-attach-step-btn"
-              onClick={handleAttachStep}
-              disabled={!currentStep}
-              title={currentStep ? `Attach current step from ${problemTitle || "visualizer"}` : "No active visualizer step"}
-            >
-              📎 Attach step
-            </button>
-            <button className="chat-clear-btn" onClick={clearMessages} title="Clear chat">
-              🗑️
-            </button>
-            <button className="chat-close-btn" onClick={closeChat} title="Close chat">
-              ✕
-            </button>
+      {/* Header */}
+      <div
+        className="chat-header"
+        onMouseDown={floatingMode ? startDrag : undefined}
+        onTouchStart={floatingMode ? startDrag : undefined}
+        style={floatingMode ? { cursor: 'move' } : {}}
+      >
+        <div className="chat-header-left">
+          <span className="chat-header-icon">🤖</span>
+          <div>
+            <div className="chat-header-title">Gemma Assistant <span className="chat-shortcut">(Alt+C)</span></div>
+            <div className="chat-header-sub">gemma4:e2b · Ollama</div>
           </div>
         </div>
-
-        {/* Message list */}
-        <div className="chat-messages">
-          {messages.length === 0 && (
-            <div className="chat-empty">
-              <div className="chat-empty-icon">💬</div>
-              <p>Ask Gemma anything about the algorithm you&apos;re visualizing.</p>
-              <p className="chat-empty-hint">
-                Use <strong>📎 Attach step</strong> to share the current timestep, or click any highlighted element in the visualizer.
-              </p>
-            </div>
-          )}
-          {messages.map((msg) => (
-            <ChatMessage key={msg.id} message={msg} />
-          ))}
-          <div ref={messagesEndRef} />
+        <div className="chat-header-actions">
+          <button
+            className={`chat-float-toggle ${floatingMode ? 'active' : ''}`}
+            onClick={() => toggleFloatingMode()}
+            title="Toggle floating chat"
+          >
+            <span className="">⛶</span> {floatingMode ? 'Dock' : 'Float'}
+          </button>
+          <button
+            className={`chat-select-toggle ${selectMode ? 'active' : ''}`}
+            onClick={handleToggleSelectMode}
+            aria-pressed={selectMode}
+            title="Toggle Select Mode (hover to highlight, click to attach)"
+          >
+            🔍 Select mode
+            {selectMode && <span className="chat-select-hint">Select mode ON</span>}
+          </button>
+          <div className="visually-hidden" aria-live="polite">{selectAnnouncement}</div>
+          {/* Attach current step button */}
+          <button
+            className="chat-attach-step-btn"
+            onClick={handleAttachStep}
+            disabled={!currentStep}
+            title={currentStep ? `Attach current step from ${problemTitle || "visualizer"}` : "No active visualizer step"}
+          >
+            📎 Attach step
+          </button>
+          <button className="chat-clear-btn" onClick={clearMessages} title="Clear chat">
+            🗑️
+          </button>
+          <button className="chat-close-btn" onClick={closeChat} title="Close chat">
+            ✕
+          </button>
         </div>
+      </div>
 
-        {/* Input */}
-        <ChatInput
-          onSend={handleSend}
-          attachedContext={attachedContext}
-          onClearContext={clearContext}
-          disabled={isStreaming}
-        />
-      </div >
+      {/* Message list */}
+      <div className="chat-messages">
+        {messages.length === 0 && (
+          <div className="chat-empty">
+            <div className="chat-empty-icon">💬</div>
+            <p>Ask Gemma anything about the algorithm you&apos;re visualizing.</p>
+            <p className="chat-empty-hint">
+              Use <strong>📎 Attach step</strong> to share the current timestep, or click any highlighted element in the visualizer.
+            </p>
+          </div>
+        )}
+        {messages.map((msg) => (
+          <ChatMessage key={msg.id} message={msg} />
+        ))}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input */}
+      <ChatInput
+        onSend={handleSend}
+        attachedContext={attachedContext}
+        onClearContext={clearContext}
+        disabled={isStreaming}
+      />
+    </div >
   );
 
   return (
@@ -322,7 +322,7 @@ export default function ChatDrawer() {
       {/* Floating: position wrapper + full resizable panel; Docked: resizable panel anchored left */}
       {floatingMode ? (
         <div style={{ position: 'fixed', left: `${pos.x}px`, top: `${pos.y}px`, zIndex: 1000 }}>
-          <ResizablePanel width={chatSize.width} height={chatSize.height} onResize={handleResize} onResizeEnd={handleResizeEnd} handles={['left','right','top','bottom','corner']}>
+          <ResizablePanel width={chatSize.width} height={chatSize.height} onResize={handleResize} onResizeEnd={handleResizeEnd} handles={['left', 'right', 'top', 'bottom', 'corner']}>
             {chatContent}
           </ResizablePanel>
         </div>

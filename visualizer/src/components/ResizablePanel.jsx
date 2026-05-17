@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import './ResizablePanel.css'
 import ResizerHandle from './ResizerHandle'
 
-export default function ResizablePanel({ width, height, minWidth=320, minHeight=260, maxWidth=1400, maxHeight=1200, onResizeStart, onResize, onResizeEnd, children, handles = ['left','right','bottom','top','corner'] }) {
+export default function ResizablePanel({ width, height, minWidth = 320, minHeight = 260, maxWidth = 1400, maxHeight = 1200, onResizeStart, onResize, onResizeEnd, children, handles = ['left', 'right', 'bottom', 'top', 'corner'] }) {
   const nodeRef = useRef(null)
   const stateRef = useRef(null)
 
