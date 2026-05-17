@@ -16,7 +16,12 @@
     "framer-motion": "^12.38.0",
     "html2canvas": "^1.4.1",
     "react": "^19.2.5",
-    "react-dom": "^19.2.5"
+    "react-dom": "^19.2.5",
+    "react-markdown": "^8.0.5",
+    "remark-gfm": "^3.0.1",
+    "remark-math": "^5.1.1",
+    "rehype-katex": "^6.0.0",
+    "katex": "^0.16.8"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
