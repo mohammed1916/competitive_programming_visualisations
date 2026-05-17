@@ -185,6 +185,8 @@ export default function ChatInput({ onSend, attachedContext, onClearContext, dis
           🎤
         </button>
 
+      </div>
+      <div className="chat-input-row">
         {/* Textarea */}
         <textarea
           ref={textareaRef}
