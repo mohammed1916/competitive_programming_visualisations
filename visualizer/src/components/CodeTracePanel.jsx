@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, lazy, Suspense } from 'react'
 import { motion } from 'framer-motion'
 import './CodeTracePanel.css'
+import ResizerHandle from './ResizerHandle'
 
 const MonacoEditor = lazy(() => import('@monaco-editor/react'))
 
@@ -322,7 +323,8 @@ export default function CodeTracePanel({
         onTouchStart={startDrag}
         aria-hidden="true"
       >
-        <div className="ctp-resizer-handle" />
+        {/* Use modular ResizerHandle with ctp visual */}
+        <ResizerHandle side="center" className="ctp" onPointerDown={startDrag} />
       </div>
     </motion.div>
   )
