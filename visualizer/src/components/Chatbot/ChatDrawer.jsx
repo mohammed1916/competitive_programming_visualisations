@@ -44,6 +44,19 @@ export default function ChatDrawer() {
     selectMode, toggleSelectMode,
     floatingMode, toggleFloatingMode,
   } = useChatContext();
+  const [selectAnnouncement, setSelectAnnouncement] = useState('');
+
+  const handleToggleSelectMode = useCallback(() => {
+    const newMode = !selectMode;
+    toggleSelectMode();
+    try {
+      if (newMode) document.body.classList.add('chat-select-mode');
+      else document.body.classList.remove('chat-select-mode');
+    } catch (err) { void err }
+    setSelectAnnouncement(newMode ? 'Select mode enabled' : 'Select mode disabled');
+    const t = setTimeout(() => setSelectAnnouncement(''), 1800);
+    return () => clearTimeout(t);
+  }, [selectMode, toggleSelectMode]);
 
   const { currentStep, problemTitle, problemDescription } = useVisualizationContext();
   const messagesEndRef = useRef(null);
@@ -219,18 +232,14 @@ export default function ChatDrawer() {
             </button>
             <button
               className={`chat-select-toggle ${selectMode ? 'active' : ''}`}
-              onClick={() => {
-                toggleSelectMode();
-                try {
-                  if (!selectMode) document.body.classList.add('chat-select-mode');
-                  else document.body.classList.remove('chat-select-mode');
-                } catch (err) { void err }
-              }}
+              onClick={handleToggleSelectMode}
               aria-pressed={selectMode}
               title="Toggle Select Mode (hover to highlight, click to attach)"
             >
               🔍 Select mode
             </button>
+            {selectMode && <span className="chat-select-hint">Select mode ON</span>}
+            <div className="visually-hidden" aria-live="polite">{selectAnnouncement}</div>
             {/* Attach current step button */}
             <button
               className="chat-attach-step-btn"
