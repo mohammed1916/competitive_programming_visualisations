@@ -40,12 +40,14 @@ function formatElementContext(label, data) {
 export default function ChatDrawer() {
   const {
     messages, addMessage, updateLastMessage, clearMessages,
+    conversations, activeConversationId, newChat, switchChat, deleteChat,
     attachedContext, attachContext, clearContext,
     isOpen, closeChat,
     selectMode, toggleSelectMode,
     floatingMode, toggleFloatingMode,
   } = useChatContext();
   const [selectAnnouncement, setSelectAnnouncement] = useState('');
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   const handleToggleSelectMode = useCallback(() => {
     const newMode = !selectMode;
@@ -257,6 +259,23 @@ export default function ChatDrawer() {
         </div>
         <div className="chat-header-actions">
           <button
+            className="chat-history-toggle"
+            onClick={() => setHistoryOpen((v) => !v)}
+            title="Toggle chat history"
+          >
+            🕘 History
+          </button>
+          <button
+            className="chat-new-toggle"
+            onClick={() => {
+              newChat();
+              setHistoryOpen(false);
+            }}
+            title="Start new chat"
+          >
+            ＋ New
+          </button>
+          <button
             className={`chat-float-toggle ${floatingMode ? 'active' : ''}`}
             onClick={() => toggleFloatingMode()}
             title="Toggle floating chat"
@@ -290,6 +309,45 @@ export default function ChatDrawer() {
           </button>
         </div>
       </div>
+
+      {historyOpen && (
+        <div className="chat-history-panel">
+          {conversations.map((c) => (
+            <div
+              key={c.id}
+              className={`chat-history-item ${c.id === activeConversationId ? 'active' : ''}`}
+              onClick={() => {
+                switchChat(c.id);
+                setHistoryOpen(false);
+              }}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  switchChat(c.id);
+                  setHistoryOpen(false);
+                }
+              }}
+            >
+              <div className="chat-history-main">
+                <div className="chat-history-title">{c.title || 'New Chat'}</div>
+                <div className="chat-history-meta">{(c.messages || []).length} msgs</div>
+              </div>
+              <button
+                className="chat-history-delete"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deleteChat(c.id);
+                }}
+                title="Delete chat"
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Message list */}
       <div className="chat-messages">
