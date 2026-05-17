@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
-import { TRACKS } from "./data/implementedProblems";
+import { TRACKS, IMPLEMENTED_PROBLEMS } from "./data/implementedProblems";
 import ProblemPage from "./components/ProblemPage";
 import HomePage from "./components/HomePage";
 import { ChatDrawer } from "./components/Chatbot";
@@ -46,6 +46,19 @@ export default function App() {
       window.history.pushState({}, "", window.location.pathname);
     }
   }, [active]);
+
+  // On initial load, check for a hash and open that problem if implemented
+  useEffect(() => {
+    const raw = window.location.hash || "";
+    const slug = raw.replace(/^#\/?/, "");
+    if (slug) {
+      const found = IMPLEMENTED_PROBLEMS.find(
+        (p) => p.slug === slug || p.id === slug || p.slug === slug.replace(/\//g, "-")
+      );
+      if (found) setActive(found);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const onPop = () => setActive(null);
