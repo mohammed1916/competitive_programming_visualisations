@@ -76,8 +76,27 @@ export default function MaximumGapVisualizer() {
     const applyEx = useCallback((e) => { setEx(e); handleReset(); }, [handleReset]);
 
     // Publish current step to the chatbot
-    const { publishStep } = useVisualizationContext();
+    const { publishStep, publishProblemState } = useVisualizationContext();
     useEffect(() => { publishStep(step, "Maximum Gap"); }, [step, publishStep]);
+
+    // Publish baseline algorithm state even when playback has not started.
+    useEffect(() => {
+        const n = ex.nums.length;
+        const lo = n > 0 ? Math.min(...ex.nums) : null;
+        const hi = n > 0 ? Math.max(...ex.nums) : null;
+        const bsize = n > 1 ? Math.max(1, Math.floor((hi - lo) / (n - 1))) : null;
+        publishProblemState({
+            problem: "Maximum Gap",
+            nums: ex.nums,
+            lo,
+            hi,
+            n,
+            bsize,
+            expression: "b = (x - lo) // bsize",
+            currentStep: step,
+            note: step ? "Playback has active step" : "Playback not started; constants available",
+        });
+    }, [ex.nums, step, publishProblemState]);
 
     const buckets = step?.buckets ?? [];
     const activeB = step?.activeB ?? -1;

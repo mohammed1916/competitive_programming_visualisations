@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useCallback } from "react";
 
 const VisualizationContext = createContext(null);
@@ -10,6 +11,7 @@ export function VisualizationProvider({ children }) {
   const [currentStep, setCurrentStep] = useState(null);
   const [problemTitle, setProblemTitle] = useState("");
   const [problemDescription, setProblemDescription] = useState(null);
+  const [problemState, setProblemState] = useState(null);
   // Visualization commands/annotations published by the chatbot
   const [annotations, setAnnotations] = useState([]);
   const [pendingCommands, setPendingCommands] = useState([]);
@@ -75,10 +77,15 @@ export function VisualizationProvider({ children }) {
     setProblemDescription(description);
   }, []);
 
+  const publishProblemState = useCallback((state) => {
+    setProblemState(state);
+  }, []);
+
   const clearStep = useCallback(() => {
     setCurrentStep(null);
     setProblemTitle("");
     setProblemDescription(null);
+    setProblemState(null);
   }, []);
 
   const visualizeCommand = useCallback((cmd, commandId = null) => {
@@ -114,10 +121,29 @@ export function VisualizationProvider({ children }) {
   const acceptCommand = useCallback((id) => {
     setPendingCommands((p) => {
       const found = p.find(x => x.id === id);
-      if (found) visualizeCommand(found.cmdToApply, id);
-      return p.filter(x => x.id !== id);
+      if (!found) return p;
+      const validation = validateCommand(found.cmdToApply);
+      if (validation.valid) {
+        visualizeCommand(validation.normalized, id);
+        return p.filter(x => x.id !== id);
+      }
+      return p.map((x) => x.id === id ? { ...x, valid: false, errors: validation.errors } : x);
     });
-  }, [visualizeCommand]);
+  }, [visualizeCommand, validateCommand]);
+
+  const acceptCommandWithOverride = useCallback((id, overrideCmd) => {
+    setPendingCommands((p) => {
+      const found = p.find(x => x.id === id);
+      if (!found) return p;
+      const cmd = overrideCmd || found.cmdToApply;
+      const validation = validateCommand(cmd);
+      if (validation.valid) {
+        visualizeCommand(validation.normalized, id);
+        return p.filter(x => x.id !== id);
+      }
+      return p.map((x) => x.id === id ? { ...x, cmdToApply: cmd, valid: false, errors: validation.errors } : x);
+    });
+  }, [validateCommand, visualizeCommand]);
 
   const rejectCommand = useCallback((id) => setPendingCommands((p) => p.filter(x => x.id !== id)), []);
 
@@ -156,8 +182,10 @@ export function VisualizationProvider({ children }) {
       currentStep,
       problemTitle,
       problemDescription,
+      problemState,
       publishStep,
       publishDescription,
+      publishProblemState,
       clearStep,
       annotations,
       visualizeCommand,
@@ -165,6 +193,7 @@ export function VisualizationProvider({ children }) {
       pendingCommands,
       queueCommand,
       acceptCommand,
+      acceptCommandWithOverride,
       rejectCommand,
       // registry
       primitives,
@@ -176,6 +205,7 @@ export function VisualizationProvider({ children }) {
       removeOverlay,
       clearOverlays,
       getManifest,
+      validateCommand,
     }}>
       {children}
     </VisualizationContext.Provider>

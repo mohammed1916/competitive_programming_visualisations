@@ -60,7 +60,7 @@ export default function ChatDrawer() {
   }, [selectMode, toggleSelectMode]);
 
   const viz = useVisualizationContext();
-  const { currentStep, problemTitle, problemDescription, getManifest } = viz;
+  const { currentStep, problemTitle, problemDescription, problemState, getManifest } = viz;
   const messagesEndRef = useRef(null);
   const isStreamingRef = useRef(false);
   const [isStreaming, setIsStreaming] = useState(false);
@@ -129,11 +129,16 @@ export default function ChatDrawer() {
 
       // Build context block to prepend to the user's question
       let contextBlock = "";
+      const wantsVisualization = /\b(visuali[sz]e|show|annotat|highlight|animate)\b/i.test(text || "");
       if (contextData) {
         const isStep = contextData.activeLine !== undefined || contextData.phase !== undefined;
         contextBlock = isStep
           ? formatStepContext(contextData, problemTitle)
           : formatElementContext(contextLabel, contextData);
+      } else if (wantsVisualization && (currentStep || problemState)) {
+        const baseline = problemState ? `[Context: Problem state]\n${JSON.stringify(problemState, null, 2)}` : "";
+        const stepCtx = currentStep ? formatStepContext(currentStep, problemTitle) : "";
+        contextBlock = [baseline, stepCtx].filter(Boolean).join("\n\n");
       }
 
       const fullText = contextBlock ? `${contextBlock}\n\nQuestion: ${text}` : text;
@@ -168,11 +173,12 @@ export default function ChatDrawer() {
         const manifest = getManifest ? getManifest() : null;
         const manifestText = manifest ? `\n\nAvailable visualization primitives and targets:\n${JSON.stringify(manifest, null, 2)}` : '';
         const stepStateText = currentStep ? `\n\nCurrent visualizer state (JSON):\n${JSON.stringify(currentStep, null, 2)}` : '';
-        const assistantInstructions = `\n\nIf the user asks to visualize a calculation or expression, use only the available targets and primitives from the manifest and the current visualizer state. Do NOT ask for variables that are already present in the current state. When producing visualization output, prefer emitting a single fenced JSON block using either \`\`\`json\` or \`\`\`viz\` containing a command object. Example command (annotate buckets):\n\n```json\n{\n  "action": "annotate",\n  "labels": [ { "target": "bucket", "index": 2, "text": "b = (x - lo) // bsize" } ]\n}\n```\n\nThe JSON schema: top-level object with \`action\` (string) and action-specific fields. Allowed actions: \`annotate\`, \`highlight\`, \`animate\`. Use target types from the manifest (e.g., \`bucket\`, \`array-item\`).`;
+        const problemStateText = problemState ? `\n\nBaseline problem state (JSON):\n${JSON.stringify(problemState, null, 2)}` : '';
+        const assistantInstructions = `\n\nIf the user asks to visualize a calculation or expression, use only the available targets and primitives from the manifest and the current visualizer state. Do NOT ask for variables that are already present in the current state. When producing visualization output, prefer emitting a single fenced JSON block using either ~~~json or ~~~viz containing a command object. Example command (annotate buckets):\n\n~~~json\n{\n  "action": "annotate",\n  "labels": [ { "target": "bucket", "index": 2, "text": "b = (x - lo) // bsize" } ]\n}\n~~~\n\nThe JSON schema: top-level object with 'action' (string) and action-specific fields. Allowed actions: 'annotate', 'highlight', 'animate'. Use target types from the manifest (e.g., 'bucket', 'array-item').`;
         const history = [
           {
             role: "system",
-            text: `You are a helpful coding assistant embedded in a competitive programming visualizer. ${problemContext}${stepContext}${descContext}${manifestText}${stepStateText}${assistantInstructions}\n\nAnswer questions assuming this problem context. When the user asks about \"why\" or \"how\" something works, answer in the context of this problem's algorithm. When the user shares visualizer step data, explain what is happening in the algorithm at that step in clear, concise terms. When asked about code or data structures, be precise and educational.`,
+            text: `You are a helpful coding assistant embedded in a competitive programming visualizer. ${problemContext}${stepContext}${descContext}${manifestText}${stepStateText}${problemStateText}${assistantInstructions}\n\nAnswer questions assuming this problem context. When the user asks about "why" or "how" something works, answer in the context of this problem's algorithm. When the user shares visualizer step data, explain what is happening in the algorithm at that step in clear, concise terms. When asked about code or data structures, be precise and educational.`,
           },
           // Previous messages (last 10 pairs for context window)
           ...messages.slice(-20).map((m) => ({ role: m.role, text: m.text, images: m.images })),
@@ -195,7 +201,7 @@ export default function ChatDrawer() {
         setIsStreaming(false);
       }
     },
-    [messages, addMessage, updateLastMessage, problemTitle, currentStep, problemDescription],
+    [messages, addMessage, updateLastMessage, problemTitle, currentStep, problemDescription, problemState, getManifest],
   );
 
   if (!isOpen) return null;
