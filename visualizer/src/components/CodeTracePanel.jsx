@@ -299,7 +299,7 @@ export default function CodeTracePanel({
               height="240px"
               defaultLanguage={editorLanguage}
               value={(showComments ? commentsText + '\n\n' : '') + editorContent}
-              onChange={(v) => setEditorContent((v ?? '').replace(/^(?:#.*\n)*/,'').replace(/^\n+/,''))}
+              onChange={(v) => setEditorContent((v ?? '').replace(/^(?:#.*\n)*/, '').replace(/^\n+/, ''))}
               options={{ minimap: { enabled: minimapEnabled }, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace', fontSize, wordWrap: wordWrap ? 'on' : 'off', readOnly }}
               onMount={(editor, monaco) => {
                 monacoRef.current = monaco

@@ -27,7 +27,7 @@ export default function Selectable({ label, data, children, className = "" }) {
       setTimeout(() => setSelected(false), 2000);
       if (e.shiftKey) openChat();
     },
-      [label, data, attachContext, openChat, selectMode],
+    [label, data, attachContext, openChat, selectMode],
   );
 
   const handleKeyDown = useCallback((e) => {

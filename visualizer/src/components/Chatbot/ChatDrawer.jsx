@@ -234,7 +234,7 @@ export default function ChatDrawer() {
               onClick={() => toggleFloatingMode()}
               title="Toggle floating chat"
             >
-              ⛶ Float
+              <span className="">⛶</span> {floatingMode ? 'Dock' : 'Float'}
             </button>
             <button
               className={`chat-select-toggle ${selectMode ? 'active' : ''}`}
@@ -243,8 +243,8 @@ export default function ChatDrawer() {
               title="Toggle Select Mode (hover to highlight, click to attach)"
             >
               🔍 Select mode
+              {selectMode && <span className="chat-select-hint">Select mode ON</span>}
             </button>
-            {selectMode && <span className="chat-select-hint">Select mode ON</span>}
             <div className="visually-hidden" aria-live="polite">{selectAnnouncement}</div>
             {/* Attach current step button */}
             <button
@@ -288,7 +288,7 @@ export default function ChatDrawer() {
           onClearContext={clearContext}
           disabled={isStreaming}
         />
-      </div>
+      </div >
     </>
   );
 }
