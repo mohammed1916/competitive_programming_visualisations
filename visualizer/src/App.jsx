@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AnimatePresence } from "framer-motion";
 import { TRACKS, IMPLEMENTED_PROBLEMS } from "./data/implementedProblems";
 import ProblemPage from "./components/ProblemPage";
@@ -39,7 +39,13 @@ export default function App() {
   }, []);
 
   // Keep browser history in sync so the browser back button works
+  const _initialHistorySync = useRef(true);
   useEffect(() => {
+    // Avoid clobbering an initial hash on first mount — let initial hash handler run
+    if (_initialHistorySync.current) {
+      _initialHistorySync.current = false;
+      return;
+    }
     if (active) {
       window.history.pushState({ slug: active.slug }, "", `#${active.slug}`);
     } else {
