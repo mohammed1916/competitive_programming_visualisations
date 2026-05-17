@@ -165,11 +165,14 @@ export default function ChatDrawer() {
         const descContext = problemDescription
           ? `\n\nHere is the full problem statement:\n${problemDescription}`
           : "";
-        const manifestText = getManifest ? `\n\nAvailable visualization primitives and targets:\n${JSON.stringify(getManifest(), null, 2)}` : '';
+        const manifest = getManifest ? getManifest() : null;
+        const manifestText = manifest ? `\n\nAvailable visualization primitives and targets:\n${JSON.stringify(manifest, null, 2)}` : '';
+        const stepStateText = currentStep ? `\n\nCurrent visualizer state (JSON):\n${JSON.stringify(currentStep, null, 2)}` : '';
+        const assistantInstructions = `\n\nIf the user asks to visualize a calculation or expression, use only the available targets and primitives from the manifest and the current visualizer state. Do NOT ask for variables that are already present in the current state. When producing visualization output, prefer emitting a single fenced JSON block using either \`\`\`json\` or \`\`\`viz\` containing a command object. Example command (annotate buckets):\n\n```json\n{\n  "action": "annotate",\n  "labels": [ { "target": "bucket", "index": 2, "text": "b = (x - lo) // bsize" } ]\n}\n```\n\nThe JSON schema: top-level object with \`action\` (string) and action-specific fields. Allowed actions: \`annotate\`, \`highlight\`, \`animate\`. Use target types from the manifest (e.g., \`bucket\`, \`array-item\`).`;
         const history = [
           {
             role: "system",
-            text: `You are a helpful coding assistant embedded in a competitive programming visualizer. ${problemContext}${stepContext}${descContext}${manifestText}\n\nAnswer questions assuming this problem context. When the user asks about "why" or "how" something works, answer in the context of this problem's algorithm. When the user shares visualizer step data, explain what is happening in the algorithm at that step in clear, concise terms. When asked about code or data structures, be precise and educational.`,
+            text: `You are a helpful coding assistant embedded in a competitive programming visualizer. ${problemContext}${stepContext}${descContext}${manifestText}${stepStateText}${assistantInstructions}\n\nAnswer questions assuming this problem context. When the user asks about \"why\" or \"how\" something works, answer in the context of this problem's algorithm. When the user shares visualizer step data, explain what is happening in the algorithm at that step in clear, concise terms. When asked about code or data structures, be precise and educational.`,
           },
           // Previous messages (last 10 pairs for context window)
           ...messages.slice(-20).map((m) => ({ role: m.role, text: m.text, images: m.images })),
