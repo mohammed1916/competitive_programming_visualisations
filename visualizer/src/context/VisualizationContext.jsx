@@ -12,6 +12,7 @@ export function VisualizationProvider({ children }) {
   const [problemDescription, setProblemDescription] = useState(null);
   // Visualization commands/annotations published by the chatbot
   const [annotations, setAnnotations] = useState([]);
+  const [pendingCommands, setPendingCommands] = useState([]);
 
   const publishStep = useCallback((step, title) => {
     setCurrentStep(step);
@@ -28,13 +29,13 @@ export function VisualizationProvider({ children }) {
     setProblemDescription(null);
   }, []);
 
-  const visualizeCommand = useCallback((cmd) => {
+  const visualizeCommand = useCallback((cmd, commandId = null) => {
     // Minimal interpreter: support `annotate` action for buckets or generic labels
     try {
       if (!cmd || typeof cmd !== 'object') return false;
       if (cmd.action === 'annotate' && Array.isArray(cmd.labels)) {
         // labels: [{ target: 'bucket', index: 2, text: 'b=(x-lo)//bsize' }, ...]
-        setAnnotations((prev) => [...prev, ...cmd.labels.map((l, i) => ({ id: Date.now() + i, ...l }))]);
+        setAnnotations((prev) => [...prev, ...cmd.labels.map((l, i) => ({ id: Date.now() + i, addedBy: commandId || null, ...l }))]);
         return true;
       }
       // Generic fallback: store as note
@@ -48,8 +49,25 @@ export function VisualizationProvider({ children }) {
 
   const clearAnnotations = useCallback(() => setAnnotations([]), []);
 
+  // Queue/accept/reject flow for assistant-sent commands
+  const queueCommand = useCallback((cmd) => {
+    const id = Date.now() + Math.floor(Math.random() * 1000);
+    setPendingCommands((p) => [...p, { id, cmd, time: Date.now() }]);
+    return id;
+  }, []);
+
+  const acceptCommand = useCallback((id) => {
+    setPendingCommands((p) => {
+      const found = p.find(x => x.id === id);
+      if (found) visualizeCommand(found.cmd, id);
+      return p.filter(x => x.id !== id);
+    });
+  }, [visualizeCommand]);
+
+  const rejectCommand = useCallback((id) => setPendingCommands((p) => p.filter(x => x.id !== id)), []);
+
   return (
-    <VisualizationContext.Provider value={{ currentStep, problemTitle, problemDescription, publishStep, publishDescription, clearStep, annotations, visualizeCommand, clearAnnotations }}>
+    <VisualizationContext.Provider value={{ currentStep, problemTitle, problemDescription, publishStep, publishDescription, clearStep, annotations, visualizeCommand, clearAnnotations, pendingCommands, queueCommand, acceptCommand, rejectCommand }}>
       {children}
     </VisualizationContext.Provider>
   );

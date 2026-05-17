@@ -4,6 +4,7 @@ import { TRACKS, IMPLEMENTED_PROBLEMS } from "./data/implementedProblems";
 import ProblemPage from "./components/ProblemPage";
 import HomePage from "./components/HomePage";
 import { ChatDrawer } from "./components/Chatbot";
+import VisualizationCommandPrompt from "./components/VisualizationCommandPrompt";
 import { ChatProvider, useChatContext } from "./context/ChatContext";
 import { VisualizationProvider } from "./context/VisualizationContext";
 import "./App.css";
@@ -109,6 +110,7 @@ export default function App() {
           </AnimatePresence>
           <ChatFab />
           <ChatDrawer />
+          <VisualizationCommandPrompt />
         </div>
       </ChatProvider>
     </VisualizationProvider>

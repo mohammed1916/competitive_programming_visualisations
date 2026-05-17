@@ -84,8 +84,13 @@ export function ChatProvider({ children }) {
       const parsed = JSON.parse(m[1]);
       // Basic validation: must be an object with an action
       if (parsed && typeof parsed === 'object' && parsed.action) {
-        // For minimal demo: auto-apply the command
-        viz.visualizeCommand(parsed);
+        // Queue the command for user confirmation before applying
+        if (viz && typeof viz.queueCommand === 'function') {
+          viz.queueCommand(parsed);
+        } else {
+          // Fallback: apply directly
+          viz && viz.visualizeCommand && viz.visualizeCommand(parsed);
+        }
       }
     } catch (err) {
       console.warn('Failed to parse visualization command from assistant message', err);
