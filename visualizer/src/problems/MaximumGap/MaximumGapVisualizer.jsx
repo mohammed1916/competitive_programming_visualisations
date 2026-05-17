@@ -100,6 +100,8 @@ export default function MaximumGapVisualizer() {
             expression: "b = (x - lo) // bsize",
             currentStep: step,
             note: step ? "Playback has active step" : "Playback not started; constants available",
+            // Provide the full solution source so the assistant can reference it when composing visualization
+            solution: SOLUTION_CODE,
         });
     }, [ex.nums, step, publishProblemState]);
 

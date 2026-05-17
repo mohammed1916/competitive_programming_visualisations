@@ -172,6 +172,19 @@ export default function ChatDrawer() {
         const descContext = problemDescription
           ? `\n\nHere is the full problem statement:\n${problemDescription}`
           : "";
+        // Include full solution source if the visualizer provided it in problemState.solution
+        let solutionContext = '';
+        try {
+          const sol = problemState && problemState.solution;
+          if (sol) {
+            if (Array.isArray(sol)) {
+              const lines = sol.map((l) => (typeof l === 'string' ? l : (l.text || ''))).join('\n');
+              solutionContext = `\n\nFull solution source (language guessed as Python):\n~~~python\n${lines}\n~~~`;
+            } else if (typeof sol === 'string') {
+              solutionContext = `\n\nFull solution source (string):\n~~~\n${sol}\n~~~`;
+            }
+          }
+        } catch (err) { void err }
         const manifest = getManifest ? getManifest() : null;
         const manifestText = manifest ? `\n\nAvailable visualization primitives and targets:\n${JSON.stringify(manifest, null, 2)}` : '';
         const stepStateText = currentStep ? `\n\nCurrent visualizer state (JSON):\n${JSON.stringify(currentStep, null, 2)}` : '';
@@ -180,7 +193,7 @@ export default function ChatDrawer() {
         const history = [
           {
             role: "system",
-            text: `You are a helpful coding assistant embedded in a competitive programming visualizer. ${problemContext}${stepContext}${descContext}${manifestText}${stepStateText}${problemStateText}${assistantInstructions}\n\nAnswer questions assuming this problem context. When the user asks about "why" or "how" something works, answer in the context of this problem's algorithm. When the user shares visualizer step data, explain what is happening in the algorithm at that step in clear, concise terms. When asked about code or data structures, be precise and educational.`,
+            text: `You are a helpful coding assistant embedded in a competitive programming visualizer. ${problemContext}${stepContext}${descContext}${solutionContext}${manifestText}${stepStateText}${problemStateText}${assistantInstructions}\n\nAnswer questions assuming this problem context. When the user asks about "why" or "how" something works, answer in the context of this problem's algorithm. When the user shares visualizer step data, explain what is happening in the algorithm at that step in clear, concise terms. When asked about code or data structures, be precise and educational.`,
           },
           // Previous messages (last 10 pairs for context window)
           ...messages.slice(-20).map((m) => ({ role: m.role, text: m.text, images: m.images })),
