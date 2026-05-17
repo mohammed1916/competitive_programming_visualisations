@@ -202,6 +202,7 @@ export default function ChatDrawer() {
       {/* Backdrop (click to close) — ignore when select or floating mode is active */}
       <div
         className="chat-backdrop"
+        style={floatingMode ? { pointerEvents: 'none' } : {}}
         onClick={() => {
           if (selectMode || floatingMode) return;
           closeChat();
