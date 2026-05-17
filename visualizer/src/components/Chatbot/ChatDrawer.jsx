@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import { useChatContext } from "../../context/ChatContext";
 import { useVisualizationContext } from "../../context/VisualizationContext";
 import { streamChat } from "../../services/ollama";
@@ -41,11 +41,13 @@ export default function ChatDrawer() {
     messages, addMessage, updateLastMessage, clearMessages,
     attachedContext, attachContext, clearContext,
     isOpen, closeChat,
+    selectMode, toggleSelectMode,
   } = useChatContext();
 
   const { currentStep, problemTitle, problemDescription } = useVisualizationContext();
   const messagesEndRef = useRef(null);
   const isStreamingRef = useRef(false);
+  const [isStreaming, setIsStreaming] = useState(false);
 
   // Auto-scroll to newest message
   useEffect(() => {
@@ -91,6 +93,7 @@ export default function ChatDrawer() {
       addMessage({ id: assistantId, role: "assistant", text: "", isStreaming: true });
 
       isStreamingRef.current = true;
+      setIsStreaming(true);
       try {
         // Build history for Ollama — use full contextual text for last user message
         const problemContext = problemTitle
@@ -125,9 +128,10 @@ export default function ChatDrawer() {
         });
       } finally {
         isStreamingRef.current = false;
+        setIsStreaming(false);
       }
     },
-    [messages, addMessage, updateLastMessage, problemTitle],
+    [messages, addMessage, updateLastMessage, problemTitle, currentStep, problemDescription],
   );
 
   if (!isOpen) return null;
@@ -148,6 +152,20 @@ export default function ChatDrawer() {
             </div>
           </div>
           <div className="chat-header-actions">
+              <button
+                className={`chat-select-toggle ${selectMode ? 'active' : ''}`}
+                onClick={() => {
+                  toggleSelectMode();
+                  try {
+                    if (!selectMode) document.body.classList.add('chat-select-mode');
+                    else document.body.classList.remove('chat-select-mode');
+                  } catch (err) { void err }
+                }}
+                aria-pressed={selectMode}
+                title="Toggle Select Mode (hover to highlight, click to attach)"
+              >
+                🔍 Select mode
+              </button>
             {/* Attach current step button */}
             <button
               className="chat-attach-step-btn"
@@ -188,7 +206,7 @@ export default function ChatDrawer() {
           onSend={handleSend}
           attachedContext={attachedContext}
           onClearContext={clearContext}
-          disabled={isStreamingRef.current}
+          disabled={isStreaming}
         />
       </div>
     </>

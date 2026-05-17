@@ -420,3 +420,25 @@
 .selectable.selected {
   outline-color: #6366f1;
 }
+
+/* Select mode hover: rainbow animated ring */
+body.chat-select-mode .selectable {
+  position: relative;
+}
+
+@keyframes chat-rainbow-hue {
+  from { --h: 0; }
+  to { --h: 360; }
+}
+
+body.chat-select-mode .selectable:hover {
+  outline-color: transparent;
+  box-shadow: 0 0 0 3px hsl(var(--h, 0) 100% 50% / 0.95);
+  animation: chat-rainbow-hue 2s linear infinite;
+  transform: translateZ(0);
+}
+
+/* stronger visual when actively selected */
+body.chat-select-mode .selectable.selected {
+  box-shadow: 0 0 0 4px rgba(99,102,241,0.9), 0 0 18px rgba(99,102,241,0.12);
+}

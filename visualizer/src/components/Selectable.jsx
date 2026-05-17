@@ -13,26 +13,42 @@ import { useChatContext } from "../context/ChatContext";
  * - Shift+Click: attaches context AND opens the chat drawer
  */
 export default function Selectable({ label, data, children, className = "" }) {
-  const { attachContext, openChat } = useChatContext();
+  const { attachContext, openChat, selectMode } = useChatContext();
   const [selected, setSelected] = useState(false);
 
   const handleClick = useCallback(
     (e) => {
       e.stopPropagation();
+      // Only attach on click when select mode is active, or when shift+click is used
+      if (!selectMode && !e.shiftKey) return;
       attachContext(label, data);
       setSelected(true);
       // Deselect ring after 2s
       setTimeout(() => setSelected(false), 2000);
       if (e.shiftKey) openChat();
     },
-    [label, data, attachContext, openChat],
+      [label, data, attachContext, openChat, selectMode],
   );
+
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      // emulate click
+      if (!selectMode) return;
+      attachContext(label, data);
+      setSelected(true);
+      setTimeout(() => setSelected(false), 2000);
+    }
+  }, [selectMode, attachContext, label, data]);
 
   return (
     <span
       className={`selectable${selected ? " selected" : ""}${className ? " " + className : ""}`}
       onClick={handleClick}
-      title={`Click to attach "${label}" to chat · Shift+click to open chat`}
+      onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={0}
+      title={selectMode ? `Click to attach "${label}" to chat` : `Shift+click to attach and open chat`}
     >
       {children}
     </span>

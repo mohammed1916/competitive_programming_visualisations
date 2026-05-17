@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useCallback } from "react";
 
 const ChatContext = createContext(null);
@@ -12,10 +13,15 @@ export function ChatProvider({ children }) {
   const [messages, setMessages] = useState([]);
   const [attachedContext, setAttachedContext] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [selectMode, setSelectMode] = useState(false);
 
   const openChat = useCallback(() => setIsOpen(true), []);
   const closeChat = useCallback(() => setIsOpen(false), []);
   const toggleChat = useCallback(() => setIsOpen((v) => !v), []);
+
+  const enableSelectMode = useCallback(() => setSelectMode(true), []);
+  const disableSelectMode = useCallback(() => setSelectMode(false), []);
+  const toggleSelectMode = useCallback(() => setSelectMode((v) => !v), []);
 
   /** Attach a labelled data payload from any visualizer element or step. */
   const attachContext = useCallback((label, data) => {
@@ -45,10 +51,14 @@ export function ChatProvider({ children }) {
       value={{
         messages,
         attachedContext,
+          selectMode,
         isOpen,
         openChat,
         closeChat,
         toggleChat,
+          enableSelectMode,
+          disableSelectMode,
+          toggleSelectMode,
         attachContext,
         clearContext,
         addMessage,
