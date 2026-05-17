@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState, useCallback } from "react";
+import { createContext, useContext, useState, useCallback, useEffect } from "react";
 
 const ChatContext = createContext(null);
 
@@ -19,6 +19,21 @@ export function ChatProvider({ children }) {
   const openChat = useCallback(() => setIsOpen(true), []);
   const closeChat = useCallback(() => setIsOpen(false), []);
   const toggleChat = useCallback(() => setIsOpen((v) => !v), []);
+
+  // Global keyboard shortcut: Alt+C toggles the chat drawer
+  useEffect(() => {
+    const onKey = (e) => {
+      // Ignore if the user is typing in an input or textarea
+      const tag = (e.target && e.target.tagName) || '';
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target && e.target.isContentEditable)) return;
+      if (e.altKey && (e.key === 'c' || e.key === 'C')) {
+        e.preventDefault();
+        setIsOpen((v) => !v);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   const enableSelectMode = useCallback(() => setSelectMode(true), []);
   const disableSelectMode = useCallback(() => setSelectMode(false), []);

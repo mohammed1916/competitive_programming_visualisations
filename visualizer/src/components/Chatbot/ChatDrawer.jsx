@@ -225,7 +225,7 @@ export default function ChatDrawer() {
           <div className="chat-header-left">
             <span className="chat-header-icon">🤖</span>
             <div>
-              <div className="chat-header-title">Gemma Assistant</div>
+              <div className="chat-header-title">Gemma Assistant <span className="chat-shortcut">(Alt+C)</span></div>
               <div className="chat-header-sub">gemma4:e2b · Ollama</div>
             </div>
           </div>
