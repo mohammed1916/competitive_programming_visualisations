@@ -1,5 +1,5 @@
 import GameOnGrowingTreeVisualizer from './GameOnGrowingTreeVisualizer'
 
 export default function GameOnGrowingTree() {
-  return <GameOnGrowingTreeVisualizer />
+    return <GameOnGrowingTreeVisualizer />
 }
