@@ -159,6 +159,101 @@
     margin-bottom: 2px;
 }
 
+.gogt-ctp-panel {
+    grid-column: 1 / -2;
+}
+
+.gogt-tree-panel {
+    grid-column: 2 / -2;
+}
+
+.gogt-tree-note {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface2);
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    padding: 8px 10px;
+}
+
+.gogt-tree-canvas {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: radial-gradient(circle at 50% 0%, rgba(30, 41, 59, 0.34), rgba(15, 23, 42, 0.3));
+    min-height: 360px;
+    overflow: auto;
+}
+
+.gogt-svg {
+    width: 100%;
+    min-width: 780px;
+    min-height: 520px;
+}
+
+.gogt-edge {
+    stroke: rgba(148, 163, 184, 0.36);
+    stroke-width: 2;
+}
+
+.gogt-edge.path {
+    stroke: rgba(239, 68, 68, 0.78);
+    stroke-width: 3;
+}
+
+.gogt-edge.blocked {
+    stroke: rgba(148, 163, 184, 0.92);
+    stroke-width: 3;
+    stroke-dasharray: 6 5;
+}
+
+.gogt-node {
+    stroke-width: 2;
+    transition: 0.18s ease;
+}
+
+.gogt-node.white {
+    fill: rgba(148, 163, 184, 0.2);
+    stroke: rgba(148, 163, 184, 0.8);
+}
+
+.gogt-node.red {
+    fill: rgba(239, 68, 68, 0.22);
+    stroke: rgba(239, 68, 68, 0.9);
+}
+
+.gogt-node.blue {
+    fill: rgba(59, 130, 246, 0.24);
+    stroke: rgba(59, 130, 246, 0.92);
+}
+
+.gogt-node.chip {
+    stroke-width: 3;
+    filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.55));
+}
+
+.gogt-node-label {
+    font-size: 10px;
+    font-weight: 700;
+    fill: var(--text);
+    user-select: none;
+}
+
+.gogt-tree-empty {
+    min-height: 320px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-dim);
+    font-size: 0.86rem;
+    padding: 16px;
+    text-align: center;
+}
+
+.gogt-tree-truncated {
+    color: #fbbf24;
+    font-size: 0.76rem;
+}
+
 @media (max-width: 1100px) {
     .gogt-top {
         grid-template-columns: 1fr;

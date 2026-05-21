@@ -4,6 +4,8 @@ import PlaybackControls from '../../components/PlaybackControls'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import './GameOnGrowingTreeVisualizer.css'
 
+const MAX_TREE_NODES_TO_RENDER = 120
+
 const SOLUTION_CODE = [
     { line: 1, text: 'N = q' },
     { line: 2, text: 'P = [0] + [v[i] - 1 for i in range(N)]' },
@@ -186,6 +188,155 @@ function solveAndBuildSteps(q, parentInput) {
     return { answers, steps }
 }
 
+function buildTreeData(parentZeroBased, m) {
+    const renderCount = Math.min(m, MAX_TREE_NODES_TO_RENDER)
+    const adj = Array.from({ length: renderCount }, () => [])
+
+    for (let node = 1; node < renderCount; node += 1) {
+        const p = parentZeroBased[node]
+        if (p >= renderCount) continue
+        adj[p].push(node)
+        adj[node].push(p)
+    }
+
+    const parent = new Array(renderCount).fill(-1)
+    const depth = new Array(renderCount).fill(0)
+    const levels = []
+    const queue = [0]
+    parent[0] = 0
+
+    for (let qi = 0; qi < queue.length; qi += 1) {
+        const u = queue[qi]
+        const d = depth[u]
+        if (!levels[d]) levels[d] = []
+        levels[d].push(u)
+
+        for (const v of adj[u]) {
+            if (parent[v] !== -1) continue
+            parent[v] = u
+            depth[v] = d + 1
+            queue.push(v)
+        }
+    }
+
+    const positions = new Map()
+    levels.forEach((nodes, levelIdx) => {
+        const y = 44 + levelIdx * 74
+        const count = nodes.length
+        const width = Math.max(1, count)
+        nodes.forEach((node, idx) => {
+            const x = ((idx + 1) * 1000) / (width + 1)
+            positions.set(node, { x, y })
+        })
+    })
+
+    const edges = []
+    for (let node = 1; node < renderCount; node += 1) {
+        const p = parent[node]
+        if (p > -1 && p !== node) edges.push({ from: p, to: node })
+    }
+
+    return {
+        renderCount,
+        adj,
+        depth,
+        positions,
+        edges,
+        truncated: m > renderCount,
+    }
+}
+
+function pickBobNode(adj, states, chip) {
+    let best = -1
+    let bestScore = -1
+
+    for (let node = 0; node < states.length; node += 1) {
+        if (states[node] !== 'white') continue
+        let whiteDeg = 0
+        for (const v of adj[node]) {
+            if (states[v] === 'white') whiteDeg += 1
+        }
+
+        const score = whiteDeg * 1000 - Math.abs(node - chip)
+        if (score > bestScore) {
+            bestScore = score
+            best = node
+        }
+    }
+
+    return best
+}
+
+function pickAliceMove(adj, states, chip) {
+    let best = -1
+    let bestScore = -1
+
+    for (const next of adj[chip]) {
+        if (states[next] !== 'white') continue
+
+        let onward = 0
+        for (const v of adj[next]) {
+            if (states[v] === 'white') onward += 1
+        }
+
+        const score = onward * 1000 - next
+        if (score > bestScore) {
+            bestScore = score
+            best = next
+        }
+    }
+
+    return best
+}
+
+function simulateTreeGame(treeData) {
+    const { renderCount, adj } = treeData
+    const states = new Array(renderCount).fill('white')
+    const chipPath = []
+
+    let start = 0
+    let startDegree = -1
+    for (let node = 0; node < renderCount; node += 1) {
+        const deg = adj[node].length
+        if (deg > startDegree) {
+            startDegree = deg
+            start = node
+        }
+    }
+
+    states[start] = 'red'
+    chipPath.push(start)
+    let chip = start
+
+    while (true) {
+        const bob = pickBobNode(adj, states, chip)
+        if (bob !== -1) states[bob] = 'blue'
+
+        const next = pickAliceMove(adj, states, chip)
+        if (next === -1) break
+
+        states[next] = 'red'
+        chip = next
+        chipPath.push(chip)
+    }
+
+    const blockedEdges = new Set()
+    for (const v of adj[chip]) {
+        if (states[v] !== 'white') {
+            const a = Math.min(chip, v)
+            const b = Math.max(chip, v)
+            blockedEdges.add(`${a}-${b}`)
+        }
+    }
+
+    return {
+        states,
+        chip,
+        chipPath,
+        blockedEdges,
+    }
+}
+
 export default function GameOnGrowingTreeVisualizer() {
     const [qInput, setQInput] = useState('9')
     const [parentsInput, setParentsInput] = useState('1 1 3 3 1 2 1 2 8')
@@ -217,6 +368,29 @@ export default function GameOnGrowingTreeVisualizer() {
     } = usePlaybackState(steps.length, 650)
 
     const step = stepIndex >= 0 ? steps[stepIndex] : null
+
+    const currentTree = useMemo(() => {
+        if (!step?.m) return null
+        const m = Number(step.m)
+        if (!Number.isInteger(m) || m < 1 || m > answers.length + 1) return null
+
+        const raw = parentsInput
+            .trim()
+            .split(/\s+/)
+            .filter(Boolean)
+            .map((x) => Number(x))
+
+        if (raw.length === 0) return null
+
+        const parentZeroBased = [0]
+        for (let i = 0; i < raw.length; i += 1) {
+            parentZeroBased.push(raw[i] - 1)
+        }
+
+        const treeData = buildTreeData(parentZeroBased, m)
+        const game = simulateTreeGame(treeData)
+        return { ...treeData, ...game, m }
+    }, [answers.length, parentsInput, step?.m])
 
     const onApplyExample = useCallback((example) => {
         setQInput(example.q)
@@ -344,18 +518,92 @@ export default function GameOnGrowingTreeVisualizer() {
                         </div>
                     </div>
                 </section>
-            </div>
 
-            <CodeTracePanel
-                step={step}
-                codeLines={SOLUTION_CODE}
-                title="Simplified Solution Trace"
-                subtitle={
-                    step
-                        ? `Active line ${step.activeLine}: ${step.message}`
-                        : 'Trace your simplified Codeforces solution line-by-line.'
-                }
-            />
+                <section className="gogt-panel gogt-tree-panel">
+                    <header className="gogt-panel-head">
+                        <span>Tree State Preview</span>
+                        <span className="gogt-chip">
+                            {currentTree?.m ? `prefix m=${currentTree.m}` : 'waiting'}
+                        </span>
+                    </header>
+
+                    <div className="gogt-panel-body">
+                        <div className="gogt-tree-note">
+                            Red: Alice path, Blue: Bob blocks, Gray edge: blocked move from current chip.
+                        </div>
+
+                        <div className="gogt-tree-canvas">
+                            {currentTree ? (
+                                <svg viewBox="0 0 1000 620" className="gogt-svg" role="img" aria-label="Game tree preview">
+                                    {currentTree.edges.map((edge) => {
+                                        const from = currentTree.positions.get(edge.from)
+                                        const to = currentTree.positions.get(edge.to)
+                                        if (!from || !to) return null
+
+                                        const edgeKey = `${Math.min(edge.from, edge.to)}-${Math.max(edge.from, edge.to)}`
+                                        const isBlocked = currentTree.blockedEdges.has(edgeKey)
+                                        const inPath = currentTree.chipPath.some((node, idx) => {
+                                            if (idx === 0) return false
+                                            const a = currentTree.chipPath[idx - 1]
+                                            const b = node
+                                            return (
+                                                Math.min(a, b) === Math.min(edge.from, edge.to)
+                                                && Math.max(a, b) === Math.max(edge.from, edge.to)
+                                            )
+                                        })
+
+                                        return (
+                                            <line
+                                                key={`${edge.from}-${edge.to}`}
+                                                x1={from.x}
+                                                y1={from.y}
+                                                x2={to.x}
+                                                y2={to.y}
+                                                className={`gogt-edge ${isBlocked ? 'blocked' : inPath ? 'path' : ''}`}
+                                            />
+                                        )
+                                    })}
+
+                                    {Array.from({ length: currentTree.renderCount }, (_, node) => {
+                                        const pos = currentTree.positions.get(node)
+                                        if (!pos) return null
+
+                                        const state = currentTree.states[node]
+                                        const isChip = currentTree.chip === node
+
+                                        return (
+                                            <g key={node} transform={`translate(${pos.x}, ${pos.y})`}>
+                                                <circle className={`gogt-node ${state} ${isChip ? 'chip' : ''}`} r="16" />
+                                                <text className="gogt-node-label" textAnchor="middle" dy="5">{node + 1}</text>
+                                            </g>
+                                        )
+                                    })}
+                                </svg>
+                            ) : (
+                                <div className="gogt-tree-empty">Press Play or Next to render the tree for current midpoint.</div>
+                            )}
+                        </div>
+
+                        {currentTree?.truncated ? (
+                            <div className="gogt-tree-truncated">
+                                Rendering first {MAX_TREE_NODES_TO_RENDER} nodes only for clarity.
+                            </div>
+                        ) : null}
+                    </div>
+                </section>
+            </div>
+            <div className="gogt-ctp-panel">
+                <CodeTracePanel
+                    step={step}
+                    codeLines={SOLUTION_CODE}
+                    title="Simplified Solution Trace"
+                    subtitle={
+                        step
+                            ? `Active line ${step.activeLine}: ${step.message}`
+                            : 'Trace your simplified Codeforces solution line-by-line.'
+                    }
+                />
+            </div>
         </div>
     )
 }
