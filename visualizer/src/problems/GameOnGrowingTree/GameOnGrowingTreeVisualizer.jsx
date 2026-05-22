@@ -123,10 +123,7 @@ function solveWithTrace(parentZeroBased, size, answersSnapshot) {
             activeLine,
             relatedLines,
             message,
-            l: null,
-            r: null,
-            m: size,
-            c: null,
+            subproblemSize: size,
             stackSize: 0,
             answers: answersSnapshot,
         })
@@ -201,10 +198,10 @@ function solveAndBuildSteps(q, parentInput) {
             activeLine: 3,
             relatedLines: [3],
             message: 'Only one node, answer is 1.',
-            l: null,
-            r: null,
-            m: null,
-            c: null,
+            intervalLeft: null,
+            intervalRight: null,
+            midpoint: null,
+            computedValue: null,
             stackSize: 0,
             answers,
         })
@@ -223,10 +220,10 @@ function solveAndBuildSteps(q, parentInput) {
         activeLine: 26,
         relatedLines: [26, 27, 28],
         message: 'Initialize answer array, sentinel value, and divide-and-conquer stack.',
-        l: 3,
-        r: q + 2,
-        m: null,
-        c: null,
+        intervalLeft: 3,
+        intervalRight: q + 2,
+        midpoint: null,
+        computedValue: null,
         stackSize: stack.length,
         answers: ans.slice(2, q + 2),
     })
@@ -236,10 +233,10 @@ function solveAndBuildSteps(q, parentInput) {
             activeLine,
             relatedLines,
             message,
-            l,
-            r,
-            m,
-            c,
+            intervalLeft: l,
+            intervalRight: r,
+            midpoint: m,
+            computedValue: c,
             stackSize: stack.length,
             answers: ans.slice(2, q + 2),
         })
@@ -463,9 +460,9 @@ export default function GameOnGrowingTreeVisualizer() {
     const step = stepIndex >= 0 ? steps[stepIndex] : null
 
     const currentTree = useMemo(() => {
-        if (!step?.m) return null
-        const m = Number(step.m)
-        if (!Number.isInteger(m) || m < 1 || m > answers.length + 1) return null
+        if (!step?.midpoint) return null
+        const size = Number(step.midpoint)
+        if (!Number.isInteger(size) || size < 1 || size > answers.length + 1) return null
 
         const raw = parentsInput
             .trim()
@@ -480,10 +477,10 @@ export default function GameOnGrowingTreeVisualizer() {
             parentZeroBased.push(raw[i] - 1)
         }
 
-        const treeData = buildTreeData(parentZeroBased, m)
+        const treeData = buildTreeData(parentZeroBased, size)
         const game = simulateTreeGame(treeData)
-        return { ...treeData, ...game, m }
-    }, [answers.length, parentsInput, step?.m])
+        return { ...treeData, ...game, size }
+    }, [answers.length, parentsInput, step?.midpoint])
 
     const onApplyExample = useCallback((example) => {
         setQInput(example.q)
@@ -586,19 +583,23 @@ export default function GameOnGrowingTreeVisualizer() {
 
                         <div className="gogt-metrics">
                             <div className="gogt-metric">
-                                <span>interval</span>
-                                <strong>{step?.l != null && step?.r != null ? `[${step.l}, ${step.r}]` : '-'}</strong>
+                                <span>interval start</span>
+                                <strong>{step?.intervalLeft ?? '-'}</strong>
                             </div>
                             <div className="gogt-metric">
-                                <span>midpoint m</span>
-                                <strong>{step?.m ?? '-'}</strong>
+                                <span>interval end</span>
+                                <strong>{step?.intervalRight ?? '-'}</strong>
                             </div>
                             <div className="gogt-metric">
-                                <span>score c</span>
-                                <strong>{step?.c ?? '-'}</strong>
+                                <span>midpoint value</span>
+                                <strong>{step?.midpoint ?? '-'}</strong>
                             </div>
                             <div className="gogt-metric">
-                                <span>stack size</span>
+                                <span>computed value</span>
+                                <strong>{step?.computedValue ?? '-'}</strong>
+                            </div>
+                            <div className="gogt-metric gogt-metric-wide">
+                                <span>interval stack size</span>
                                 <strong>{step?.stackSize ?? 0}</strong>
                             </div>
                         </div>
@@ -627,13 +628,13 @@ export default function GameOnGrowingTreeVisualizer() {
                     <header className="gogt-panel-head">
                         <span>Tree State Preview</span>
                         <span className="gogt-chip">
-                            {currentTree?.m ? `prefix m=${currentTree.m}` : 'waiting'}
+                            {currentTree?.size ? `prefix size=${currentTree.size}` : 'waiting'}
                         </span>
                     </header>
 
                     <div className="gogt-panel-body">
                         <div className="gogt-tree-note">
-                            Red: Alice path, Blue: Bob blocks, Gray edge: blocked move from current chip.
+                            Red: Alice path, Blue: Bob blocks, Gray edge: blocked move from current chip. Each node shows its id and depth.
                         </div>
 
                         <div className="gogt-tree-canvas">
@@ -674,11 +675,13 @@ export default function GameOnGrowingTreeVisualizer() {
 
                                         const state = currentTree.states[node]
                                         const isChip = currentTree.chip === node
+                                        const nodeDepth = currentTree.depth[node]
 
                                         return (
                                             <g key={node} transform={`translate(${pos.x}, ${pos.y})`}>
                                                 <circle className={`gogt-node ${state} ${isChip ? 'chip' : ''}`} r="16" />
-                                                <text className="gogt-node-label" textAnchor="middle" dy="5">{node + 1}</text>
+                                                <text className="gogt-node-label" textAnchor="middle" dy="-1">{node + 1}</text>
+                                                <text className="gogt-node-depth" textAnchor="middle" dy="12">d{nodeDepth}</text>
                                             </g>
                                         )
                                     })}

@@ -134,6 +134,10 @@
     gap: 8px;
 }
 
+.gogt-metric-wide {
+    grid-column: 1 / -1;
+}
+
 .gogt-metric {
     border: 1px solid var(--border);
     border-radius: 10px;
@@ -227,6 +231,13 @@
     font-size: 10px;
     font-weight: 700;
     fill: var(--text);
+    user-select: none;
+}
+
+.gogt-node-depth {
+    font-size: 9px;
+    font-weight: 700;
+    fill: rgba(226, 232, 240, 0.8);
     user-select: none;
 }
 
