@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
@@ -118,13 +119,14 @@ function solveWithTrace(parentZeroBased, size, answersSnapshot) {
     const third = new Array(size).fill(0)
     const steps = []
 
-    const capture = (activeLine, message, relatedLines = [activeLine]) => {
+    const capture = (activeLine, message, relatedLines = [activeLine], focus = null) => {
         steps.push({
             activeLine,
             relatedLines,
             message,
             subproblemSize: size,
             stackSize: 0,
+            focus,
             answers: answersSnapshot,
         })
     }
@@ -134,15 +136,35 @@ function solveWithTrace(parentZeroBased, size, answersSnapshot) {
     for (let node = size - 1; node >= 1; node -= 1) {
         const parent = parentZeroBased[node]
         const depth = second[node] + 1
-        capture(9, `Bottom-up: node ${node} contributes depth ${depth} to parent ${parent}.`, [9, 10, 11])
+        capture(9, `Bottom-up: node ${node} contributes depth ${depth} to parent ${parent}.`, [9, 10, 11], {
+            sourceNode: node,
+            targetNode: parent,
+            direction: 'up',
+            phase: 'bottom-up',
+        })
 
         const which = insertTop3(first, second, third, parent, depth)
         if (which === 1) {
-            capture(12, `depth ${depth} becomes first[${parent}] and shifts the previous values right.`, [12, 13, 14])
+            capture(12, `depth ${depth} becomes first[${parent}] and shifts the previous values right.`, [12, 13, 14], {
+                sourceNode: node,
+                targetNode: parent,
+                direction: 'up',
+                phase: 'bottom-up',
+            })
         } else if (which === 2) {
-            capture(13, `depth ${depth} becomes second[${parent}] and shifts third.`, [13, 14])
+            capture(13, `depth ${depth} becomes second[${parent}] and shifts third.`, [13, 14], {
+                sourceNode: node,
+                targetNode: parent,
+                direction: 'up',
+                phase: 'bottom-up',
+            })
         } else if (which === 3) {
-            capture(14, `depth ${depth} becomes third[${parent}].`, [14])
+            capture(14, `depth ${depth} becomes third[${parent}].`, [14], {
+                sourceNode: node,
+                targetNode: parent,
+                direction: 'up',
+                phase: 'bottom-up',
+            })
         }
     }
 
@@ -150,15 +172,35 @@ function solveWithTrace(parentZeroBased, size, answersSnapshot) {
         const parent = parentZeroBased[node]
         const useThird = second[parent] <= second[node] + 1
         const depth = useThird ? third[parent] + 1 : second[parent] + 1
-        capture(15, `Top-down: node ${node} receives depth ${depth} from parent ${parent}.`, [15, 16, 17, 18, 19, 20])
+        capture(15, `Top-down: node ${node} receives depth ${depth} from parent ${parent}.`, [15, 16, 17, 18, 19, 20], {
+            sourceNode: parent,
+            targetNode: node,
+            direction: 'down',
+            phase: 'top-down',
+        })
 
         const which = insertTop3(first, second, third, node, depth)
         if (which === 1) {
-            capture(21, `depth ${depth} becomes first[${node}] and shifts the previous values right.`, [21, 22, 23])
+            capture(21, `depth ${depth} becomes first[${node}] and shifts the previous values right.`, [21, 22, 23], {
+                sourceNode: parent,
+                targetNode: node,
+                direction: 'down',
+                phase: 'top-down',
+            })
         } else if (which === 2) {
-            capture(22, `depth ${depth} becomes second[${node}] and shifts third.`, [22, 23])
+            capture(22, `depth ${depth} becomes second[${node}] and shifts third.`, [22, 23], {
+                sourceNode: parent,
+                targetNode: node,
+                direction: 'down',
+                phase: 'top-down',
+            })
         } else if (which === 3) {
-            capture(23, `depth ${depth} becomes third[${node}].`, [23])
+            capture(23, `depth ${depth} becomes third[${node}].`, [23], {
+                sourceNode: parent,
+                targetNode: node,
+                direction: 'down',
+                phase: 'top-down',
+            })
         }
     }
 
@@ -430,6 +472,7 @@ function simulateTreeGame(treeData) {
 export default function GameOnGrowingTreeVisualizer() {
     const [qInput, setQInput] = useState('9')
     const [parentsInput, setParentsInput] = useState('1 1 3 3 1 2 1 2 8')
+    const [previewSize, setPreviewSize] = useState(null)
 
     const { answers, steps, inputError } = useMemo(() => {
         try {
@@ -459,9 +502,24 @@ export default function GameOnGrowingTreeVisualizer() {
 
     const step = stepIndex >= 0 ? steps[stepIndex] : null
 
+    useEffect(() => {
+        if (!step) {
+            setPreviewSize(null)
+            return
+        }
+
+        if (step.subproblemSize != null) {
+            setPreviewSize(step.subproblemSize)
+            return
+        }
+
+        if (step.midpoint != null) {
+            setPreviewSize(step.midpoint)
+        }
+    }, [step])
+
     const currentTree = useMemo(() => {
-        if (!step?.midpoint) return null
-        const size = Number(step.midpoint)
+        const size = previewSize
         if (!Number.isInteger(size) || size < 1 || size > answers.length + 1) return null
 
         const raw = parentsInput
@@ -480,7 +538,26 @@ export default function GameOnGrowingTreeVisualizer() {
         const treeData = buildTreeData(parentZeroBased, size)
         const game = simulateTreeGame(treeData)
         return { ...treeData, ...game, size }
-    }, [answers.length, parentsInput, step?.midpoint])
+    }, [answers.length, parentsInput, previewSize])
+
+    const treeFocus = useMemo(() => {
+        if (!currentTree?.positions || !step?.focus) return null
+
+        const { sourceNode, targetNode, direction, phase } = step.focus
+        const sourcePosition = currentTree.positions.get(sourceNode)
+        const targetPosition = currentTree.positions.get(targetNode)
+
+        if (!sourcePosition || !targetPosition) return null
+
+        return {
+            sourceNode,
+            targetNode,
+            sourcePosition,
+            targetPosition,
+            direction,
+            phase,
+        }
+    }, [currentTree, step?.focus])
 
     const onApplyExample = useCallback((example) => {
         setQInput(example.q)
@@ -640,6 +717,23 @@ export default function GameOnGrowingTreeVisualizer() {
                         <div className="gogt-tree-canvas">
                             {currentTree ? (
                                 <svg viewBox="0 0 1000 620" className="gogt-svg" role="img" aria-label="Game tree preview">
+                                    <AnimatePresence>
+                                        {treeFocus ? (
+                                            <motion.line
+                                                key={`${treeFocus.sourceNode}-${treeFocus.targetNode}-${treeFocus.phase}`}
+                                                x1={treeFocus.sourcePosition.x}
+                                                y1={treeFocus.sourcePosition.y}
+                                                x2={treeFocus.targetPosition.x}
+                                                y2={treeFocus.targetPosition.y}
+                                                className={`gogt-transfer-line ${treeFocus.direction}`}
+                                                initial={{ opacity: 0, pathLength: 0 }}
+                                                animate={{ opacity: 1, pathLength: 1 }}
+                                                exit={{ opacity: 0, pathLength: 0 }}
+                                                transition={{ duration: 0.42, ease: 'easeOut' }}
+                                            />
+                                        ) : null}
+                                    </AnimatePresence>
+
                                     {currentTree.edges.map((edge) => {
                                         const from = currentTree.positions.get(edge.from)
                                         const to = currentTree.positions.get(edge.to)
@@ -676,10 +770,12 @@ export default function GameOnGrowingTreeVisualizer() {
                                         const state = currentTree.states[node]
                                         const isChip = currentTree.chip === node
                                         const nodeDepth = currentTree.depth[node]
+                                        const isFocusSource = treeFocus?.sourceNode === node
+                                        const isFocusTarget = treeFocus?.targetNode === node
 
                                         return (
                                             <g key={node} transform={`translate(${pos.x}, ${pos.y})`}>
-                                                <circle className={`gogt-node ${state} ${isChip ? 'chip' : ''}`} r="16" />
+                                                <circle className={`gogt-node ${state} ${isChip ? 'chip' : ''} ${isFocusSource ? 'focus-source' : ''} ${isFocusTarget ? 'focus-target' : ''}`} r="16" />
                                                 <text className="gogt-node-label" textAnchor="middle" dy="-1">{node + 1}</text>
                                                 <text className="gogt-node-depth" textAnchor="middle" dy="12">d{nodeDepth}</text>
                                             </g>

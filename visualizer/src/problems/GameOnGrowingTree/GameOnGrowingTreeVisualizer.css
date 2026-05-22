@@ -227,6 +227,33 @@
     filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.55));
 }
 
+.gogt-node.focus-source {
+    fill: rgba(251, 191, 36, 0.34);
+    stroke: rgba(251, 191, 36, 1);
+    filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.85));
+}
+
+.gogt-node.focus-target {
+    fill: rgba(34, 197, 94, 0.32);
+    stroke: rgba(34, 197, 94, 1);
+    filter: drop-shadow(0 0 10px rgba(34, 197, 94, 0.8));
+}
+
+.gogt-transfer-line {
+    stroke-width: 4;
+    stroke-linecap: round;
+    fill: none;
+    stroke-dasharray: 9 7;
+}
+
+.gogt-transfer-line.up {
+    stroke: rgba(251, 191, 36, 0.95);
+}
+
+.gogt-transfer-line.down {
+    stroke: rgba(34, 197, 94, 0.95);
+}
+
 .gogt-node-label {
     font-size: 10px;
     font-weight: 700;
