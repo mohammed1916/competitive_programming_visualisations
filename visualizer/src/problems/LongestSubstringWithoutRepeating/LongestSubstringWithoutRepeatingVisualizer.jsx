@@ -155,7 +155,12 @@ export default function LongestSubstringWithoutRepeatingVisualizer() {
               {s.split('').map((char, i) => {
                 const isLeft = step?.left === i
                 const isRight = step?.right === i
-                const isInWindow = step?.left !== null && step?.right !== null && i >= step.left && i <= step.right
+                const isInWindow =
+                  step &&
+                  step.left !== null &&
+                  step.right !== null &&
+                  i >= step.left &&
+                  i <= step.right
                 const isCollision = isRight && step?.collision && step?.phase === 'check_collision'
 
                 return (
