@@ -519,6 +519,17 @@ export default function GameOnGrowingTreeVisualizer() {
                     </div>
                 </section>
 
+                <CodeTracePanel
+                    step={step}
+                    codeLines={SOLUTION_CODE}
+                    title="Simplified Solution Trace"
+                    subtitle={
+                        step
+                            ? `Active line ${step.activeLine}: ${step.message}`
+                            : 'Trace your simplified Codeforces solution line-by-line.'
+                    }
+                />
+
                 <section className="gogt-panel gogt-tree-panel">
                     <header className="gogt-panel-head">
                         <span>Tree State Preview</span>
@@ -591,18 +602,6 @@ export default function GameOnGrowingTreeVisualizer() {
                         ) : null}
                     </div>
                 </section>
-            </div>
-            <div className="gogt-ctp-panel">
-                <CodeTracePanel
-                    step={step}
-                    codeLines={SOLUTION_CODE}
-                    title="Simplified Solution Trace"
-                    subtitle={
-                        step
-                            ? `Active line ${step.activeLine}: ${step.message}`
-                            : 'Trace your simplified Codeforces solution line-by-line.'
-                    }
-                />
             </div>
         </div>
     )

@@ -159,14 +159,6 @@
     margin-bottom: 2px;
 }
 
-.gogt-ctp-panel {
-    grid-column: 1 / -2;
-}
-
-.gogt-tree-panel {
-    grid-column: 2 / -2;
-}
-
 .gogt-tree-note {
     border: 1px solid var(--border);
     border-radius: 10px;
