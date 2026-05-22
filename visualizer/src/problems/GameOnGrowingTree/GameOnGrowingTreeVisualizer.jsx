@@ -775,7 +775,17 @@ export default function GameOnGrowingTreeVisualizer() {
 
                                         return (
                                             <g key={node} transform={`translate(${pos.x}, ${pos.y})`}>
-                                                <circle className={`gogt-node ${state} ${isChip ? 'chip' : ''} ${isFocusSource ? 'focus-source' : ''} ${isFocusTarget ? 'focus-target' : ''}`} r="16" />
+                                                {isFocusSource || isFocusTarget ? (
+                                                    <rect
+                                                        x="-21"
+                                                        y="-21"
+                                                        width="42"
+                                                        height="42"
+                                                        rx="12"
+                                                        className={`gogt-focus-box ${isFocusSource ? 'source' : ''} ${isFocusTarget ? 'target' : ''}`}
+                                                    />
+                                                ) : null}
+                                                <circle className={`gogt-node ${state} ${isChip ? 'chip' : ''}`} r="16" />
                                                 <text className="gogt-node-label" textAnchor="middle" dy="-1">{node + 1}</text>
                                                 <text className="gogt-node-depth" textAnchor="middle" dy="12">d{nodeDepth}</text>
                                             </g>

@@ -227,16 +227,29 @@
     filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.55));
 }
 
-.gogt-node.focus-source {
-    fill: rgba(251, 191, 36, 0.34);
+.gogt-focus-box {
+    fill: none;
+    stroke-width: 2.5;
+    stroke-dasharray: 7 5;
+    pointer-events: none;
+}
+
+.gogt-focus-box.source {
     stroke: rgba(251, 191, 36, 1);
-    filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.85));
+    filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.75));
+}
+
+.gogt-focus-box.target {
+    stroke: rgba(34, 197, 94, 1);
+    filter: drop-shadow(0 0 10px rgba(34, 197, 94, 0.7));
+}
+
+.gogt-node.focus-source {
+    stroke: rgba(251, 191, 36, 1);
 }
 
 .gogt-node.focus-target {
-    fill: rgba(34, 197, 94, 0.32);
     stroke: rgba(34, 197, 94, 1);
-    filter: drop-shadow(0 0 10px rgba(34, 197, 94, 0.8));
 }
 
 .gogt-transfer-line {
