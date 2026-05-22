@@ -7,22 +7,48 @@ import './GameOnGrowingTreeVisualizer.css'
 const MAX_TREE_NODES_TO_RENDER = 120
 
 const SOLUTION_CODE = [
-    { line: 1, text: 'N = q' },
-    { line: 2, text: 'P = [0] + [v[i] - 1 for i in range(N)]' },
-    { line: 3, text: 'if N == 1: print(1); return' },
+    { line: 1, text: 'n = int(input())' },
+    { line: 2, text: 'parent = [0] + [x - 1 for x in map(int, input().split())]' },
+    { line: 3, text: 'if n == 1: print(1); exit()' },
     { line: 4, text: '' },
-    { line: 5, text: 'def sol(m):' },
-    { line: 6, text: '    DP1, DP2, DP3 = [0]*m, [0]*m, [0]*m' },
-    { line: 7, text: '    for x in range(m-1, 0, -1): update parent with DP2[x] + 1' },
-    { line: 8, text: '    for x in range(1, m): reroot contribution from parent into x' },
-    { line: 9, text: '    return max(DP2) + 1' },
-    { line: 10, text: '' },
-    { line: 11, text: 'Z = [0,1,1,2] + [0]*N' },
-    { line: 12, text: 'Z[N+2] = 17; stack = [(3, N+2)]' },
-    { line: 13, text: 'while stack:' },
-    { line: 14, text: '    l, r = stack.pop(); m = (l + r) // 2; c = sol(m); Z[m] = c' },
-    { line: 15, text: '    fill equal segments or split intervals recursively' },
-    { line: 16, text: 'print(Z[2:N+2])' },
+    { line: 5, text: 'def solve(size):' },
+    { line: 6, text: '    first = [0] * size' },
+    { line: 7, text: '    second = [0] * size' },
+    { line: 8, text: '    third = [0] * size' },
+    { line: 9, text: '    for node in range(size - 1, 0, -1):' },
+    { line: 10, text: '        p = parent[node]' },
+    { line: 11, text: '        depth = second[node] + 1' },
+    { line: 12, text: '        if depth > first[p]: first[p], second[p], third[p] = depth, first[p], second[p]' },
+    { line: 13, text: '        elif depth > second[p]: second[p], third[p] = depth, second[p]' },
+    { line: 14, text: '        elif depth > third[p]: third[p] = depth' },
+    { line: 15, text: '    for node in range(1, size):' },
+    { line: 16, text: '        p = parent[node]' },
+    { line: 17, text: '        if second[p] <= second[node] + 1:' },
+    { line: 18, text: '            depth = third[p] + 1' },
+    { line: 19, text: '        else:' },
+    { line: 20, text: '            depth = second[p] + 1' },
+    { line: 21, text: '        if depth > first[node]: first[node], second[node], third[node] = depth, first[node], second[node]' },
+    { line: 22, text: '        elif depth > second[node]: second[node], third[node] = depth, second[node]' },
+    { line: 23, text: '        elif depth > third[node]: third[node] = depth' },
+    { line: 24, text: '    return max(second) + 1' },
+    { line: 25, text: '' },
+    { line: 26, text: 'ans = [0, 1, 1, 2] + [0] * n' },
+    { line: 27, text: 'ans[n + 2] = 17' },
+    { line: 28, text: 'stack = [(3, n + 2)]' },
+    { line: 29, text: 'while stack:' },
+    { line: 30, text: '    left, right = stack.pop()' },
+    { line: 31, text: '    mid = (left + right) >> 1' },
+    { line: 32, text: '    value = solve(mid)' },
+    { line: 33, text: '    ans[mid] = value' },
+    { line: 34, text: '    if ans[left] == ans[mid]:' },
+    { line: 35, text: '        for i in range(left + 1, mid): ans[i] = value' },
+    { line: 36, text: '    elif left + 1 < mid:' },
+    { line: 37, text: '        stack.append((left, mid))' },
+    { line: 38, text: '    if ans[mid] == ans[right]:' },
+    { line: 39, text: '        for i in range(mid + 1, right): ans[i] = value' },
+    { line: 40, text: '    elif mid + 1 < right:' },
+    { line: 41, text: '        stack.append((mid, right))' },
+    { line: 42, text: 'print(*ans[2:n + 2])' },
 ]
 
 const EXAMPLES = [
@@ -43,45 +69,106 @@ const EXAMPLES = [
     },
 ]
 
-function updateTop3(dp1, dp2, dp3, idx, val) {
-    if (val > dp1[idx]) {
-        dp3[idx] = dp2[idx]
-        dp2[idx] = dp1[idx]
-        dp1[idx] = val
-        return
+function insertTop3(first, second, third, idx, value) {
+    if (value > first[idx]) {
+        third[idx] = second[idx]
+        second[idx] = first[idx]
+        first[idx] = value
+        return 1
     }
-    if (val > dp2[idx]) {
-        dp3[idx] = dp2[idx]
-        dp2[idx] = val
-        return
+    if (value > second[idx]) {
+        third[idx] = second[idx]
+        second[idx] = value
+        return 2
     }
-    if (val > dp3[idx]) {
-        dp3[idx] = val
+    if (value > third[idx]) {
+        third[idx] = value
+        return 3
     }
+    return 0
 }
 
-function scoreForPrefix(parentZeroBased, m) {
-    const dp1 = new Array(m).fill(0)
-    const dp2 = new Array(m).fill(0)
-    const dp3 = new Array(m).fill(0)
+function scoreForPrefix(parentZeroBased, size) {
+    const first = new Array(size).fill(0)
+    const second = new Array(size).fill(0)
+    const third = new Array(size).fill(0)
 
-    for (let x = m - 1; x >= 1; x -= 1) {
-        const p = parentZeroBased[x]
-        const d = dp2[x] + 1
-        updateTop3(dp1, dp2, dp3, p, d)
+    for (let node = size - 1; node >= 1; node -= 1) {
+        const parent = parentZeroBased[node]
+        const depth = second[node] + 1
+        insertTop3(first, second, third, parent, depth)
     }
 
-    for (let x = 1; x < m; x += 1) {
-        const p = parentZeroBased[x]
-        const d = dp2[p] <= dp2[x] + 1 ? dp3[p] + 1 : dp2[p] + 1
-        updateTop3(dp1, dp2, dp3, x, d)
+    for (let node = 1; node < size; node += 1) {
+        const parent = parentZeroBased[node]
+        const depth = second[parent] <= second[node] + 1 ? third[parent] + 1 : second[parent] + 1
+        insertTop3(first, second, third, node, depth)
     }
 
     let best = 0
-    for (let i = 0; i < m; i += 1) {
-        if (dp2[i] > best) best = dp2[i]
+    for (let i = 0; i < size; i += 1) {
+        if (second[i] > best) best = second[i]
     }
     return best + 1
+}
+
+function solveWithTrace(parentZeroBased, size, answersSnapshot) {
+    const first = new Array(size).fill(0)
+    const second = new Array(size).fill(0)
+    const third = new Array(size).fill(0)
+    const steps = []
+
+    const capture = (activeLine, message, relatedLines = [activeLine]) => {
+        steps.push({
+            activeLine,
+            relatedLines,
+            message,
+            l: null,
+            r: null,
+            m: size,
+            c: null,
+            stackSize: 0,
+            answers: answersSnapshot,
+        })
+    }
+
+    capture(6, `Initialize top-3 arrays for size ${size}.`, [6, 7, 8])
+
+    for (let node = size - 1; node >= 1; node -= 1) {
+        const parent = parentZeroBased[node]
+        const depth = second[node] + 1
+        capture(9, `Bottom-up: node ${node} contributes depth ${depth} to parent ${parent}.`, [9, 10, 11])
+
+        const which = insertTop3(first, second, third, parent, depth)
+        if (which === 1) {
+            capture(12, `depth ${depth} becomes first[${parent}] and shifts the previous values right.`, [12, 13, 14])
+        } else if (which === 2) {
+            capture(13, `depth ${depth} becomes second[${parent}] and shifts third.`, [13, 14])
+        } else if (which === 3) {
+            capture(14, `depth ${depth} becomes third[${parent}].`, [14])
+        }
+    }
+
+    for (let node = 1; node < size; node += 1) {
+        const parent = parentZeroBased[node]
+        const useThird = second[parent] <= second[node] + 1
+        const depth = useThird ? third[parent] + 1 : second[parent] + 1
+        capture(15, `Top-down: node ${node} receives depth ${depth} from parent ${parent}.`, [15, 16, 17, 18, 19, 20])
+
+        const which = insertTop3(first, second, third, node, depth)
+        if (which === 1) {
+            capture(21, `depth ${depth} becomes first[${node}] and shifts the previous values right.`, [21, 22, 23])
+        } else if (which === 2) {
+            capture(22, `depth ${depth} becomes second[${node}] and shifts third.`, [22, 23])
+        } else if (which === 3) {
+            capture(23, `depth ${depth} becomes third[${node}].`, [23])
+        }
+    }
+
+    const value = Math.max(...second) + 1
+    capture(24, `Return max(second) + 1 = ${value}.`, [24])
+
+    return { value, steps }
 }
 
 function solveAndBuildSteps(q, parentInput) {
@@ -112,7 +199,8 @@ function solveAndBuildSteps(q, parentInput) {
         const answers = [1]
         steps.push({
             activeLine: 3,
-            message: 'Only one query, answer is 1.',
+            relatedLines: [3],
+            message: 'Only one node, answer is 1.',
             l: null,
             r: null,
             m: null,
@@ -123,69 +211,74 @@ function solveAndBuildSteps(q, parentInput) {
         return { answers, steps }
     }
 
-    const z = new Array(q + 4).fill(0)
-    z[1] = 1
-    z[2] = 1
-    z[3] = 2
-    z[q + 2] = 17
+    const ans = new Array(q + 4).fill(0)
+    ans[1] = 1
+    ans[2] = 1
+    ans[3] = 2
+    ans[q + 2] = 17
 
     const stack = [[3, q + 2]]
 
     steps.push({
-        activeLine: 12,
-        message: 'Initialize sentinel boundaries and start interval stack.',
+        activeLine: 26,
+        relatedLines: [26, 27, 28],
+        message: 'Initialize answer array, sentinel value, and divide-and-conquer stack.',
         l: 3,
         r: q + 2,
         m: null,
         c: null,
         stackSize: stack.length,
-        answers: z.slice(2, q + 2),
+        answers: ans.slice(2, q + 2),
     })
 
-    const capture = (activeLine, message, l, r, m, c) => {
+    const capture = (activeLine, message, l, r, m, c, relatedLines = [activeLine]) => {
         steps.push({
             activeLine,
+            relatedLines,
             message,
             l,
             r,
             m,
             c,
             stackSize: stack.length,
-            answers: z.slice(2, q + 2),
+            answers: ans.slice(2, q + 2),
         })
     }
 
     while (stack.length > 0) {
-        const [l, r] = stack.pop()
-        const m = (l + r) >> 1
+        const [left, right] = stack.pop()
+        capture(29, `Pop interval [${left}, ${right}] from the stack.`, left, right, null, null, [29, 30])
 
-        capture(14, `Pop interval [${l}, ${r}], evaluate midpoint m=${m}.`, l, r, m, null)
+        const mid = (left + right) >> 1
+        capture(31, `Midpoint is ${mid}.`, left, right, mid, null, [31])
 
-        const c = scoreForPrefix(parentZeroBased, m)
-        z[m] = c
-        capture(14, `Computed sol(${m}) = ${c}.`, l, r, m, c)
+        capture(32, `Run solve(${mid}) and trace its two DP passes.`, left, right, mid, null, [5, 6, 9, 15, 24])
+        const solved = solveWithTrace(parentZeroBased, mid, ans.slice(2, q + 2))
+        steps.push(...solved.steps)
 
-        if (z[l] === z[m]) {
-            for (let i = l + 1; i < m; i += 1) z[i] = c
-            capture(15, `Left side flattened because Z[l] == Z[m] == ${c}.`, l, r, m, c)
-        } else if (l + 1 < m) {
-            stack.push([l, m])
-            capture(15, `Left side split, push [${l}, ${m}].`, l, r, m, c)
+        ans[mid] = solved.value
+        capture(33, `ans[${mid}] = ${solved.value}.`, left, right, mid, solved.value, [33])
+
+        if (ans[left] === ans[mid]) {
+            for (let i = left + 1; i < mid; i += 1) ans[i] = solved.value
+            capture(34, `Left endpoint matches midpoint, so fill [${left + 1}, ${mid - 1}] with ${solved.value}.`, left, right, mid, solved.value, [34, 35])
+        } else if (left + 1 < mid) {
+            stack.push([left, mid])
+            capture(36, `Left half still needs work, push [${left}, ${mid}].`, left, right, mid, solved.value, [36, 37])
         }
 
-        if (z[m] === z[r]) {
-            for (let i = m + 1; i < r; i += 1) z[i] = c
-            capture(15, `Right side flattened because Z[m] == Z[r] == ${c}.`, l, r, m, c)
-        } else if (m + 1 < r) {
-            stack.push([m, r])
-            capture(15, `Right side split, push [${m}, ${r}].`, l, r, m, c)
+        if (ans[mid] === ans[right]) {
+            for (let i = mid + 1; i < right; i += 1) ans[i] = solved.value
+            capture(38, `Midpoint matches right endpoint, so fill [${mid + 1}, ${right - 1}] with ${solved.value}.`, left, right, mid, solved.value, [38, 39])
+        } else if (mid + 1 < right) {
+            stack.push([mid, right])
+            capture(40, `Right half still needs work, push [${mid}, ${right}].`, left, right, mid, solved.value, [40, 41])
         }
     }
 
-    const answers = z.slice(2, q + 2)
-    capture(16, 'All intervals resolved. Final answers ready.', null, null, null, null)
+    capture(42, 'All intervals are resolved. Print the final answers from 2 to n + 1.', null, null, null, null, [42])
 
-    return { answers, steps }
+    return { answers: ans.slice(2, q + 2), steps }
 }
 
 function buildTreeData(parentZeroBased, m) {
