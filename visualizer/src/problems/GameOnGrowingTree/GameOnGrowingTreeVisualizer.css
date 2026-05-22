@@ -292,6 +292,70 @@
     text-align: center;
 }
 
+.gogt-dp-state {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: rgba(15, 23, 42, 0.45);
+    padding: 10px;
+    display: grid;
+    gap: 10px;
+}
+
+.gogt-dp-state-head {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+}
+
+.gogt-dp-grid {
+    display: grid;
+    gap: 8px;
+}
+
+.gogt-dp-row {
+    display: grid;
+    gap: 6px;
+}
+
+.gogt-dp-label {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+}
+
+.gogt-dp-values {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+}
+
+.gogt-dp-pill {
+    min-width: 48px;
+    padding: 6px 8px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    display: grid;
+    gap: 2px;
+    justify-items: center;
+    flex: 0 0 auto;
+}
+
+.gogt-dp-pill-node {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+}
+
+.gogt-dp-pill strong {
+    font-size: 0.82rem;
+    color: var(--text);
+}
+
 .gogt-tree-truncated {
     color: #fbbf24;
     font-size: 0.76rem;

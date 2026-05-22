@@ -118,6 +118,7 @@ function solveWithTrace(parentZeroBased, size, answersSnapshot) {
     const second = new Array(size).fill(0)
     const third = new Array(size).fill(0)
     const steps = []
+    const snapshotLimit = Math.min(size, MAX_TREE_NODES_TO_RENDER)
 
     const capture = (activeLine, message, relatedLines = [activeLine], focus = null) => {
         steps.push({
@@ -127,6 +128,11 @@ function solveWithTrace(parentZeroBased, size, answersSnapshot) {
             subproblemSize: size,
             stackSize: 0,
             focus,
+            dpSnapshot: {
+                first: first.slice(0, snapshotLimit),
+                second: second.slice(0, snapshotLimit),
+                third: third.slice(0, snapshotLimit),
+            },
             answers: answersSnapshot,
         })
     }
@@ -559,6 +565,8 @@ export default function GameOnGrowingTreeVisualizer() {
         }
     }, [currentTree, step?.focus])
 
+    const dpSnapshot = step?.dpSnapshot ?? null
+
     const onApplyExample = useCallback((example) => {
         setQInput(example.q)
         setParentsInput(example.parents)
@@ -796,6 +804,31 @@ export default function GameOnGrowingTreeVisualizer() {
                                 <div className="gogt-tree-empty">Press Play or Next to render the tree for current midpoint.</div>
                             )}
                         </div>
+
+                        {dpSnapshot ? (
+                            <div className="gogt-dp-state">
+                                <div className="gogt-dp-state-head">DP state for rendered prefix</div>
+                                <div className="gogt-dp-grid">
+                                    {[
+                                        { key: 'first', label: 'first', values: dpSnapshot.first },
+                                        { key: 'second', label: 'second', values: dpSnapshot.second },
+                                        { key: 'third', label: 'third', values: dpSnapshot.third },
+                                    ].map((row) => (
+                                        <div key={row.key} className="gogt-dp-row">
+                                            <span className="gogt-dp-label">{row.label}</span>
+                                            <div className="gogt-dp-values">
+                                                {row.values.map((value, node) => (
+                                                    <div key={`${row.key}-${node}`} className="gogt-dp-pill">
+                                                        <span className="gogt-dp-pill-node">{node + 1}</span>
+                                                        <strong>{value}</strong>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : null}
 
                         {currentTree?.truncated ? (
                             <div className="gogt-tree-truncated">
