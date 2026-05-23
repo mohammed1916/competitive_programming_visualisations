@@ -566,6 +566,7 @@ export default function GameOnGrowingTreeVisualizer() {
     }, [currentTree, step?.focus])
 
     const dpSnapshot = step?.dpSnapshot ?? null
+    const stepKey = stepIndex >= 0 ? `step-${stepIndex}` : 'idle'
 
     const onApplyExample = useCallback((example) => {
         setQInput(example.q)
@@ -663,7 +664,18 @@ export default function GameOnGrowingTreeVisualizer() {
                         />
 
                         <div className="gogt-status">
-                            {step?.message || 'Press Play or Next to start.'}
+                            <AnimatePresence mode="wait" initial={false}>
+                                <motion.div
+                                    key={stepKey}
+                                    className="gogt-status-copy"
+                                    initial={{ opacity: 0, y: 8 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -8 }}
+                                    transition={{ duration: 0.22, ease: 'easeOut' }}
+                                >
+                                    {step?.message || 'Press Play or Next to start.'}
+                                </motion.div>
+                            </AnimatePresence>
                         </div>
 
                         <div className="gogt-metrics">
@@ -691,9 +703,18 @@ export default function GameOnGrowingTreeVisualizer() {
 
                         <div className="gogt-output-wrap">
                             <div className="gogt-output-label">Partial answers at this step</div>
-                            <div className="gogt-output mono">
-                                {step?.answers ? step.answers.join(' ') : 'No step yet'}
-                            </div>
+                            <AnimatePresence mode="wait" initial={false}>
+                                <motion.div
+                                    key={stepKey}
+                                    className="gogt-output mono"
+                                    initial={{ opacity: 0, y: 6 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -6 }}
+                                    transition={{ duration: 0.2, ease: 'easeOut' }}
+                                >
+                                    {step?.answers ? step.answers.join(' ') : 'No step yet'}
+                                </motion.div>
+                            </AnimatePresence>
                         </div>
                     </div>
                 </section>
@@ -724,7 +745,16 @@ export default function GameOnGrowingTreeVisualizer() {
 
                         <div className="gogt-tree-canvas">
                             {currentTree ? (
-                                <svg viewBox="0 0 1000 620" className="gogt-svg" role="img" aria-label="Game tree preview">
+                                <motion.svg
+                                    key={`${currentTree.size}-${stepKey}`}
+                                    viewBox="0 0 1000 620"
+                                    className="gogt-svg"
+                                    role="img"
+                                    aria-label="Game tree preview"
+                                    initial={{ opacity: 0, scale: 0.985 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ duration: 0.24, ease: 'easeOut' }}
+                                >
                                     <AnimatePresence>
                                         {treeFocus ? (
                                             <motion.line
@@ -760,13 +790,16 @@ export default function GameOnGrowingTreeVisualizer() {
                                         })
 
                                         return (
-                                            <line
+                                            <motion.line
                                                 key={`${edge.from}-${edge.to}`}
                                                 x1={from.x}
                                                 y1={from.y}
                                                 x2={to.x}
                                                 y2={to.y}
                                                 className={`gogt-edge ${isBlocked ? 'blocked' : inPath ? 'path' : ''}`}
+                                                initial={false}
+                                                animate={{ opacity: isBlocked || inPath ? 1 : 0.78, strokeWidth: isBlocked || inPath ? 3 : 2 }}
+                                                transition={{ duration: 0.2, ease: 'easeOut' }}
                                             />
                                         )
                                     })}
@@ -781,25 +814,43 @@ export default function GameOnGrowingTreeVisualizer() {
                                         const isFocusSource = treeFocus?.sourceNode === node
                                         const isFocusTarget = treeFocus?.targetNode === node
 
+                                        const nodeScale = isChip ? 1.14 : isFocusSource || isFocusTarget ? 1.06 : 1
+
                                         return (
                                             <g key={node} transform={`translate(${pos.x}, ${pos.y})`}>
-                                                {isFocusSource || isFocusTarget ? (
-                                                    <rect
-                                                        x="-21"
-                                                        y="-21"
-                                                        width="42"
-                                                        height="42"
-                                                        rx="12"
-                                                        className={`gogt-focus-box ${isFocusSource ? 'source' : ''} ${isFocusTarget ? 'target' : ''}`}
+                                                <motion.g
+                                                    initial={false}
+                                                    animate={{ scale: nodeScale }}
+                                                    style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
+                                                    transition={{ type: 'spring', stiffness: 320, damping: 24 }}
+                                                >
+                                                    {isFocusSource || isFocusTarget ? (
+                                                        <rect
+                                                            x="-21"
+                                                            y="-21"
+                                                            width="42"
+                                                            height="42"
+                                                            rx="12"
+                                                            className={`gogt-focus-box ${isFocusSource ? 'source' : ''} ${isFocusTarget ? 'target' : ''}`}
+                                                        />
+                                                    ) : null}
+                                                    <motion.circle
+                                                        className={`gogt-node ${state} ${isChip ? 'chip' : ''}`}
+                                                        r="16"
+                                                        initial={false}
+                                                        animate={{
+                                                            opacity: state === 'white' ? 0.9 : 1,
+                                                            r: isChip ? 17.2 : isFocusSource || isFocusTarget ? 16.8 : 16,
+                                                        }}
+                                                        transition={{ type: 'spring', stiffness: 360, damping: 24 }}
                                                     />
-                                                ) : null}
-                                                <circle className={`gogt-node ${state} ${isChip ? 'chip' : ''}`} r="16" />
-                                                <text className="gogt-node-label" textAnchor="middle" dy="-1">{node + 1}</text>
-                                                <text className="gogt-node-depth" textAnchor="middle" dy="12">d{nodeDepth}</text>
+                                                    <text className="gogt-node-label" textAnchor="middle" dy="-1">{node + 1}</text>
+                                                    <text className="gogt-node-depth" textAnchor="middle" dy="12">d{nodeDepth}</text>
+                                                </motion.g>
                                             </g>
                                         )
                                     })}
-                                </svg>
+                                </motion.svg>
                             ) : (
                                 <div className="gogt-tree-empty">Press Play or Next to render the tree for current midpoint.</div>
                             )}
