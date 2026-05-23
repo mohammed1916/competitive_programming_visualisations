@@ -113,6 +113,27 @@ function scoreForPrefix(parentZeroBased, size) {
     return best + 1
 }
 
+function createParentParseSteps(raw) {
+    const parsed = []
+    const steps = []
+
+    raw.forEach((value, idx) => {
+        const zeroBased = value - 1
+        parsed.push(zeroBased)
+        steps.push({
+            phase: 'parse-parent',
+            activeLine: 2,
+            relatedLines: [2],
+            message: `Read parent ${value} for node ${idx + 1} and store ${zeroBased}.`,
+            parsedParents: [...parsed],
+            currentParentIndex: idx,
+            currentParentValue: zeroBased,
+        })
+    })
+
+    return steps
+}
+
 function solveWithTrace(parentZeroBased, size, answersSnapshot) {
     const first = new Array(size).fill(0)
     const second = new Array(size).fill(0)
@@ -239,7 +260,7 @@ function solveAndBuildSteps(q, parentInput) {
         parentZeroBased.push(v - 1)
     }
 
-    const steps = []
+    const steps = createParentParseSteps(raw)
     if (q === 1) {
         const answers = [1]
         steps.push({
@@ -255,6 +276,16 @@ function solveAndBuildSteps(q, parentInput) {
         })
         return { answers, steps }
     }
+
+    steps.push({
+        activeLine: 2,
+        relatedLines: [2],
+        message: 'Parent list parsed. Build the tree and continue.',
+        phase: 'parse-parent-done',
+        parsedParents: parentZeroBased.slice(1),
+        currentParentIndex: q - 1,
+        currentParentValue: parentZeroBased[q],
+    })
 
     const ans = new Array(q + 4).fill(0)
     ans[1] = 1
@@ -567,6 +598,16 @@ export default function GameOnGrowingTreeVisualizer() {
 
     const dpSnapshot = step?.dpSnapshot ?? null
     const stepKey = stepIndex >= 0 ? `step-${stepIndex}` : 'idle'
+    const parentTokens = useMemo(() => parentsInput.trim().split(/\s+/).filter(Boolean), [parentsInput])
+    const parsedParentValues = useMemo(() => parentTokens.map((token) => {
+        const value = Number(token)
+        return Number.isFinite(value) ? value - 1 : null
+    }), [parentTokens])
+    const parseIndex = step?.currentParentIndex ?? -1
+    const parseValue = step?.currentParentValue ?? null
+    const isParsingParents = step?.activeLine === 2 && step?.phase === 'parse-parent'
+    const hasParsedParents = step?.activeLine === 2 && (step?.phase === 'parse-parent' || step?.phase === 'parse-parent-done')
+    const revealedParentCount = isParsingParents ? parseIndex + 1 : hasParsedParents ? parsedParentValues.length : 0
 
     const onApplyExample = useCallback((example) => {
         setQInput(example.q)
@@ -622,6 +663,52 @@ export default function GameOnGrowingTreeVisualizer() {
                                 placeholder="Space separated parent list"
                             />
                         </label>
+
+                        <div className="gogt-parent-strip">
+                            <div className="gogt-output-label">Parent parsing preview: x → parent</div>
+                            <div className="gogt-parent-grid">
+                                {parentTokens.map((token, idx) => (
+                                    <div key={`${token}-${idx}`} className="gogt-parent-column">
+                                        <div className="gogt-parent-column-label">x{idx + 1}</div>
+                                        <motion.div
+                                            className={`gogt-parent-token ${isParsingParents && parseIndex === idx ? 'active' : ''}`}
+                                            animate={{ y: isParsingParents && parseIndex === idx ? -6 : 0, scale: isParsingParents && parseIndex === idx ? 1.08 : 1 }}
+                                            transition={{ type: 'spring', stiffness: 320, damping: 24 }}
+                                        >
+                                            <span className="mono">{token}</span>
+                                            <small>x</small>
+                                        </motion.div>
+                                        <div className="gogt-parent-column-label">parent{idx + 1}</div>
+                                        <motion.div
+                                            key={`parent-${idx}-${revealedParentCount}`}
+                                            className={`gogt-parent-cell ${isParsingParents && parseIndex === idx ? 'active' : ''} ${idx < revealedParentCount ? 'revealed' : ''}`}
+                                            initial={false}
+                                            animate={{
+                                                opacity: idx < revealedParentCount ? 1 : 0.32,
+                                                y: idx < revealedParentCount ? 0 : 2,
+                                                scale: idx < revealedParentCount ? 1 : 0.98,
+                                            }}
+                                            transition={{ duration: 0.2, ease: 'easeOut' }}
+                                        >
+                                            <span className="mono">
+                                                {idx < revealedParentCount
+                                                    ? (isParsingParents && parseIndex === idx
+                                                        ? `parent${idx + 1} = x${idx + 1} - 1 = ${parsedParentValues[idx]}`
+                                                        : `parent${idx + 1} = ${parsedParentValues[idx]}`)
+                                                    : '—'}
+                                            </span>
+                                        </motion.div>
+                                    </div>
+                                ))}
+                            </div>
+                            {step?.activeLine === 2 ? (
+                                <div className="gogt-parent-note">
+                                    {parseIndex >= 0
+                                        ? `x${parseIndex + 1} = ${parentTokens[parseIndex] ?? '—'} transitions to parent${parseIndex + 1} = x${parseIndex + 1} - 1 = ${parseValue}.`
+                                        : 'Parsing parent tokens.'}
+                                </div>
+                            ) : null}
+                        </div>
 
                         <div className="gogt-output-wrap">
                             <div className="gogt-output-label">Final output</div>
