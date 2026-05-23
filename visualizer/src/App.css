@@ -17,6 +17,93 @@
   --page-shell-padding: 1rem;
 }
 
+.app-toolbar {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 40;
+  pointer-events: none;
+}
+
+.settings-menu {
+  position: relative;
+  pointer-events: auto;
+}
+
+.settings-menu > summary {
+  list-style: none;
+}
+
+.settings-menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+.settings-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  height: 40px;
+  padding: 0 0.8rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(15, 15, 36, 0.9);
+  color: var(--text);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(18px);
+}
+
+.settings-summary-icon {
+  color: var(--primary-l);
+  font-size: 0.95rem;
+}
+
+.settings-panel {
+  position: absolute;
+  top: calc(100% + 0.65rem);
+  right: 0;
+  width: min(320px, calc(100vw - 2rem));
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: rgba(8, 8, 24, 0.96);
+  box-shadow: 0 22px 54px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(20px);
+  padding: 0.95rem;
+}
+
+.settings-panel-title {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+  margin-bottom: 0.7rem;
+}
+
+.settings-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  color: var(--text);
+}
+
+.settings-toggle input {
+  margin-top: 0.2rem;
+  accent-color: var(--primary-l);
+}
+
+.settings-toggle strong {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.settings-toggle small {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
 /* ── Home Page ─────────────────────────────── */
 .home-page {
   width: 100%;

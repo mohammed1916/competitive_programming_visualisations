@@ -613,16 +613,50 @@ function LayoutControls({ layoutWidth, onChange, compact = false }) {
   );
 }
 
-function ProblemPage({ problem, onBack, layoutWidth, onLayoutChange }) {
-  const Component = problem.component;
+function SettingsMenu({ navigationTransitionsEnabled, onToggleNavigationTransitions }) {
   return (
-    <motion.div
-      className="problem-page"
-      initial={{ opacity: 0, x: 50 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -50 }}
-      transition={{ type: "spring", stiffness: 320, damping: 35 }}
-    >
+    <details className="settings-menu">
+      <summary className="settings-summary" aria-label="Open settings">
+        <span className="settings-summary-icon">⚙</span>
+        <span>Settings</span>
+      </summary>
+      <div className="settings-panel">
+        <div className="settings-panel-title">Navigation</div>
+        <label className="settings-toggle">
+          <input
+            type="checkbox"
+            checked={navigationTransitionsEnabled}
+            onChange={(event) => onToggleNavigationTransitions(event.target.checked)}
+          />
+          <span>
+            <strong>Enable transitions</strong>
+            <small>Animate page switches and problem card entrances.</small>
+          </span>
+        </label>
+      </div>
+    </details>
+  );
+}
+
+function ProblemPage({
+  problem,
+  onBack,
+  layoutWidth,
+  onLayoutChange,
+  enableTransitions,
+}) {
+  const Component = problem.component;
+  const Shell = enableTransitions ? motion.div : "div";
+  const shellProps = enableTransitions
+    ? {
+        initial: { opacity: 0, x: 50 },
+        animate: { opacity: 1, x: 0 },
+        exit: { opacity: 0, x: -50 },
+        transition: { type: "spring", stiffness: 320, damping: 35 },
+      }
+    : {};
+  return (
+    <Shell className="problem-page" {...shellProps}>
       <header className="problem-header">
         <button className="back-btn" onClick={onBack}>
           <svg
@@ -662,7 +696,7 @@ function ProblemPage({ problem, onBack, layoutWidth, onLayoutChange }) {
           )}
         </ErrorBoundary>
       </div>
-    </motion.div>
+    </Shell>
   );
 }
 
@@ -672,6 +706,7 @@ function HomePage({
   onSelect,
   layoutWidth,
   onLayoutChange,
+  enableTransitions,
 }) {
   const [catalogProblems, setCatalogProblems] = useState([]);
   const [catalogError, setCatalogError] = useState("");
@@ -742,21 +777,29 @@ function HomePage({
   });
 
   const visible = filtered.slice(0, visibleCount);
+  const Shell = enableTransitions ? motion.div : "div";
+  const shellProps = enableTransitions
+    ? {
+        initial: { opacity: 0 },
+        animate: { opacity: 1 },
+        exit: { opacity: 0 },
+      }
+    : {};
+  const Brand = enableTransitions ? motion.div : "div";
 
   return (
-    <motion.div
-      className="home-page"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-    >
+    <Shell className="home-page" {...shellProps}>
       <header className="home-header">
         <div className="home-header-row">
-          <motion.div
+          <Brand
             className="brand"
-            initial={{ y: -18, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.08, type: "spring", stiffness: 280 }}
+            {...(enableTransitions
+              ? {
+                  initial: { y: -18, opacity: 0 },
+                  animate: { y: 0, opacity: 1 },
+                  transition: { delay: 0.08, type: "spring", stiffness: 280 },
+                }
+              : {})}
           >
             <div className="brand-icon">⟨/⟩</div>
             <div>
@@ -769,7 +812,7 @@ function HomePage({
                     : "Core programming basics and loop patterns"}
               </p>
             </div>
-          </motion.div>
+          </Brand>
 
           <div
             className="track-switcher"
@@ -879,42 +922,72 @@ function HomePage({
 
       <main className="cards-grid">
         {visible.map((p, i) => (
-          <motion.button
-            key={p.id}
-            className="problem-card"
-            style={{ "--accent": p.accent }}
-            onClick={() => onSelect(p)}
-            initial={{ opacity: 0, y: 28 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              delay: 0.14 + i * 0.07,
-              type: "spring",
-              stiffness: 260,
-            }}
-            whileHover={{ y: -5, scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
-          >
-            <div className="card-top">
-              <span
-                className={`badge difficulty-${p.difficulty.toLowerCase()}`}
-              >
-                {p.difficulty}
-              </span>
-              <span className="card-num">#{p.number}</span>
-            </div>
-            <h2 className="card-title">{p.title}</h2>
-            <p className="card-desc">{p.description}</p>
-            <div className="card-footer">
-              <div className="card-tags">
-                {p.tags.map((t) => (
-                  <span key={t} className="tag">
-                    {t}
-                  </span>
-                ))}
+          enableTransitions ? (
+            <motion.button
+              key={p.id}
+              className="problem-card"
+              style={{ "--accent": p.accent }}
+              onClick={() => onSelect(p)}
+              initial={{ opacity: 0, y: 28 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                delay: 0.14 + i * 0.07,
+                type: "spring",
+                stiffness: 260,
+              }}
+              whileHover={{ y: -5, scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+            >
+              <div className="card-top">
+                <span
+                  className={`badge difficulty-${p.difficulty.toLowerCase()}`}
+                >
+                  {p.difficulty}
+                </span>
+                <span className="card-num">#{p.number}</span>
               </div>
-              <span className="card-arrow">{p.implemented ? "→" : "⋯"}</span>
-            </div>
-          </motion.button>
+              <h2 className="card-title">{p.title}</h2>
+              <p className="card-desc">{p.description}</p>
+              <div className="card-footer">
+                <div className="card-tags">
+                  {p.tags.map((t) => (
+                    <span key={t} className="tag">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+                <span className="card-arrow">{p.implemented ? "→" : "⋯"}</span>
+              </div>
+            </motion.button>
+          ) : (
+            <button
+              key={p.id}
+              className="problem-card"
+              style={{ "--accent": p.accent }}
+              onClick={() => onSelect(p)}
+            >
+              <div className="card-top">
+                <span
+                  className={`badge difficulty-${p.difficulty.toLowerCase()}`}
+                >
+                  {p.difficulty}
+                </span>
+                <span className="card-num">#{p.number}</span>
+              </div>
+              <h2 className="card-title">{p.title}</h2>
+              <p className="card-desc">{p.description}</p>
+              <div className="card-footer">
+                <div className="card-tags">
+                  {p.tags.map((t) => (
+                    <span key={t} className="tag">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+                <span className="card-arrow">{p.implemented ? "→" : "⋯"}</span>
+              </div>
+            </button>
+          )
         ))}
       </main>
 
@@ -928,7 +1001,7 @@ function HomePage({
           </button>
         </div>
       )}
-    </motion.div>
+    </Shell>
   );
 }
 
@@ -937,6 +1010,29 @@ export default function App() {
   const [active, setActive] = useState(null);
   const [track, setTrack] = useState(TRACKS.LEETCODE);
   const [layoutWidth, setLayoutWidth] = useState("full");
+  const [navigationTransitionsEnabled, setNavigationTransitionsEnabled] = useState(true);
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem("cpviz.navigationTransitions");
+      if (stored !== null) {
+        setNavigationTransitionsEnabled(stored !== "0");
+      }
+    } catch (error) {
+      void error;
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        "cpviz.navigationTransitions",
+        navigationTransitionsEnabled ? "1" : "0",
+      );
+    } catch (error) {
+      void error;
+    }
+  }, [navigationTransitionsEnabled]);
 
   // Keep browser history in sync so the browser back button works
   useEffect(() => {
@@ -962,28 +1058,40 @@ export default function App() {
     setActive(null);
   };
 
+  const pageContent = active ? (
+    <ProblemPage
+      key={active.id}
+      problem={active}
+      onBack={goBack}
+      layoutWidth={layoutWidth}
+      onLayoutChange={setLayoutWidth}
+      enableTransitions={navigationTransitionsEnabled}
+    />
+  ) : (
+    <HomePage
+      key={`home-${track}`}
+      track={track}
+      onTrackChange={handleTrackChange}
+      onSelect={setActive}
+      layoutWidth={layoutWidth}
+      onLayoutChange={setLayoutWidth}
+      enableTransitions={navigationTransitionsEnabled}
+    />
+  );
+
   return (
     <div className={`app layout-${layoutWidth}`}>
-      <AnimatePresence mode="wait">
-        {active ? (
-          <ProblemPage
-            key={active.id}
-            problem={active}
-            onBack={goBack}
-            layoutWidth={layoutWidth}
-            onLayoutChange={setLayoutWidth}
-          />
-        ) : (
-          <HomePage
-            key={`home-${track}`}
-            track={track}
-            onTrackChange={handleTrackChange}
-            onSelect={setActive}
-            layoutWidth={layoutWidth}
-            onLayoutChange={setLayoutWidth}
-          />
-        )}
-      </AnimatePresence>
+      <div className="app-toolbar">
+        <SettingsMenu
+          navigationTransitionsEnabled={navigationTransitionsEnabled}
+          onToggleNavigationTransitions={setNavigationTransitionsEnabled}
+        />
+      </div>
+      {navigationTransitionsEnabled ? (
+        <AnimatePresence mode="wait">{pageContent}</AnimatePresence>
+      ) : (
+        pageContent
+      )}
     </div>
   );
 }
