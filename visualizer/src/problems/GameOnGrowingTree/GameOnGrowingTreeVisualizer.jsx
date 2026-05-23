@@ -510,6 +510,7 @@ export default function GameOnGrowingTreeVisualizer() {
     const [qInput, setQInput] = useState('9')
     const [parentsInput, setParentsInput] = useState('1 1 3 3 1 2 1 2 8')
     const [previewSize, setPreviewSize] = useState(null)
+    const [parsedParentSnapshot, setParsedParentSnapshot] = useState([])
 
     const { answers, steps, inputError } = useMemo(() => {
         try {
@@ -542,7 +543,12 @@ export default function GameOnGrowingTreeVisualizer() {
     useEffect(() => {
         if (!step) {
             setPreviewSize(null)
+            setParsedParentSnapshot([])
             return
+        }
+
+        if (Array.isArray(step.parsedParents) && step.parsedParents.length > 0) {
+            setParsedParentSnapshot(step.parsedParents)
         }
 
         if (step.subproblemSize != null) {
@@ -606,8 +612,8 @@ export default function GameOnGrowingTreeVisualizer() {
     const parseIndex = step?.currentParentIndex ?? -1
     const parseValue = step?.currentParentValue ?? null
     const isParsingParents = step?.activeLine === 2 && step?.phase === 'parse-parent'
-    const hasParsedParents = step?.activeLine === 2 && (step?.phase === 'parse-parent' || step?.phase === 'parse-parent-done')
-    const revealedParentCount = isParsingParents ? parseIndex + 1 : hasParsedParents ? parsedParentValues.length : 0
+    const hasParsedParents = parsedParentSnapshot.length > 0
+    const revealedParentCount = isParsingParents ? parseIndex + 1 : hasParsedParents ? parsedParentSnapshot.length : 0
 
     const onApplyExample = useCallback((example) => {
         setQInput(example.q)
@@ -672,7 +678,13 @@ export default function GameOnGrowingTreeVisualizer() {
                                         <div className="gogt-parent-column-label">x{idx + 1}</div>
                                         <motion.div
                                             className={`gogt-parent-token ${isParsingParents && parseIndex === idx ? 'active' : ''}`}
-                                            animate={{ y: isParsingParents && parseIndex === idx ? -6 : 0, scale: isParsingParents && parseIndex === idx ? 1.08 : 1 }}
+                                            animate={{
+                                                y: isParsingParents && parseIndex === idx ? -6 : 0,
+                                                scale: isParsingParents && parseIndex === idx ? 1.08 : 1,
+                                                boxShadow: isParsingParents && parseIndex === idx
+                                                    ? '0 0 0 1px rgba(251, 191, 36, 0.3), 0 10px 24px rgba(251, 190, 36, 0.9)'
+                                                    : 'none',
+                                            }}
                                             transition={{ type: 'spring', stiffness: 320, damping: 24 }}
                                         >
                                             <span className="mono">{token}</span>
@@ -687,25 +699,32 @@ export default function GameOnGrowingTreeVisualizer() {
                                                 opacity: idx < revealedParentCount ? 1 : 0.32,
                                                 y: idx < revealedParentCount ? 0 : 2,
                                                 scale: idx < revealedParentCount ? 1 : 0.98,
+                                                borderColor: isParsingParents && parseIndex === idx
+                                                    ? 'rgba(115, 225, 156, 0.95)'
+                                                    : idx < revealedParentCount
+                                                        ? 'rgba(34, 197, 94, 0.55)'
+                                                        : 'var(--border)',
                                             }}
                                             transition={{ duration: 0.2, ease: 'easeOut' }}
                                         >
                                             <span className="mono">
                                                 {idx < revealedParentCount
                                                     ? (isParsingParents && parseIndex === idx
-                                                        ? `parent${idx + 1} = x${idx + 1} - 1 = ${parsedParentValues[idx]}`
-                                                        : `parent${idx + 1} = ${parsedParentValues[idx]}`)
+                                                        ? `parent${idx + 1} = x${idx + 1} - 1 = ${parsedParentSnapshot[idx]}`
+                                                        : `parent${idx + 1} = ${parsedParentSnapshot[idx]}`)
                                                     : '—'}
                                             </span>
                                         </motion.div>
                                     </div>
                                 ))}
                             </div>
-                            {step?.activeLine === 2 ? (
+                            {hasParsedParents || step?.activeLine === 2 ? (
                                 <div className="gogt-parent-note">
                                     {parseIndex >= 0
                                         ? `x${parseIndex + 1} = ${parentTokens[parseIndex] ?? '—'} transitions to parent${parseIndex + 1} = x${parseIndex + 1} - 1 = ${parseValue}.`
-                                        : 'Parsing parent tokens.'}
+                                        : hasParsedParents
+                                            ? 'Parent values are now set and will stay visible while the algorithm continues.'
+                                            : 'Parsing parent tokens.'}
                                 </div>
                             ) : null}
                         </div>
