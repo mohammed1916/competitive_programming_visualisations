@@ -32,9 +32,17 @@ export default function CodeTracePanel({
 
   useEffect(() => {
     if (!step?.activeLine || !codeRef.current) return
-    if (Date.now() - lastManualScrollTsRef.current < 1200) return
-    const activeLine = codeRef.current.querySelector(`[data-line="${step.activeLine}"]`)
-    activeLine?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    if (Date.now() - lastManualScrollTsRef.current < 600) return
+    const el = codeRef.current.querySelector(`[data-line="${step.activeLine}"]`)
+    if (!el) return
+    const container = codeRef.current
+    const elTop = el.offsetTop
+    const elBottom = elTop + el.offsetHeight
+    const ctTop = container.scrollTop
+    const ctBottom = ctTop + container.clientHeight
+    if (elTop < ctTop || elBottom > ctBottom) {
+      el.scrollIntoView({ block: 'nearest', behavior: 'auto' })
+    }
   }, [step])
 
   useEffect(() => {

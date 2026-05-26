@@ -1,0 +1,99 @@
+/* ═══════════════════════════════════════════════════════════════
+   Shared Progress Band
+   Fill gradient uses --vis-accent set per-problem.
+   ═══════════════════════════════════════════════════════════════ */
+
+.vis-progress-band {
+  display: flex;
+  flex-direction: column;
+  gap: 0.38rem;
+}
+
+.vis-progress-track {
+  height: 4px;
+  background: var(--surface3, rgba(255, 255, 255, 0.06));
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.vis-progress-fill {
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--vis-accent, #8b5cf6),
+    color-mix(in srgb, var(--vis-accent, #8b5cf6) 60%, #22c55e)
+  );
+  border-radius: 999px;
+}
+
+.vis-step-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.vis-step-counter {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+/* ── Phase badge ──────────────────────────────────────────────── */
+.vis-phase-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.vis-phase-badge.phase-blue {
+  background: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.22);
+}
+
+.vis-phase-badge.phase-amber {
+  background: rgba(234, 179, 8, 0.15);
+  color: #fde68a;
+  border: 1px solid rgba(234, 179, 8, 0.22);
+}
+
+.vis-phase-badge.phase-orange {
+  background: rgba(249, 115, 22, 0.15);
+  color: #fdba74;
+  border: 1px solid rgba(249, 115, 22, 0.22);
+}
+
+.vis-phase-badge.phase-slate {
+  background: rgba(148, 163, 184, 0.1);
+  color: #cbd5e1;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.vis-phase-badge.phase-green {
+  background: rgba(34, 197, 94, 0.15);
+  color: #86efac;
+  border: 1px solid rgba(34, 197, 94, 0.22);
+}
+
+.vis-phase-badge.phase-purple {
+  background: rgba(139, 92, 246, 0.15);
+  color: #c4b5fd;
+  border: 1px solid rgba(139, 92, 246, 0.22);
+}
+
+.vis-phase-badge.phase-sky {
+  background: rgba(56, 189, 248, 0.15);
+  color: #7dd3fc;
+  border: 1px solid rgba(56, 189, 248, 0.22);
+}
+
+.vis-phase-badge.phase-red {
+  background: rgba(248, 113, 113, 0.15);
+  color: #fca5a5;
+  border: 1px solid rgba(248, 113, 113, 0.22);
+}

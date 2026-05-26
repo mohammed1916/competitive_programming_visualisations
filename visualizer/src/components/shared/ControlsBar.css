@@ -1,0 +1,126 @@
+/* ═══════════════════════════════════════════════════════════════
+   Shared Controls Bar
+   Play button uses --vis-play / --vis-play-d set per-problem.
+   Accent on range input uses --vis-accent.
+   ═══════════════════════════════════════════════════════════════ */
+
+.vis-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.85rem 1.2rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+}
+
+.vis-controls-play {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.vis-controls-right {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+.vis-controls-extra {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ── Buttons ──────────────────────────────────────────────────── */
+.vis-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1.1rem;
+  border-radius: 12px;
+  font-size: 0.86rem;
+  font-weight: 700;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+  gap: 0.35rem;
+}
+
+.vis-btn:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.vis-btn-ghost {
+  background: var(--surface2);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+.vis-btn-ghost:hover:not(:disabled) {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--vis-accent, #8b5cf6) 40%, transparent);
+  background: color-mix(in srgb, var(--vis-accent, #8b5cf6) 8%, transparent);
+}
+
+.vis-btn-icon {
+  padding: 0.6rem;
+  aspect-ratio: 1;
+}
+
+.vis-btn-play {
+  background: linear-gradient(
+    135deg,
+    var(--vis-play, #22c55e),
+    var(--vis-play-d, #16a34a)
+  );
+  color: white;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--vis-play, #22c55e) 30%, transparent);
+  border: none;
+}
+
+.vis-btn-play:hover:not(:disabled) {
+  filter: brightness(1.1);
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--vis-play, #22c55e) 40%, transparent);
+  transform: translateY(-1px);
+}
+
+/* ── Speed slider ─────────────────────────────────────────────── */
+.vis-speed-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.vis-speed-label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.vis-speed-range {
+  width: 88px;
+  accent-color: var(--vis-accent, #8b5cf6);
+  cursor: pointer;
+}
+
+/* ── Responsive ───────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .vis-controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .vis-controls-right {
+    margin-left: 0;
+    width: 100%;
+  }
+}

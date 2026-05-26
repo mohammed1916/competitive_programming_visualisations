@@ -90,6 +90,7 @@
 .ctp-scroll {
   overflow: auto;
   padding: 10px;
+  touch-action: pan-y;
 }
 
 .ctp-resizer {
