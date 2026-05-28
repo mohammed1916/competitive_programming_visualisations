@@ -181,6 +181,61 @@
     font-weight: 700;
 }
 
+/* Partial answers styling */
+.gogt-answer-cell {
+    min-height: 44px;
+    padding: 6px 8px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    display: inline-grid;
+    gap: 6px;
+    align-items: center;
+    justify-items: center;
+    flex: 0 0 auto;
+}
+
+.gogt-answer-label {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(30,41,59,0.6), rgba(15,23,42,0.4));
+    border: 1px solid rgba(148,163,184,0.14);
+}
+
+.gogt-answer-cell .mono,
+.gogt-answer-cell span {
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+/* changed / unchanged accents */
+.gogt-answer-cell.changed {
+    border-color: rgba(249, 115, 22, 0.85);
+    box-shadow: 0 6px 18px rgba(249, 115, 22, 0.12);
+    background: linear-gradient(180deg, rgba(255, 247, 237, 0.95), rgba(255, 250, 240, 0.9));
+}
+.gogt-answer-cell.changed .gogt-answer-label {
+    background: linear-gradient(180deg, rgba(255,245,230,0.95), rgba(255,243,230,0.9));
+    border-color: rgba(249, 115, 22, 0.45);
+    color: rgba(124, 58, 237, 0.9);
+}
+
+.gogt-answer-cell.unchanged {
+    border-color: rgba(34, 197, 94, 0.7);
+    box-shadow: 0 6px 18px rgba(34, 197, 94, 0.08);
+    background: linear-gradient(180deg, rgba(240, 253, 244, 0.95), rgba(245, 255, 248, 0.92));
+}
+.gogt-answer-cell.unchanged .gogt-answer-label {
+    background: linear-gradient(180deg, rgba(236, 253, 245, 0.95), rgba(235, 251, 243, 0.9));
+    border-color: rgba(34, 197, 94, 0.45);
+    color: rgba(4, 120, 87, 0.95);
+}
+
 .gogt-parent-empty {
     color: var(--text-dim);
     font-size: 0.78rem;

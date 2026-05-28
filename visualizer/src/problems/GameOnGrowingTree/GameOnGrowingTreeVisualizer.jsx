@@ -5,6 +5,7 @@ import PlaybackControls from "../../components/PlaybackControls";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
 import "./GameOnGrowingTreeVisualizer.css";
 import StackPanel from "../../components/StackPanel";
+import PartialAnswersPanel from "../../components/PartialAnswersPanel";
 
 const MAX_TREE_NODES_TO_RENDER = 120;
 
@@ -979,39 +980,14 @@ export default function GameOnGrowingTreeVisualizer() {
                   Partial answers at this step
                 </div>
                 <div className="gogt-output mono">
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                    {(step?.answers ?? []).length === 0 ? (
-                      <div>No step yet</div>
-                    ) : (
-                      (step?.answers ?? []).map((val, idx) => {
-                        const prev = prevAnswersRef.current;
-                        const prevVal =
-                          prev && Array.isArray(prev) ? prev[idx] : undefined;
-                        const changed = prevVal !== val;
-                        return (
-                          <div key={idx} className="gogt-answer-cell mono">
-                            {changed ? (
-                              <AnimatePresence mode="wait" initial={false}>
-                                <motion.span
-                                  key={String(val)}
-                                  initial={{ opacity: 0, y: 6 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  exit={{ opacity: 0, y: -6 }}
-                                  transition={{
-                                    duration: 0.18,
-                                    ease: "easeOut",
-                                  }}
-                                >
-                                  {val}
-                                </motion.span>
-                              </AnimatePresence>
-                            ) : (
-                              <span>{val}</span>
-                            )}
-                          </div>
-                        );
-                      })
-                    )}
+                  {/* use reusable panel */}
+                  <div style={{ display: "flex" }}>
+                    <PartialAnswersPanel
+                      label=""
+                      answers={step?.answers ?? []}
+                      prevAnswers={prevAnswersRef.current}
+                      labelPrefix="a"
+                    />
                   </div>
                 </div>
               </div>
