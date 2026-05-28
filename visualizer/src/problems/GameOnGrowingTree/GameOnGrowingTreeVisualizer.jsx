@@ -992,11 +992,20 @@ export default function GameOnGrowingTreeVisualizer() {
                   label="interval stack"
                   items={
                     step && step.stack
-                      ? step.stack.map(([l, r]) => `${l},${r}`)
+                      ? step.stack.map(([l, r]) => {
+                          const midLabel =
+                            step && typeof step.midpoint === "number"
+                              ? ` (m=${step.midpoint})`
+                              : "";
+                          return `[${l} — ${r}]${midLabel}`;
+                        })
                       : []
                   }
                   emptyText="empty"
                   topBadge="top"
+                  highlightIndex={
+                    step && step.stack ? step.stack.length - 1 : -1
+                  }
                 />
                 <div style={{ flex: 1 }} />
               </div>
