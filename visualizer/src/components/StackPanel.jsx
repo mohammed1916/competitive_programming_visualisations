@@ -23,14 +23,23 @@ export default function StackPanel({
               const isHighlighted = idx === highlightIndex;
               return (
                 <motion.div
-                  key={`${val}-${idx}`}
+                  key={idx}
                   className={`sp-cell${isTop ? " top" : ""}${isHighlighted ? " highlight" : ""}`}
-                  initial={{ opacity: 0, x: isTop ? -20 : 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: isTop ? 20 : -20 }}
+                  initial={false}
+                  animate={{}}
                   layout
                 >
-                  {val}
+                  <AnimatePresence mode="wait" initial={false}>
+                    <motion.div
+                      key={String(val)}
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      transition={{ duration: 0.18, ease: "easeOut" }}
+                    >
+                      {val}
+                    </motion.div>
+                  </AnimatePresence>
                   {isTop && topBadge ? (
                     <span className="sp-top-badge">{topBadge}</span>
                   ) : null}

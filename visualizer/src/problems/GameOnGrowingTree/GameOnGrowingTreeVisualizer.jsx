@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
@@ -671,6 +671,12 @@ export default function GameOnGrowingTreeVisualizer() {
 
   const step = stepIndex >= 0 ? steps[stepIndex] : null;
 
+  // track previous answers to detect per-index changes
+  const prevAnswersRef = useRef(null);
+  useEffect(() => {
+    prevAnswersRef.current = step?.answers ?? null;
+  }, [step?.answers]);
+
   useEffect(() => {
     if (!step) {
       setPreviewSize(null);
@@ -972,18 +978,42 @@ export default function GameOnGrowingTreeVisualizer() {
                 <div className="gogt-output-label">
                   Partial answers at this step
                 </div>
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.div
-                    key={stepKey}
-                    className="gogt-output mono"
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.2, ease: "easeOut" }}
-                  >
-                    {step?.answers ? step.answers.join(" ") : "No step yet"}
-                  </motion.div>
-                </AnimatePresence>
+                <div className="gogt-output mono">
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                    {(step?.answers ?? []).length === 0 ? (
+                      <div>No step yet</div>
+                    ) : (
+                      (step?.answers ?? []).map((val, idx) => {
+                        const prev = prevAnswersRef.current;
+                        const prevVal =
+                          prev && Array.isArray(prev) ? prev[idx] : undefined;
+                        const changed = prevVal !== val;
+                        return (
+                          <div key={idx} className="gogt-answer-cell mono">
+                            {changed ? (
+                              <AnimatePresence mode="wait" initial={false}>
+                                <motion.span
+                                  key={String(val)}
+                                  initial={{ opacity: 0, y: 6 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: -6 }}
+                                  transition={{
+                                    duration: 0.18,
+                                    ease: "easeOut",
+                                  }}
+                                >
+                                  {val}
+                                </motion.span>
+                              </AnimatePresence>
+                            ) : (
+                              <span>{val}</span>
+                            )}
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
               </div>
 
               {/* Interval stack visualization */}
@@ -995,7 +1025,7 @@ export default function GameOnGrowingTreeVisualizer() {
                       ? step.stack.map(([l, r]) => {
                           const midLabel =
                             step && typeof step.midpoint === "number"
-                              ? ` (m=${step.midpoint})`
+                              ? ` midpoint: ${step.midpoint}`
                               : "";
                           return `[${l} — ${r}]${midLabel}`;
                         })
