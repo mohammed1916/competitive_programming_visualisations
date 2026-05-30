@@ -830,17 +830,20 @@ export default function GameOnGrowingTreeVisualizer() {
               </div>
               <div className="gogt-parent-grid">
                 {parentTokens.map((token, idx) => (
-                  <div key={`${token}-${idx}`} className="gogt-parent-column">
+                  <div
+                    key={`${token}-${idx}`}
+                    className={`gogt-parent-column ${idx < revealedParentCount ? "accessed" : ""} ${isParsingParents && parseIndex === idx ? "current" : ""}`}
+                  >
                     <div className="gogt-parent-column-label">x{idx + 1}</div>
                     <motion.div
-                      className={`gogt-parent-token ${isParsingParents && parseIndex === idx ? "active" : ""}`}
+                      className={`gogt-parent-token ${idx < revealedParentCount ? "accessed" : ""} ${isParsingParents && parseIndex === idx ? "current" : ""}`}
                       animate={{
                         y: isParsingParents && parseIndex === idx ? -6 : 0,
                         scale:
                           isParsingParents && parseIndex === idx ? 1.08 : 1,
                         boxShadow:
                           isParsingParents && parseIndex === idx
-                            ? "0 0 0 1px rgba(251, 191, 36, 0.3), 0 10px 24px rgba(251, 190, 36, 0.9)"
+                            ? "0 0 0 1px rgba(251, 191, 36, 0.42), 0 10px 24px rgba(251, 191, 36, 0.25)"
                             : "none",
                       }}
                       transition={{
@@ -857,7 +860,7 @@ export default function GameOnGrowingTreeVisualizer() {
                     </div>
                     <motion.div
                       key={`parent-${idx}-${revealedParentCount}`}
-                      className={`gogt-parent-cell ${isParsingParents && parseIndex === idx ? "active" : ""} ${idx < revealedParentCount ? "revealed" : ""}`}
+                      className={`gogt-parent-cell ${idx < revealedParentCount ? "accessed" : ""} ${isParsingParents && parseIndex === idx ? "current" : ""}`}
                       initial={false}
                       animate={{
                         opacity: idx < revealedParentCount ? 1 : 0.32,
@@ -865,10 +868,16 @@ export default function GameOnGrowingTreeVisualizer() {
                         scale: idx < revealedParentCount ? 1 : 0.98,
                         borderColor:
                           isParsingParents && parseIndex === idx
-                            ? "rgba(115, 225, 156, 0.95)"
+                            ? "rgba(34, 197, 94, 0.95)"
                             : idx < revealedParentCount
-                              ? "rgba(34, 197, 94, 0.55)"
+                              ? "rgba(34, 197, 94, 0.6)"
                               : "var(--border)",
+                        boxShadow:
+                          isParsingParents && parseIndex === idx
+                            ? "0 0 0 1px rgba(34, 197, 94, 0.36), 0 10px 24px rgba(34, 197, 94, 0.18)"
+                            : idx < revealedParentCount
+                              ? "0 0 0 1px rgba(34, 197, 94, 0.14)"
+                              : "none",
                       }}
                       transition={{ duration: 0.2, ease: "easeOut" }}
                     >
