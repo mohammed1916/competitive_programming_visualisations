@@ -1,0 +1,22 @@
+.partial-answers-wrap{display:grid;gap:8px}
+.partial-answers-label{font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;font-weight:700}
+.partial-answers-grid{display:flex;gap:8px;flex-wrap:wrap}
+.partial-answer-cell{min-height:46px;padding:8px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);display:inline-grid;gap:6px;align-items:center;justify-items:center;flex:0 0 auto}
+.partial-answer-chip{font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:800;padding:4px 8px;border-radius:999px;background:rgba(15,23,42,0.5);border:1px solid rgba(148,163,184,0.12)}
+.partial-answer-value{font-size:0.95rem;font-weight:800;color:var(--text);line-height:1}
+
+/* ensure value contrast against light accent backgrounds */
+.partial-answer-cell.changed .partial-answer-value{
+	color: rgba(116, 50, 6, 0.95); /* darker orange-brown for readability */
+}
+.partial-answer-cell.unchanged .partial-answer-value{
+	color: rgba(6, 78, 59, 0.95); /* darker green for readability */
+}
+.partial-answers-empty{color:var(--text-dim)}
+
+/* accents */
+.partial-answer-cell.changed{border-color:rgba(249,115,22,0.9);box-shadow:0 6px 18px rgba(249,115,22,0.12);background:linear-gradient(180deg,rgba(255,250,240,0.98),rgba(255,248,236,0.95))}
+.partial-answer-cell.changed .partial-answer-chip{background:linear-gradient(180deg,rgba(255,245,230,0.95),rgba(255,243,230,0.9));border-color:rgba(249,115,22,0.45);color:rgba(124,58,237,0.9)}
+
+.partial-answer-cell.unchanged{border-color:rgba(34,197,94,0.8);box-shadow:0 6px 18px rgba(34,197,94,0.08);background:linear-gradient(180deg,rgba(245,255,250,0.98),rgba(240,255,245,0.95))}
+.partial-answer-cell.unchanged .partial-answer-chip{background:linear-gradient(180deg,rgba(236,253,245,0.95),rgba(235,251,243,0.9));border-color:rgba(34,197,94,0.45);color:rgba(4,120,87,0.95)}
