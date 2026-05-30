@@ -678,6 +678,11 @@ export default function GameOnGrowingTreeVisualizer() {
     prevAnswersRef.current = step?.answers ?? null;
   }, [step?.answers]);
 
+  const prevParsedParentsRef = useRef(null);
+  useEffect(() => {
+    prevParsedParentsRef.current = parsedParentSnapshot;
+  }, [parsedParentSnapshot]);
+
   useEffect(() => {
     if (!step) {
       setPreviewSize(null);
@@ -742,29 +747,21 @@ export default function GameOnGrowingTreeVisualizer() {
   }, [currentTree, step?.focus]);
 
   const dpSnapshot = step?.dpSnapshot ?? null;
+  const prevDpSnapshotRef = useRef(null);
+  useEffect(() => {
+    prevDpSnapshotRef.current = dpSnapshot;
+  }, [dpSnapshot]);
+
   const stepKey = stepIndex >= 0 ? `step-${stepIndex}` : "idle";
   const parentTokens = useMemo(
     () => parentsInput.trim().split(/\s+/).filter(Boolean),
     [parentsInput],
-  );
-  const parsedParentValues = useMemo(
-    () =>
-      parentTokens.map((token) => {
-        const value = Number(token);
-        return Number.isFinite(value) ? value - 1 : null;
-      }),
-    [parentTokens],
   );
   const parseIndex = step?.currentParentIndex ?? -1;
   const parseValue = step?.currentParentValue ?? null;
   const isParsingParents =
     step?.activeLine === 2 && step?.phase === "parse-parent";
   const hasParsedParents = parsedParentSnapshot.length > 0;
-  const revealedParentCount = isParsingParents
-    ? parseIndex + 1
-    : hasParsedParents
-      ? parsedParentSnapshot.length
-      : 0;
 
   const onApplyExample = useCallback(
     (example) => {
@@ -825,73 +822,12 @@ export default function GameOnGrowingTreeVisualizer() {
             </label>
 
             <div className="gogt-parent-strip">
-              <div className="gogt-output-label">
-                Parent parsing preview: x → parent
-              </div>
-              <div className="gogt-parent-grid">
-                {parentTokens.map((token, idx) => (
-                  <div
-                    key={`${token}-${idx}`}
-                    className={`gogt-parent-column ${idx < revealedParentCount ? "accessed" : ""} ${isParsingParents && parseIndex === idx ? "current" : ""}`}
-                  >
-                    <div className="gogt-parent-column-label">x{idx + 1}</div>
-                    <motion.div
-                      className={`gogt-parent-token ${idx < revealedParentCount ? "accessed" : ""} ${isParsingParents && parseIndex === idx ? "current" : ""}`}
-                      animate={{
-                        y: isParsingParents && parseIndex === idx ? -6 : 0,
-                        scale:
-                          isParsingParents && parseIndex === idx ? 1.08 : 1,
-                        boxShadow:
-                          isParsingParents && parseIndex === idx
-                            ? "0 0 0 1px rgba(251, 191, 36, 0.42), 0 10px 24px rgba(251, 191, 36, 0.25)"
-                            : "none",
-                      }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 320,
-                        damping: 24,
-                      }}
-                    >
-                      <span className="mono">{token}</span>
-                      <small>x</small>
-                    </motion.div>
-                    <div className="gogt-parent-column-label">
-                      parent{idx + 1}
-                    </div>
-                    <motion.div
-                      key={`parent-${idx}-${revealedParentCount}`}
-                      className={`gogt-parent-cell ${idx < revealedParentCount ? "accessed" : ""} ${isParsingParents && parseIndex === idx ? "current" : ""}`}
-                      initial={false}
-                      animate={{
-                        opacity: idx < revealedParentCount ? 1 : 0.32,
-                        y: idx < revealedParentCount ? 0 : 2,
-                        scale: idx < revealedParentCount ? 1 : 0.98,
-                        borderColor:
-                          isParsingParents && parseIndex === idx
-                            ? "rgba(34, 197, 94, 0.95)"
-                            : idx < revealedParentCount
-                              ? "rgba(34, 197, 94, 0.6)"
-                              : "var(--border)",
-                        boxShadow:
-                          isParsingParents && parseIndex === idx
-                            ? "0 0 0 1px rgba(34, 197, 94, 0.36), 0 10px 24px rgba(34, 197, 94, 0.18)"
-                            : idx < revealedParentCount
-                              ? "0 0 0 1px rgba(34, 197, 94, 0.14)"
-                              : "none",
-                      }}
-                      transition={{ duration: 0.2, ease: "easeOut" }}
-                    >
-                      <span className="mono">
-                        {idx < revealedParentCount
-                          ? isParsingParents && parseIndex === idx
-                            ? `parent${idx + 1} = x${idx + 1} - 1 = ${parsedParentSnapshot[idx]}`
-                            : `parent${idx + 1} = ${parsedParentSnapshot[idx]}`
-                          : "—"}
-                      </span>
-                    </motion.div>
-                  </div>
-                ))}
-              </div>
+              <PartialAnswersPanel
+                label="Parent parsing preview"
+                answers={parsedParentSnapshot}
+                prevAnswers={prevParsedParentsRef.current}
+                labelPrefix="p"
+              />
               {hasParsedParents || step?.activeLine === 2 ? (
                 <div className="gogt-parent-note">
                   {parseIndex >= 0
@@ -904,10 +840,12 @@ export default function GameOnGrowingTreeVisualizer() {
             </div>
 
             <div className="gogt-output-wrap">
-              <div className="gogt-output-label">Final output</div>
-              <div className="gogt-output mono">
-                {answers.length ? answers.join(" ") : "No output yet"}
-              </div>
+              <PartialAnswersPanel
+                label="Final output"
+                answers={answers}
+                prevAnswers={prevAnswersRef.current}
+                labelPrefix="a"
+              />
             </div>
           </div>
         </section>
@@ -1217,30 +1155,35 @@ export default function GameOnGrowingTreeVisualizer() {
                 </div>
                 <div className="gogt-dp-grid">
                   {[
-                    { key: "first", label: "first", values: dpSnapshot.first },
+                    {
+                      key: "first",
+                      label: "first",
+                      values: dpSnapshot.first,
+                      prevValues: prevDpSnapshotRef.current?.first,
+                      prefix: "f",
+                    },
                     {
                       key: "second",
                       label: "second",
                       values: dpSnapshot.second,
+                      prevValues: prevDpSnapshotRef.current?.second,
+                      prefix: "s",
                     },
-                    { key: "third", label: "third", values: dpSnapshot.third },
+                    {
+                      key: "third",
+                      label: "third",
+                      values: dpSnapshot.third,
+                      prevValues: prevDpSnapshotRef.current?.third,
+                      prefix: "t",
+                    },
                   ].map((row) => (
-                    <div key={row.key} className="gogt-dp-row">
-                      <span className="gogt-dp-label">{row.label}</span>
-                      <div className="gogt-dp-values">
-                        {row.values.map((value, node) => (
-                          <div
-                            key={`${row.key}-${node}`}
-                            className="gogt-dp-pill"
-                          >
-                            <span className="gogt-dp-pill-node">
-                              {node + 1}
-                            </span>
-                            <strong>{value}</strong>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                    <PartialAnswersPanel
+                      key={row.key}
+                      label={`DP ${row.label}`}
+                      answers={row.values}
+                      prevAnswers={row.prevValues}
+                      labelPrefix={row.prefix}
+                    />
                   ))}
                 </div>
               </div>
