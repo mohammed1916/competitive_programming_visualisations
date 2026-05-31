@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
+import { useCodeVisualConnectivity } from "../../hooks/useCodeVisualConnectivity";
 import "./MoveZeroesVisualizer.css";
 
 const SOLUTION_CODE = [
@@ -40,11 +41,23 @@ function generateSteps(numsIn) {
 
 export default function MoveZeroesVisualizer() {
     const [ex, setEx] = useState(EXAMPLES[0]);
-    const steps = useMemo(() => generateSteps(ex.nums), [ex]);
-    const { stepIndex, stepForward, stepBack, togglePlay, handleReset, isPlaying, speed, setSpeed, isDone } =
+    const steps = useMemo(
+        () =>
+            generateSteps(ex.nums).map((current) => ({
+                ...current,
+                relatedLines: current.relatedLines ?? (current.activeLine != null ? [current.activeLine] : []),
+            })),
+        [ex]
+    );
+    const { stepIndex, setStepIndex, stepForward, stepBack, togglePlay, handleReset, isPlaying, speed, setSpeed, isDone } =
         usePlaybackState(steps.length);
     const step = stepIndex >= 0 ? steps[stepIndex] : null;
     const applyEx = useCallback((e) => { setEx(e); handleReset(); }, [handleReset]);
+    const connectivity = useCodeVisualConnectivity({
+        steps,
+        stepIndex,
+        onStepJump: setStepIndex,
+    });
 
     const arr = step?.arr ?? ex.nums;
     const k = step?.k ?? 0;
@@ -98,7 +111,12 @@ export default function MoveZeroesVisualizer() {
                 <div className="mz-result">✓ Zeroes moved to end: [{arr.join(", ")}]</div>
             )}
 
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+            <CodeTracePanel
+                step={step}
+                codeLines={SOLUTION_CODE}
+                highlightedLines={connectivity.highlightedLines}
+                onLineSelect={connectivity.handleLineSelect}
+            />
             <div className="mz-status">{step?.message ?? "Press Play to begin."}</div>
             <PlaybackControls
                 isPlaying={isPlaying} isDone={isDone} speed={speed}

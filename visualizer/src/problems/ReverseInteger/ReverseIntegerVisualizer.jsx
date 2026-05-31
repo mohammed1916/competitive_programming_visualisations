@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { useCodeVisualConnectivity } from '../../hooks/useCodeVisualConnectivity'
 import './ReverseIntegerVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -121,10 +122,16 @@ export default function ReverseIntegerVisualizer() {
     }
   }, [xInput])
 
-  const steps = useMemo(() => generateSteps(initialX), [initialX])
+  const steps = useMemo(
+    () => generateSteps(initialX).map((current) => ({
+      ...current,
+      relatedLines: current.relatedLines ?? (current.activeLine != null ? [current.activeLine] : []),
+    })),
+    [initialX],
+  )
 
   const {
-    stepIndex, stepForward, stepBack, togglePlay,
+    stepIndex, setStepIndex, stepForward, stepBack, togglePlay,
     handleReset, isPlaying, speed, setSpeed, isDone,
   } = usePlaybackState(steps.length)
 
@@ -134,6 +141,12 @@ export default function ReverseIntegerVisualizer() {
     setXInput(String(ex.x))
     handleReset()
   }, [handleReset])
+
+  const connectivity = useCodeVisualConnectivity({
+    steps,
+    stepIndex,
+    onStepJump: setStepIndex,
+  })
 
   return (
     <div className="revin-shell">
@@ -252,7 +265,12 @@ export default function ReverseIntegerVisualizer() {
       </div>
 
       <div className="revin-middle">
-        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+        <CodeTracePanel
+          step={step}
+          codeLines={SOLUTION_CODE}
+          highlightedLines={connectivity.highlightedLines}
+          onLineSelect={connectivity.handleLineSelect}
+        />
       </div>
 
       <div className={'revin-status ' + (step?.phase === 'done' ? (step?.overflow ? 'overflow' : 'success') : '')}>
