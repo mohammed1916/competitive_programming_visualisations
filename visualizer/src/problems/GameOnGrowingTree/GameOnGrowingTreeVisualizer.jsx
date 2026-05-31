@@ -997,7 +997,7 @@ export default function GameOnGrowingTreeVisualizer() {
                             {currentTree ? (
                                 <motion.svg
                                     key={`${currentTree.size}-${stepKey}`}
-                                    viewBox="0 0 1000 620"
+                                    viewBox="0 0 1000 300"
                                     className="gogt-svg"
                                     role="img"
                                     aria-label="Game tree preview"
