@@ -18,6 +18,7 @@ export default function AnimatedIterationList({
   className = '',
   getItemState,
   renderItem,
+  renderBelow,
   showIndex = true,
   onItemClick,
   getItemKey,
@@ -45,6 +46,7 @@ export default function AnimatedIterationList({
               {renderItem ? renderItem(item, index) : item}
             </motion.div>
             {showIndex ? <div className="ail-index">{index}</div> : null}
+            {renderBelow ? renderBelow(item, index) : null}
           </div>
         )
       })}

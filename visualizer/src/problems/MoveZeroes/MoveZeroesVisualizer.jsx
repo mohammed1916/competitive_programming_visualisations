@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from "react";
-import { motion } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
+import AnimatedIterationList from "../../components/shared/AnimatedIterationList";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
 import { useCodeVisualConnectivity } from "../../hooks/useCodeVisualConnectivity";
 import "./MoveZeroesVisualizer.css";
@@ -73,29 +73,30 @@ export default function MoveZeroesVisualizer() {
 
             <div className="mz-panel">
                 <div className="mz-panel-label">Array (in-place)</div>
-                <div className="mz-arr">
-                    {arr.map((v, idx) => {
-                        const isI = idx === i;
-                        const isK = idx === k;
-                        const isZero = v === 0;
-                        const isDone = step?.done;
+                <AnimatedIterationList
+                    items={arr}
+                    styleName="pointer-lane"
+                    className="mz-arr"
+                    getItemState={(value, index) => {
+                        const isI = index === i;
+                        const isK = index === k;
+                        const isZero = value === 0;
+                        return {
+                            stateClass: `${isI ? 'i-cell' : ''} ${isK && !isI ? 'k-cell' : ''} ${isZero && !isI && !isK ? 'zero' : ''}`.trim(),
+                            isActive: isI || isK,
+                        };
+                    }}
+                    renderBelow={(_, index) => {
+                        const isI = index === i;
+                        const isK = index === k;
                         return (
-                            <div key={idx} className="mz-cell-col">
-                                <motion.div
-                                    className={`mz-cell ${isI ? "i-cell" : ""} ${isK && !isI ? "k-cell" : ""} ${isZero && !isI && !isK ? "zero" : ""}`}
-                                    animate={{ scale: (isI || isK) ? 1.12 : 1, y: isI ? -5 : 0 }}
-                                    transition={{ type: "spring", stiffness: 400, damping: 22 }}>
-                                    {v}
-                                </motion.div>
-                                <div className="mz-idx">{idx}</div>
-                                <div className="mz-ptrs">
-                                    {isI && <span className="mz-ptr i">i</span>}
-                                    {isK && <span className="mz-ptr k">k</span>}
-                                </div>
+                            <div className="mz-ptrs">
+                                {isI && <span className="mz-ptr i">i</span>}
+                                {isK && <span className="mz-ptr k">k</span>}
                             </div>
                         );
-                    })}
-                </div>
+                    }}
+                />
             </div>
 
             <div className="mz-trackers">

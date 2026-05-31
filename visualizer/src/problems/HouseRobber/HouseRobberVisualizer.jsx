@@ -1,5 +1,4 @@
 import { useState, useMemo } from 'react'
-import { motion } from 'framer-motion'
 import VisualizerPlaybackSection from '../../components/VisualizerPlaybackSection'
 import AnimatedIterationList from '../../components/shared/AnimatedIterationList'
 import { usePlaybackState } from '../../hooks/usePlaybackState'

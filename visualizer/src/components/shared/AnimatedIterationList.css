@@ -74,3 +74,32 @@
   border-color: rgba(56, 189, 248, 0.7);
   background: rgba(56, 189, 248, 0.16);
 }
+
+.ail-style-pointer-lane .ail-item {
+  background: #252535;
+  border-color: #45475a;
+  color: #cdd6f4;
+}
+
+.ail-style-pointer-lane .ail-item.i-cell {
+  border-color: #89b4fa;
+  background: #0a1020;
+  color: #89b4fa;
+}
+
+.ail-style-pointer-lane .ail-item.k-cell {
+  border-color: #f9e2af;
+  background: #201905;
+  color: #f9e2af;
+}
+
+.ail-style-pointer-lane .ail-item.result {
+  border-color: #a6e3a1;
+  background: #0a1a12;
+  color: #a6e3a1;
+}
+
+.ail-style-pointer-lane .ail-item.zero {
+  border-color: #6c7086;
+  color: #6c7086;
+}

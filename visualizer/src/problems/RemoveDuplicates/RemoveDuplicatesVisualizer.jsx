@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from "react";
-import { motion } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
+import AnimatedIterationList from "../../components/shared/AnimatedIterationList";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
 import { useCodeVisualConnectivity } from "../../hooks/useCodeVisualConnectivity";
 import "./RemoveDuplicatesVisualizer.css";
@@ -76,28 +76,30 @@ export default function RemoveDuplicatesVisualizer() {
 
       <div className="rd-panel">
         <div className="rd-panel-label">Array (in-place)</div>
-        <div className="rd-arr">
-          {arr.map((v, idx) => {
-            const isI = idx === i;
-            const isK = idx === k;
-            const inResult = idx < k;
+        <AnimatedIterationList
+          items={arr}
+          styleName="pointer-lane"
+          className="rd-arr"
+          getItemState={(_, index) => {
+            const isI = index === i;
+            const isK = index === k;
+            const inResult = index < k;
+            return {
+              stateClass: `${isI ? 'i-cell' : ''} ${isK && !isI ? 'k-cell' : ''} ${inResult && !isI && !isK ? 'result' : ''}`.trim(),
+              isActive: isI || isK,
+            };
+          }}
+          renderBelow={(_, index) => {
+            const isI = index === i;
+            const isK = index === k;
             return (
-              <div key={idx} className="rd-cell-col">
-                <motion.div
-                  className={`rd-cell ${isI ? "i-cell" : ""} ${isK && !isI ? "k-cell" : ""} ${inResult && !isI && !isK ? "result" : ""}`}
-                  animate={{ scale: isI || isK ? 1.12 : 1, y: isI ? -4 : 0 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 22 }}>
-                  {v}
-                </motion.div>
-                <div className="rd-idx">{idx}</div>
-                <div className="rd-ptrs">
-                  {isI && <span className="rd-ptr i">i</span>}
-                  {isK && <span className="rd-ptr k">k</span>}
-                </div>
+              <div className="rd-ptrs">
+                {isI && <span className="rd-ptr i">i</span>}
+                {isK && <span className="rd-ptr k">k</span>}
               </div>
             );
-          })}
-        </div>
+          }}
+        />
         <div className="rd-divider-row">
           <div className="rd-divider-label">result zone (0..k-1)</div>
           <div className="rd-divider-bar" style={{ width: `${k * 52}px` }} />
