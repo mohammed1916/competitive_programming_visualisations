@@ -129,6 +129,28 @@
   border-top: 1px solid var(--panel-border, rgba(255, 255, 255, 0.06));
 }
 
+.ctp-editor-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(2, 6, 23, 0.68);
+  backdrop-filter: blur(2px);
+}
+
+.ctp-editor-modal {
+  width: min(1100px, calc(100vw - 48px));
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(15, 23, 42, 0.98);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+}
+
 .ctp-editor-controls {
   display: flex;
   flex-wrap: wrap;

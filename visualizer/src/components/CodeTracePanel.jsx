@@ -260,7 +260,9 @@ export default function CodeTracePanel({
         })}
       </div>
       {isEditing && (
-        <div className="ctp-editor-wrap">
+        <div className="ctp-editor-backdrop" onClick={toggleEdit}>
+          <div className="ctp-editor-modal" onClick={(event) => event.stopPropagation()}>
+            <div className="ctp-editor-wrap">
           <div className="ctp-editor-controls">
             <button className="ctp-editor-btn" onClick={() => setShowComments((s) => !s)}>{showComments ? 'Hide comments' : 'Show comments'}</button>
             <button className="ctp-editor-btn" onClick={loadFromFile}>Load file</button>
@@ -310,7 +312,7 @@ export default function CodeTracePanel({
           </div>
           <Suspense fallback={<textarea className="ctp-editor-textarea" value={(showComments ? commentsText + '\n\n' : '') + editorContent} onChange={(e) => setEditorContent(e.target.value.replace(/^(?:#.*\n)*/, '').replace(/^\n+/, ''))} />}>
             <MonacoEditor
-              height="240px"
+              height="420px"
               defaultLanguage={editorLanguage}
               value={(showComments ? commentsText + '\n\n' : '') + editorContent}
               onChange={(v) => setEditorContent((v ?? '').replace(/^(?:#.*\n)*/, '').replace(/^\n+/, ''))}
@@ -328,6 +330,8 @@ export default function CodeTracePanel({
               }}
             />
           </Suspense>
+            </div>
+          </div>
         </div>
       )}
       <div
