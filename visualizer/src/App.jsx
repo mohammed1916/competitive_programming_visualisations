@@ -35,6 +35,15 @@ import PalindromeNumber from "./problems/PalindromeNumber";
 import MedianOfTwoSortedArrays from "./problems/MedianOfTwoSortedArrays";
 import ReverseInteger from "./problems/ReverseInteger";
 import ThreeSum from "./problems/ThreeSum";
+import BestTimeBuySellStock from "./problems/BestTimeBuySellStock";
+import ContainsDuplicate from "./problems/ContainsDuplicate";
+import RemoveDuplicates from "./problems/RemoveDuplicates";
+import MoveZeroes from "./problems/MoveZeroes";
+import SingleNumber from "./problems/SingleNumber";
+import HappyNumber from "./problems/HappyNumber";
+import MajorityElement from "./problems/MajorityElement";
+import ReverseString from "./problems/ReverseString";
+import ValidPalindrome from "./problems/ValidPalindrome";
 import GameOnGrowingTree from "./problems/GameOnGrowingTree";
 import ProblemScaffold from "./components/panels/ProblemScaffold";
 import "./App.css";
@@ -223,6 +232,114 @@ const IMPLEMENTED_PROBLEMS = [
     tags: ["Dynamic Programming", "Math", "Memoization"],
     accent: "#a855f7",
     component: ClimbingStairs,
+  },
+  {
+    id: "lc-121",
+    number: "121",
+    title: "Best Time to Buy and Sell Stock",
+    slug: "best-time-to-buy-and-sell-stock",
+    description:
+      "Single pass: track the running minimum price and compute the best profit at each step.",
+    difficulty: "Easy",
+    tags: ["Array", "Dynamic Programming"],
+    accent: "#22c55e",
+    component: BestTimeBuySellStock,
+  },
+  {
+    id: "lc-125",
+    number: "125",
+    title: "Valid Palindrome",
+    slug: "valid-palindrome",
+    description:
+      "Filter to alphanumeric lowercase characters, then compare from both ends with two pointers.",
+    difficulty: "Easy",
+    tags: ["Two Pointers", "String"],
+    accent: "#10b981",
+    component: ValidPalindrome,
+  },
+  {
+    id: "lc-136",
+    number: "136",
+    title: "Single Number",
+    slug: "single-number",
+    description:
+      "Use XOR properties to cancel paired numbers and isolate the unique value.",
+    difficulty: "Easy",
+    tags: ["Array", "Bit Manipulation"],
+    accent: "#cba6f7",
+    component: SingleNumber,
+  },
+  {
+    id: "lc-169",
+    number: "169",
+    title: "Majority Element",
+    slug: "majority-element",
+    description:
+      "Boyer-Moore voting tracks a candidate and count to find the majority in linear time and O(1) space.",
+    difficulty: "Easy",
+    tags: ["Array", "Hash Table", "Divide and Conquer", "Sorting", "Counting"],
+    accent: "#a855f7",
+    component: MajorityElement,
+  },
+  {
+    id: "lc-202",
+    number: "202",
+    title: "Happy Number",
+    slug: "happy-number",
+    description:
+      "Iteratively sum squared digits and detect loops with a seen set until reaching 1 or a cycle.",
+    difficulty: "Easy",
+    tags: ["Hash Table", "Math", "Two Pointers"],
+    accent: "#f9e2af",
+    component: HappyNumber,
+  },
+  {
+    id: "lc-217",
+    number: "217",
+    title: "Contains Duplicate",
+    slug: "contains-duplicate",
+    description:
+      "Scan once with a hash set and return true as soon as a repeated value appears.",
+    difficulty: "Easy",
+    tags: ["Array", "Hash Table", "Sorting"],
+    accent: "#f38ba8",
+    component: ContainsDuplicate,
+  },
+  {
+    id: "lc-26",
+    number: "26",
+    title: "Remove Duplicates from Sorted Array",
+    slug: "remove-duplicates-from-sorted-array",
+    description:
+      "Use read/write pointers to compact unique values in-place and return the new length.",
+    difficulty: "Easy",
+    tags: ["Array", "Two Pointers"],
+    accent: "#89b4fa",
+    component: RemoveDuplicates,
+  },
+  {
+    id: "lc-283",
+    number: "283",
+    title: "Move Zeroes",
+    slug: "move-zeroes",
+    description:
+      "Maintain a write pointer for non-zero values and swap in-place to move zeroes to the end.",
+    difficulty: "Easy",
+    tags: ["Array", "Two Pointers"],
+    accent: "#f9e2af",
+    component: MoveZeroes,
+  },
+  {
+    id: "lc-344",
+    number: "344",
+    title: "Reverse String",
+    slug: "reverse-string",
+    description:
+      "Swap characters from both ends with two pointers until they cross.",
+    difficulty: "Easy",
+    tags: ["Two Pointers", "String"],
+    accent: "#a6e3a1",
+    component: ReverseString,
   },
   {
     id: "lc-200",
