@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import ResizableSplitPanels from '../../components/shared/ResizableSplitPanels'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import { useCodeVisualConnectivity } from '../../hooks/useCodeVisualConnectivity'
 import './TwoSumVisualizer.css'
@@ -132,8 +133,14 @@ export default function TwoSumVisualizer() {
 
   return (
     <div className="twosum-shell">
-      <div className="twosum-top">
-        <div className="twosum-panel" style={{ flex: 1.5 }}>
+      <ResizableSplitPanels
+        className="twosum-top-split"
+        storageKey="cpviz.split.twosum.top"
+        initialLeftPercent={60}
+        minLeftPx={360}
+        minRightPx={280}
+        left={(
+          <div className="twosum-panel">
           <div className="twosum-panel-head">
             Array & Target
             {inputError && <span style={{ color: '#f87171', marginLeft: 8 }}>{inputError}</span>}
@@ -179,7 +186,7 @@ export default function TwoSumVisualizer() {
                   <div key={idx} className="twosum-cell-wrapper">
                     <span className="twosum-index">{idx}</span>
                     <motion.div
-                      className={`twosum-cell \${isActive ? 'active' : ''} \${isMatch ? 'match' : ''} \${isStored && !isActive && !isMatch ? 'stored' : ''}`}
+                      className={`twosum-cell ${isActive ? 'active' : ''} ${isMatch ? 'match' : ''} ${isStored && !isActive && !isMatch ? 'stored' : ''}`}
                       animate={isActive ? { y: -5 } : { y: 0 }}
                     >
                       {num}
@@ -207,50 +214,52 @@ export default function TwoSumVisualizer() {
                   <span className="op">-</span>
                   <span className="val">{step.n}</span>
                   <span className="op">=</span>
-                  <span className={`val diff \${step.diff !== null ? 'visible' : ''} \${step.phase === 'found' ? 'match' : ''}`}>
+                  <span className={`val diff ${step.diff !== null ? 'visible' : ''} ${step.phase === 'found' ? 'match' : ''}`}>
                     {step.diff}
                   </span>
                 </div>
               </div>
             )}
           </div>
-        </div>
+          </div>
+        )}
+        right={(
+          <div className="twosum-panel">
+            <div className="twosum-panel-head">Hash Map (prevMap)</div>
+            <div className="twosum-panel-body">
+              <div className="twosum-map-container">
+                <div className="twosum-map-headers">
+                  <span>Key (Value)</span>
+                  <span>Val (Index)</span>
+                </div>
+                <AnimatePresence>
+                  {step?.prevMap && Object.entries(step.prevMap).map(([val, idx]) => {
+                    const isChecking = step.diff !== null && Number(val) === step.diff
+                    const isMatch = step.phase === 'found' && Number(val) === step.diff
 
-        <div className="twosum-panel" style={{ flex: 1 }}>
-          <div className="twosum-panel-head">Hash Map (prevMap)</div>
-          <div className="twosum-panel-body">
-            <div className="twosum-map-container">
-              <div className="twosum-map-headers">
-                <span>Key (Value)</span>
-                <span>Val (Index)</span>
+                    return (
+                      <motion.div
+                        key={val}
+                        layout
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className={`twosum-map-row ${isChecking ? 'checking' : ''} ${isMatch ? 'match' : ''}`}
+                      >
+                        <span className="twosum-map-key">{val}</span>
+                        <span className="twosum-map-arrow">→</span>
+                        <span className="twosum-map-val">{idx}</span>
+                      </motion.div>
+                    )
+                  })}
+                </AnimatePresence>
+                {(!step?.prevMap || Object.keys(step.prevMap).length === 0) && (
+                  <div className="twosum-empty-map">Map is empty</div>
+                )}
               </div>
-              <AnimatePresence>
-                {step?.prevMap && Object.entries(step.prevMap).map(([val, idx]) => {
-                  const isChecking = step.diff !== null && Number(val) === step.diff
-                  const isMatch = step.phase === 'found' && Number(val) === step.diff
-
-                  return (
-                    <motion.div
-                      key={val}
-                      layout
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className={`twosum-map-row \${isChecking ? 'checking' : ''} \${isMatch ? 'match' : ''}`}
-                    >
-                      <span className="twosum-map-key">{val}</span>
-                      <span className="twosum-map-arrow">→</span>
-                      <span className="twosum-map-val">{idx}</span>
-                    </motion.div>
-                  )
-                })}
-              </AnimatePresence>
-              {(!step?.prevMap || Object.keys(step.prevMap).length === 0) && (
-                <div className="twosum-empty-map">Map is empty</div>
-              )}
             </div>
           </div>
-        </div>
-      </div>
+        )}
+      />
 
       <div className="twosum-middle">
         <CodeTracePanel
@@ -261,7 +270,7 @@ export default function TwoSumVisualizer() {
         />
       </div>
 
-      <div className={`twosum-status \${step?.phase === 'found' ? 'success' : step?.phase === 'done' ? 'fail' : ''}`}>
+      <div className={`twosum-status ${step?.phase === 'found' ? 'success' : step?.phase === 'done' ? 'fail' : ''}`}>
         {step?.message ?? 'Press Play or Step to begin.'}
       </div>
 

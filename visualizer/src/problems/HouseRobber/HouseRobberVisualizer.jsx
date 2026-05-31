@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import VisualizerPlaybackSection from '../../components/VisualizerPlaybackSection'
 import AnimatedIterationList from '../../components/shared/AnimatedIterationList'
+import ResizableSplitPanels from '../../components/shared/ResizableSplitPanels'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import { useCodeVisualConnectivity } from '../../hooks/useCodeVisualConnectivity'
 import { useProblemCode } from '../../hooks/useProblemCode'
@@ -135,8 +136,14 @@ export default function HouseRobberVisualizer({ problem }) {
 
   return (
     <div className="hr-shell">
-      <div className="hr-top">
-        <section className="hr-panel">
+      <ResizableSplitPanels
+        className="hr-top-split"
+        storageKey="cpviz.split.house-robber.top"
+        initialLeftPercent={59}
+        minLeftPx={360}
+        minRightPx={280}
+        left={(
+          <section className="hr-panel">
           <header className="hr-head">
             <span>Street & DP Transition</span>
             {inputError && <span className="hr-error">{inputError}</span>}
@@ -215,9 +222,10 @@ export default function HouseRobberVisualizer({ problem }) {
               </span>
             </div>
           </div>
-        </section>
-
-        <section className="hr-panel side">
+          </section>
+        )}
+        right={(
+          <section className="hr-panel side">
           <header className="hr-head"><span>Rolling State</span></header>
           <div className="hr-body">
             <div className="hr-metrics">
@@ -229,8 +237,9 @@ export default function HouseRobberVisualizer({ problem }) {
               {step?.phase === 'done' ? `Return ${step.prev1}` : 'Iterating houses'}
             </div>
           </div>
-        </section>
-      </div>
+          </section>
+        )}
+      />
 
       <VisualizerPlaybackSection
         step={step}

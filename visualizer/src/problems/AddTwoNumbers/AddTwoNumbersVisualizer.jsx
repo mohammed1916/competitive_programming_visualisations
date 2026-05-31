@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import ResizableSplitPanels from '../../components/shared/ResizableSplitPanels'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import { useCodeVisualConnectivity } from '../../hooks/useCodeVisualConnectivity'
 import { useProblemCode } from '../../hooks/useProblemCode'
@@ -135,8 +136,14 @@ export default function AddTwoNumbersVisualizer({ problem }) {
 
   return (
     <div className="atn-shell">
-      <div className="atn-top">
-        <div className="atn-panel" style={{ flex: 1.5 }}>
+      <ResizableSplitPanels
+        className="atn-top-split"
+        storageKey="cpviz.split.add-two-numbers.top"
+        initialLeftPercent={60}
+        minLeftPx={380}
+        minRightPx={280}
+        left={(
+          <div className="atn-panel">
           <div className="atn-panel-head">
             Linked Lists
             {inputError && <span style={{ color: '#f87171', marginLeft: 8 }}>{inputError}</span>}
@@ -241,41 +248,43 @@ export default function AddTwoNumbersVisualizer({ problem }) {
             </div>
 
           </div>
-        </div>
-
-        <div className="atn-panel" style={{ flex: 1 }}>
-          <div className="atn-panel-head">State Variables</div>
-          <div className="atn-panel-body" style={{ gap: 16 }}>
-
-            <div className="atn-var-card carry">
-              <span className="atn-var-title">carry</span>
-              <div className="atn-var-value">
-                {step?.carry ?? 0}
-              </div>
-            </div>
-
-            {step && step.v1 !== null && step.v2 !== null && (
-              <div className="atn-math-box">
-                <div className="atn-math-row">
-                  <span>v1</span> + <span>v2</span> + <span>carry</span> = <span>sum</span>
-                </div>
-                <div className="atn-math-row vals">
-                  <span className="val1">{step.v1}</span> +
-                  <span className="val2">{step.v2}</span> +
-                  <span className="val3">{step.phase === 'carry' || step.phase === 'append' || step.phase === 'advance' ? step.prevCarry : step.carry}</span> =
-                  <span className="val4">{step.sum}</span>
-                </div>
-                {step.val !== null && (
-                  <div className="atn-math-res">
-                    node = {step.val}, next carry = {step.carry}
-                  </div>
-                )}
-              </div>
-            )}
-
           </div>
-        </div>
-      </div>
+        )}
+        right={(
+          <div className="atn-panel">
+            <div className="atn-panel-head">State Variables</div>
+            <div className="atn-panel-body" style={{ gap: 16 }}>
+
+              <div className="atn-var-card carry">
+                <span className="atn-var-title">carry</span>
+                <div className="atn-var-value">
+                  {step?.carry ?? 0}
+                </div>
+              </div>
+
+              {step && step.v1 !== null && step.v2 !== null && (
+                <div className="atn-math-box">
+                  <div className="atn-math-row">
+                    <span>v1</span> + <span>v2</span> + <span>carry</span> = <span>sum</span>
+                  </div>
+                  <div className="atn-math-row vals">
+                    <span className="val1">{step.v1}</span> +
+                    <span className="val2">{step.v2}</span> +
+                    <span className="val3">{step.phase === 'carry' || step.phase === 'append' || step.phase === 'advance' ? step.prevCarry : step.carry}</span> =
+                    <span className="val4">{step.sum}</span>
+                  </div>
+                  {step.val !== null && (
+                    <div className="atn-math-res">
+                      node = {step.val}, next carry = {step.carry}
+                    </div>
+                  )}
+                </div>
+              )}
+
+            </div>
+          </div>
+        )}
+      />
 
       <div className="atn-middle">
         <CodeTracePanel
