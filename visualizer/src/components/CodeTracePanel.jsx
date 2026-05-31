@@ -18,7 +18,6 @@ export default function CodeTracePanel({
   activeLabelSuffix = 'is active',
 }) {
   const codeRef = useRef(null)
-  const inlineEditorRef = useRef(null)
   const lastManualScrollTsRef = useRef(0)
   const [copied, setCopied] = useState(false)
   const [panelHeight, setPanelHeight] = useState(() => {
@@ -241,12 +240,9 @@ export default function CodeTracePanel({
   }
 
   const isInlineEditor = isEditing && editorPlacement === 'below'
-  const codeAreaHeight = `${panelHeight}px`
-
-  useEffect(() => {
-    if (!isInlineEditor || !inlineEditorRef.current) return
-    inlineEditorRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }, [isInlineEditor])
+  const codeAreaHeight = isInlineEditor
+    ? `${Math.max(140, Math.round(panelHeight * 0.46))}px`
+    : `${panelHeight}px`
 
   const editorBody = (
     <div className="ctp-editor-wrap">
@@ -385,7 +381,16 @@ export default function CodeTracePanel({
         <ResizerHandle side="center" className="ctp" onPointerDown={startDrag} />
       </div>
 
-      {isInlineEditor ? <div className="ctp-editor-inline" ref={inlineEditorRef}>{editorBody}</div> : null}
+      {isInlineEditor ? (
+        <motion.div
+          className="ctp-editor-inline"
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          transition={{ duration: 0.2, ease: 'easeOut' }}
+        >
+          {editorBody}
+        </motion.div>
+      ) : null}
       {isEditing && editorPlacement === 'overlay'
         ? createPortal(
             <div className="ctp-editor-backdrop" onClick={toggleEdit}>
