@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { useCodeVisualConnectivity } from '../../hooks/useCodeVisualConnectivity'
 import './ClimbingStairsVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -91,10 +92,16 @@ export default function ClimbingStairsVisualizer() {
     }
   }, [nInput])
 
-  const steps = useMemo(() => generateSteps(n), [n])
+  const steps = useMemo(
+    () => generateSteps(n).map((current) => ({
+      ...current,
+      relatedLines: current.relatedLines ?? (current.activeLine != null ? [current.activeLine] : []),
+    })),
+    [n],
+  )
 
   const {
-    stepIndex, stepForward, stepBack, togglePlay,
+    stepIndex, setStepIndex, stepForward, stepBack, togglePlay,
     handleReset, isPlaying, speed, setSpeed, isDone,
   } = usePlaybackState(steps.length)
 
@@ -104,6 +111,12 @@ export default function ClimbingStairsVisualizer() {
     setNInput(String(ex.n))
     handleReset()
   }, [handleReset])
+
+  const connectivity = useCodeVisualConnectivity({
+    steps,
+    stepIndex,
+    onStepJump: setStepIndex,
+  })
 
   // To visualize stairs, we can draw actual stairs!
   // DP array mapping: step.one represents answer for (step.i + 2) during the loop, 
@@ -287,7 +300,12 @@ export default function ClimbingStairsVisualizer() {
       </div>
 
       <div className="cs-dp-middle">
-        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+        <CodeTracePanel
+          step={step}
+          codeLines={SOLUTION_CODE}
+          highlightedLines={connectivity.highlightedLines}
+          onLineSelect={connectivity.handleLineSelect}
+        />
       </div>
 
       <div className={`cs-dp-status \${step?.phase === 'done' ? 'success' : step?.phase === 'add' ? 'add' : ''}`}>

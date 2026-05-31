@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { useCodeVisualConnectivity } from '../../hooks/useCodeVisualConnectivity'
 import './TwoSumVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -102,10 +103,16 @@ export default function TwoSumVisualizer() {
     }
   }, [numsInput, targetInput])
 
-  const steps = useMemo(() => generateSteps(nums, target), [nums, target])
+  const steps = useMemo(
+    () => generateSteps(nums, target).map((current) => ({
+      ...current,
+      relatedLines: current.relatedLines ?? (current.activeLine != null ? [current.activeLine] : []),
+    })),
+    [nums, target],
+  )
 
   const {
-    stepIndex, stepForward, stepBack, togglePlay,
+    stepIndex, setStepIndex, stepForward, stepBack, togglePlay,
     handleReset, isPlaying, speed, setSpeed, isDone,
   } = usePlaybackState(steps.length)
 
@@ -116,6 +123,12 @@ export default function TwoSumVisualizer() {
     setTargetInput(String(ex.target))
     handleReset()
   }, [handleReset])
+
+  const connectivity = useCodeVisualConnectivity({
+    steps,
+    stepIndex,
+    onStepJump: setStepIndex,
+  })
 
   return (
     <div className="twosum-shell">
@@ -240,7 +253,12 @@ export default function TwoSumVisualizer() {
       </div>
 
       <div className="twosum-middle">
-        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+        <CodeTracePanel
+          step={step}
+          codeLines={SOLUTION_CODE}
+          highlightedLines={connectivity.highlightedLines}
+          onLineSelect={connectivity.handleLineSelect}
+        />
       </div>
 
       <div className={`twosum-status \${step?.phase === 'found' ? 'success' : step?.phase === 'done' ? 'fail' : ''}`}>

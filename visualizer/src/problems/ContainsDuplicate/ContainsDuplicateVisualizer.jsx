@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
+import { useCodeVisualConnectivity } from "../../hooks/useCodeVisualConnectivity";
 import "./ContainsDuplicateVisualizer.css";
 
 const SOLUTION_CODE = [
@@ -41,11 +42,23 @@ function generateSteps(nums) {
 
 export default function ContainsDuplicateVisualizer() {
   const [ex, setEx] = useState(EXAMPLES[0]);
-  const steps = useMemo(() => generateSteps(ex.nums), [ex]);
-  const { stepIndex, stepForward, stepBack, togglePlay, handleReset, isPlaying, speed, setSpeed, isDone } =
+  const steps = useMemo(
+    () =>
+      generateSteps(ex.nums).map((current) => ({
+        ...current,
+        relatedLines: current.relatedLines ?? (current.activeLine != null ? [current.activeLine] : []),
+      })),
+    [ex],
+  );
+  const { stepIndex, setStepIndex, stepForward, stepBack, togglePlay, handleReset, isPlaying, speed, setSpeed, isDone } =
     usePlaybackState(steps.length);
   const step = stepIndex >= 0 ? steps[stepIndex] : null;
   const applyEx = useCallback((e) => { setEx(e); handleReset(); }, [handleReset]);
+  const connectivity = useCodeVisualConnectivity({
+    steps,
+    stepIndex,
+    onStepJump: setStepIndex,
+  });
 
   return (
     <div className="cd-shell">
@@ -99,7 +112,12 @@ export default function ContainsDuplicateVisualizer() {
         </div>
       )}
 
-      <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+      <CodeTracePanel
+        step={step}
+        codeLines={SOLUTION_CODE}
+        highlightedLines={connectivity.highlightedLines}
+        onLineSelect={connectivity.handleLineSelect}
+      />
       <div className="cd-status">{step?.message ?? "Press Play to begin."}</div>
       <PlaybackControls
         isPlaying={isPlaying} isDone={isDone} speed={speed}

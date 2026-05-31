@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
+import { useCodeVisualConnectivity } from "../../hooks/useCodeVisualConnectivity";
 import "./ValidPalindromeVisualizer.css";
 
 const SOLUTION_CODE = [
@@ -87,9 +88,17 @@ const EXAMPLES = [
 export default function ValidPalindromeVisualizer() {
     const [input, setInput] = useState("A man, a plan, a canal: Panama");
 
-    const steps = useMemo(() => generateSteps(input), [input]);
+    const steps = useMemo(
+        () =>
+            generateSteps(input).map((current) => ({
+                ...current,
+                relatedLines: current.relatedLines ?? (current.activeLine != null ? [current.activeLine] : []),
+            })),
+        [input]
+    );
     const {
         stepIndex,
+        setStepIndex,
         stepForward,
         stepBack,
         togglePlay,
@@ -100,6 +109,12 @@ export default function ValidPalindromeVisualizer() {
         isDone,
     } = usePlaybackState(steps.length);
     const step = stepIndex >= 0 ? steps[stepIndex] : null;
+
+    const connectivity = useCodeVisualConnectivity({
+        steps,
+        stepIndex,
+        onStepJump: setStepIndex,
+    });
 
     const applyExample = useCallback(
         (ex) => {
@@ -169,7 +184,12 @@ export default function ValidPalindromeVisualizer() {
                 </div>
             )}
 
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+            <CodeTracePanel
+                step={step}
+                codeLines={SOLUTION_CODE}
+                highlightedLines={connectivity.highlightedLines}
+                onLineSelect={connectivity.handleLineSelect}
+            />
             <div className="vp-status">{step?.message ?? "Press Play to begin."}</div>
             <PlaybackControls
                 isPlaying={isPlaying}
