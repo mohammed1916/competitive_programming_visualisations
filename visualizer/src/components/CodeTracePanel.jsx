@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, lazy, Suspense } from 'react'
+import { createPortal } from 'react-dom'
 import { motion } from 'framer-motion'
 import './CodeTracePanel.css'
 import ResizerHandle from './ResizerHandle'
@@ -231,6 +232,11 @@ export default function CodeTracePanel({
     setEditorPlacement((value) => (value === 'overlay' ? 'below' : 'overlay'))
   }
 
+  const isInlineEditor = isEditing && editorPlacement === 'below'
+  const codeAreaHeight = isInlineEditor
+    ? `${Math.max(140, Math.round(panelHeight * 0.45))}px`
+    : `${panelHeight}px`
+
   const editorBody = (
     <div className="ctp-editor-wrap">
       <div className="ctp-editor-controls">
@@ -303,7 +309,12 @@ export default function CodeTracePanel({
   )
 
   return (
-    <motion.div className="ctp-panel" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.22 }}>
+    <motion.div
+      className={`ctp-panel ${isInlineEditor ? 'editing-below' : ''}`}
+      initial={{ opacity: 0, x: 12 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.22 }}
+    >
       <div className="ctp-head">
         <div>
           <div className="ctp-title">{title}</div>
@@ -329,7 +340,7 @@ export default function CodeTracePanel({
         </button>
       </div>
 
-      <div className="ctp-scroll" ref={codeRef} onWheel={markManualScroll} onTouchMove={markManualScroll} style={{ height: `${panelHeight}px` }}>
+      <div className="ctp-scroll" ref={codeRef} onWheel={markManualScroll} onTouchMove={markManualScroll} style={{ height: codeAreaHeight }}>
         {codeLines.map(({ line, text }) => {
           const isActive = step?.activeLine === line
           const isRelated = step?.relatedLines?.includes(line)
@@ -349,17 +360,17 @@ export default function CodeTracePanel({
           )
         })}
       </div>
-      {isEditing && (
-        editorPlacement === 'overlay' ? (
-          <div className="ctp-editor-backdrop" onClick={toggleEdit}>
-            <div className="ctp-editor-modal" onClick={(event) => event.stopPropagation()}>
-              {editorBody}
-            </div>
-          </div>
-        ) : (
-          <div className="ctp-editor-inline">{editorBody}</div>
-        )
-      )}
+      {isInlineEditor ? <div className="ctp-editor-inline">{editorBody}</div> : null}
+      {isEditing && editorPlacement === 'overlay'
+        ? createPortal(
+            <div className="ctp-editor-backdrop" onClick={toggleEdit}>
+              <div className="ctp-editor-modal" onClick={(event) => event.stopPropagation()}>
+                {editorBody}
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
       <div
         className={`ctp-resizer ${isResizing ? 'active' : ''}`}
         onMouseDown={startDrag}

@@ -7,6 +7,10 @@
   background: var(--panel-bg, rgba(17, 24, 39, 0.45));
 }
 
+.ctp-panel.editing-below {
+  overflow: auto;
+}
+
 .ctp-head {
   display: flex;
   align-items: center;
@@ -132,7 +136,7 @@
 .ctp-editor-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 1200;
+  z-index: 10000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -154,6 +158,7 @@
 .ctp-editor-inline {
   border-top: 1px solid var(--panel-border, rgba(255, 255, 255, 0.06));
   background: rgba(2, 6, 23, 0.28);
+  min-height: 240px;
 }
 
 .ctp-editor-controls {
