@@ -18,6 +18,7 @@ export default function CodeTracePanel({
   activeLabelSuffix = 'is active',
 }) {
   const codeRef = useRef(null)
+  const inlineEditorRef = useRef(null)
   const lastManualScrollTsRef = useRef(0)
   const [copied, setCopied] = useState(false)
   const [panelHeight, setPanelHeight] = useState(() => {
@@ -99,12 +100,19 @@ export default function CodeTracePanel({
   const fileHandleRef = useRef(null)
   const monacoRef = useRef(null)
   const editorRef = useRef(null)
+  const shouldFocusEditorRef = useRef(false)
 
   useEffect(() => {
     try { window.localStorage.setItem('ctp.editorContent', editorContent) } catch (err) { void err }
   }, [editorContent])
 
-  const toggleEdit = () => setIsEditing((v) => !v)
+  const toggleEdit = () => {
+    setIsEditing((v) => {
+      const next = !v
+      if (next) shouldFocusEditorRef.current = true
+      return next
+    })
+  }
 
   useEffect(() => {
     if (monacoRef.current && editorTheme) {
@@ -233,9 +241,12 @@ export default function CodeTracePanel({
   }
 
   const isInlineEditor = isEditing && editorPlacement === 'below'
-  const codeAreaHeight = isInlineEditor
-    ? `${Math.max(140, Math.round(panelHeight * 0.45))}px`
-    : `${panelHeight}px`
+  const codeAreaHeight = `${panelHeight}px`
+
+  useEffect(() => {
+    if (!isInlineEditor || !inlineEditorRef.current) return
+    inlineEditorRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [isInlineEditor])
 
   const editorBody = (
     <div className="ctp-editor-wrap">
@@ -298,6 +309,10 @@ export default function CodeTracePanel({
             editorRef.current = editor
             try { monaco.editor.setTheme(editorTheme) } catch (err) { void err }
             try { monaco.editor.setModelLanguage(editor.getModel(), editorLanguage) } catch (err) { void err }
+            if (shouldFocusEditorRef.current) {
+              try { editor.focus() } catch (err) { void err }
+              shouldFocusEditorRef.current = false
+            }
             try {
               editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => { saveToFile() })
               editor.addCommand(monaco.KeyMod.Shift | monaco.KeyMod.Alt | monaco.KeyCode.KeyF, () => { formatDocument() })
@@ -360,7 +375,17 @@ export default function CodeTracePanel({
           )
         })}
       </div>
-      {isInlineEditor ? <div className="ctp-editor-inline">{editorBody}</div> : null}
+
+      <div
+        className={`ctp-resizer ${isResizing ? 'active' : ''}`}
+        onMouseDown={startDrag}
+        onTouchStart={startDrag}
+        aria-hidden="true"
+      >
+        <ResizerHandle side="center" className="ctp" onPointerDown={startDrag} />
+      </div>
+
+      {isInlineEditor ? <div className="ctp-editor-inline" ref={inlineEditorRef}>{editorBody}</div> : null}
       {isEditing && editorPlacement === 'overlay'
         ? createPortal(
             <div className="ctp-editor-backdrop" onClick={toggleEdit}>
@@ -371,15 +396,6 @@ export default function CodeTracePanel({
             document.body,
           )
         : null}
-      <div
-        className={`ctp-resizer ${isResizing ? 'active' : ''}`}
-        onMouseDown={startDrag}
-        onTouchStart={startDrag}
-        aria-hidden="true"
-      >
-        {/* Use modular ResizerHandle with ctp visual */}
-        <ResizerHandle side="center" className="ctp" onPointerDown={startDrag} />
-      </div>
     </motion.div>
   )
 }
