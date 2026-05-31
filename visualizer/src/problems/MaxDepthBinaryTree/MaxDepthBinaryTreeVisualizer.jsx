@@ -1,8 +1,9 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
-import CodeTracePanel from '../../components/CodeTracePanel'
-import PlaybackControls from '../../components/PlaybackControls'
+import VisualizerPlaybackSection from '../../components/VisualizerPlaybackSection'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { useParsedInput } from '../../hooks/useParsedInput'
+import { useApplyExample } from '../../hooks/useApplyExample'
 import { buildTree, computeLayout, collectNodes, buildEdges, parseTreeInput, TreeSVG } from '../../components/treeUtils'
 import './MaxDepthBinaryTreeVisualizer.css'
 
@@ -90,22 +91,19 @@ const EXAMPLES = [
 export default function MaxDepthBinaryTreeVisualizer() {
     const [arrInput, setArrInput] = useState('[3,9,20,null,null,15,7]')
 
-    const { arr, inputError } = useMemo(() => {
-        try {
-            return { arr: parseTreeInput(arrInput), inputError: '' }
-        } catch (e) {
-            return { arr: [3, 9, 20, null, null, 15, 7], inputError: e.message || 'Invalid input' }
-        }
-    }, [arrInput])
+    const { value: arr, error: inputError } = useParsedInput(
+        arrInput,
+        parseTreeInput,
+        [3, 9, 20, null, null, 15, 7],
+    )
 
     const { steps, positions, edges, nodes } = useMemo(() => generateSteps(arr), [arr])
     const { stepIndex, stepForward, stepBack, togglePlay, handleReset, isPlaying, speed, setSpeed, isDone } = usePlaybackState(steps.length)
     const step = stepIndex >= 0 ? steps[stepIndex] : null
 
-    const applyExample = useCallback((ex) => {
+    const applyExample = useApplyExample((ex) => {
         setArrInput(JSON.stringify(ex.arr))
-        handleReset()
-    }, [handleReset])
+    }, handleReset)
 
     return (
         <div className="mdbt-shell">
@@ -164,20 +162,24 @@ export default function MaxDepthBinaryTreeVisualizer() {
                 </section>
             </div>
 
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
-            <div className={`mdbt-status ${step?.phase === 'done' ? 'ok' : ''}`}>{step?.message || 'Press Play to begin.'}</div>
-            <PlaybackControls
-                isPlaying={isPlaying}
-                isDone={isDone}
-                speed={speed}
-                onPlayToggle={togglePlay}
-                onPrev={stepBack}
-                onNext={stepForward}
-                onReset={handleReset}
-                prevDisabled={stepIndex < 0}
-                nextDisabled={isDone}
-                resetDisabled={stepIndex < 0}
-                onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+            <VisualizerPlaybackSection
+                step={step}
+                codeLines={SOLUTION_CODE}
+                statusClassName="mdbt-status"
+                statusDone={step?.phase === 'done'}
+                statusMessage={step?.message}
+                fallbackStatus="Press Play to begin."
+                playback={{
+                    stepIndex,
+                    stepForward,
+                    stepBack,
+                    togglePlay,
+                    handleReset,
+                    isPlaying,
+                    speed,
+                    setSpeed,
+                    isDone,
+                }}
             />
         </div>
     )

@@ -1,8 +1,9 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
-import CodeTracePanel from '../../components/CodeTracePanel'
-import PlaybackControls from '../../components/PlaybackControls'
+import VisualizerPlaybackSection from '../../components/VisualizerPlaybackSection'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { useParsedInput } from '../../hooks/useParsedInput'
+import { useApplyExample } from '../../hooks/useApplyExample'
 import './HouseRobberVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -101,22 +102,19 @@ const EXAMPLES = [
 export default function HouseRobberVisualizer() {
   const [numsInput, setNumsInput] = useState('[2,7,9,3,1]')
 
-  const { nums, inputError } = useMemo(() => {
-    try {
-      return { nums: parseNums(numsInput), inputError: '' }
-    } catch (e) {
-      return { nums: [2, 7, 9, 3, 1], inputError: e.message || 'Invalid input' }
-    }
-  }, [numsInput])
+  const { value: nums, error: inputError } = useParsedInput(
+    numsInput,
+    parseNums,
+    [2, 7, 9, 3, 1],
+  )
 
   const steps = useMemo(() => generateSteps(nums), [nums])
   const { stepIndex, stepForward, stepBack, togglePlay, handleReset, isPlaying, speed, setSpeed, isDone } = usePlaybackState(steps.length)
   const step = stepIndex >= 0 ? steps[stepIndex] : null
 
-  const applyExample = useCallback((ex) => {
+  const applyExample = useApplyExample((ex) => {
     setNumsInput(JSON.stringify(ex.nums))
-    handleReset()
-  }, [handleReset])
+  }, handleReset)
 
   return (
     <div className="hr-shell">
@@ -165,20 +163,24 @@ export default function HouseRobberVisualizer() {
         </section>
       </div>
 
-      <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
-      <div className={`hr-status ${step?.phase === 'done' ? 'ok' : ''}`}>{step?.message || 'Press Play to begin.'}</div>
-      <PlaybackControls
-        isPlaying={isPlaying}
-        isDone={isDone}
-        speed={speed}
-        onPlayToggle={togglePlay}
-        onPrev={stepBack}
-        onNext={stepForward}
-        onReset={handleReset}
-        prevDisabled={stepIndex < 0}
-        nextDisabled={isDone}
-        resetDisabled={stepIndex < 0}
-        onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+      <VisualizerPlaybackSection
+        step={step}
+        codeLines={SOLUTION_CODE}
+        statusClassName="hr-status"
+        statusDone={step?.phase === 'done'}
+        statusMessage={step?.message}
+        fallbackStatus="Press Play to begin."
+        playback={{
+          stepIndex,
+          stepForward,
+          stepBack,
+          togglePlay,
+          handleReset,
+          isPlaying,
+          speed,
+          setSpeed,
+          isDone,
+        }}
       />
     </div>
   )
