@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
+import AnimatedIterationList from "../../components/shared/AnimatedIterationList";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
 import { useCodeVisualConnectivity } from "../../hooks/useCodeVisualConnectivity";
 import "./ContainsDuplicateVisualizer.css";
@@ -71,23 +72,20 @@ export default function ContainsDuplicateVisualizer() {
       {/* Array */}
       <div className="cd-panel">
         <div className="cd-panel-label">Input Array</div>
-        <div className="cd-arr">
-          {ex.nums.map((v, i) => {
-            const isCur = step?.cur === i;
+        <AnimatedIterationList
+          items={ex.nums}
+          styleName="hash-scan"
+          className="cd-arr"
+          getItemState={(value, index) => {
+            const isCur = step?.cur === index;
             const isDup = isCur && step?.result === true;
-            const inSeen = step?.seen?.has(v) && !isCur;
-            return (
-              <div key={i} className="cd-cell-col">
-                <motion.div className={`cd-cell ${isCur ? (isDup ? "dup" : "cur") : inSeen ? "seen" : ""}`}
-                  animate={{ scale: isCur ? 1.15 : 1, y: isCur ? -4 : 0 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 22 }}>
-                  {v}
-                </motion.div>
-                <div className="cd-idx">{i}</div>
-              </div>
-            );
-          })}
-        </div>
+            const inSeen = step?.seen?.has(value) && !isCur;
+            return {
+              stateClass: isCur ? (isDup ? "dup" : "cur") : inSeen ? "seen" : "",
+              isActive: isCur,
+            };
+          }}
+        />
       </div>
 
       {/* Seen set */}

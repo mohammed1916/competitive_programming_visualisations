@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import VisualizerPlaybackSection from '../../components/VisualizerPlaybackSection'
+import AnimatedIterationList from '../../components/shared/AnimatedIterationList'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import { useCodeVisualConnectivity } from '../../hooks/useCodeVisualConnectivity'
 import { useParsedInput } from '../../hooks/useParsedInput'
@@ -159,30 +160,33 @@ export default function HouseRobberVisualizer() {
               {EXAMPLES.map((ex) => <button key={ex.label} className="hr-chip" onClick={() => applyExample(ex)}>{ex.label}</button>)}
             </div>
             <input className="hr-input" value={numsInput} onChange={(e) => { setNumsInput(e.target.value); handleReset() }} />
-            <div className="hr-street">
-              {nums.map((value, i) => {
-                const active = step?.i === i
-                return (
-                  <motion.div
-                    key={`${i}-${value}`}
-                    className={`hr-house ${active ? 'active' : ''}`}
-                    animate={active ? { y: -6 } : { y: 0 }}
-                    onClick={() =>
-                      connectivity.setVisualFocus({
-                        lines: [6, 7, 8, 9, 10, 11],
-                        reason: `House ${i} selected with value ${value}.`,
-                        targetType: 'house',
-                        targetId: String(i),
-                      })
-                    }
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <small>{i}</small>
-                    <strong>{value}</strong>
-                  </motion.div>
-                )
+            <AnimatedIterationList
+              items={nums}
+              styleName="dp-house"
+              className="hr-street"
+              showIndex={false}
+              activeOffsetY={-6}
+              activeScale={1.2}
+              getItemKey={(value, index) => `${index}-${value}`}
+              getItemState={(_, index) => ({
+                stateClass: step?.i === index ? 'active' : '',
+                isActive: step?.i === index,
               })}
-            </div>
+              renderItem={(value, index) => (
+                <>
+                  <small>{index}</small>
+                  <strong>{value}</strong>
+                </>
+              )}
+              onItemClick={(value, index) =>
+                connectivity.setVisualFocus({
+                  lines: [6, 7, 8, 9, 10, 11],
+                  reason: `House ${index} selected with value ${value}.`,
+                  targetType: 'house',
+                  targetId: String(index),
+                })
+              }
+            />
             <div className="hr-formula">
               <span
                 onClick={() =>
