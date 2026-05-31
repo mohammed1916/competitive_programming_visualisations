@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
+import { motion } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
 import AnimatedIterationList from "../../components/shared/AnimatedIterationList";
