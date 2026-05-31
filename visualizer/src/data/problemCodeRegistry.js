@@ -1,4 +1,21 @@
 export const PROBLEM_CODE_REGISTRY = {
+  'add-two-numbers': [
+    { line: 1, text: 'class Solution:' },
+    { line: 2, text: '    def addTwoNumbers(self, l1: ListNode, l2: ListNode) -> ListNode:' },
+    { line: 3, text: '        dummy = ListNode()' },
+    { line: 4, text: '        curr = dummy' },
+    { line: 5, text: '        carry = 0' },
+    { line: 6, text: '        while l1 or l2 or carry:' },
+    { line: 7, text: '            v1 = l1.val if l1 else 0' },
+    { line: 8, text: '            v2 = l2.val if l2 else 0' },
+    { line: 9, text: '            total = v1 + v2 + carry' },
+    { line: 10, text: '            carry = total // 10' },
+    { line: 11, text: '            curr.next = ListNode(total % 10)' },
+    { line: 12, text: '            curr = curr.next' },
+    { line: 13, text: '            l1 = l1.next if l1 else None' },
+    { line: 14, text: '            l2 = l2.next if l2 else None' },
+    { line: 15, text: '        return dummy.next' },
+  ],
   'contains-duplicate': [
     { line: 1, text: 'def containsDuplicate(nums):' },
     { line: 2, text: '    seen = set()' },
