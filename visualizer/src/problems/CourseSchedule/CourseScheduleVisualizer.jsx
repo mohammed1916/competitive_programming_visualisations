@@ -1,8 +1,8 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import CodeTracePanel from '../../components/CodeTracePanel'
-import PlaybackControls from '../../components/PlaybackControls'
+import VisualizerPlaybackSection from '../../components/VisualizerPlaybackSection'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { useApplyExample } from '../../hooks/useApplyExample'
 import './CourseScheduleVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -222,11 +222,10 @@ export default function CourseScheduleVisualizer() {
 
   const step = stepIndex >= 0 ? steps[stepIndex] : null
 
-  const applyExample = useCallback((ex) => {
+  const applyExample = useApplyExample((ex) => {
     setNumCoursesInput(String(ex.numCourses))
     setPrereqInput(JSON.stringify(ex.prerequisites))
-    handleReset()
-  }, [handleReset])
+  }, handleReset)
 
   const nodePositions = useMemo(() => calculateNodePositions(numCourses), [numCourses])
 
@@ -466,29 +465,26 @@ export default function CourseScheduleVisualizer() {
         </div>
       </div>
 
-      <div className="course-schedule-middle">
-        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
-      </div>
-
-      <div className={`cs-status \${step?.phase === 'done' ? (step?.success ? 'success' : 'fail') : step?.phase === 'enqueue_neighbor' ? 'enqueue' : ''}`}>
-        {step?.message ?? 'Press Play or Step to begin.'}
-      </div>
-
-      <div className="cs-dock">
-        <PlaybackControls
-          isPlaying={isPlaying}
-          isDone={isDone}
-          speed={speed}
-          onPlayToggle={togglePlay}
-          onPrev={stepBack}
-          onNext={stepForward}
-          onReset={handleReset}
-          prevDisabled={stepIndex < 0}
-          nextDisabled={isDone}
-          resetDisabled={stepIndex < 0}
-          onSpeedChange={(e) => setSpeed(Number(e.target.value))}
-        />
-      </div>
+      <VisualizerPlaybackSection
+        step={step}
+        codeLines={SOLUTION_CODE}
+        codeTraceContainerClassName="course-schedule-middle"
+        statusClassName={`cs-status ${step?.phase === 'done' ? (step?.success ? 'success' : 'fail') : step?.phase === 'enqueue_neighbor' ? 'enqueue' : ''}`}
+        statusMessage={step?.message}
+        fallbackStatus="Press Play or Step to begin."
+        controlsContainerClassName="cs-dock"
+        playback={{
+          stepIndex,
+          stepForward,
+          stepBack,
+          togglePlay,
+          handleReset,
+          isPlaying,
+          speed,
+          setSpeed,
+          isDone,
+        }}
+      />
     </div>
   )
 }
