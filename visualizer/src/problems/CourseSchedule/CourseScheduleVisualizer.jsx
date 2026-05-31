@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import VisualizerPlaybackSection from '../../components/VisualizerPlaybackSection'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { useCodeVisualConnectivity } from '../../hooks/useCodeVisualConnectivity'
 import { useApplyExample } from '../../hooks/useApplyExample'
 import './CourseScheduleVisualizer.css'
 
@@ -180,6 +181,22 @@ const EXAMPLES = [
   { label: 'Disconnected', numCourses: 4, prerequisites: [[1, 0], [3, 2]] },
 ]
 
+const SNIPPETS = [
+  { id: 'init', label: 'Init Graph', lines: [3, 4, 6, 7, 8, 10, 11] },
+  { id: 'queue', label: 'Queue Loop', lines: [13, 14, 15] },
+  { id: 'neighbors', label: 'Neighbor Updates', lines: [16, 17, 18, 19] },
+  { id: 'result', label: 'Result Check', lines: [21] },
+]
+
+function snippetIdForPhase(phase) {
+  if (!phase) return 'init'
+  if (phase.startsWith('build') || phase.startsWith('init')) return 'init'
+  if (phase === 'while_check' || phase === 'pop_node' || phase === 'inc_visited' || phase === 'no_neighbors') return 'queue'
+  if (phase === 'visit_neighbor' || phase === 'dec_indegree' || phase === 'check_neighbor_indegree' || phase === 'enqueue_neighbor') return 'neighbors'
+  if (phase === 'done') return 'result'
+  return 'queue'
+}
+
 // Simple directed graph layout engine for small graphs (force-directed or circular)
 function calculateNodePositions(numCourses, width = 400, height = 300) {
   const positions = {}
@@ -213,10 +230,17 @@ export default function CourseScheduleVisualizer() {
     }
   }, [numCoursesInput, prereqInput])
 
-  const steps = useMemo(() => generateSteps(numCourses, prerequisites), [numCourses, prerequisites])
+  const steps = useMemo(
+    () => generateSteps(numCourses, prerequisites).map((current) => ({
+      ...current,
+      snippetId: snippetIdForPhase(current.phase),
+      relatedLines: current.relatedLines ?? (current.activeLine != null ? [current.activeLine] : []),
+    })),
+    [numCourses, prerequisites],
+  )
 
   const {
-    stepIndex, stepForward, stepBack, togglePlay,
+    stepIndex, setStepIndex, stepForward, stepBack, togglePlay,
     handleReset, isPlaying, speed, setSpeed, isDone,
   } = usePlaybackState(steps.length)
 
@@ -226,6 +250,13 @@ export default function CourseScheduleVisualizer() {
     setNumCoursesInput(String(ex.numCourses))
     setPrereqInput(JSON.stringify(ex.prerequisites))
   }, handleReset)
+
+  const connectivity = useCodeVisualConnectivity({
+    steps,
+    stepIndex,
+    snippetOptions: SNIPPETS,
+    onStepJump: setStepIndex,
+  })
 
   const nodePositions = useMemo(() => calculateNodePositions(numCourses), [numCourses])
 
@@ -328,6 +359,15 @@ export default function CourseScheduleVisualizer() {
                       strokeWidth={isCurrentEval ? 3 : 2}
                       markerEnd={isCurrentEval ? "url(#arrow-active)" : "url(#arrow)"}
                       className={isCurrentEval ? 'pulse-line' : ''}
+                      onClick={() =>
+                        connectivity.setVisualFocus({
+                          lines: [16, 17, 18, 19],
+                          reason: `Dependency edge ${u} -> ${v} selected.`,
+                          targetType: 'edge',
+                          targetId: `${u}->${v}`,
+                        })
+                      }
+                      style={{ cursor: 'pointer' }}
                     />
                   )
                 })}
@@ -362,6 +402,15 @@ export default function CourseScheduleVisualizer() {
                           scale: isCurrentNode ? 1.2 : 1,
                           fill, stroke
                         }}
+                        onClick={() =>
+                          connectivity.setVisualFocus({
+                            lines: [14, 15, 16, 17, 18, 19],
+                            reason: `Course node ${i} selected in graph view.`,
+                            targetType: 'course',
+                            targetId: String(i),
+                          })
+                        }
+                        style={{ cursor: 'pointer' }}
                       />
                       <text textAnchor="middle" dy=".3em" fill="#f8fafc" fontSize="12" fontFamily="monospace">{i}</text>
 
@@ -483,6 +532,14 @@ export default function CourseScheduleVisualizer() {
           speed,
           setSpeed,
           isDone,
+        }}
+        connectivity={{
+          snippetOptions: SNIPPETS,
+          activeSnippetId: connectivity.activeSnippetId,
+          highlightedLines: connectivity.highlightedLines,
+          linkInfo: connectivity.linkInfo,
+          onLineSelect: connectivity.handleLineSelect,
+          onSnippetSelect: connectivity.handleSnippetSelect,
         }}
       />
     </div>
