@@ -4,17 +4,8 @@ import PlaybackControls from "../../components/PlaybackControls";
 import AnimatedIterationList from "../../components/shared/AnimatedIterationList";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
 import { useCodeVisualConnectivity } from "../../hooks/useCodeVisualConnectivity";
+import { useProblemCode } from "../../hooks/useProblemCode";
 import "./RemoveDuplicatesVisualizer.css";
-
-const SOLUTION_CODE = [
-  { line: 1, text: "def removeDuplicates(nums):" },
-  { line: 2, text: "    k = 1  # slow pointer (next write pos)" },
-  { line: 3, text: "    for i in range(1, len(nums)):" },
-  { line: 4, text: "        if nums[i] != nums[i - 1]:" },
-  { line: 5, text: "            nums[k] = nums[i]" },
-  { line: 6, text: "            k += 1" },
-  { line: 7, text: "    return k" },
-];
 
 const EXAMPLES = [
   { label: "Ex 1", nums: [1, 1, 2] },
@@ -42,8 +33,9 @@ function generateSteps(numsIn) {
   return steps;
 }
 
-export default function RemoveDuplicatesVisualizer() {
+export default function RemoveDuplicatesVisualizer({ problem }) {
   const [ex, setEx] = useState(EXAMPLES[0]);
+  const codeLines = useProblemCode(problem, "remove-duplicates-from-sorted-array");
   const steps = useMemo(
     () =>
       generateSteps(ex.nums).map((current) => ({
@@ -112,7 +104,7 @@ export default function RemoveDuplicatesVisualizer() {
 
       <CodeTracePanel
         step={step}
-        codeLines={SOLUTION_CODE}
+        codeLines={codeLines}
         highlightedLines={connectivity.highlightedLines}
         onLineSelect={connectivity.handleLineSelect}
       />

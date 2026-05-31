@@ -5,16 +5,8 @@ import PlaybackControls from "../../components/PlaybackControls";
 import AnimatedIterationList from "../../components/shared/AnimatedIterationList";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
 import { useCodeVisualConnectivity } from "../../hooks/useCodeVisualConnectivity";
+import { useProblemCode } from "../../hooks/useProblemCode";
 import "./MoveZeroesVisualizer.css";
-
-const SOLUTION_CODE = [
-    { line: 1, text: "def moveZeroes(nums):" },
-    { line: 2, text: "    k = 0  # next write position for non-zero" },
-    { line: 3, text: "    for i in range(len(nums)):" },
-    { line: 4, text: "        if nums[i] != 0:" },
-    { line: 5, text: "            nums[k], nums[i] = nums[i], nums[k]" },
-    { line: 6, text: "            k += 1" },
-];
 
 const EXAMPLES = [
     { label: "Ex 1", nums: [0, 1, 0, 3, 12] },
@@ -40,8 +32,9 @@ function generateSteps(numsIn) {
     return steps;
 }
 
-export default function MoveZeroesVisualizer() {
+export default function MoveZeroesVisualizer({ problem }) {
     const [ex, setEx] = useState(EXAMPLES[0]);
+    const codeLines = useProblemCode(problem, "move-zeroes");
     const steps = useMemo(
         () =>
             generateSteps(ex.nums).map((current) => ({
@@ -115,7 +108,7 @@ export default function MoveZeroesVisualizer() {
 
             <CodeTracePanel
                 step={step}
-                codeLines={SOLUTION_CODE}
+                codeLines={codeLines}
                 highlightedLines={connectivity.highlightedLines}
                 onLineSelect={connectivity.handleLineSelect}
             />

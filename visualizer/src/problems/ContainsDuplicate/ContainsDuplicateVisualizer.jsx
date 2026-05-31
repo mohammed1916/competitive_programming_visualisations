@@ -1,21 +1,12 @@
 import { useState, useMemo, useCallback } from "react";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
 import AnimatedIterationList from "../../components/shared/AnimatedIterationList";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
 import { useCodeVisualConnectivity } from "../../hooks/useCodeVisualConnectivity";
+import { useProblemCode } from "../../hooks/useProblemCode";
 import "./ContainsDuplicateVisualizer.css";
-
-const SOLUTION_CODE = [
-  { line: 1, text: "def containsDuplicate(nums):" },
-  { line: 2, text: "    seen = set()" },
-  { line: 3, text: "    for n in nums:" },
-  { line: 4, text: "        if n in seen:" },
-  { line: 5, text: "            return True" },
-  { line: 6, text: "        seen.add(n)" },
-  { line: 7, text: "    return False" },
-];
 
 const EXAMPLES = [
   { label: "Has Dup", nums: [1, 2, 3, 1] },
@@ -41,8 +32,9 @@ function generateSteps(nums) {
   return steps;
 }
 
-export default function ContainsDuplicateVisualizer() {
+export default function ContainsDuplicateVisualizer({ problem }) {
   const [ex, setEx] = useState(EXAMPLES[0]);
+  const codeLines = useProblemCode(problem, "contains-duplicate");
   const steps = useMemo(
     () =>
       generateSteps(ex.nums).map((current) => ({
@@ -112,7 +104,7 @@ export default function ContainsDuplicateVisualizer() {
 
       <CodeTracePanel
         step={step}
-        codeLines={SOLUTION_CODE}
+        codeLines={codeLines}
         highlightedLines={connectivity.highlightedLines}
         onLineSelect={connectivity.handleLineSelect}
       />

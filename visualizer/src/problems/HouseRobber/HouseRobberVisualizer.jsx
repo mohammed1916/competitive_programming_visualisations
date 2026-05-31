@@ -3,24 +3,10 @@ import VisualizerPlaybackSection from '../../components/VisualizerPlaybackSectio
 import AnimatedIterationList from '../../components/shared/AnimatedIterationList'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import { useCodeVisualConnectivity } from '../../hooks/useCodeVisualConnectivity'
+import { useProblemCode } from '../../hooks/useProblemCode'
 import { useParsedInput } from '../../hooks/useParsedInput'
 import { useApplyExample } from '../../hooks/useApplyExample'
 import './HouseRobberVisualizer.css'
-
-const SOLUTION_CODE = [
-  { line: 1, text: 'class Solution:' },
-  { line: 2, text: '    def rob(self, nums):' },
-  { line: 3, text: '        if not nums: return 0' },
-  { line: 4, text: '        prev2 = 0' },
-  { line: 5, text: '        prev1 = 0' },
-  { line: 6, text: '        for money in nums:' },
-  { line: 7, text: '            take = prev2 + money' },
-  { line: 8, text: '            skip = prev1' },
-  { line: 9, text: '            curr = max(take, skip)' },
-  { line: 10, text: '            prev2 = prev1' },
-  { line: 11, text: '            prev1 = curr' },
-  { line: 12, text: '        return prev1' },
-]
 
 function parseNums(input) {
   const parsed = JSON.parse(input)
@@ -115,8 +101,9 @@ function snippetIdForPhase(phase) {
   return 'iterate'
 }
 
-export default function HouseRobberVisualizer() {
+export default function HouseRobberVisualizer({ problem }) {
   const [numsInput, setNumsInput] = useState('[2,7,9,3,1]')
+  const codeLines = useProblemCode(problem, 'house-robber')
 
   const { value: nums, error: inputError } = useParsedInput(
     numsInput,
@@ -247,7 +234,7 @@ export default function HouseRobberVisualizer() {
 
       <VisualizerPlaybackSection
         step={step}
-        codeLines={SOLUTION_CODE}
+        codeLines={codeLines}
         statusClassName="hr-status"
         statusDone={step?.phase === 'done'}
         statusMessage={step?.message}
