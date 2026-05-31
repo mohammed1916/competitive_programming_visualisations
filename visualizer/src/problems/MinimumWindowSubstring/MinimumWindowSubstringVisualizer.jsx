@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import VisualizerPlaybackSection from '../../components/VisualizerPlaybackSection'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { useCodeVisualConnectivity } from '../../hooks/useCodeVisualConnectivity'
 import { useApplyExample } from '../../hooks/useApplyExample'
 import './MinimumWindowSubstringVisualizer.css'
 
@@ -79,20 +80,49 @@ const EXAMPLES = [
   { label: 'Repeats', s: 'AAABBC', t: 'ABC' },
 ]
 
+const SNIPPETS = [
+  { id: 'init', label: 'Init', lines: [4, 5, 6, 7, 8, 9] },
+  { id: 'loop', label: 'Expand', lines: [10, 11, 12, 13, 14] },
+  { id: 'update', label: 'Shrink/Update', lines: [15, 16, 17, 18, 19] },
+  { id: 'return', label: 'Return', lines: [20] },
+]
+
+function snippetIdForPhase(phase) {
+  if (phase === 'init') return 'init'
+  if (phase === 'expand') return 'loop'
+  if (phase === 'best' || phase === 'shrink') return 'update'
+  if (phase === 'done') return 'return'
+  return 'loop'
+}
+
 export default function MinimumWindowSubstringVisualizer() {
   const [sInput, setSInput] = useState('ADOBECODEBANC')
   const [tInput, setTInput] = useState('ABC')
   const s = sInput ?? ''
   const t = tInput ?? ''
 
-  const steps = useMemo(() => generateSteps(s, t), [s, t])
-  const { stepIndex, stepForward, stepBack, togglePlay, handleReset, isPlaying, speed, setSpeed, isDone } = usePlaybackState(steps.length)
+  const steps = useMemo(
+    () => generateSteps(s, t).map((current) => ({
+      ...current,
+      snippetId: snippetIdForPhase(current.phase),
+      relatedLines: current.relatedLines ?? (current.activeLine != null ? [current.activeLine] : []),
+    })),
+    [s, t],
+  )
+  const { stepIndex, setStepIndex, stepForward, stepBack, togglePlay, handleReset, isPlaying, speed, setSpeed, isDone } = usePlaybackState(steps.length)
   const step = stepIndex >= 0 ? steps[stepIndex] : null
 
   const applyExample = useApplyExample((ex) => {
     setSInput(ex.s)
     setTInput(ex.t)
   }, handleReset)
+
+  const connectivity = useCodeVisualConnectivity({
+    steps,
+    stepIndex,
+    snippetOptions: SNIPPETS,
+    onStepJump: setStepIndex,
+  })
 
   return (
     <div className="mws-shell">
@@ -113,8 +143,27 @@ export default function MinimumWindowSubstringVisualizer() {
                 const left = i === step?.left
                 const right = i === step?.right
                 const inBest = step?.best && i >= step.best.l && i <= step.best.r
+                const focusLines = right
+                  ? [10, 11, 12, 13]
+                  : left
+                    ? [16, 17, 18, 19]
+                    : inBest
+                      ? [15, 20]
+                      : [10, 14]
                 return (
-                  <motion.div key={`${ch}-${i}`} className={`mws-char ${inWindow ? 'window' : ''} ${left ? 'left' : ''} ${right ? 'right' : ''} ${inBest ? 'best' : ''}`}>
+                  <motion.div
+                    key={`${ch}-${i}`}
+                    className={`mws-char ${inWindow ? 'window' : ''} ${left ? 'left' : ''} ${right ? 'right' : ''} ${inBest ? 'best' : ''}`}
+                    onClick={() =>
+                      connectivity.setVisualFocus({
+                        lines: focusLines,
+                        reason: `Character '${ch}' at index ${i} selected in window view.`,
+                        targetType: 'char',
+                        targetId: String(i),
+                      })
+                    }
+                    style={{ cursor: 'pointer' }}
+                  >
                     <span>{ch}</span>
                     <small>{i}</small>
                   </motion.div>
@@ -136,7 +185,19 @@ export default function MinimumWindowSubstringVisualizer() {
               {Object.entries(step?.need || {}).map(([ch, req]) => {
                 const hv = step?.have?.[ch] || 0
                 return (
-                  <div key={ch} className={`mws-freq ${hv >= req ? 'ok' : ''}`}>
+                  <div
+                    key={ch}
+                    className={`mws-freq ${hv >= req ? 'ok' : ''}`}
+                    onClick={() =>
+                      connectivity.setVisualFocus({
+                        lines: [4, 5, 6, 7, 11, 12, 13, 18],
+                        reason: `Frequency bucket '${ch}' selected (${hv}/${req}).`,
+                        targetType: 'freq',
+                        targetId: ch,
+                      })
+                    }
+                    style={{ cursor: 'pointer' }}
+                  >
                     <span>{ch}</span>
                     <strong>{hv}/{req}</strong>
                   </div>
@@ -164,6 +225,14 @@ export default function MinimumWindowSubstringVisualizer() {
           speed,
           setSpeed,
           isDone,
+        }}
+        connectivity={{
+          snippetOptions: SNIPPETS,
+          activeSnippetId: connectivity.activeSnippetId,
+          highlightedLines: connectivity.highlightedLines,
+          linkInfo: connectivity.linkInfo,
+          onLineSelect: connectivity.handleLineSelect,
+          onSnippetSelect: connectivity.handleSnippetSelect,
         }}
       />
     </div>

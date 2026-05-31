@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, lazy, Suspense } from 'react'
+import { useEffect, useMemo, useRef, useState, lazy, Suspense } from 'react'
 import { motion } from 'framer-motion'
 import './CodeTracePanel.css'
 import ResizerHandle from './ResizerHandle'
@@ -8,6 +8,8 @@ const MonacoEditor = lazy(() => import('@monaco-editor/react'))
 export default function CodeTracePanel({
   step,
   codeLines,
+  highlightedLines = [],
+  onLineSelect,
   title = 'Solution Code',
   subtitle = null,
   idleLabel = 'Press Play to start',
@@ -83,6 +85,7 @@ export default function CodeTracePanel({
   }
   const [editorContent, setEditorContent] = useState(initialEditor)
   const [showComments, setShowComments] = useState(true)
+  const highlightedLineSet = useMemo(() => new Set(highlightedLines), [highlightedLines])
   const commentsText = `# Write your notes here\n# Toggle comments off to edit cleanly.`
   const fileHandleRef = useRef(null)
   const monacoRef = useRef(null)
@@ -240,13 +243,15 @@ export default function CodeTracePanel({
         {codeLines.map(({ line, text }) => {
           const isActive = step?.activeLine === line
           const isRelated = step?.relatedLines?.includes(line)
+          const isExternallyHighlighted = highlightedLineSet.has(line)
           return (
             <motion.div
               key={line}
               data-line={line}
-              className={`ctp-row ${isActive ? 'active' : ''} ${isRelated ? 'related' : ''}`}
-              animate={{ x: isActive ? 6 : 0, opacity: isRelated || isActive || !step ? 1 : 0.56 }}
+              className={`ctp-row ${isActive ? 'active' : ''} ${isRelated ? 'related' : ''} ${isExternallyHighlighted ? 'external-highlight' : ''} ${onLineSelect ? 'clickable' : ''}`}
+              animate={{ x: isActive ? 6 : 0, opacity: isRelated || isActive || isExternallyHighlighted || !step ? 1 : 0.56 }}
               transition={{ type: 'spring', stiffness: 280, damping: 28 }}
+              onClick={onLineSelect ? () => onLineSelect(line, { text }) : undefined}
             >
               <span className="ctp-no mono">{line}</span>
               <code className="ctp-text">{text || ' '}</code>

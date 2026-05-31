@@ -1,5 +1,7 @@
 import CodeTracePanel from './CodeTracePanel'
 import PlaybackControls from './PlaybackControls'
+import CodeSnippetChips from './CodeSnippetChips'
+import CodeVisualLinkLegend from './CodeVisualLinkLegend'
 
 export default function VisualizerPlaybackSection({
   step,
@@ -12,12 +14,30 @@ export default function VisualizerPlaybackSection({
   fallbackStatus = 'Press Play to begin.',
   controlsContainerClassName,
   playback,
+  connectivity = null,
 }) {
   const statusClass = statusDone
     ? `${statusClassName} ${statusDoneClassName}`
     : statusClassName
 
-  const codeTrace = <CodeTracePanel step={step} codeLines={codeLines} />
+  const codeTrace = (
+    <>
+      {connectivity?.snippetOptions ? (
+        <CodeSnippetChips
+          snippets={connectivity.snippetOptions}
+          activeSnippetId={connectivity.activeSnippetId}
+          onSnippetSelect={connectivity.onSnippetSelect}
+        />
+      ) : null}
+      {connectivity?.linkInfo ? <CodeVisualLinkLegend linkInfo={connectivity.linkInfo} /> : null}
+      <CodeTracePanel
+        step={step}
+        codeLines={codeLines}
+        highlightedLines={connectivity?.highlightedLines}
+        onLineSelect={connectivity?.onLineSelect}
+      />
+    </>
+  )
   const controls = (
     <PlaybackControls
       isPlaying={playback.isPlaying}
