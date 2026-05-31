@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { useCodeVisualConnectivity } from '../../hooks/useCodeVisualConnectivity'
 import './ContainerWithMostWaterVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -133,10 +134,16 @@ export default function ContainerWithMostWaterVisualizer() {
     }
   }, [heightInput])
 
-  const steps = useMemo(() => generateSteps(height), [height])
+  const steps = useMemo(
+    () => generateSteps(height).map((current) => ({
+      ...current,
+      relatedLines: current.relatedLines ?? (current.activeLine != null ? [current.activeLine] : []),
+    })),
+    [height],
+  )
 
   const {
-    stepIndex, stepForward, stepBack, togglePlay,
+    stepIndex, setStepIndex, stepForward, stepBack, togglePlay,
     handleReset, isPlaying, speed, setSpeed, isDone,
   } = usePlaybackState(steps.length)
 
@@ -146,6 +153,12 @@ export default function ContainerWithMostWaterVisualizer() {
     setHeightInput(JSON.stringify(ex.height))
     handleReset()
   }, [handleReset])
+
+  const connectivity = useCodeVisualConnectivity({
+    steps,
+    stepIndex,
+    onStepJump: setStepIndex,
+  })
 
   const maxHeightValue = Math.max(...height, 1)
 
@@ -213,7 +226,12 @@ export default function ContainerWithMostWaterVisualizer() {
       </div>
 
       <div className="container-water-middle">
-        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+        <CodeTracePanel
+          step={step}
+          codeLines={SOLUTION_CODE}
+          highlightedLines={connectivity.highlightedLines}
+          onLineSelect={connectivity.handleLineSelect}
+        />
 
         <div className="cw-panel">
           <div className="cw-panel-head">Variables</div>
