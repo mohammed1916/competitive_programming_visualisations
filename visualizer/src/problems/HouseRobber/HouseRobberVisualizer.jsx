@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import VisualizerPlaybackSection from '../../components/VisualizerPlaybackSection'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { useCodeVisualConnectivity } from '../../hooks/useCodeVisualConnectivity'
 import { useParsedInput } from '../../hooks/useParsedInput'
 import { useApplyExample } from '../../hooks/useApplyExample'
 import './HouseRobberVisualizer.css'
@@ -99,6 +100,21 @@ const EXAMPLES = [
   { label: 'Large Peaks', nums: [2, 1, 1, 9, 1, 1, 8] },
 ]
 
+const SNIPPETS = [
+  { id: 'init', label: 'Initialize', lines: [3, 4, 5] },
+  { id: 'iterate', label: 'Evaluate House', lines: [6, 7, 8, 9] },
+  { id: 'shift', label: 'Shift State', lines: [10, 11] },
+  { id: 'return', label: 'Return', lines: [12] },
+]
+
+function snippetIdForPhase(phase) {
+  if (phase === 'init') return 'init'
+  if (phase === 'calc') return 'iterate'
+  if (phase === 'advance') return 'shift'
+  if (phase === 'done') return 'return'
+  return 'iterate'
+}
+
 export default function HouseRobberVisualizer() {
   const [numsInput, setNumsInput] = useState('[2,7,9,3,1]')
 
@@ -108,13 +124,27 @@ export default function HouseRobberVisualizer() {
     [2, 7, 9, 3, 1],
   )
 
-  const steps = useMemo(() => generateSteps(nums), [nums])
-  const { stepIndex, stepForward, stepBack, togglePlay, handleReset, isPlaying, speed, setSpeed, isDone } = usePlaybackState(steps.length)
+  const steps = useMemo(
+    () => generateSteps(nums).map((current) => ({
+      ...current,
+      snippetId: snippetIdForPhase(current.phase),
+      relatedLines: current.relatedLines ?? (current.activeLine != null ? [current.activeLine] : []),
+    })),
+    [nums],
+  )
+  const { stepIndex, setStepIndex, stepForward, stepBack, togglePlay, handleReset, isPlaying, speed, setSpeed, isDone } = usePlaybackState(steps.length)
   const step = stepIndex >= 0 ? steps[stepIndex] : null
 
   const applyExample = useApplyExample((ex) => {
     setNumsInput(JSON.stringify(ex.nums))
   }, handleReset)
+
+  const connectivity = useCodeVisualConnectivity({
+    steps,
+    stepIndex,
+    snippetOptions: SNIPPETS,
+    onStepJump: setStepIndex,
+  })
 
   return (
     <div className="hr-shell">
@@ -133,7 +163,20 @@ export default function HouseRobberVisualizer() {
               {nums.map((value, i) => {
                 const active = step?.i === i
                 return (
-                  <motion.div key={`${i}-${value}`} className={`hr-house ${active ? 'active' : ''}`} animate={active ? { y: -6 } : { y: 0 }}>
+                  <motion.div
+                    key={`${i}-${value}`}
+                    className={`hr-house ${active ? 'active' : ''}`}
+                    animate={active ? { y: -6 } : { y: 0 }}
+                    onClick={() =>
+                      connectivity.setVisualFocus({
+                        lines: [6, 7, 8, 9, 10, 11],
+                        reason: `House ${i} selected with value ${value}.`,
+                        targetType: 'house',
+                        targetId: String(i),
+                      })
+                    }
+                    style={{ cursor: 'pointer' }}
+                  >
                     <small>{i}</small>
                     <strong>{value}</strong>
                   </motion.div>
@@ -141,9 +184,45 @@ export default function HouseRobberVisualizer() {
               })}
             </div>
             <div className="hr-formula">
-              <span>take = prev2 + nums[i] = {step?.take ?? 0}</span>
-              <span>skip = prev1 = {step?.skip ?? 0}</span>
-              <span>curr = max(take, skip) = {step?.curr ?? 0}</span>
+              <span
+                onClick={() =>
+                  connectivity.setVisualFocus({
+                    lines: [7],
+                    reason: 'Take branch selected.',
+                    targetType: 'formula',
+                    targetId: 'take',
+                  })
+                }
+                style={{ cursor: 'pointer' }}
+              >
+                take = prev2 + nums[i] = {step?.take ?? 0}
+              </span>
+              <span
+                onClick={() =>
+                  connectivity.setVisualFocus({
+                    lines: [8],
+                    reason: 'Skip branch selected.',
+                    targetType: 'formula',
+                    targetId: 'skip',
+                  })
+                }
+                style={{ cursor: 'pointer' }}
+              >
+                skip = prev1 = {step?.skip ?? 0}
+              </span>
+              <span
+                onClick={() =>
+                  connectivity.setVisualFocus({
+                    lines: [9],
+                    reason: 'Current DP update selected.',
+                    targetType: 'formula',
+                    targetId: 'curr',
+                  })
+                }
+                style={{ cursor: 'pointer' }}
+              >
+                curr = max(take, skip) = {step?.curr ?? 0}
+              </span>
             </div>
           </div>
         </section>
@@ -180,6 +259,14 @@ export default function HouseRobberVisualizer() {
           speed,
           setSpeed,
           isDone,
+        }}
+        connectivity={{
+          snippetOptions: SNIPPETS,
+          activeSnippetId: connectivity.activeSnippetId,
+          highlightedLines: connectivity.highlightedLines,
+          linkInfo: connectivity.linkInfo,
+          onLineSelect: connectivity.handleLineSelect,
+          onSnippetSelect: connectivity.handleSnippetSelect,
         }}
       />
     </div>
