@@ -637,7 +637,240 @@ function simulateTreeGame(treeData) {
         chipPath,
         blockedEdges,
     };
-}
+  }, [currentTree, step?.focus]);
+
+  const dpSnapshot = step?.dpSnapshot ?? null;
+  const stepKey = stepIndex >= 0 ? `step-${stepIndex}` : "idle";
+  const parentTokens = useMemo(
+    () => parentsInput.trim().split(/\s+/).filter(Boolean),
+    [parentsInput],
+  );
+  const parsedParentValues = useMemo(
+    () =>
+      parentTokens.map((token) => {
+        const value = Number(token);
+        return Number.isFinite(value) ? value - 1 : null;
+      }),
+    [parentTokens],
+  );
+  const parseIndex = step?.currentParentIndex ?? -1;
+  const parseValue = step?.currentParentValue ?? null;
+  const isParsingParents =
+    step?.activeLine === 2 && step?.phase === "parse-parent";
+  const hasParsedParents = parsedParentSnapshot.length > 0;
+  const revealedParentCount = isParsingParents
+    ? parseIndex + 1
+    : hasParsedParents
+      ? parsedParentSnapshot.length
+      : 0;
+
+  const onApplyExample = useCallback(
+    (example) => {
+      setQInput(example.q);
+      setParentsInput(example.parents);
+      handleReset();
+    },
+    [handleReset],
+  );
+
+  return (
+    <div className="gogt-shell">
+      <div className="gogt-top">
+        <section className="gogt-panel">
+          <header className="gogt-panel-head">
+            <span>Input</span>
+            {inputError && <span className="gogt-error">{inputError}</span>}
+          </header>
+
+          <div className="gogt-panel-body">
+            <div className="gogt-examples">
+              {EXAMPLES.map((example) => (
+                <button
+                  key={example.label}
+                  className="gogt-example-btn"
+                  onClick={() => onApplyExample(example)}
+                >
+                  {example.label}
+                </button>
+              ))}
+            </div>
+
+            <label className="gogt-field">
+              <span>q</span>
+              <input
+                value={qInput}
+                onChange={(event) => {
+                  setQInput(event.target.value);
+                  handleReset();
+                }}
+                className="gogt-input"
+                placeholder="Number of queries"
+              />
+            </label>
+
+            <label className="gogt-field">
+              <span>parents (v1..vq)</span>
+              <textarea
+                value={parentsInput}
+                onChange={(event) => {
+                  setParentsInput(event.target.value);
+                  handleReset();
+                }}
+                className="gogt-textarea"
+                rows={4}
+                placeholder="Space separated parent list"
+              />
+            </label>
+
+            <div className="gogt-parent-strip">
+              <div className="gogt-output-label">
+                Parent parsing preview: x → parent
+              </div>
+              <div className="gogt-parent-grid">
+                {parentTokens.map((token, idx) => (
+                  <div key={`${token}-${idx}`} className="gogt-parent-column">
+                    <div className="gogt-parent-column-label">x{idx + 1}</div>
+                    <motion.div
+                      className={`gogt-parent-token ${isParsingParents && parseIndex === idx ? "active" : ""}`}
+                      animate={{
+                        y: isParsingParents && parseIndex === idx ? -6 : 0,
+                        scale:
+                          isParsingParents && parseIndex === idx ? 1.08 : 1,
+                        boxShadow:
+                          isParsingParents && parseIndex === idx
+                            ? "0 0 0 1px rgba(251, 191, 36, 0.3), 0 10px 24px rgba(251, 190, 36, 0.9)"
+                            : "none",
+                      }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 320,
+                        damping: 24,
+                      }}
+                    >
+                      <span className="mono">{token}</span>
+                      <small>x</small>
+                    </motion.div>
+                    <div className="gogt-parent-column-label">
+                      parent{idx + 1}
+                    </div>
+                    <motion.div
+                      key={`parent-${idx}-${revealedParentCount}`}
+                      className={`gogt-parent-cell ${isParsingParents && parseIndex === idx ? "active" : ""} ${idx < revealedParentCount ? "revealed" : ""}`}
+                      initial={false}
+                      animate={{
+                        opacity: idx < revealedParentCount ? 1 : 0.32,
+                        y: idx < revealedParentCount ? 0 : 2,
+                        scale: idx < revealedParentCount ? 1 : 0.98,
+                        borderColor:
+                          isParsingParents && parseIndex === idx
+                            ? "rgba(115, 225, 156, 0.95)"
+                            : idx < revealedParentCount
+                              ? "rgba(34, 197, 94, 0.55)"
+                              : "var(--border)",
+                      }}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
+                    >
+                      <span className="mono">
+                        {idx < revealedParentCount
+                          ? isParsingParents && parseIndex === idx
+                            ? `parent${idx + 1} = x${idx + 1} - 1 = ${parsedParentSnapshot[idx]}`
+                            : `parent${idx + 1} = ${parsedParentSnapshot[idx]}`
+                          : "—"}
+                      </span>
+                    </motion.div>
+                  </div>
+                ))}
+              </div>
+              {hasParsedParents || step?.activeLine === 2 ? (
+                <div className="gogt-parent-note">
+                  {parseIndex >= 0
+                    ? `x${parseIndex + 1} = ${parentTokens[parseIndex] ?? "—"} transitions to parent${parseIndex + 1} = x${parseIndex + 1} - 1 = ${parseValue}.`
+                    : hasParsedParents
+                      ? "Parent values are now set and will stay visible while the algorithm continues."
+                      : "Parsing parent tokens."}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="gogt-output-wrap">
+              <div className="gogt-output-label">Final output</div>
+              <div className="gogt-output mono">
+                {answers.length ? answers.join(" ") : "No output yet"}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="gogt-panel">
+          <header className="gogt-panel-head">
+            <span>Interval Compression Playback</span>
+            <span className="gogt-chip">
+              Step {stepIndex >= 0 ? stepIndex + 1 : 0}/{steps.length}
+            </span>
+          </header>
+
+          <div className="gogt-panel-body">
+            <PlaybackControls
+              className="gogt-controls"
+              buttonsGroupClassName="gogt-controls-buttons"
+              onReset={handleReset}
+              onPrev={stepBack}
+              onPlayToggle={togglePlay}
+              onNext={stepForward}
+              resetDisabled={stepIndex < 0}
+              prevDisabled={stepIndex < 0}
+              nextDisabled={isDone || steps.length === 0}
+              isPlaying={isPlaying}
+              isDone={isDone}
+              speed={speed}
+              speedRangeValue={1500 - speed}
+              onSpeedChange={(event) =>
+                setSpeed(1500 - Number(event.target.value))
+              }
+              speedMin={120}
+              speedMax={1420}
+              speedStep={20}
+              speedLabel="Playback"
+              speedIndicator={`${((1600 - speed) / 300).toFixed(1)}x`}
+            />
+
+            <div className="gogt-status">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={stepKey}
+                  className="gogt-status-copy"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.22, ease: "easeOut" }}
+                >
+                  {step?.message || "Press Play or Next to start."}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            <div className="gogt-metrics">
+              <div className="gogt-metric">
+                <span>interval start</span>
+                <strong>{step?.intervalLeft ?? "-"}</strong>
+              </div>
+              <div className="gogt-metric">
+                <span>interval end</span>
+                <strong>{step?.intervalRight ?? "-"}</strong>
+              </div>
+              <div className="gogt-metric">
+                <span>midpoint value</span>
+                <strong>{step?.midpoint ?? "-"}</strong>
+              </div>
+              <div className="gogt-metric">
+                <span>computed value</span>
+                <strong>{step?.computedValue ?? "-"}</strong>
+              </div>
+              <div className="gogt-metric gogt-metric-wide">
+                <span>interval stack size</span>
+                <strong>{step?.stackSize ?? 0}</strong>
+              </div>
+            </div>
 
 export default function GameOnGrowingTreeVisualizer() {
     const [qInput, setQInput] = useState("9");
