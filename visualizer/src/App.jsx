@@ -6,52 +6,6 @@ import React, {
   Suspense,
 } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import CourseSchedule from "./problems/CourseSchedule";
-import CourseScheduleII from "./problems/CourseScheduleII";
-import LongestPalindrome from "./problems/LongestPalindrome";
-import LRUCache from "./problems/LRUCache";
-import StringToIntegerAtoi from "./problems/StringToIntegerAtoi";
-import ZigzagConversion from "./problems/ZigzagConversion";
-import TwoSum from "./problems/TwoSum";
-import ValidParentheses from "./problems/ValidParentheses";
-import MergeTwoSortedLists from "./problems/MergeTwoSortedLists";
-import MaximumSubarray from "./problems/MaximumSubarray";
-import ClimbingStairs from "./problems/ClimbingStairs";
-import BinarySearch from "./problems/BinarySearch";
-import NumberOfIslands from "./problems/NumberOfIslands";
-import MergeIntervals from "./problems/MergeIntervals";
-import TrappingRainWater from "./problems/TrappingRainWater";
-import LongestSubstringWithoutRepeating from "./problems/LongestSubstringWithoutRepeating";
-import SpiralMatrix from "./problems/SpiralMatrix";
-import CombinationSum from "./problems/CombinationSum";
-import MatrixIterationBasics from "./problems/MatrixIterationBasics";
-import ContainerWithMostWater from "./problems/ContainerWithMostWater";
-import RottingOranges from "./problems/RottingOranges";
-import HouseRobber from "./problems/HouseRobber";
-import MinimumWindowSubstring from "./problems/MinimumWindowSubstring";
-import WordSearch from "./problems/WordSearch";
-import DailyTemperatures from "./problems/DailyTemperatures";
-import KthLargestElement from "./problems/KthLargestElement";
-import RedundantConnection from "./problems/RedundantConnection";
-import ImplementTrie from "./problems/ImplementTrie";
-import MergeKSortedLists from "./problems/MergeKSortedLists";
-import LargestRectangleInHistogram from "./problems/LargestRectangleInHistogram";
-import AddTwoNumbers from "./problems/AddTwoNumbers";
-import PalindromeNumber from "./problems/PalindromeNumber";
-import MedianOfTwoSortedArrays from "./problems/MedianOfTwoSortedArrays";
-import ReverseInteger from "./problems/ReverseInteger";
-import ThreeSum from "./problems/ThreeSum";
-import BestTimeBuySellStock from "./problems/BestTimeBuySellStock";
-import SingleNumber from "./problems/SingleNumber";
-import MajorityElement from "./problems/MajorityElement";
-import HappyNumber from "./problems/HappyNumber";
-import ContainsDuplicate from "./problems/ContainsDuplicate";
-import RemoveDuplicates from "./problems/RemoveDuplicates";
-import MoveZeroes from "./problems/MoveZeroes";
-import ReverseString from "./problems/ReverseString";
-import ValidPalindrome from "./problems/ValidPalindrome";
-import GameOnGrowingTree from "./problems/GameOnGrowingTree";
-
 import ProblemScaffold from "./components/panels/ProblemScaffold";
 import "./App.css";
 
@@ -72,7 +26,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Easy",
     tags: ["Array", "Hash Table"],
     accent: "#22c55e",
-    component: TwoSum,
+    component: lazyProblem("TwoSum"),
   },
   {
     id: "lc-2",
@@ -84,7 +38,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Medium",
     tags: ["Linked List", "Math"],
     accent: "#a855f7",
-    component: AddTwoNumbers,
+    component: lazyProblem("AddTwoNumbers"),
   },
   {
     id: "lc-7",
@@ -96,7 +50,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Medium",
     tags: ["Math"],
     accent: "#ef4444",
-    component: ReverseInteger,
+    component: lazyProblem("ReverseInteger"),
   },
   {
     id: "lc-9",
@@ -108,7 +62,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Easy",
     tags: ["Math"],
     accent: "#a855f7",
-    component: PalindromeNumber,
+    component: lazyProblem("PalindromeNumber"),
   },
   {
     id: "lc-15",
@@ -120,7 +74,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Medium",
     tags: ["Array", "Two Pointers", "Sorting"],
     accent: "#0ea5e9",
-    component: ThreeSum,
+    component: lazyProblem("ThreeSum"),
   },
   {
     id: "lc-11",
@@ -132,7 +86,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Medium",
     tags: ["Array", "Two Pointers", "Greedy"],
     accent: "#3b82f6",
-    component: ContainerWithMostWater,
+    component: lazyProblem("ContainerWithMostWater"),
   },
   {
     id: "lc-42",
@@ -144,7 +98,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Hard",
     tags: ["Array", "Two Pointers", "Dynamic Programming"],
     accent: "#3b82f6",
-    component: TrappingRainWater,
+    component: lazyProblem("TrappingRainWater"),
   },
   {
     id: "lc-54",
@@ -156,7 +110,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Medium",
     tags: ["Array", "Matrix", "Simulation"],
     accent: "#f97316",
-    component: SpiralMatrix,
+    component: lazyProblem("SpiralMatrix"),
   },
   {
     id: "lc-39",
@@ -168,7 +122,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Medium",
     tags: ["Array", "Backtracking"],
     accent: "#14b8a6",
-    component: CombinationSum,
+    component: lazyProblem("CombinationSum"),
   },
   {
     id: "lc-20",
@@ -180,7 +134,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Easy",
     tags: ["String", "Stack"],
     accent: "#f97316",
-    component: ValidParentheses,
+    component: lazyProblem("ValidParentheses"),
   },
   {
     id: "lc-21",
@@ -192,7 +146,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Easy",
     tags: ["Linked List", "Two Pointers"],
     accent: "#0ea5e9",
-    component: MergeTwoSortedLists,
+    component: lazyProblem("MergeTwoSortedLists"),
   },
   {
     id: "lc-3",
@@ -204,7 +158,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Medium",
     tags: ["String", "Sliding Window", "Hash Table"],
     accent: "#8b5cf6",
-    component: LongestSubstringWithoutRepeating,
+    component: lazyProblem("LongestSubstringWithoutRepeating"),
   },
   {
     id: "lc-56",
@@ -216,7 +170,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Medium",
     tags: ["Array", "Sorting"],
     accent: "#10b981",
-    component: MergeIntervals,
+    component: lazyProblem("MergeIntervals"),
   },
   {
     id: "lc-53",
@@ -228,7 +182,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Medium",
     tags: ["Array", "Dynamic Programming", "Divide and Conquer"],
     accent: "#eab308",
-    component: MaximumSubarray,
+    component: lazyProblem("MaximumSubarray"),
   },
   {
     id: "lc-70",
@@ -240,7 +194,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Easy",
     tags: ["Dynamic Programming", "Math", "Memoization"],
     accent: "#a855f7",
-    component: ClimbingStairs,
+    component: lazyProblem("ClimbingStairs"),
   },
   {
     id: "lc-121",
@@ -252,7 +206,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Easy",
     tags: ["Array", "Dynamic Programming"],
     accent: "#22c55e",
-    component: BestTimeBuySellStock,
+    component: lazyProblem("BestTimeBuySellStock"),
   },
   {
     id: "lc-125",
@@ -264,7 +218,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Easy",
     tags: ["Two Pointers", "String"],
     accent: "#10b981",
-    component: ValidPalindrome,
+    component: lazyProblem("ValidPalindrome"),
   },
   {
     id: "lc-136",
@@ -276,7 +230,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Easy",
     tags: ["Array", "Bit Manipulation"],
     accent: "#cba6f7",
-    component: SingleNumber,
+    component: lazyProblem("SingleNumber"),
   },
   {
     id: "lc-169",
@@ -288,7 +242,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Easy",
     tags: ["Array", "Hash Table", "Divide and Conquer", "Sorting", "Counting"],
     accent: "#a855f7",
-    component: MajorityElement,
+    component: lazyProblem("MajorityElement"),
   },
   {
     id: "lc-202",
@@ -300,7 +254,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Easy",
     tags: ["Hash Table", "Math", "Two Pointers"],
     accent: "#f9e2af",
-    component: HappyNumber,
+    component: lazyProblem("HappyNumber"),
   },
   {
     id: "lc-217",
@@ -312,7 +266,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Easy",
     tags: ["Array", "Hash Table", "Sorting"],
     accent: "#f38ba8",
-    component: ContainsDuplicate,
+    component: lazyProblem("ContainsDuplicate"),
   },
   {
     id: "lc-26",
@@ -324,7 +278,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Easy",
     tags: ["Array", "Two Pointers"],
     accent: "#89b4fa",
-    component: RemoveDuplicates,
+    component: lazyProblem("RemoveDuplicates"),
   },
   {
     id: "lc-283",
@@ -336,7 +290,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Easy",
     tags: ["Array", "Two Pointers"],
     accent: "#f9e2af",
-    component: MoveZeroes,
+    component: lazyProblem("MoveZeroes"),
   },
   {
     id: "lc-344",
@@ -348,7 +302,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Easy",
     tags: ["Two Pointers", "String"],
     accent: "#a6e3a1",
-    component: ReverseString,
+    component: lazyProblem("ReverseString"),
   },
   {
     id: "lc-200",
@@ -360,7 +314,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Medium",
     tags: ["Array", "BFS", "DFS", "Graph", "Matrix"],
     accent: "#06b6d4",
-    component: NumberOfIslands,
+    component: lazyProblem("NumberOfIslands"),
   },
   {
     id: "lc-704",
@@ -372,7 +326,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Easy",
     tags: ["Array", "Binary Search"],
     accent: "#3b82f6",
-    component: BinarySearch,
+    component: lazyProblem("BinarySearch"),
   },
   {
     id: "lc-207",
@@ -384,7 +338,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Medium",
     tags: ["Graph", "Topological Sort"],
     accent: "#f97316",
-    component: CourseSchedule,
+    component: lazyProblem("CourseSchedule"),
   },
   {
     id: "lc-210",
@@ -396,7 +350,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Medium",
     tags: ["Graph", "Topological Sort", "BFS"],
     accent: "#0ea5e9",
-    component: CourseScheduleII,
+    component: lazyProblem("CourseScheduleII"),
   },
   {
     id: "lc-994",
@@ -408,7 +362,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Medium",
     tags: ["Array", "BFS", "Matrix", "Graph"],
     accent: "#f97316",
-    component: RottingOranges,
+    component: lazyProblem("RottingOranges"),
   },
   {
     id: "lc-198",
@@ -420,7 +374,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Medium",
     tags: ["Array", "Dynamic Programming"],
     accent: "#a855f7",
-    component: HouseRobber,
+    component: lazyProblem("HouseRobber"),
   },
   {
     id: "lc-76",
@@ -432,7 +386,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Hard",
     tags: ["String", "Sliding Window", "Hash Table"],
     accent: "#22c55e",
-    component: MinimumWindowSubstring,
+    component: lazyProblem("MinimumWindowSubstring"),
   },
   {
     id: "lc-79",
@@ -444,7 +398,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Medium",
     tags: ["Array", "Backtracking", "Matrix", "DFS", "String"],
     accent: "#14b8a6",
-    component: WordSearch,
+    component: lazyProblem("WordSearch"),
   },
   {
     id: "lc-739",
@@ -456,7 +410,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Medium",
     tags: ["Array", "Stack", "Monotonic Stack"],
     accent: "#f97316",
-    component: DailyTemperatures,
+    component: lazyProblem("DailyTemperatures"),
   },
   {
     id: "lc-215",
@@ -468,7 +422,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Medium",
     tags: ["Array", "Heap", "Priority Queue", "Divide and Conquer"],
     accent: "#0ea5e9",
-    component: KthLargestElement,
+    component: lazyProblem("KthLargestElement"),
   },
   {
     id: "lc-684",
@@ -480,7 +434,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Medium",
     tags: ["Graph", "Union Find", "Tree"],
     accent: "#ef4444",
-    component: RedundantConnection,
+    component: lazyProblem("RedundantConnection"),
   },
   {
     id: "lc-208",
@@ -492,7 +446,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Medium",
     tags: ["String", "Design", "Trie", "Hash Table"],
     accent: "#22c55e",
-    component: ImplementTrie,
+    component: lazyProblem("ImplementTrie"),
   },
   {
     id: "lc-23",
@@ -504,7 +458,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Hard",
     tags: ["Linked List", "Heap", "Divide and Conquer"],
     accent: "#a855f7",
-    component: MergeKSortedLists,
+    component: lazyProblem("MergeKSortedLists"),
   },
   {
     id: "lc-84",
@@ -516,7 +470,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Hard",
     tags: ["Array", "Stack", "Monotonic Stack"],
     accent: "#f97316",
-    component: LargestRectangleInHistogram,
+    component: lazyProblem("LargestRectangleInHistogram"),
   },
   {
     id: "lc-5",
@@ -528,7 +482,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Medium",
     tags: ["Dynamic Programming", "String"],
     accent: "#8b5cf6",
-    component: LongestPalindrome,
+    component: lazyProblem("LongestPalindrome"),
   },
   {
     id: "lc-9",
@@ -540,7 +494,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Easy",
     tags: ["Math", "String"],
     accent: "#10b981",
-    component: PalindromeNumber,
+    component: lazyProblem("PalindromeNumber"),
   },
   {
     id: "lc-4",
@@ -552,7 +506,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Hard",
     tags: ["Array", "Binary Search"],
     accent: "#64748b",
-    component: MedianOfTwoSortedArrays,
+    component: lazyProblem("MedianOfTwoSortedArrays"),
   },
   {
     id: "lc-146",
@@ -564,7 +518,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Medium",
     tags: ["Design", "Hash Map", "Linked List"],
     accent: "#0ea5e9",
-    component: LRUCache,
+    component: lazyProblem("LRUCache"),
   },
   {
     id: "lc-6",
@@ -576,7 +530,7 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Medium",
     tags: ["String", "Simulation"],
     accent: "#22c55e",
-    component: ZigzagConversion,
+    component: lazyProblem("ZigzagConversion"),
   },
   {
     id: "lc-8",
@@ -588,16 +542,14 @@ const IMPLEMENTED_PROBLEMS = [
     difficulty: "Medium",
     tags: ["String", "Simulation"],
     accent: "#3b82f6",
-    component: StringToIntegerAtoi,
+    component: lazyProblem("StringToIntegerAtoi"),
   },
 ];
 
 const metaModules = import.meta.glob("./problems/**/index.jsx", {
   eager: true,
 });
-const lazyModules = import.meta.glob("./problems/**/index.jsx", {
-  eager: true,
-});
+const lazyModules = import.meta.glob("./problems/**/index.jsx");
 
 const slugFromPath = (path) => {
   const parts = path.split("/");
@@ -638,7 +590,7 @@ const EXTRA_PROBLEMS = Object.keys(metaModules)
       difficulty,
       tags,
       accent: "#64748b",
-      component: loader ? loader.default || loader : null,
+      component: loader ? React.lazy(loader) : null,
       implemented: !!loader,
     };
   })
@@ -661,7 +613,7 @@ const BASICS_PROBLEMS = [
     difficulty: "Easy",
     tags: ["Matrix", "Loops", "Basics"],
     accent: "#0ea5e9",
-    component: MatrixIterationBasics,
+    component: lazyProblem("MatrixIterationBasics"),
     implemented: true,
   },
 ];
@@ -677,7 +629,7 @@ const CODEFORCES_PROBLEMS = [
     difficulty: "Hard",
     tags: ["Tree", "Game Theory", "DP", "Codeforces"],
     accent: "#f97316",
-    component: GameOnGrowingTree,
+    component: lazyProblem("GameOnGrowingTree"),
     implemented: true,
   },
 ];
