@@ -1,50 +1,103 @@
-import { useEffect, useMemo, useState, Component } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+  Component,
+  lazy,
+  Suspense,
+} from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import CourseSchedule from "./problems/CourseSchedule";
-import CourseScheduleII from "./problems/CourseScheduleII";
-import LongestPalindrome from "./problems/LongestPalindrome";
-import LRUCache from "./problems/LRUCache";
-import StringToIntegerAtoi from "./problems/StringToIntegerAtoi";
-import ZigzagConversion from "./problems/ZigzagConversion";
-import TwoSum from "./problems/TwoSum";
-import ValidParentheses from "./problems/ValidParentheses";
-import MergeTwoSortedLists from "./problems/MergeTwoSortedLists";
-import MaximumSubarray from "./problems/MaximumSubarray";
-import ClimbingStairs from "./problems/ClimbingStairs";
-import BinarySearch from "./problems/BinarySearch";
-import NumberOfIslands from "./problems/NumberOfIslands";
-import MergeIntervals from "./problems/MergeIntervals";
-import TrappingRainWater from "./problems/TrappingRainWater";
-import LongestSubstringWithoutRepeating from "./problems/LongestSubstringWithoutRepeating";
-import SpiralMatrix from "./problems/SpiralMatrix";
-import CombinationSum from "./problems/CombinationSum";
-import MatrixIterationBasics from "./problems/MatrixIterationBasics";
-import ContainerWithMostWater from "./problems/ContainerWithMostWater";
-import RottingOranges from "./problems/RottingOranges";
-import HouseRobber from "./problems/HouseRobber";
-import MinimumWindowSubstring from "./problems/MinimumWindowSubstring";
-import WordSearch from "./problems/WordSearch";
-import DailyTemperatures from "./problems/DailyTemperatures";
-import KthLargestElement from "./problems/KthLargestElement";
-import RedundantConnection from "./problems/RedundantConnection";
-import ImplementTrie from "./problems/ImplementTrie";
-import MergeKSortedLists from "./problems/MergeKSortedLists";
-import LargestRectangleInHistogram from "./problems/LargestRectangleInHistogram";
-import AddTwoNumbers from "./problems/AddTwoNumbers";
-import PalindromeNumber from "./problems/PalindromeNumber";
-import MedianOfTwoSortedArrays from "./problems/MedianOfTwoSortedArrays";
-import ReverseInteger from "./problems/ReverseInteger";
-import ThreeSum from "./problems/ThreeSum";
-import BestTimeBuySellStock from "./problems/BestTimeBuySellStock";
-import ContainsDuplicate from "./problems/ContainsDuplicate";
-import RemoveDuplicates from "./problems/RemoveDuplicates";
-import MoveZeroes from "./problems/MoveZeroes";
-import SingleNumber from "./problems/SingleNumber";
-import HappyNumber from "./problems/HappyNumber";
-import MajorityElement from "./problems/MajorityElement";
-import ReverseString from "./problems/ReverseString";
-import ValidPalindrome from "./problems/ValidPalindrome";
-import GameOnGrowingTree from "./problems/GameOnGrowingTree";
+const CourseSchedule = lazy(() => import("./problems/CourseSchedule"));
+const CourseScheduleII = lazy(() => import("./problems/CourseScheduleII"));
+const LongestPalindrome = lazy(() => import("./problems/LongestPalindrome"));
+const LRUCache = lazy(() => import("./problems/LRUCache"));
+const StringToIntegerAtoi = lazy(() => import("./problems/StringToIntegerAtoi"));
+const ZigzagConversion = lazy(() => import("./problems/ZigzagConversion"));
+const TwoSum = lazy(() => import("./problems/TwoSum"));
+const ValidParentheses = lazy(() => import("./problems/ValidParentheses"));
+const MergeTwoSortedLists = lazy(() => import("./problems/MergeTwoSortedLists"));
+const MaximumSubarray = lazy(() => import("./problems/MaximumSubarray"));
+const ClimbingStairs = lazy(() => import("./problems/ClimbingStairs"));
+const BinarySearch = lazy(() => import("./problems/BinarySearch"));
+const NumberOfIslands = lazy(() => import("./problems/NumberOfIslands"));
+const MergeIntervals = lazy(() => import("./problems/MergeIntervals"));
+const TrappingRainWater = lazy(() => import("./problems/TrappingRainWater"));
+const LongestSubstringWithoutRepeating = lazy(() => import("./problems/LongestSubstringWithoutRepeating"));
+const SpiralMatrix = lazy(() => import("./problems/SpiralMatrix"));
+const CombinationSum = lazy(() => import("./problems/CombinationSum"));
+const MatrixIterationBasics = lazy(() => import("./problems/MatrixIterationBasics"));
+const ContainerWithMostWater = lazy(() => import("./problems/ContainerWithMostWater"));
+const RottingOranges = lazy(() => import("./problems/RottingOranges"));
+const HouseRobber = lazy(() => import("./problems/HouseRobber"));
+const MinimumWindowSubstring = lazy(() => import("./problems/MinimumWindowSubstring"));
+const WordSearch = lazy(() => import("./problems/WordSearch"));
+const DailyTemperatures = lazy(() => import("./problems/DailyTemperatures"));
+const KthLargestElement = lazy(() => import("./problems/KthLargestElement"));
+const RedundantConnection = lazy(() => import("./problems/RedundantConnection"));
+const ImplementTrie = lazy(() => import("./problems/ImplementTrie"));
+const MergeKSortedLists = lazy(() => import("./problems/MergeKSortedLists"));
+const LargestRectangleInHistogram = lazy(() => import("./problems/LargestRectangleInHistogram"));
+const AddTwoNumbers = lazy(() => import("./problems/AddTwoNumbers"));
+const PalindromeNumber = lazy(() => import("./problems/PalindromeNumber"));
+const MedianOfTwoSortedArrays = lazy(() => import("./problems/MedianOfTwoSortedArrays"));
+const ReverseInteger = lazy(() => import("./problems/ReverseInteger"));
+const ThreeSum = lazy(() => import("./problems/ThreeSum"));
+const GameOnGrowingTree = lazy(() => import("./problems/GameOnGrowingTree"));
+const CourseSchedule = lazy(() => import("./problems/CourseSchedule"));
+const CourseScheduleII = lazy(() => import("./problems/CourseScheduleII"));
+const LongestPalindrome = lazy(() => import("./problems/LongestPalindrome"));
+const LRUCache = lazy(() => import("./problems/LRUCache"));
+const StringToIntegerAtoi = lazy(
+  () => import("./problems/StringToIntegerAtoi"),
+);
+const ZigzagConversion = lazy(() => import("./problems/ZigzagConversion"));
+const TwoSum = lazy(() => import("./problems/TwoSum"));
+const ValidParentheses = lazy(() => import("./problems/ValidParentheses"));
+const MergeTwoSortedLists = lazy(
+  () => import("./problems/MergeTwoSortedLists"),
+);
+const MaximumSubarray = lazy(() => import("./problems/MaximumSubarray"));
+const ClimbingStairs = lazy(() => import("./problems/ClimbingStairs"));
+const BinarySearch = lazy(() => import("./problems/BinarySearch"));
+const NumberOfIslands = lazy(() => import("./problems/NumberOfIslands"));
+const MergeIntervals = lazy(() => import("./problems/MergeIntervals"));
+const TrappingRainWater = lazy(() => import("./problems/TrappingRainWater"));
+const LongestSubstringWithoutRepeating = lazy(
+  () => import("./problems/LongestSubstringWithoutRepeating"),
+);
+const SpiralMatrix = lazy(() => import("./problems/SpiralMatrix"));
+const CombinationSum = lazy(() => import("./problems/CombinationSum"));
+const MatrixIterationBasics = lazy(
+  () => import("./problems/MatrixIterationBasics"),
+);
+const ContainerWithMostWater = lazy(
+  () => import("./problems/ContainerWithMostWater"),
+);
+const RottingOranges = lazy(() => import("./problems/RottingOranges"));
+const HouseRobber = lazy(() => import("./problems/HouseRobber"));
+const MinimumWindowSubstring = lazy(
+  () => import("./problems/MinimumWindowSubstring"),
+);
+const WordSearch = lazy(() => import("./problems/WordSearch"));
+const DailyTemperatures = lazy(() => import("./problems/DailyTemperatures"));
+const KthLargestElement = lazy(() => import("./problems/KthLargestElement"));
+const RedundantConnection = lazy(
+  () => import("./problems/RedundantConnection"),
+);
+const ImplementTrie = lazy(() => import("./problems/ImplementTrie"));
+const MergeKSortedLists = lazy(() => import("./problems/MergeKSortedLists"));
+const LargestRectangleInHistogram = lazy(
+  () => import("./problems/LargestRectangleInHistogram"),
+);
+const AddTwoNumbers = lazy(() => import("./problems/AddTwoNumbers"));
+const PalindromeNumber = lazy(() => import("./problems/PalindromeNumber"));
+const MedianOfTwoSortedArrays = lazy(
+  () => import("./problems/MedianOfTwoSortedArrays"),
+);
+const ReverseInteger = lazy(() => import("./problems/ReverseInteger"));
+const ThreeSum = lazy(() => import("./problems/ThreeSum"));
+const GameOnGrowingTree = lazy(() => import("./problems/GameOnGrowingTree"));
+>>>>>>> Stashed changes
 import ProblemScaffold from "./components/panels/ProblemScaffold";
 import "./App.css";
 
@@ -96,7 +149,8 @@ const IMPLEMENTED_PROBLEMS = [
     number: "9",
     title: "Palindrome Number",
     slug: "palindrome-number",
-    description: "Determine if a number is a palindrome by reversing its right half.",
+    description:
+      "Determine if a number is a palindrome by reversing its right half.",
     difficulty: "Easy",
     tags: ["Math"],
     accent: "#a855f7",
@@ -107,7 +161,8 @@ const IMPLEMENTED_PROBLEMS = [
     number: "15",
     title: "3Sum",
     slug: "3sum",
-    description: "Sort the array and use two pointers to find triplets that sum to zero.",
+    description:
+      "Sort the array and use two pointers to find triplets that sum to zero.",
     difficulty: "Medium",
     tags: ["Array", "Two Pointers", "Sorting"],
     accent: "#0ea5e9",
@@ -583,8 +638,38 @@ const IMPLEMENTED_PROBLEMS = [
   },
 ];
 
+const problemModules = import.meta.glob("./problems/**/index.jsx");
+
+const slugFromPath = (path) => {
+  const parts = path.split("/");
+  const folder = parts[parts.length - 2];
+  return folder.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+};
+
+const EXTRA_PROBLEMS = Object.keys(problemModules)
+  .map((path) => {
+    const slug = slugFromPath(path);
+    if (IMPLEMENTED_PROBLEMS.some((p) => p.slug === slug)) return null;
+    return {
+      id: `auto-${slug}`,
+      number: "",
+      title: slug.replace(/-/g, " "),
+      slug,
+      description:
+        "Cataloged in explorer. Visualizer shell is ready; implementation can be plugged into reusable panels.",
+      difficulty: "Medium",
+      tags: [],
+      accent: "#64748b",
+      component: lazy(() => problemModules[path]()),
+      implemented: true,
+    };
+  })
+  .filter(Boolean);
+
+const ALL_IMPLEMENTED = IMPLEMENTED_PROBLEMS.concat(EXTRA_PROBLEMS);
+
 const IMPLEMENTED_BY_NUMBER = new Map(
-  IMPLEMENTED_PROBLEMS.map((problem) => [problem.number, problem]),
+  ALL_IMPLEMENTED.map((problem) => [problem.number, problem]),
 );
 
 const BASICS_PROBLEMS = [
@@ -730,7 +815,10 @@ function LayoutControls({ layoutWidth, onChange, compact = false }) {
   );
 }
 
-function SettingsMenu({ navigationTransitionsEnabled, onToggleNavigationTransitions }) {
+function SettingsMenu({
+  navigationTransitionsEnabled,
+  onToggleNavigationTransitions,
+}) {
   return (
     <details className="settings-menu">
       <summary className="settings-summary" aria-label="Open settings">
@@ -743,7 +831,9 @@ function SettingsMenu({ navigationTransitionsEnabled, onToggleNavigationTransiti
           <input
             type="checkbox"
             checked={navigationTransitionsEnabled}
-            onChange={(event) => onToggleNavigationTransitions(event.target.checked)}
+            onChange={(event) =>
+              onToggleNavigationTransitions(event.target.checked)
+            }
           />
           <span>
             <strong>Enable transitions</strong>
@@ -807,7 +897,15 @@ function ProblemPage({
       <div className="problem-content">
         <ErrorBoundary key={problem.id}>
           {Component ? (
-            <Component problem={problem} />
+            <Suspense
+              fallback={
+                <div style={{ padding: 20, color: "#94a3b8" }}>
+                  Loading visualizer…
+                </div>
+              }
+            >
+              <Component problem={problem} />
+            </Suspense>
           ) : (
             <ProblemScaffold problem={problem} />
           )}
@@ -1038,7 +1136,7 @@ function HomePage({
       </header>
 
       <main className="cards-grid">
-        {visible.map((p, i) => (
+        {visible.map((p, i) =>
           enableTransitions ? (
             <motion.button
               key={p.id}
@@ -1104,8 +1202,8 @@ function HomePage({
                 <span className="card-arrow">{p.implemented ? "→" : "⋯"}</span>
               </div>
             </button>
-          )
-        ))}
+          ),
+        )}
       </main>
 
       {visibleCount < filtered.length && (
@@ -1127,7 +1225,8 @@ export default function App() {
   const [active, setActive] = useState(null);
   const [track, setTrack] = useState(TRACKS.LEETCODE);
   const [layoutWidth, setLayoutWidth] = useState("full");
-  const [navigationTransitionsEnabled, setNavigationTransitionsEnabled] = useState(true);
+  const [navigationTransitionsEnabled, setNavigationTransitionsEnabled] =
+    useState(true);
 
   useEffect(() => {
     try {
