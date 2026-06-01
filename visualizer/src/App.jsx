@@ -60,61 +60,19 @@ const MedianOfTwoSortedArrays = lazy(
 );
 const ReverseInteger = lazy(() => import("./problems/ReverseInteger"));
 const ThreeSum = lazy(() => import("./problems/ThreeSum"));
+const BestTimeBuySellStock = lazy(
+  () => import("./problems/BestTimeBuySellStock"),
+);
+const SingleNumber = lazy(() => import("./problems/SingleNumber"));
+const MajorityElement = lazy(() => import("./problems/MajorityElement"));
+const HappyNumber = lazy(() => import("./problems/HappyNumber"));
+const ContainsDuplicate = lazy(() => import("./problems/ContainsDuplicate"));
+const RemoveDuplicates = lazy(() => import("./problems/RemoveDuplicates"));
+const MoveZeroes = lazy(() => import("./problems/MoveZeroes"));
+const ReverseString = lazy(() => import("./problems/ReverseString"));
+const ValidPalindrome = lazy(() => import("./problems/ValidPalindrome"));
 const GameOnGrowingTree = lazy(() => import("./problems/GameOnGrowingTree"));
-const CourseSchedule = lazy(() => import("./problems/CourseSchedule"));
-const CourseScheduleII = lazy(() => import("./problems/CourseScheduleII"));
-const LongestPalindrome = lazy(() => import("./problems/LongestPalindrome"));
-const LRUCache = lazy(() => import("./problems/LRUCache"));
-const StringToIntegerAtoi = lazy(
-  () => import("./problems/StringToIntegerAtoi"),
-);
-const ZigzagConversion = lazy(() => import("./problems/ZigzagConversion"));
-const TwoSum = lazy(() => import("./problems/TwoSum"));
-const ValidParentheses = lazy(() => import("./problems/ValidParentheses"));
-const MergeTwoSortedLists = lazy(
-  () => import("./problems/MergeTwoSortedLists"),
-);
-const MaximumSubarray = lazy(() => import("./problems/MaximumSubarray"));
-const ClimbingStairs = lazy(() => import("./problems/ClimbingStairs"));
-const BinarySearch = lazy(() => import("./problems/BinarySearch"));
-const NumberOfIslands = lazy(() => import("./problems/NumberOfIslands"));
-const MergeIntervals = lazy(() => import("./problems/MergeIntervals"));
-const TrappingRainWater = lazy(() => import("./problems/TrappingRainWater"));
-const LongestSubstringWithoutRepeating = lazy(
-  () => import("./problems/LongestSubstringWithoutRepeating"),
-);
-const SpiralMatrix = lazy(() => import("./problems/SpiralMatrix"));
-const CombinationSum = lazy(() => import("./problems/CombinationSum"));
-const MatrixIterationBasics = lazy(
-  () => import("./problems/MatrixIterationBasics"),
-);
-const ContainerWithMostWater = lazy(
-  () => import("./problems/ContainerWithMostWater"),
-);
-const RottingOranges = lazy(() => import("./problems/RottingOranges"));
-const HouseRobber = lazy(() => import("./problems/HouseRobber"));
-const MinimumWindowSubstring = lazy(
-  () => import("./problems/MinimumWindowSubstring"),
-);
-const WordSearch = lazy(() => import("./problems/WordSearch"));
-const DailyTemperatures = lazy(() => import("./problems/DailyTemperatures"));
-const KthLargestElement = lazy(() => import("./problems/KthLargestElement"));
-const RedundantConnection = lazy(
-  () => import("./problems/RedundantConnection"),
-);
-const ImplementTrie = lazy(() => import("./problems/ImplementTrie"));
-const MergeKSortedLists = lazy(() => import("./problems/MergeKSortedLists"));
-const LargestRectangleInHistogram = lazy(
-  () => import("./problems/LargestRectangleInHistogram"),
-);
-const AddTwoNumbers = lazy(() => import("./problems/AddTwoNumbers"));
-const PalindromeNumber = lazy(() => import("./problems/PalindromeNumber"));
-const MedianOfTwoSortedArrays = lazy(
-  () => import("./problems/MedianOfTwoSortedArrays"),
-);
-const ReverseInteger = lazy(() => import("./problems/ReverseInteger"));
-const ThreeSum = lazy(() => import("./problems/ThreeSum"));
-const GameOnGrowingTree = lazy(() => import("./problems/GameOnGrowingTree"));
+
 import ProblemScaffold from "./components/panels/ProblemScaffold";
 import "./App.css";
 
