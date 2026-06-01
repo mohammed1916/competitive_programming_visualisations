@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { useCodeVisualConnectivity } from '../../hooks/useCodeVisualConnectivity'
 import './ValidParenthesesVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -111,10 +112,16 @@ export default function ValidParenthesesVisualizer() {
     return { s: sInput, inputError: '' } // any string is valid input for this problem
   }, [sInput])
 
-  const steps = useMemo(() => generateSteps(s), [s])
+  const steps = useMemo(
+    () => generateSteps(s).map((current) => ({
+      ...current,
+      relatedLines: current.relatedLines ?? (current.activeLine != null ? [current.activeLine] : []),
+    })),
+    [s],
+  )
 
   const {
-    stepIndex, stepForward, stepBack, togglePlay,
+    stepIndex, setStepIndex, stepForward, stepBack, togglePlay,
     handleReset, isPlaying, speed, setSpeed, isDone,
   } = usePlaybackState(steps.length)
 
@@ -124,6 +131,12 @@ export default function ValidParenthesesVisualizer() {
     setSInput(ex.s)
     handleReset()
   }, [handleReset])
+
+  const connectivity = useCodeVisualConnectivity({
+    steps,
+    stepIndex,
+    onStepJump: setStepIndex,
+  })
 
   return (
     <div className="vp-shell">
@@ -242,7 +255,12 @@ export default function ValidParenthesesVisualizer() {
       </div>
 
       <div className="vp-middle">
-        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+        <CodeTracePanel
+          step={step}
+          codeLines={SOLUTION_CODE}
+          highlightedLines={connectivity.highlightedLines}
+          onLineSelect={connectivity.handleLineSelect}
+        />
       </div>
 
       <div className={`vp-status \${step?.phase === 'done' ? (step.success ? 'success' : 'fail') : step?.phase === 'fail_mismatch' ? 'fail' : ''}`}>

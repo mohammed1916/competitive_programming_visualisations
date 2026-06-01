@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState, lazy, Suspense } from 'react'
+import { useEffect, useMemo, useRef, useState, lazy, Suspense } from 'react'
+import { createPortal } from 'react-dom'
 import { motion } from 'framer-motion'
 import './CodeTracePanel.css'
 import ResizerHandle from './ResizerHandle'
@@ -8,6 +9,8 @@ const MonacoEditor = lazy(() => import('@monaco-editor/react'))
 export default function CodeTracePanel({
   step,
   codeLines,
+  highlightedLines = [],
+  onLineSelect,
   title = 'Solution Code',
   subtitle = null,
   idleLabel = 'Press Play to start',
@@ -62,6 +65,14 @@ export default function CodeTracePanel({
 
   // Editor state
   const [isEditing, setIsEditing] = useState(false)
+  const [editorPlacement, setEditorPlacement] = useState(() => {
+    try {
+      const value = window.localStorage.getItem('ctp.editorPlacement')
+      return value === 'below' ? 'below' : 'overlay'
+    } catch {
+      return 'overlay'
+    }
+  })
   const [editorTheme, setEditorTheme] = useState('vs-dark')
   const [editorLanguage, setEditorLanguage] = useState('python')
   const [fontSize, setFontSize] = useState(() => {
@@ -83,16 +94,24 @@ export default function CodeTracePanel({
   }
   const [editorContent, setEditorContent] = useState(initialEditor)
   const [showComments, setShowComments] = useState(true)
+  const highlightedLineSet = useMemo(() => new Set(highlightedLines), [highlightedLines])
   const commentsText = `# Write your notes here\n# Toggle comments off to edit cleanly.`
   const fileHandleRef = useRef(null)
   const monacoRef = useRef(null)
   const editorRef = useRef(null)
+  const shouldFocusEditorRef = useRef(false)
 
   useEffect(() => {
     try { window.localStorage.setItem('ctp.editorContent', editorContent) } catch (err) { void err }
   }, [editorContent])
 
-  const toggleEdit = () => setIsEditing((v) => !v)
+  const toggleEdit = () => {
+    setIsEditing((v) => {
+      const next = !v
+      if (next) shouldFocusEditorRef.current = true
+      return next
+    })
+  }
 
   useEffect(() => {
     if (monacoRef.current && editorTheme) {
@@ -105,6 +124,10 @@ export default function CodeTracePanel({
     try { window.localStorage.setItem('ctp.minimap', minimapEnabled ? '1' : '0') } catch (err) { void err }
     try { window.localStorage.setItem('ctp.wordWrap', wordWrap ? '1' : '0') } catch (err) { void err }
   }, [fontSize, minimapEnabled, wordWrap])
+
+  useEffect(() => {
+    try { window.localStorage.setItem('ctp.editorPlacement', editorPlacement) } catch (err) { void err }
+  }, [editorPlacement])
 
   async function saveToFile() {
     const data = (showComments ? commentsText + '\n\n' : '') + (editorRef.current ? editorRef.current.getValue() : editorContent)
@@ -212,8 +235,97 @@ export default function CodeTracePanel({
     } catch (err) { void err }
   }
 
+  const toggleEditorPlacement = () => {
+    setEditorPlacement((value) => (value === 'overlay' ? 'below' : 'overlay'))
+  }
+
+  const isInlineEditor = isEditing && editorPlacement === 'below'
+  const codeAreaHeight = isInlineEditor
+    ? `${Math.max(140, Math.round(panelHeight * 0.46))}px`
+    : `${panelHeight}px`
+
+  const editorBody = (
+    <div className="ctp-editor-wrap">
+      <div className="ctp-editor-controls">
+        <button className="ctp-editor-btn" onClick={() => setShowComments((s) => !s)}>{showComments ? 'Hide comments' : 'Show comments'}</button>
+        <button className="ctp-editor-btn" onClick={loadFromFile}>Load file</button>
+        <button className="ctp-editor-btn" onClick={saveToFile}>Save file</button>
+        <label style={{ marginLeft: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+          Theme
+          <select className="ctp-editor-select" value={editorTheme} onChange={(e) => setEditorTheme(e.target.value)}>
+            <option value="vs">Light</option>
+            <option value="vs-dark">Dark</option>
+            <option value="hc-black">High contrast</option>
+          </select>
+        </label>
+        <label style={{ marginLeft: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+          Lang
+          <select className="ctp-editor-select" value={editorLanguage} onChange={(e) => {
+            setEditorLanguage(e.target.value)
+            try { if (monacoRef.current && editorRef.current) monacoRef.current.editor.setModelLanguage(editorRef.current.getModel(), e.target.value) } catch (err) { void err }
+          }}>
+            <option value="python">Python</option>
+            <option value="javascript">JavaScript</option>
+            <option value="typescript">TypeScript</option>
+            <option value="java">Java</option>
+            <option value="csharp">C#</option>
+            <option value="cpp">C++</option>
+            <option value="go">Go</option>
+          </select>
+        </label>
+
+        <label style={{ marginLeft: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+          Font
+          <input className="ctp-editor-select" type="number" min="10" max="28" value={fontSize} onChange={(e) => setFontSize(Number(e.target.value) || 14)} style={{ width: 72 }} />
+        </label>
+
+        <label style={{ marginLeft: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <input type="checkbox" checked={minimapEnabled} onChange={(e) => setMinimapEnabled(e.target.checked)} /> Minimap
+        </label>
+
+        <label style={{ marginLeft: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <input type="checkbox" checked={wordWrap} onChange={(e) => setWordWrap(e.target.checked)} /> Word wrap
+        </label>
+
+        <label style={{ marginLeft: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <input type="checkbox" checked={readOnly} onChange={(e) => setReadOnly(e.target.checked)} /> Read only
+        </label>
+
+        <button className="ctp-editor-btn" onClick={() => formatDocument()} style={{ marginLeft: 8 }}>Format</button>
+      </div>
+      <Suspense fallback={<textarea className="ctp-editor-textarea" value={(showComments ? commentsText + '\n\n' : '') + editorContent} onChange={(e) => setEditorContent(e.target.value.replace(/^(?:#.*\n)*/, '').replace(/^\n+/, ''))} />}>
+        <MonacoEditor
+          height="420px"
+          defaultLanguage={editorLanguage}
+          value={(showComments ? commentsText + '\n\n' : '') + editorContent}
+          onChange={(v) => setEditorContent((v ?? '').replace(/^(?:#.*\n)*/, '').replace(/^\n+/, ''))}
+          options={{ minimap: { enabled: minimapEnabled }, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace', fontSize, wordWrap: wordWrap ? 'on' : 'off', readOnly }}
+          onMount={(editor, monaco) => {
+            monacoRef.current = monaco
+            editorRef.current = editor
+            try { monaco.editor.setTheme(editorTheme) } catch (err) { void err }
+            try { monaco.editor.setModelLanguage(editor.getModel(), editorLanguage) } catch (err) { void err }
+            if (shouldFocusEditorRef.current) {
+              try { editor.focus() } catch (err) { void err }
+              shouldFocusEditorRef.current = false
+            }
+            try {
+              editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => { saveToFile() })
+              editor.addCommand(monaco.KeyMod.Shift | monaco.KeyMod.Alt | monaco.KeyCode.KeyF, () => { formatDocument() })
+            } catch (err) { void err }
+          }}
+        />
+      </Suspense>
+    </div>
+  )
+
   return (
-    <motion.div className="ctp-panel" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.22 }}>
+    <motion.div
+      className={`ctp-panel ${isInlineEditor ? 'editing-below' : ''}`}
+      initial={{ opacity: 0, x: 12 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.22 }}
+    >
       <div className="ctp-head">
         <div>
           <div className="ctp-title">{title}</div>
@@ -234,19 +346,24 @@ export default function CodeTracePanel({
         <button type="button" className="ctp-copy-btn" onClick={toggleEdit} style={{ marginLeft: 8 }}>
           {isEditing ? 'Close editor' : 'Edit code'}
         </button>
+        <button type="button" className="ctp-copy-btn" onClick={toggleEditorPlacement} style={{ marginLeft: 8 }}>
+          Editor: {editorPlacement === 'overlay' ? 'Modal' : 'Below'}
+        </button>
       </div>
 
-      <div className="ctp-scroll" ref={codeRef} onWheel={markManualScroll} onTouchMove={markManualScroll} style={{ height: `${panelHeight}px` }}>
+      <div className="ctp-scroll" ref={codeRef} onWheel={markManualScroll} onTouchMove={markManualScroll} style={{ height: codeAreaHeight }}>
         {codeLines.map(({ line, text }) => {
           const isActive = step?.activeLine === line
           const isRelated = step?.relatedLines?.includes(line)
+          const isExternallyHighlighted = highlightedLineSet.has(line)
           return (
             <motion.div
               key={line}
               data-line={line}
-              className={`ctp-row ${isActive ? 'active' : ''} ${isRelated ? 'related' : ''}`}
-              animate={{ x: isActive ? 6 : 0, opacity: isRelated || isActive || !step ? 1 : 0.56 }}
+              className={`ctp-row ${isActive ? 'active' : ''} ${isRelated ? 'related' : ''} ${isExternallyHighlighted ? 'external-highlight' : ''} ${onLineSelect ? 'clickable' : ''}`}
+              animate={{ x: isActive ? 6 : 0, opacity: isRelated || isActive || isExternallyHighlighted || !step ? 1 : 0.56 }}
               transition={{ type: 'spring', stiffness: 280, damping: 28 }}
+              onClick={onLineSelect ? () => onLineSelect(line, { text }) : undefined}
             >
               <span className="ctp-no mono">{line}</span>
               <code className="ctp-text">{text || ' '}</code>
@@ -254,86 +371,36 @@ export default function CodeTracePanel({
           )
         })}
       </div>
-      {isEditing && (
-        <div className="ctp-editor-wrap">
-          <div className="ctp-editor-controls">
-            <button className="ctp-editor-btn" onClick={() => setShowComments((s) => !s)}>{showComments ? 'Hide comments' : 'Show comments'}</button>
-            <button className="ctp-editor-btn" onClick={loadFromFile}>Load file</button>
-            <button className="ctp-editor-btn" onClick={saveToFile}>Save file</button>
-            <label style={{ marginLeft: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
-              Theme
-              <select className="ctp-editor-select" value={editorTheme} onChange={(e) => setEditorTheme(e.target.value)}>
-                <option value="vs">Light</option>
-                <option value="vs-dark">Dark</option>
-                <option value="hc-black">High contrast</option>
-              </select>
-            </label>
-            <label style={{ marginLeft: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
-              Lang
-              <select className="ctp-editor-select" value={editorLanguage} onChange={(e) => {
-                setEditorLanguage(e.target.value)
-                try { if (monacoRef.current && editorRef.current) monacoRef.current.editor.setModelLanguage(editorRef.current.getModel(), e.target.value) } catch (err) { void err }
-              }}>
-                <option value="python">Python</option>
-                <option value="javascript">JavaScript</option>
-                <option value="typescript">TypeScript</option>
-                <option value="java">Java</option>
-                <option value="csharp">C#</option>
-                <option value="cpp">C++</option>
-                <option value="go">Go</option>
-              </select>
-            </label>
 
-            <label style={{ marginLeft: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
-              Font
-              <input className="ctp-editor-select" type="number" min="10" max="28" value={fontSize} onChange={(e) => setFontSize(Number(e.target.value) || 14)} style={{ width: 72 }} />
-            </label>
-
-            <label style={{ marginLeft: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <input type="checkbox" checked={minimapEnabled} onChange={(e) => setMinimapEnabled(e.target.checked)} /> Minimap
-            </label>
-
-            <label style={{ marginLeft: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <input type="checkbox" checked={wordWrap} onChange={(e) => setWordWrap(e.target.checked)} /> Word wrap
-            </label>
-
-            <label style={{ marginLeft: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <input type="checkbox" checked={readOnly} onChange={(e) => setReadOnly(e.target.checked)} /> Read only
-            </label>
-
-            <button className="ctp-editor-btn" onClick={() => formatDocument()} style={{ marginLeft: 8 }}>Format</button>
-          </div>
-          <Suspense fallback={<textarea className="ctp-editor-textarea" value={(showComments ? commentsText + '\n\n' : '') + editorContent} onChange={(e) => setEditorContent(e.target.value.replace(/^(?:#.*\n)*/, '').replace(/^\n+/, ''))} />}>
-            <MonacoEditor
-              height="240px"
-              defaultLanguage={editorLanguage}
-              value={(showComments ? commentsText + '\n\n' : '') + editorContent}
-              onChange={(v) => setEditorContent((v ?? '').replace(/^(?:#.*\n)*/, '').replace(/^\n+/, ''))}
-              options={{ minimap: { enabled: minimapEnabled }, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace', fontSize, wordWrap: wordWrap ? 'on' : 'off', readOnly }}
-              onMount={(editor, monaco) => {
-                monacoRef.current = monaco
-                editorRef.current = editor
-                try { monaco.editor.setTheme(editorTheme) } catch (err) { void err }
-                try { monaco.editor.setModelLanguage(editor.getModel(), editorLanguage) } catch (err) { void err }
-                // keyboard shortcuts
-                try {
-                  editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => { saveToFile() })
-                  editor.addCommand(monaco.KeyMod.Shift | monaco.KeyMod.Alt | monaco.KeyCode.KeyF, () => { formatDocument() })
-                } catch (err) { void err }
-              }}
-            />
-          </Suspense>
-        </div>
-      )}
       <div
         className={`ctp-resizer ${isResizing ? 'active' : ''}`}
         onMouseDown={startDrag}
         onTouchStart={startDrag}
         aria-hidden="true"
       >
-        {/* Use modular ResizerHandle with ctp visual */}
         <ResizerHandle side="center" className="ctp" onPointerDown={startDrag} />
       </div>
+
+      {isInlineEditor ? (
+        <motion.div
+          className="ctp-editor-inline"
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          transition={{ duration: 0.2, ease: 'easeOut' }}
+        >
+          {editorBody}
+        </motion.div>
+      ) : null}
+      {isEditing && editorPlacement === 'overlay'
+        ? createPortal(
+            <div className="ctp-editor-backdrop" onClick={toggleEdit}>
+              <div className="ctp-editor-modal" onClick={(event) => event.stopPropagation()}>
+                {editorBody}
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
     </motion.div>
   )
 }

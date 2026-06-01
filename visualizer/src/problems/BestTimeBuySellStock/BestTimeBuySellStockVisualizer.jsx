@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { useCodeVisualConnectivity } from '../../hooks/useCodeVisualConnectivity'
 import './BestTimeBuySellStockVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -120,10 +121,16 @@ export default function BestTimeBuySellStockVisualizer() {
         }
     }, [pricesInput])
 
-    const steps = useMemo(() => generateSteps(prices), [prices])
+    const steps = useMemo(
+        () => generateSteps(prices).map((current) => ({
+            ...current,
+            relatedLines: current.relatedLines ?? (current.activeLine != null ? [current.activeLine] : []),
+        })),
+        [prices],
+    )
 
     const {
-        stepIndex, stepForward, stepBack, togglePlay,
+        stepIndex, setStepIndex, stepForward, stepBack, togglePlay,
         handleReset, isPlaying, speed, setSpeed, isDone,
     } = usePlaybackState(steps.length)
 
@@ -133,6 +140,12 @@ export default function BestTimeBuySellStockVisualizer() {
         setPricesInput(JSON.stringify(ex.prices))
         handleReset()
     }, [handleReset])
+
+    const connectivity = useCodeVisualConnectivity({
+        steps,
+        stepIndex,
+        onStepJump: setStepIndex,
+    })
 
     const displayPrices = step?.prices ?? prices
     const maxVal = Math.max(...displayPrices, 1)
@@ -230,7 +243,12 @@ export default function BestTimeBuySellStockVisualizer() {
                 </div>
             </section>
 
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+            <CodeTracePanel
+                step={step}
+                codeLines={SOLUTION_CODE}
+                highlightedLines={connectivity.highlightedLines}
+                onLineSelect={connectivity.handleLineSelect}
+            />
 
             <div className={`btbs-status${step?.phase === 'done' ? (maxProfit > 0 ? ' ok' : ' zero') : ''}`}>
                 {step?.message ?? 'Press Play or Step to begin.'}

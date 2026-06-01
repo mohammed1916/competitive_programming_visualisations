@@ -1,0 +1,31 @@
+.gc3d-container {
+  perspective: 1200px;
+  perspective-origin: 50% 50%;
+  width: 100%;
+  height: 100%;
+}
+
+.gc3d-canvas {
+  display: block;
+  background: linear-gradient(
+    135deg,
+    rgba(15, 15, 36, 0.5),
+    rgba(31, 31, 46, 0.3)
+  );
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+  transform-style: preserve-3d;
+  /* Subtle camera tilt */
+  transform: rotateX(6deg);
+  width: 100%;
+  height: 100%;
+}
+
+.gc3d-edges {
+  pointer-events: none;
+}
+
+.gc3d-nodes {
+  pointer-events: auto;
+}

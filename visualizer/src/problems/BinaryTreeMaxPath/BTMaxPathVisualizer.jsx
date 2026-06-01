@@ -4,6 +4,7 @@ import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import { buildTree, computeLayout, collectNodes, buildEdges, parseTreeInput } from '../../components/treeUtils'
+import { TreeCanvas3D } from '../../components/viz3d'
 import './BTMaxPathVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -96,27 +97,26 @@ export default function BTMaxPathVisualizer() {
 
             <div className="btmps-tree-panel">
                 <div className="btmps-tree-canvas" style={{ position: 'relative', width: W, height: totalH }}>
-                    <svg style={{ position: 'absolute', inset: 0, overflow: 'visible' }} width={W} height={totalH}>
-                        {edges.map((e) => {
-                            const p = layout.get(e.from), c = layout.get(e.to)
-                            if (!p || !c) return null
-                            return <line key={`${e.from}-${e.to}`} x1={p.x} y1={p.y} x2={c.x} y2={c.y} stroke="#45475a" strokeWidth={2} />
-                        })}
-                    </svg>
+                    <TreeCanvas3D
+                        positions={layout}
+                        edges={edges}
+                        allNodes={nodes}
+                        activeIds={step?.nodeId ? new Set([step.nodeId]) : new Set()}
+                        visitedIds={step?.gainMap ? new Set(Array.from(step.gainMap.keys())) : new Set()}
+                        queueIds={new Set()}
+                        canvasWidth={W}
+                        canvasHeight={totalH}
+                        nodeRadius={26}
+                    />
                     {nodes.map((nd) => {
                         const pos = layout.get(nd.id)
                         if (!pos) return null
-                        const isActive = nd.id === step?.nodeId
                         const gainVal = step?.gainMap?.get(nd.id)
-                        return (
-                            <motion.div key={nd.id} className={`btmps-node ${isActive ? 'active' : gainVal != null ? 'computed' : ''}`}
-                                style={{ left: pos.x - 26, top: pos.y - 26 }}
-                                animate={{ scale: isActive ? 1.2 : 1 }}
-                                transition={{ type: 'spring', stiffness: 380, damping: 22 }}>
-                                <span className="btmps-node-val">{nd.val}</span>
-                                {gainVal != null && <span className="btmps-gain-badge">{gainVal}</span>}
-                            </motion.div>
-                        )
+                        return gainVal != null ? (
+                            <div key={`gain-${nd.id}`} className="btmps-gain-badge" style={{ left: pos.x + 12, top: pos.y - 30, position: 'absolute' }}>
+                                {gainVal}
+                            </div>
+                        ) : null
                     })}
                 </div>
             </div>

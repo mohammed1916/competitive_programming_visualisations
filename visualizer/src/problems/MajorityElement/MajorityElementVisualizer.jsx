@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { useCodeVisualConnectivity } from '../../hooks/useCodeVisualConnectivity'
 import './MajorityElementVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -73,14 +74,26 @@ export default function MajorityElementVisualizer() {
         }
     }, [numsInput])
 
-    const steps = useMemo(() => generateSteps(nums), [nums])
-    const { stepIndex, stepForward, stepBack, togglePlay, handleReset, isPlaying, speed, setSpeed, isDone } = usePlaybackState(steps.length)
+    const steps = useMemo(
+        () => generateSteps(nums).map((current) => ({
+            ...current,
+            relatedLines: current.relatedLines ?? (current.activeLine != null ? [current.activeLine] : []),
+        })),
+        [nums],
+    )
+    const { stepIndex, setStepIndex, stepForward, stepBack, togglePlay, handleReset, isPlaying, speed, setSpeed, isDone } = usePlaybackState(steps.length)
     const step = stepIndex >= 0 ? steps[stepIndex] : null
 
     const applyExample = useCallback((ex) => {
         setNumsInput(JSON.stringify(ex.nums))
         handleReset()
     }, [handleReset])
+
+    const connectivity = useCodeVisualConnectivity({
+        steps,
+        stepIndex,
+        onStepJump: setStepIndex,
+    })
 
     return (
         <div className="me-shell">
@@ -150,7 +163,12 @@ export default function MajorityElementVisualizer() {
                 </section>
             </div>
 
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+            <CodeTracePanel
+                step={step}
+                codeLines={SOLUTION_CODE}
+                highlightedLines={connectivity.highlightedLines}
+                onLineSelect={connectivity.handleLineSelect}
+            />
             <div className={`me-status ${step?.phase === 'done' ? 'ok' : ''}`}>{step?.message || 'Press Play to begin.'}</div>
             <PlaybackControls
                 isPlaying={isPlaying}

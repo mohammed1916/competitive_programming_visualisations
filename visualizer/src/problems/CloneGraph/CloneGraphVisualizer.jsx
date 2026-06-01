@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
+import { GraphCanvas3D } from "../../components/viz3d";
 import "./CloneGraphVisualizer.css";
 
 const SOLUTION_CODE = [
@@ -66,51 +67,46 @@ function generateSteps(adj, start = 1) {
 const NODE_R = 22;
 const SVG_W = 220, SVG_H = 170;
 
-function GraphSVG({ adj, positions, visited, curNode, curNbr, cloneEdges, isClone }) {
-    const nodes = Object.keys(positions).map(Number);
-    const edges = [];
-    const seen = new Set();
-    for (const u of nodes) {
-        for (const v of (adj[u] || [])) {
-            const key = `${Math.min(u, v)}-${Math.max(u, v)}`;
-            if (!seen.has(key)) { seen.add(key); edges.push([u, v, key]); }
+function GraphPanel({ adj, positions, step, label, isClone }) {
+    const nodes = useMemo(() => {
+        return Object.keys(positions).map((id) => {
+            const numId = Number(id);
+            return { id: numId, label: String(numId), x: positions[numId][0], y: positions[numId][1] };
+        });
+    }, [positions]);
+
+    const edges = useMemo(() => {
+        const edgeList = [];
+        const seen = new Set();
+        const nodeIds = Object.keys(positions).map(Number);
+        for (const u of nodeIds) {
+            for (const v of (adj[u] || [])) {
+                const key = `${Math.min(u, v)}-${Math.max(u, v)}`;
+                if (!seen.has(key)) { seen.add(key); edgeList.push({ fromId: u, toId: v }); }
+            }
         }
-    }
+        return edgeList;
+    }, [adj, positions]);
+
+    const visitedSet = useMemo(() => new Set(Object.keys(step?.visited || {}).map(Number)), [step?.visited]);
+    const cloneEdgeSet = useMemo(() => new Set(Object.keys(step?.cloneEdges || {})), [step?.cloneEdges]);
+
     return (
-        <svg width={SVG_W} height={SVG_H} className="cg-svg">
-            {edges.map(([u, v, key]) => {
-                const [x1, y1] = positions[u];
-                const [x2, y2] = positions[v];
-                const active = isClone ? cloneEdges?.[key] : true;
-                return (
-                    <line key={key} x1={x1} y1={y1} x2={x2} y2={y2}
-                        stroke={active ? (isClone ? "#a6e3a1" : "#45475a") : "#2a2a3a"}
-                        strokeWidth={active ? 2 : 1} strokeDasharray={active ? "none" : "4 3"} />
-                );
-            })}
-            {nodes.map((n) => {
-                const [cx, cy] = positions[n];
-                const isCur = curNode === n;
-                const isNbr = curNbr === n;
-                const isVis = isClone ? visited?.[n] : true;
-                let stroke = "#45475a", fill = "#313244", textColor = "#a6adc8";
-                if (isClone) {
-                    if (!isVis) { fill = "#1e1e2e"; stroke = "#313244"; textColor = "#45475a"; }
-                    else if (isCur) { fill = "#0d2a1a"; stroke = "#a6e3a1"; textColor = "#a6e3a1"; }
-                    else if (isNbr) { fill = "#1a0d2a"; stroke = "#cba6f7"; textColor = "#cba6f7"; }
-                    else { fill = "#002010"; stroke = "#a6e3a1"; textColor = "#a6e3a1"; }
-                } else {
-                    if (isCur) { fill = "#0d1a2a"; stroke = "#89b4fa"; textColor = "#89b4fa"; }
-                    else if (isNbr) { fill = "#1a0d2a"; stroke = "#cba6f7"; textColor = "#cba6f7"; }
-                }
-                return (
-                    <g key={n}>
-                        <circle cx={cx} cy={cy} r={NODE_R} fill={fill} stroke={stroke} strokeWidth={2} />
-                        <text x={cx} y={cy} dominantBaseline="middle" textAnchor="middle" fill={textColor} fontSize={15} fontWeight="bold">{n}</text>
-                    </g>
-                );
-            })}
-        </svg>
+        <div className="cg-panel">
+            <div className="cg-panel-label">{label}</div>
+            <GraphCanvas3D
+                nodes={nodes}
+                edges={edges}
+                visitedSet={isClone ? visitedSet : new Set()}
+                activeNode={step?.curNode ?? null}
+                activeNeighbor={step?.curNbr ?? null}
+                cloneEdgeSet={cloneEdgeSet}
+                width={SVG_W}
+                height={SVG_H}
+                isClone={isClone}
+                nodeRadius={NODE_R}
+            />
+        </div>
     );
 }
 
@@ -132,19 +128,21 @@ export default function CloneGraphVisualizer() {
             </div>
 
             <div className="cg-graphs-row">
-                <div className="cg-panel">
-                    <div className="cg-panel-label">Original</div>
-                    <GraphSVG adj={ex.adj} positions={ex.positions}
-                        visited={step?.visited} curNode={step?.curNode} curNbr={step?.curNbr}
-                        cloneEdges={step?.cloneEdges} isClone={false} />
-                </div>
+                <GraphPanel
+                    adj={ex.adj}
+                    positions={ex.positions}
+                    step={step}
+                    label="Original"
+                    isClone={false}
+                />
                 <div className="cg-arrow">→</div>
-                <div className="cg-panel">
-                    <div className="cg-panel-label">Clone (building)</div>
-                    <GraphSVG adj={ex.adj} positions={ex.positions}
-                        visited={step?.visited} curNode={step?.curNode} curNbr={step?.curNbr}
-                        cloneEdges={step?.cloneEdges} isClone={true} />
-                </div>
+                <GraphPanel
+                    adj={ex.adj}
+                    positions={ex.positions}
+                    step={step}
+                    label="Clone (building)"
+                    isClone={true}
+                />
             </div>
 
             {/* visited map */}

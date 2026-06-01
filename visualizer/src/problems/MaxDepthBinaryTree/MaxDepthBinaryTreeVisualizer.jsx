@@ -1,8 +1,10 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
-import CodeTracePanel from '../../components/CodeTracePanel'
-import PlaybackControls from '../../components/PlaybackControls'
+import VisualizerPlaybackSection from '../../components/VisualizerPlaybackSection'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { useCodeVisualConnectivity } from '../../hooks/useCodeVisualConnectivity'
+import { useParsedInput } from '../../hooks/useParsedInput'
+import { useApplyExample } from '../../hooks/useApplyExample'
 import { buildTree, computeLayout, collectNodes, buildEdges, parseTreeInput, TreeSVG } from '../../components/treeUtils'
 import './MaxDepthBinaryTreeVisualizer.css'
 
@@ -87,25 +89,53 @@ const EXAMPLES = [
     { label: 'Full', arr: [1, 2, 3, 4, 5, 6, 7] },
 ]
 
+const SNIPPETS = [
+    { id: 'init', label: 'Init', lines: [3] },
+    { id: 'loop', label: 'DFS Calls', lines: [4, 5] },
+    { id: 'update', label: 'Depth Update', lines: [6] },
+    { id: 'return', label: 'Return', lines: [6] },
+]
+
+function snippetIdForPhase(phase) {
+    if (phase === 'done') return 'return'
+    if (phase === 'call' || phase === 'right') return 'loop'
+    if (phase === 'return') return 'update'
+    return 'init'
+}
+
 export default function MaxDepthBinaryTreeVisualizer() {
     const [arrInput, setArrInput] = useState('[3,9,20,null,null,15,7]')
 
-    const { arr, inputError } = useMemo(() => {
-        try {
-            return { arr: parseTreeInput(arrInput), inputError: '' }
-        } catch (e) {
-            return { arr: [3, 9, 20, null, null, 15, 7], inputError: e.message || 'Invalid input' }
-        }
-    }, [arrInput])
+    const { value: arr, error: inputError } = useParsedInput(
+        arrInput,
+        parseTreeInput,
+        [3, 9, 20, null, null, 15, 7],
+    )
 
-    const { steps, positions, edges, nodes } = useMemo(() => generateSteps(arr), [arr])
-    const { stepIndex, stepForward, stepBack, togglePlay, handleReset, isPlaying, speed, setSpeed, isDone } = usePlaybackState(steps.length)
+    const { steps, positions, edges, nodes } = useMemo(() => {
+        const generated = generateSteps(arr)
+        return {
+            ...generated,
+            steps: generated.steps.map((current) => ({
+                ...current,
+                snippetId: snippetIdForPhase(current.phase),
+                relatedLines: current.relatedLines ?? (current.activeLine != null ? [current.activeLine] : []),
+            })),
+        }
+    }, [arr])
+    const { stepIndex, setStepIndex, stepForward, stepBack, togglePlay, handleReset, isPlaying, speed, setSpeed, isDone } = usePlaybackState(steps.length)
     const step = stepIndex >= 0 ? steps[stepIndex] : null
 
-    const applyExample = useCallback((ex) => {
+    const applyExample = useApplyExample((ex) => {
         setArrInput(JSON.stringify(ex.arr))
-        handleReset()
-    }, [handleReset])
+    }, handleReset)
+
+    const connectivity = useCodeVisualConnectivity({
+        steps,
+        stepIndex,
+        snippetOptions: SNIPPETS,
+        onStepJump: setStepIndex,
+    })
 
     return (
         <div className="mdbt-shell">
@@ -136,6 +166,16 @@ export default function MaxDepthBinaryTreeVisualizer() {
                                         style={{ left: pos.x - NODE_R, top: pos.y - NODE_R }}
                                         animate={isActive ? { scale: 1.2 } : { scale: 1 }}
                                         transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                                        onClick={() =>
+                                            connectivity.setVisualFocus({
+                                                lines: [4, 5, 6],
+                                                reason: `Tree node ${node.val} selected in DFS preview.`,
+                                                targetType: 'node',
+                                                targetId: String(node.id),
+                                            })
+                                        }
+                                        role="button"
+                                        tabIndex={0}
                                     >
                                         {node.val}
                                         {retVal !== undefined && <span className="mdbt-badge">{retVal}</span>}
@@ -164,20 +204,32 @@ export default function MaxDepthBinaryTreeVisualizer() {
                 </section>
             </div>
 
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
-            <div className={`mdbt-status ${step?.phase === 'done' ? 'ok' : ''}`}>{step?.message || 'Press Play to begin.'}</div>
-            <PlaybackControls
-                isPlaying={isPlaying}
-                isDone={isDone}
-                speed={speed}
-                onPlayToggle={togglePlay}
-                onPrev={stepBack}
-                onNext={stepForward}
-                onReset={handleReset}
-                prevDisabled={stepIndex < 0}
-                nextDisabled={isDone}
-                resetDisabled={stepIndex < 0}
-                onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+            <VisualizerPlaybackSection
+                step={step}
+                codeLines={SOLUTION_CODE}
+                statusClassName="mdbt-status"
+                statusDone={step?.phase === 'done'}
+                statusMessage={step?.message}
+                fallbackStatus="Press Play to begin."
+                playback={{
+                    stepIndex,
+                    stepForward,
+                    stepBack,
+                    togglePlay,
+                    handleReset,
+                    isPlaying,
+                    speed,
+                    setSpeed,
+                    isDone,
+                }}
+                connectivity={{
+                    snippetOptions: SNIPPETS,
+                    activeSnippetId: connectivity.activeSnippetId,
+                    highlightedLines: connectivity.highlightedLines,
+                    linkInfo: connectivity.linkInfo,
+                    onLineSelect: connectivity.handleLineSelect,
+                    onSnippetSelect: connectivity.handleSnippetSelect,
+                }}
             />
         </div>
     )

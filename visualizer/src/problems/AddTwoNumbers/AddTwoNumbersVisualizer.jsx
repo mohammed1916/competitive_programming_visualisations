@@ -2,32 +2,11 @@ import { useState, useCallback, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import ResizableSplitPanels from '../../components/shared/ResizableSplitPanels'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { useCodeVisualConnectivity } from '../../hooks/useCodeVisualConnectivity'
+import { useProblemCode } from '../../hooks/useProblemCode'
 import './AddTwoNumbersVisualizer.css'
-
-const SOLUTION_CODE = [
-  { line: 1, text: 'class Solution:' },
-  { line: 2, text: '    def addTwoNumbers(self, l1: ListNode, l2: ListNode) -> ListNode:' },
-  { line: 3, text: '        dummy = ListNode()' },
-  { line: 4, text: '        curr = dummy' },
-  { line: 5, text: '        carry = 0' },
-  { line: 6, text: '        ' },
-  { line: 7, text: '        while l1 or l2 or carry:' },
-  { line: 8, text: '            v1 = l1.val if l1 else 0' },
-  { line: 9, text: '            v2 = l2.val if l2 else 0' },
-  { line: 10, text: '            ' },
-  { line: 11, text: '            val = v1 + v2 + carry' },
-  { line: 12, text: '            carry = val // 10' },
-  { line: 13, text: '            val = val % 10' },
-  { line: 14, text: '            ' },
-  { line: 15, text: '            curr.next = ListNode(val)' },
-  { line: 16, text: '            ' },
-  { line: 17, text: '            curr = curr.next' },
-  { line: 18, text: '            l1 = l1.next if l1 else None' },
-  { line: 19, text: '            l2 = l2.next if l2 else None' },
-  { line: 20, text: '            ' },
-  { line: 21, text: '        return dummy.next' },
-]
 
 function generateSteps(list1, list2) {
   const steps = []
@@ -110,9 +89,10 @@ const EXAMPLES = [
   { label: 'Different Length', l1: [9, 9, 9, 9, 9, 9, 9], l2: [9, 9, 9, 9] },
 ]
 
-export default function AddTwoNumbersVisualizer() {
+export default function AddTwoNumbersVisualizer({ problem }) {
   const [l1Input, setL1Input] = useState('[2, 4, 3]')
   const [l2Input, setL2Input] = useState('[5, 6, 4]')
+  const codeLines = useProblemCode(problem, 'add-two-numbers')
 
   const { list1, list2, inputError } = useMemo(() => {
     try {
@@ -125,10 +105,18 @@ export default function AddTwoNumbersVisualizer() {
     }
   }, [l1Input, l2Input])
 
-  const steps = useMemo(() => generateSteps(list1, list2), [list1, list2])
+  const steps = useMemo(
+    () =>
+      generateSteps(list1, list2).map((current) => ({
+        ...current,
+        relatedLines:
+          current.relatedLines ?? (current.activeLine != null ? [current.activeLine] : []),
+      })),
+    [list1, list2],
+  )
 
   const {
-    stepIndex, stepForward, stepBack, togglePlay,
+    stepIndex, setStepIndex, stepForward, stepBack, togglePlay,
     handleReset, isPlaying, speed, setSpeed, isDone,
   } = usePlaybackState(steps.length)
 
@@ -140,10 +128,22 @@ export default function AddTwoNumbersVisualizer() {
     handleReset()
   }, [handleReset])
 
+  const connectivity = useCodeVisualConnectivity({
+    steps,
+    stepIndex,
+    onStepJump: setStepIndex,
+  })
+
   return (
     <div className="atn-shell">
-      <div className="atn-top">
-        <div className="atn-panel" style={{ flex: 1.5 }}>
+      <ResizableSplitPanels
+        className="atn-top-split"
+        storageKey="cpviz.split.add-two-numbers.top"
+        initialLeftPercent={60}
+        minLeftPx={380}
+        minRightPx={280}
+        left={(
+          <div className="atn-panel">
           <div className="atn-panel-head">
             Linked Lists
             {inputError && <span style={{ color: '#f87171', marginLeft: 8 }}>{inputError}</span>}
@@ -248,44 +248,51 @@ export default function AddTwoNumbersVisualizer() {
             </div>
 
           </div>
-        </div>
-
-        <div className="atn-panel" style={{ flex: 1 }}>
-          <div className="atn-panel-head">State Variables</div>
-          <div className="atn-panel-body" style={{ gap: 16 }}>
-
-            <div className="atn-var-card carry">
-              <span className="atn-var-title">carry</span>
-              <div className="atn-var-value">
-                {step?.carry ?? 0}
-              </div>
-            </div>
-
-            {step && step.v1 !== null && step.v2 !== null && (
-              <div className="atn-math-box">
-                <div className="atn-math-row">
-                  <span>v1</span> + <span>v2</span> + <span>carry</span> = <span>sum</span>
-                </div>
-                <div className="atn-math-row vals">
-                  <span className="val1">{step.v1}</span> +
-                  <span className="val2">{step.v2}</span> +
-                  <span className="val3">{step.phase === 'carry' || step.phase === 'append' || step.phase === 'advance' ? step.prevCarry : step.carry}</span> =
-                  <span className="val4">{step.sum}</span>
-                </div>
-                {step.val !== null && (
-                  <div className="atn-math-res">
-                    node = {step.val}, next carry = {step.carry}
-                  </div>
-                )}
-              </div>
-            )}
-
           </div>
-        </div>
-      </div>
+        )}
+        right={(
+          <div className="atn-panel">
+            <div className="atn-panel-head">State Variables</div>
+            <div className="atn-panel-body" style={{ gap: 16 }}>
+
+              <div className="atn-var-card carry">
+                <span className="atn-var-title">carry</span>
+                <div className="atn-var-value">
+                  {step?.carry ?? 0}
+                </div>
+              </div>
+
+              {step && step.v1 !== null && step.v2 !== null && (
+                <div className="atn-math-box">
+                  <div className="atn-math-row">
+                    <span>v1</span> + <span>v2</span> + <span>carry</span> = <span>sum</span>
+                  </div>
+                  <div className="atn-math-row vals">
+                    <span className="val1">{step.v1}</span> +
+                    <span className="val2">{step.v2}</span> +
+                    <span className="val3">{step.phase === 'carry' || step.phase === 'append' || step.phase === 'advance' ? step.prevCarry : step.carry}</span> =
+                    <span className="val4">{step.sum}</span>
+                  </div>
+                  {step.val !== null && (
+                    <div className="atn-math-res">
+                      node = {step.val}, next carry = {step.carry}
+                    </div>
+                  )}
+                </div>
+              )}
+
+            </div>
+          </div>
+        )}
+      />
 
       <div className="atn-middle">
-        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+        <CodeTracePanel
+          step={step}
+          codeLines={codeLines}
+          highlightedLines={connectivity.highlightedLines}
+          onLineSelect={connectivity.handleLineSelect}
+        />
       </div>
 
       <div className="atn-status">

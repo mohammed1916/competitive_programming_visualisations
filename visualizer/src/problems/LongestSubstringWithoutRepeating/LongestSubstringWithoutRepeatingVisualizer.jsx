@@ -1,8 +1,9 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { useApplyExample } from '../../hooks/useApplyExample'
 import './LongestSubstringWithoutRepeatingVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -117,10 +118,9 @@ export default function LongestSubstringWithoutRepeatingVisualizer() {
 
   const step = stepIndex >= 0 ? steps[stepIndex] : null
 
-  const applyExample = useCallback((ex) => {
+  const applyExample = useApplyExample((ex) => {
     setStrInput(ex.s)
-    handleReset()
-  }, [handleReset])
+  }, handleReset)
 
   return (
     <div className="lswrc-shell">

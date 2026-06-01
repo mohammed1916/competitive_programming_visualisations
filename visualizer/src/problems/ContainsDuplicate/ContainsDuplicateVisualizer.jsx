@@ -1,19 +1,12 @@
 import { useState, useMemo, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
+import AnimatedIterationList from "../../components/shared/AnimatedIterationList";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
+import { useCodeVisualConnectivity } from "../../hooks/useCodeVisualConnectivity";
+import { useProblemCode } from "../../hooks/useProblemCode";
 import "./ContainsDuplicateVisualizer.css";
-
-const SOLUTION_CODE = [
-  { line: 1, text: "def containsDuplicate(nums):" },
-  { line: 2, text: "    seen = set()" },
-  { line: 3, text: "    for n in nums:" },
-  { line: 4, text: "        if n in seen:" },
-  { line: 5, text: "            return True" },
-  { line: 6, text: "        seen.add(n)" },
-  { line: 7, text: "    return False" },
-];
 
 const EXAMPLES = [
   { label: "Has Dup", nums: [1, 2, 3, 1] },
@@ -39,13 +32,26 @@ function generateSteps(nums) {
   return steps;
 }
 
-export default function ContainsDuplicateVisualizer() {
+export default function ContainsDuplicateVisualizer({ problem }) {
   const [ex, setEx] = useState(EXAMPLES[0]);
-  const steps = useMemo(() => generateSteps(ex.nums), [ex]);
-  const { stepIndex, stepForward, stepBack, togglePlay, handleReset, isPlaying, speed, setSpeed, isDone } =
+  const codeLines = useProblemCode(problem, "contains-duplicate");
+  const steps = useMemo(
+    () =>
+      generateSteps(ex.nums).map((current) => ({
+        ...current,
+        relatedLines: current.relatedLines ?? (current.activeLine != null ? [current.activeLine] : []),
+      })),
+    [ex],
+  );
+  const { stepIndex, setStepIndex, stepForward, stepBack, togglePlay, handleReset, isPlaying, speed, setSpeed, isDone } =
     usePlaybackState(steps.length);
   const step = stepIndex >= 0 ? steps[stepIndex] : null;
   const applyEx = useCallback((e) => { setEx(e); handleReset(); }, [handleReset]);
+  const connectivity = useCodeVisualConnectivity({
+    steps,
+    stepIndex,
+    onStepJump: setStepIndex,
+  });
 
   return (
     <div className="cd-shell">
@@ -58,23 +64,20 @@ export default function ContainsDuplicateVisualizer() {
       {/* Array */}
       <div className="cd-panel">
         <div className="cd-panel-label">Input Array</div>
-        <div className="cd-arr">
-          {ex.nums.map((v, i) => {
-            const isCur = step?.cur === i;
+        <AnimatedIterationList
+          items={ex.nums}
+          styleName="hash-scan"
+          className="cd-arr"
+          getItemState={(value, index) => {
+            const isCur = step?.cur === index;
             const isDup = isCur && step?.result === true;
-            const inSeen = step?.seen?.has(v) && !isCur;
-            return (
-              <div key={i} className="cd-cell-col">
-                <motion.div className={`cd-cell ${isCur ? (isDup ? "dup" : "cur") : inSeen ? "seen" : ""}`}
-                  animate={{ scale: isCur ? 1.15 : 1, y: isCur ? -4 : 0 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 22 }}>
-                  {v}
-                </motion.div>
-                <div className="cd-idx">{i}</div>
-              </div>
-            );
-          })}
-        </div>
+            const inSeen = step?.seen?.has(value) && !isCur;
+            return {
+              stateClass: isCur ? (isDup ? "dup" : "cur") : inSeen ? "seen" : "",
+              isActive: isCur,
+            };
+          }}
+        />
       </div>
 
       {/* Seen set */}
@@ -99,7 +102,12 @@ export default function ContainsDuplicateVisualizer() {
         </div>
       )}
 
-      <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+      <CodeTracePanel
+        step={step}
+        codeLines={codeLines}
+        highlightedLines={connectivity.highlightedLines}
+        onLineSelect={connectivity.handleLineSelect}
+      />
       <div className="cd-status">{step?.message ?? "Press Play to begin."}</div>
       <PlaybackControls
         isPlaying={isPlaying} isDone={isDone} speed={speed}

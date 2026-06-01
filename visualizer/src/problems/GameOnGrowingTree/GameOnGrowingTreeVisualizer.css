@@ -203,8 +203,8 @@
     font-weight: 800;
     padding: 2px 8px;
     border-radius: 999px;
-    background: linear-gradient(180deg, rgba(30,41,59,0.6), rgba(15,23,42,0.4));
-    border: 1px solid rgba(148,163,184,0.14);
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.6), rgba(15, 23, 42, 0.4));
+    border: 1px solid rgba(148, 163, 184, 0.14);
 }
 
 .gogt-answer-cell .mono,
@@ -219,8 +219,9 @@
     box-shadow: 0 6px 18px rgba(249, 115, 22, 0.12);
     background: linear-gradient(180deg, rgba(255, 247, 237, 0.95), rgba(255, 250, 240, 0.9));
 }
+
 .gogt-answer-cell.changed .gogt-answer-label {
-    background: linear-gradient(180deg, rgba(255,245,230,0.95), rgba(255,243,230,0.9));
+    background: linear-gradient(180deg, rgba(255, 245, 230, 0.95), rgba(255, 243, 230, 0.9));
     border-color: rgba(249, 115, 22, 0.45);
     color: rgba(124, 58, 237, 0.9);
 }
@@ -230,6 +231,7 @@
     box-shadow: 0 6px 18px rgba(34, 197, 94, 0.08);
     background: linear-gradient(180deg, rgba(240, 253, 244, 0.95), rgba(245, 255, 248, 0.92));
 }
+
 .gogt-answer-cell.unchanged .gogt-answer-label {
     background: linear-gradient(180deg, rgba(236, 253, 245, 0.95), rgba(235, 251, 243, 0.9));
     border-color: rgba(34, 197, 94, 0.45);
@@ -315,6 +317,20 @@
     padding: 8px 10px;
 }
 
+.gogt-tree-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.gogt-tree-zoom-chip {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 3px 8px;
+}
+
 .gogt-tree-canvas {
     border: 1px solid var(--border);
     border-radius: 12px;
@@ -327,6 +343,12 @@
     width: 100%;
     min-width: 780px;
     min-height: 520px;
+    cursor: grab;
+    touch-action: none;
+}
+
+.gogt-svg.dragging {
+    cursor: grabbing;
 }
 
 .gogt-edge {
@@ -455,6 +477,14 @@
 .gogt-dp-grid {
     display: grid;
     gap: 8px;
+}
+
+.gogt-dp-panel {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    border-radius: 12px;
+    background: rgba(2, 6, 23, 0.22);
 }
 
 .gogt-dp-row {

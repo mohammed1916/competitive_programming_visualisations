@@ -1,24 +1,13 @@
-import { useState, useMemo, useCallback } from 'react'
-import { motion } from 'framer-motion'
-import CodeTracePanel from '../../components/CodeTracePanel'
-import PlaybackControls from '../../components/PlaybackControls'
+import { useState, useMemo } from 'react'
+import VisualizerPlaybackSection from '../../components/VisualizerPlaybackSection'
+import AnimatedIterationList from '../../components/shared/AnimatedIterationList'
+import ResizableSplitPanels from '../../components/shared/ResizableSplitPanels'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { useCodeVisualConnectivity } from '../../hooks/useCodeVisualConnectivity'
+import { useProblemCode } from '../../hooks/useProblemCode'
+import { useParsedInput } from '../../hooks/useParsedInput'
+import { useApplyExample } from '../../hooks/useApplyExample'
 import './HouseRobberVisualizer.css'
-
-const SOLUTION_CODE = [
-  { line: 1, text: 'class Solution:' },
-  { line: 2, text: '    def rob(self, nums):' },
-  { line: 3, text: '        if not nums: return 0' },
-  { line: 4, text: '        prev2 = 0' },
-  { line: 5, text: '        prev1 = 0' },
-  { line: 6, text: '        for money in nums:' },
-  { line: 7, text: '            take = prev2 + money' },
-  { line: 8, text: '            skip = prev1' },
-  { line: 9, text: '            curr = max(take, skip)' },
-  { line: 10, text: '            prev2 = prev1' },
-  { line: 11, text: '            prev1 = curr' },
-  { line: 12, text: '        return prev1' },
-]
 
 function parseNums(input) {
   const parsed = JSON.parse(input)
@@ -98,30 +87,63 @@ const EXAMPLES = [
   { label: 'Large Peaks', nums: [2, 1, 1, 9, 1, 1, 8] },
 ]
 
-export default function HouseRobberVisualizer() {
+const SNIPPETS = [
+  { id: 'init', label: 'Initialize', lines: [3, 4, 5] },
+  { id: 'iterate', label: 'Evaluate House', lines: [6, 7, 8, 9] },
+  { id: 'shift', label: 'Shift State', lines: [10, 11] },
+  { id: 'return', label: 'Return', lines: [12] },
+]
+
+function snippetIdForPhase(phase) {
+  if (phase === 'init') return 'init'
+  if (phase === 'calc') return 'iterate'
+  if (phase === 'advance') return 'shift'
+  if (phase === 'done') return 'return'
+  return 'iterate'
+}
+
+export default function HouseRobberVisualizer({ problem }) {
   const [numsInput, setNumsInput] = useState('[2,7,9,3,1]')
+  const codeLines = useProblemCode(problem, 'house-robber')
 
-  const { nums, inputError } = useMemo(() => {
-    try {
-      return { nums: parseNums(numsInput), inputError: '' }
-    } catch (e) {
-      return { nums: [2, 7, 9, 3, 1], inputError: e.message || 'Invalid input' }
-    }
-  }, [numsInput])
+  const { value: nums, error: inputError } = useParsedInput(
+    numsInput,
+    parseNums,
+    [2, 7, 9, 3, 1],
+  )
 
-  const steps = useMemo(() => generateSteps(nums), [nums])
-  const { stepIndex, stepForward, stepBack, togglePlay, handleReset, isPlaying, speed, setSpeed, isDone } = usePlaybackState(steps.length)
+  const steps = useMemo(
+    () => generateSteps(nums).map((current) => ({
+      ...current,
+      snippetId: snippetIdForPhase(current.phase),
+      relatedLines: current.relatedLines ?? (current.activeLine != null ? [current.activeLine] : []),
+    })),
+    [nums],
+  )
+  const { stepIndex, setStepIndex, stepForward, stepBack, togglePlay, handleReset, isPlaying, speed, setSpeed, isDone } = usePlaybackState(steps.length)
   const step = stepIndex >= 0 ? steps[stepIndex] : null
 
-  const applyExample = useCallback((ex) => {
+  const applyExample = useApplyExample((ex) => {
     setNumsInput(JSON.stringify(ex.nums))
-    handleReset()
-  }, [handleReset])
+  }, handleReset)
+
+  const connectivity = useCodeVisualConnectivity({
+    steps,
+    stepIndex,
+    snippetOptions: SNIPPETS,
+    onStepJump: setStepIndex,
+  })
 
   return (
     <div className="hr-shell">
-      <div className="hr-top">
-        <section className="hr-panel">
+      <ResizableSplitPanels
+        className="hr-top-split"
+        storageKey="cpviz.split.house-robber.top"
+        initialLeftPercent={59}
+        minLeftPx={360}
+        minRightPx={280}
+        left={(
+          <section className="hr-panel">
           <header className="hr-head">
             <span>Street & DP Transition</span>
             {inputError && <span className="hr-error">{inputError}</span>}
@@ -131,26 +153,79 @@ export default function HouseRobberVisualizer() {
               {EXAMPLES.map((ex) => <button key={ex.label} className="hr-chip" onClick={() => applyExample(ex)}>{ex.label}</button>)}
             </div>
             <input className="hr-input" value={numsInput} onChange={(e) => { setNumsInput(e.target.value); handleReset() }} />
-            <div className="hr-street">
-              {nums.map((value, i) => {
-                const active = step?.i === i
-                return (
-                  <motion.div key={`${i}-${value}`} className={`hr-house ${active ? 'active' : ''}`} animate={active ? { y: -6 } : { y: 0 }}>
-                    <small>{i}</small>
-                    <strong>{value}</strong>
-                  </motion.div>
-                )
+            <AnimatedIterationList
+              items={nums}
+              styleName="dp-house"
+              className="hr-street"
+              showIndex={false}
+              activeOffsetY={-6}
+              activeScale={1.2}
+              getItemKey={(value, index) => `${index}-${value}`}
+              getItemState={(_, index) => ({
+                stateClass: step?.i === index ? 'active' : '',
+                isActive: step?.i === index,
               })}
-            </div>
+              renderItem={(value, index) => (
+                <>
+                  <small>{index}</small>
+                  <strong>{value}</strong>
+                </>
+              )}
+              onItemClick={(value, index) =>
+                connectivity.setVisualFocus({
+                  lines: [6, 7, 8, 9, 10, 11],
+                  reason: `House ${index} selected with value ${value}.`,
+                  targetType: 'house',
+                  targetId: String(index),
+                })
+              }
+            />
             <div className="hr-formula">
-              <span>take = prev2 + nums[i] = {step?.take ?? 0}</span>
-              <span>skip = prev1 = {step?.skip ?? 0}</span>
-              <span>curr = max(take, skip) = {step?.curr ?? 0}</span>
+              <span
+                onClick={() =>
+                  connectivity.setVisualFocus({
+                    lines: [7],
+                    reason: 'Take branch selected.',
+                    targetType: 'formula',
+                    targetId: 'take',
+                  })
+                }
+                style={{ cursor: 'pointer' }}
+              >
+                take = prev2 + nums[i] = {step?.take ?? 0}
+              </span>
+              <span
+                onClick={() =>
+                  connectivity.setVisualFocus({
+                    lines: [8],
+                    reason: 'Skip branch selected.',
+                    targetType: 'formula',
+                    targetId: 'skip',
+                  })
+                }
+                style={{ cursor: 'pointer' }}
+              >
+                skip = prev1 = {step?.skip ?? 0}
+              </span>
+              <span
+                onClick={() =>
+                  connectivity.setVisualFocus({
+                    lines: [9],
+                    reason: 'Current DP update selected.',
+                    targetType: 'formula',
+                    targetId: 'curr',
+                  })
+                }
+                style={{ cursor: 'pointer' }}
+              >
+                curr = max(take, skip) = {step?.curr ?? 0}
+              </span>
             </div>
           </div>
-        </section>
-
-        <section className="hr-panel side">
+          </section>
+        )}
+        right={(
+          <section className="hr-panel side">
           <header className="hr-head"><span>Rolling State</span></header>
           <div className="hr-body">
             <div className="hr-metrics">
@@ -162,23 +237,36 @@ export default function HouseRobberVisualizer() {
               {step?.phase === 'done' ? `Return ${step.prev1}` : 'Iterating houses'}
             </div>
           </div>
-        </section>
-      </div>
+          </section>
+        )}
+      />
 
-      <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
-      <div className={`hr-status ${step?.phase === 'done' ? 'ok' : ''}`}>{step?.message || 'Press Play to begin.'}</div>
-      <PlaybackControls
-        isPlaying={isPlaying}
-        isDone={isDone}
-        speed={speed}
-        onPlayToggle={togglePlay}
-        onPrev={stepBack}
-        onNext={stepForward}
-        onReset={handleReset}
-        prevDisabled={stepIndex < 0}
-        nextDisabled={isDone}
-        resetDisabled={stepIndex < 0}
-        onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+      <VisualizerPlaybackSection
+        step={step}
+        codeLines={codeLines}
+        statusClassName="hr-status"
+        statusDone={step?.phase === 'done'}
+        statusMessage={step?.message}
+        fallbackStatus="Press Play to begin."
+        playback={{
+          stepIndex,
+          stepForward,
+          stepBack,
+          togglePlay,
+          handleReset,
+          isPlaying,
+          speed,
+          setSpeed,
+          isDone,
+        }}
+        connectivity={{
+          snippetOptions: SNIPPETS,
+          activeSnippetId: connectivity.activeSnippetId,
+          highlightedLines: connectivity.highlightedLines,
+          linkInfo: connectivity.linkInfo,
+          onLineSelect: connectivity.handleLineSelect,
+          onSnippetSelect: connectivity.handleSnippetSelect,
+        }}
       />
     </div>
   )

@@ -2,17 +2,11 @@ import { useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
+import AnimatedIterationList from "../../components/shared/AnimatedIterationList";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
+import { useCodeVisualConnectivity } from "../../hooks/useCodeVisualConnectivity";
+import { useProblemCode } from "../../hooks/useProblemCode";
 import "./MoveZeroesVisualizer.css";
-
-const SOLUTION_CODE = [
-    { line: 1, text: "def moveZeroes(nums):" },
-    { line: 2, text: "    k = 0  # next write position for non-zero" },
-    { line: 3, text: "    for i in range(len(nums)):" },
-    { line: 4, text: "        if nums[i] != 0:" },
-    { line: 5, text: "            nums[k], nums[i] = nums[i], nums[k]" },
-    { line: 6, text: "            k += 1" },
-];
 
 const EXAMPLES = [
     { label: "Ex 1", nums: [0, 1, 0, 3, 12] },
@@ -38,13 +32,26 @@ function generateSteps(numsIn) {
     return steps;
 }
 
-export default function MoveZeroesVisualizer() {
+export default function MoveZeroesVisualizer({ problem }) {
     const [ex, setEx] = useState(EXAMPLES[0]);
-    const steps = useMemo(() => generateSteps(ex.nums), [ex]);
-    const { stepIndex, stepForward, stepBack, togglePlay, handleReset, isPlaying, speed, setSpeed, isDone } =
+    const codeLines = useProblemCode(problem, "move-zeroes");
+    const steps = useMemo(
+        () =>
+            generateSteps(ex.nums).map((current) => ({
+                ...current,
+                relatedLines: current.relatedLines ?? (current.activeLine != null ? [current.activeLine] : []),
+            })),
+        [ex]
+    );
+    const { stepIndex, setStepIndex, stepForward, stepBack, togglePlay, handleReset, isPlaying, speed, setSpeed, isDone } =
         usePlaybackState(steps.length);
     const step = stepIndex >= 0 ? steps[stepIndex] : null;
     const applyEx = useCallback((e) => { setEx(e); handleReset(); }, [handleReset]);
+    const connectivity = useCodeVisualConnectivity({
+        steps,
+        stepIndex,
+        onStepJump: setStepIndex,
+    });
 
     const arr = step?.arr ?? ex.nums;
     const k = step?.k ?? 0;
@@ -60,29 +67,30 @@ export default function MoveZeroesVisualizer() {
 
             <div className="mz-panel">
                 <div className="mz-panel-label">Array (in-place)</div>
-                <div className="mz-arr">
-                    {arr.map((v, idx) => {
-                        const isI = idx === i;
-                        const isK = idx === k;
-                        const isZero = v === 0;
-                        const isDone = step?.done;
+                <AnimatedIterationList
+                    items={arr}
+                    styleName="pointer-lane"
+                    className="mz-arr"
+                    getItemState={(value, index) => {
+                        const isI = index === i;
+                        const isK = index === k;
+                        const isZero = value === 0;
+                        return {
+                            stateClass: `${isI ? 'i-cell' : ''} ${isK && !isI ? 'k-cell' : ''} ${isZero && !isI && !isK ? 'zero' : ''}`.trim(),
+                            isActive: isI || isK,
+                        };
+                    }}
+                    renderBelow={(_, index) => {
+                        const isI = index === i;
+                        const isK = index === k;
                         return (
-                            <div key={idx} className="mz-cell-col">
-                                <motion.div
-                                    className={`mz-cell ${isI ? "i-cell" : ""} ${isK && !isI ? "k-cell" : ""} ${isZero && !isI && !isK ? "zero" : ""}`}
-                                    animate={{ scale: (isI || isK) ? 1.12 : 1, y: isI ? -5 : 0 }}
-                                    transition={{ type: "spring", stiffness: 400, damping: 22 }}>
-                                    {v}
-                                </motion.div>
-                                <div className="mz-idx">{idx}</div>
-                                <div className="mz-ptrs">
-                                    {isI && <span className="mz-ptr i">i</span>}
-                                    {isK && <span className="mz-ptr k">k</span>}
-                                </div>
+                            <div className="mz-ptrs">
+                                {isI && <span className="mz-ptr i">i</span>}
+                                {isK && <span className="mz-ptr k">k</span>}
                             </div>
                         );
-                    })}
-                </div>
+                    }}
+                />
             </div>
 
             <div className="mz-trackers">
@@ -98,7 +106,12 @@ export default function MoveZeroesVisualizer() {
                 <div className="mz-result">✓ Zeroes moved to end: [{arr.join(", ")}]</div>
             )}
 
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+            <CodeTracePanel
+                step={step}
+                codeLines={codeLines}
+                highlightedLines={connectivity.highlightedLines}
+                onLineSelect={connectivity.handleLineSelect}
+            />
             <div className="mz-status">{step?.message ?? "Press Play to begin."}</div>
             <PlaybackControls
                 isPlaying={isPlaying} isDone={isDone} speed={speed}

@@ -3,7 +3,8 @@ import { motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
-import { buildTree, computeLayout, collectNodes, buildEdges, parseTreeInput, TreeSVG } from '../../components/treeUtils'
+import { buildTree, computeLayout, collectNodes, buildEdges, parseTreeInput } from '../../components/treeUtils'
+import { TreeCanvas3D } from '../../components/viz3d'
 import './BinaryTreeLevelOrderVisualizer.css'
 
 const CANVAS_W = 520
@@ -154,41 +155,17 @@ export default function BinaryTreeLevelOrderVisualizer() {
                         </div>
                         <input className="btlo-input" value={arrInput} onChange={(e) => { setArrInput(e.target.value); handleReset() }} />
                         <div className="btlo-canvas" style={{ width: CANVAS_W, height: CANVAS_H }}>
-                            <svg style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }} width={CANVAS_W} height={CANVAS_H}>
-                                {edges.map(({ fromId, toId }) => {
-                                    const from = positions.get(fromId)
-                                    const to = positions.get(toId)
-                                    if (!from || !to) return null
-                                    return <line key={`${fromId}-${toId}`} x1={from.x} y1={from.y} x2={to.x} y2={to.y} stroke="#45475a" strokeWidth={1.5} />
-                                })}
-                            </svg>
-                            {allNodes.map((node) => {
-                                const pos = positions.get(node.id)
-                                if (!pos) return null
-                                const isActive = step?.activeIds?.has(node.id)
-                                const isVisited = step?.visitedIds?.has(node.id)
-                                const isInQueue = step?.queueIds?.has(node.id)
-                                // Determine level for color
-                                let levelIdx = -1
-                                if (step?.levels) {
-                                    let seen = 0
-                                    for (let li = 0; li < step.levels.length; li++) {
-                                        if (seen + step.levels[li].length > /* indexOf node in visited order */[...(step.visitedIds ?? [])].indexOf(node.id)) { levelIdx = li; break }
-                                        seen += step.levels[li].length
-                                    }
-                                }
-                                return (
-                                    <motion.div
-                                        key={node.id}
-                                        className={`btlo-node ${isActive ? 'active' : ''} ${isVisited ? 'visited' : ''} ${isInQueue ? 'queued' : ''}`}
-                                        style={{ left: pos.x - NODE_R, top: pos.y - NODE_R }}
-                                        animate={isActive ? { scale: 1.2 } : { scale: 1 }}
-                                        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                                    >
-                                        {node.val}
-                                    </motion.div>
-                                )
-                            })}
+                            <TreeCanvas3D
+                                positions={positions}
+                                edges={edges}
+                                allNodes={allNodes}
+                                activeIds={step?.activeIds ?? new Set()}
+                                visitedIds={step?.visitedIds ?? new Set()}
+                                queueIds={step?.queueIds ?? new Set()}
+                                canvasWidth={CANVAS_W}
+                                canvasHeight={CANVAS_H}
+                                nodeRadius={NODE_R}
+                            />
                         </div>
                     </div>
                 </section>

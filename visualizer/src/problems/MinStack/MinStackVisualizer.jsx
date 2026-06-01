@@ -4,7 +4,7 @@ import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
 import "./MinStackVisualizer.css";
-import StackPanel from "../../components/StackPanel";
+import { Stack3D } from "../../components/viz3d";
 
 const SOLUTION_CODE = [
   { line: 1, text: "class MinStack:" },
@@ -308,13 +308,13 @@ export default function MinStackVisualizer() {
 
             {/* Stack visualizations */}
             <div className="ms-stacks">
-              <StackPanel
+              <Stack3D
                 label="stack"
                 items={stack}
                 topBadge="top"
                 highlightIndex={stack.length - 1}
               />
-              <StackPanel
+              <Stack3D
                 label="min_stack"
                 items={minStack}
                 topBadge="min"

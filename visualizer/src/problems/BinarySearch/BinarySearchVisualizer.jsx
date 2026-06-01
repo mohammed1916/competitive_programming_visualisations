@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { useCodeVisualConnectivity } from '../../hooks/useCodeVisualConnectivity'
 import './BinarySearchVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -129,10 +130,16 @@ export default function BinarySearchVisualizer() {
     }
   }, [numsInput, targetInput])
 
-  const steps = useMemo(() => generateSteps(nums, target), [nums, target])
+  const steps = useMemo(
+    () => generateSteps(nums, target).map((current) => ({
+      ...current,
+      relatedLines: current.relatedLines ?? (current.activeLine != null ? [current.activeLine] : []),
+    })),
+    [nums, target],
+  )
 
   const {
-    stepIndex, stepForward, stepBack, togglePlay,
+    stepIndex, setStepIndex, stepForward, stepBack, togglePlay,
     handleReset, isPlaying, speed, setSpeed, isDone,
   } = usePlaybackState(steps.length)
 
@@ -143,6 +150,12 @@ export default function BinarySearchVisualizer() {
     setTargetInput(String(ex.target))
     handleReset()
   }, [handleReset])
+
+  const connectivity = useCodeVisualConnectivity({
+    steps,
+    stepIndex,
+    onStepJump: setStepIndex,
+  })
 
   return (
     <div className="bs-shell">
@@ -236,7 +249,12 @@ export default function BinarySearchVisualizer() {
       </div>
 
       <div className="bs-middle">
-        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+        <CodeTracePanel
+          step={step}
+          codeLines={SOLUTION_CODE}
+          highlightedLines={connectivity.highlightedLines}
+          onLineSelect={connectivity.handleLineSelect}
+        />
       </div>
 
       <div className={`bs-status \${step?.phase === 'found' ? 'success' : step?.phase === 'done' ? 'fail' : ''}`}>
