@@ -11,35 +11,53 @@ const CourseSchedule = lazy(() => import("./problems/CourseSchedule"));
 const CourseScheduleII = lazy(() => import("./problems/CourseScheduleII"));
 const LongestPalindrome = lazy(() => import("./problems/LongestPalindrome"));
 const LRUCache = lazy(() => import("./problems/LRUCache"));
-const StringToIntegerAtoi = lazy(() => import("./problems/StringToIntegerAtoi"));
+const StringToIntegerAtoi = lazy(
+  () => import("./problems/StringToIntegerAtoi"),
+);
 const ZigzagConversion = lazy(() => import("./problems/ZigzagConversion"));
 const TwoSum = lazy(() => import("./problems/TwoSum"));
 const ValidParentheses = lazy(() => import("./problems/ValidParentheses"));
-const MergeTwoSortedLists = lazy(() => import("./problems/MergeTwoSortedLists"));
+const MergeTwoSortedLists = lazy(
+  () => import("./problems/MergeTwoSortedLists"),
+);
 const MaximumSubarray = lazy(() => import("./problems/MaximumSubarray"));
 const ClimbingStairs = lazy(() => import("./problems/ClimbingStairs"));
 const BinarySearch = lazy(() => import("./problems/BinarySearch"));
 const NumberOfIslands = lazy(() => import("./problems/NumberOfIslands"));
 const MergeIntervals = lazy(() => import("./problems/MergeIntervals"));
 const TrappingRainWater = lazy(() => import("./problems/TrappingRainWater"));
-const LongestSubstringWithoutRepeating = lazy(() => import("./problems/LongestSubstringWithoutRepeating"));
+const LongestSubstringWithoutRepeating = lazy(
+  () => import("./problems/LongestSubstringWithoutRepeating"),
+);
 const SpiralMatrix = lazy(() => import("./problems/SpiralMatrix"));
 const CombinationSum = lazy(() => import("./problems/CombinationSum"));
-const MatrixIterationBasics = lazy(() => import("./problems/MatrixIterationBasics"));
-const ContainerWithMostWater = lazy(() => import("./problems/ContainerWithMostWater"));
+const MatrixIterationBasics = lazy(
+  () => import("./problems/MatrixIterationBasics"),
+);
+const ContainerWithMostWater = lazy(
+  () => import("./problems/ContainerWithMostWater"),
+);
 const RottingOranges = lazy(() => import("./problems/RottingOranges"));
 const HouseRobber = lazy(() => import("./problems/HouseRobber"));
-const MinimumWindowSubstring = lazy(() => import("./problems/MinimumWindowSubstring"));
+const MinimumWindowSubstring = lazy(
+  () => import("./problems/MinimumWindowSubstring"),
+);
 const WordSearch = lazy(() => import("./problems/WordSearch"));
 const DailyTemperatures = lazy(() => import("./problems/DailyTemperatures"));
 const KthLargestElement = lazy(() => import("./problems/KthLargestElement"));
-const RedundantConnection = lazy(() => import("./problems/RedundantConnection"));
+const RedundantConnection = lazy(
+  () => import("./problems/RedundantConnection"),
+);
 const ImplementTrie = lazy(() => import("./problems/ImplementTrie"));
 const MergeKSortedLists = lazy(() => import("./problems/MergeKSortedLists"));
-const LargestRectangleInHistogram = lazy(() => import("./problems/LargestRectangleInHistogram"));
+const LargestRectangleInHistogram = lazy(
+  () => import("./problems/LargestRectangleInHistogram"),
+);
 const AddTwoNumbers = lazy(() => import("./problems/AddTwoNumbers"));
 const PalindromeNumber = lazy(() => import("./problems/PalindromeNumber"));
-const MedianOfTwoSortedArrays = lazy(() => import("./problems/MedianOfTwoSortedArrays"));
+const MedianOfTwoSortedArrays = lazy(
+  () => import("./problems/MedianOfTwoSortedArrays"),
+);
 const ReverseInteger = lazy(() => import("./problems/ReverseInteger"));
 const ThreeSum = lazy(() => import("./problems/ThreeSum"));
 const GameOnGrowingTree = lazy(() => import("./problems/GameOnGrowingTree"));
@@ -97,7 +115,6 @@ const MedianOfTwoSortedArrays = lazy(
 const ReverseInteger = lazy(() => import("./problems/ReverseInteger"));
 const ThreeSum = lazy(() => import("./problems/ThreeSum"));
 const GameOnGrowingTree = lazy(() => import("./problems/GameOnGrowingTree"));
->>>>>>> Stashed changes
 import ProblemScaffold from "./components/panels/ProblemScaffold";
 import "./App.css";
 
@@ -638,30 +655,52 @@ const IMPLEMENTED_PROBLEMS = [
   },
 ];
 
-const problemModules = import.meta.glob("./problems/**/index.jsx");
+const metaModules = import.meta.glob("./problems/**/index.jsx", {
+  eager: true,
+});
+const lazyModules = import.meta.glob("./problems/**/index.jsx");
 
 const slugFromPath = (path) => {
   const parts = path.split("/");
   const folder = parts[parts.length - 2];
-  return folder.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+  return (
+    (folder && folder.replace(/([a-z0-9])([A-Z])/g, "$1-$2")) ||
+    folder
+  ).toLowerCase();
 };
 
-const EXTRA_PROBLEMS = Object.keys(problemModules)
+const inferMeta = (path, mod) => {
+  const slug = mod?.meta?.slug || slugFromPath(path);
+  const title = mod?.meta?.title || slug.replace(/-/g, " ");
+  const number = mod?.meta?.number || "";
+  const difficulty = mod?.meta?.difficulty || "Medium";
+  const tags = mod?.meta?.tags || [];
+  const description =
+    mod?.meta?.description ||
+    "Auto-generated interactive fallback. Plug in problem-specific steps to replace the fallback.";
+  return { slug, title, number, difficulty, tags, description };
+};
+
+const EXTRA_PROBLEMS = Object.keys(metaModules)
   .map((path) => {
-    const slug = slugFromPath(path);
+    const mod = metaModules[path];
+    const { slug, title, number, difficulty, tags, description } = inferMeta(
+      path,
+      mod,
+    );
     if (IMPLEMENTED_PROBLEMS.some((p) => p.slug === slug)) return null;
+    const loader = lazyModules[path];
     return {
       id: `auto-${slug}`,
-      number: "",
-      title: slug.replace(/-/g, " "),
+      number,
+      title,
       slug,
-      description:
-        "Cataloged in explorer. Visualizer shell is ready; implementation can be plugged into reusable panels.",
-      difficulty: "Medium",
-      tags: [],
+      description,
+      difficulty,
+      tags,
       accent: "#64748b",
-      component: lazy(() => problemModules[path]()),
-      implemented: true,
+      component: loader ? lazy(() => loader()) : null,
+      implemented: !!loader,
     };
   })
   .filter(Boolean);
