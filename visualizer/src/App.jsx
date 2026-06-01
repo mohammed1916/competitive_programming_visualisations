@@ -3,75 +3,54 @@ import React, {
   useMemo,
   useState,
   Component,
-  lazy,
   Suspense,
 } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-const CourseSchedule = lazy(() => import("./problems/CourseSchedule"));
-const CourseScheduleII = lazy(() => import("./problems/CourseScheduleII"));
-const LongestPalindrome = lazy(() => import("./problems/LongestPalindrome"));
-const LRUCache = lazy(() => import("./problems/LRUCache"));
-const StringToIntegerAtoi = lazy(
-  () => import("./problems/StringToIntegerAtoi"),
-);
-const ZigzagConversion = lazy(() => import("./problems/ZigzagConversion"));
-const TwoSum = lazy(() => import("./problems/TwoSum"));
-const ValidParentheses = lazy(() => import("./problems/ValidParentheses"));
-const MergeTwoSortedLists = lazy(
-  () => import("./problems/MergeTwoSortedLists"),
-);
-const MaximumSubarray = lazy(() => import("./problems/MaximumSubarray"));
-const ClimbingStairs = lazy(() => import("./problems/ClimbingStairs"));
-const BinarySearch = lazy(() => import("./problems/BinarySearch"));
-const NumberOfIslands = lazy(() => import("./problems/NumberOfIslands"));
-const MergeIntervals = lazy(() => import("./problems/MergeIntervals"));
-const TrappingRainWater = lazy(() => import("./problems/TrappingRainWater"));
-const LongestSubstringWithoutRepeating = lazy(
-  () => import("./problems/LongestSubstringWithoutRepeating"),
-);
-const SpiralMatrix = lazy(() => import("./problems/SpiralMatrix"));
-const CombinationSum = lazy(() => import("./problems/CombinationSum"));
-const MatrixIterationBasics = lazy(
-  () => import("./problems/MatrixIterationBasics"),
-);
-const ContainerWithMostWater = lazy(
-  () => import("./problems/ContainerWithMostWater"),
-);
-const RottingOranges = lazy(() => import("./problems/RottingOranges"));
-const HouseRobber = lazy(() => import("./problems/HouseRobber"));
-const MinimumWindowSubstring = lazy(
-  () => import("./problems/MinimumWindowSubstring"),
-);
-const WordSearch = lazy(() => import("./problems/WordSearch"));
-const DailyTemperatures = lazy(() => import("./problems/DailyTemperatures"));
-const KthLargestElement = lazy(() => import("./problems/KthLargestElement"));
-const RedundantConnection = lazy(
-  () => import("./problems/RedundantConnection"),
-);
-const ImplementTrie = lazy(() => import("./problems/ImplementTrie"));
-const MergeKSortedLists = lazy(() => import("./problems/MergeKSortedLists"));
-const LargestRectangleInHistogram = lazy(
-  () => import("./problems/LargestRectangleInHistogram"),
-);
-const AddTwoNumbers = lazy(() => import("./problems/AddTwoNumbers"));
-const PalindromeNumber = lazy(() => import("./problems/PalindromeNumber"));
-const MedianOfTwoSortedArrays = lazy(
-  () => import("./problems/MedianOfTwoSortedArrays"),
-);
-const ReverseInteger = lazy(() => import("./problems/ReverseInteger"));
-const ThreeSum = lazy(() => import("./problems/ThreeSum"));
-const BestTimeBuySellStock = lazy(
-  () => import("./problems/BestTimeBuySellStock"),
-);
-const SingleNumber = lazy(() => import("./problems/SingleNumber"));
-const MajorityElement = lazy(() => import("./problems/MajorityElement"));
-const HappyNumber = lazy(() => import("./problems/HappyNumber"));
-const ContainsDuplicate = lazy(() => import("./problems/ContainsDuplicate"));
-const RemoveDuplicates = lazy(() => import("./problems/RemoveDuplicates"));
-const MoveZeroes = lazy(() => import("./problems/MoveZeroes"));
-const ReverseString = lazy(() => import("./problems/ReverseString"));
-const ValidPalindrome = lazy(() => import("./problems/ValidPalindrome"));
-const GameOnGrowingTree = lazy(() => import("./problems/GameOnGrowingTree"));
+import CourseSchedule from "./problems/CourseSchedule";
+import CourseScheduleII from "./problems/CourseScheduleII";
+import LongestPalindrome from "./problems/LongestPalindrome";
+import LRUCache from "./problems/LRUCache";
+import StringToIntegerAtoi from "./problems/StringToIntegerAtoi";
+import ZigzagConversion from "./problems/ZigzagConversion";
+import TwoSum from "./problems/TwoSum";
+import ValidParentheses from "./problems/ValidParentheses";
+import MergeTwoSortedLists from "./problems/MergeTwoSortedLists";
+import MaximumSubarray from "./problems/MaximumSubarray";
+import ClimbingStairs from "./problems/ClimbingStairs";
+import BinarySearch from "./problems/BinarySearch";
+import NumberOfIslands from "./problems/NumberOfIslands";
+import MergeIntervals from "./problems/MergeIntervals";
+import TrappingRainWater from "./problems/TrappingRainWater";
+import LongestSubstringWithoutRepeating from "./problems/LongestSubstringWithoutRepeating";
+import SpiralMatrix from "./problems/SpiralMatrix";
+import CombinationSum from "./problems/CombinationSum";
+import MatrixIterationBasics from "./problems/MatrixIterationBasics";
+import ContainerWithMostWater from "./problems/ContainerWithMostWater";
+import RottingOranges from "./problems/RottingOranges";
+import HouseRobber from "./problems/HouseRobber";
+import MinimumWindowSubstring from "./problems/MinimumWindowSubstring";
+import WordSearch from "./problems/WordSearch";
+import DailyTemperatures from "./problems/DailyTemperatures";
+import KthLargestElement from "./problems/KthLargestElement";
+import RedundantConnection from "./problems/RedundantConnection";
+import ImplementTrie from "./problems/ImplementTrie";
+import MergeKSortedLists from "./problems/MergeKSortedLists";
+import LargestRectangleInHistogram from "./problems/LargestRectangleInHistogram";
+import AddTwoNumbers from "./problems/AddTwoNumbers";
+import PalindromeNumber from "./problems/PalindromeNumber";
+import MedianOfTwoSortedArrays from "./problems/MedianOfTwoSortedArrays";
+import ReverseInteger from "./problems/ReverseInteger";
+import ThreeSum from "./problems/ThreeSum";
+import BestTimeBuySellStock from "./problems/BestTimeBuySellStock";
+import SingleNumber from "./problems/SingleNumber";
+import MajorityElement from "./problems/MajorityElement";
+import HappyNumber from "./problems/HappyNumber";
+import ContainsDuplicate from "./problems/ContainsDuplicate";
+import RemoveDuplicates from "./problems/RemoveDuplicates";
+import MoveZeroes from "./problems/MoveZeroes";
+import ReverseString from "./problems/ReverseString";
+import ValidPalindrome from "./problems/ValidPalindrome";
+import GameOnGrowingTree from "./problems/GameOnGrowingTree";
 
 import ProblemScaffold from "./components/panels/ProblemScaffold";
 import "./App.css";
@@ -616,7 +595,9 @@ const IMPLEMENTED_PROBLEMS = [
 const metaModules = import.meta.glob("./problems/**/index.jsx", {
   eager: true,
 });
-const lazyModules = import.meta.glob("./problems/**/index.jsx");
+const lazyModules = import.meta.glob("./problems/**/index.jsx", {
+  eager: true,
+});
 
 const slugFromPath = (path) => {
   const parts = path.split("/");
@@ -657,7 +638,7 @@ const EXTRA_PROBLEMS = Object.keys(metaModules)
       difficulty,
       tags,
       accent: "#64748b",
-      component: loader ? lazy(() => loader()) : null,
+      component: loader ? loader.default || loader : null,
       implemented: !!loader,
     };
   })
