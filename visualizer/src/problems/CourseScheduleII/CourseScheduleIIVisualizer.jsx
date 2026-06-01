@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { GraphCanvas3D } from '../../components/viz3d'
 import './CourseScheduleIIVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -159,38 +160,23 @@ export default function CourseScheduleIIVisualizer() {
               <input className="cs2-input" value={preInput} onChange={(e) => { setPreInput(e.target.value); handleReset() }} />
             </div>
             <div className="cs2-canvas">
-              <svg width="100%" height="100%" viewBox="0 0 400 260">
-                {edges.map(([u, v], i) => {
-                  const active = step?.node === u && step?.nxt === v
-                  return (
-                    <line
-                      key={`${u}-${v}-${i}`}
-                      x1={positions[u]?.x} y1={positions[u]?.y}
-                      x2={positions[v]?.x} y2={positions[v]?.y}
-                      className={active ? 'edge active' : 'edge'}
-                    />
-                  )
-                })}
-                {Array.from({ length: numCourses }).map((_, i) => {
-                  const current = step?.node === i
-                  const queued = step?.queue?.includes(i)
-                  const inOrder = step?.order?.includes(i)
-                  const indeg = step?.indegree?.[i] ?? 0
-                  return (
-                    <g key={i} transform={`translate(${positions[i]?.x}, ${positions[i]?.y})`}>
-                      <motion.circle
-                        r="16"
-                        className={`node ${inOrder ? 'done' : queued ? 'queued' : current ? 'current' : ''}`}
-                        animate={{ scale: current ? 1.15 : 1 }}
-                      />
-                      <text textAnchor="middle" dy=".34em" className="node-label">{i}</text>
-                      {!inOrder && (
-                        <text x="13" y="-11" className={`node-indegree ${indeg === 0 ? 'zero' : ''}`}>{indeg}</text>
-                      )}
-                    </g>
-                  )
-                })}
-              </svg>
+              <GraphCanvas3D
+                nodes={useMemo(() => Array.from({ length: numCourses }, (_, i) => ({
+                  id: i,
+                  label: String(i),
+                  x: positions[i]?.x ?? 200,
+                  y: positions[i]?.y ?? 130,
+                })), [numCourses, positions])}
+                edges={useMemo(() => edges.map(([u, v]) => ({ fromId: u, toId: v })), [edges])}
+                visitedSet={useMemo(() => new Set(step?.order ?? []), [step?.order])}
+                activeNode={step?.node ?? null}
+                activeNeighbor={step?.nxt ?? null}
+                cloneEdgeSet={new Set()}
+                width={400}
+                height={260}
+                isClone={false}
+                nodeRadius={16}
+              />
             </div>
           </div>
         </section>

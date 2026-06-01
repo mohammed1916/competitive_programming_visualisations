@@ -4,7 +4,7 @@ import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
 import "./GameOnGrowingTreeVisualizer.css";
-import StackPanel from "../../components/StackPanel";
+import { Stack3D } from "../../components/viz3d";
 import PartialAnswersPanel from "../../components/PartialAnswersPanel";
 import TreeStatePanel from "./TreeStatePanel";
 
@@ -938,7 +938,7 @@ export default function GameOnGrowingTreeVisualizer() {
 
                             {/* Interval stack visualization */}
                             <div style={{ display: "flex", gap: 12 }}>
-                                <StackPanel
+                                <Stack3D
                                     label="interval stack"
                                     items={
                                         step && step.stack
