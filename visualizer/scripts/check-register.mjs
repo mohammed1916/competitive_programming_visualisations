@@ -3,6 +3,9 @@ import path from "path";
 
 const workspace = path.resolve("./");
 const problemsDir = path.join(workspace, "src", "problems");
+// We no longer rely on implementedProblems.js contents because the app
+// auto-generates the catalog at build time via import.meta.glob. Only
+// verify filesystem folders here.
 const implementedFile = path.join(
   workspace,
   "src",
@@ -18,25 +21,14 @@ const folders = fs
   .readdirSync(problemsDir, { withFileTypes: true })
   .filter((d) => d.isDirectory())
   .map((d) => d.name);
-const implementedContent = fs.readFileSync(implementedFile, "utf8");
-
 const missingFolders = [];
-const missingInImplemented = [];
-
 for (const name of userNames) {
   if (!folders.includes(name)) missingFolders.push(name);
-  // detect explicit folder entries or presence in AUTO_FOLDERS list
-  if (!implementedContent.includes(name)) missingInImplemented.push(name);
 }
 
 console.log("folders_count", folders.length);
 console.log("missingFolders:", missingFolders);
-console.log("missingInImplemented:", missingInImplemented);
-
-// write missingInImplemented to a file for later patching
-fs.writeFileSync(
-  path.join(workspace, "scripts", "missing-implemented.json"),
-  JSON.stringify(missingInImplemented, null, 2),
-);
-
 process.exit(0);
+// If you want to validate metadata presence in modules, run a Vite-aware
+// build-time check that imports modules and inspects exported `meta`.
+// For now we only verify the filesystem.
