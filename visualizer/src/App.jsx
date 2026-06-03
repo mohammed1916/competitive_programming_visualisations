@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import ProblemScaffold from "./components/panels/ProblemScaffold";
 import "./App.css";
+import { TRACKS } from "./data/implementedProblems";
 
 const lazyProblem = (folder) =>
   folder ? React.lazy(() => import(`./problems/${folder}/index.jsx`)) : null;
@@ -32,7 +33,7 @@ const ALL_PROBLEMS = Object.entries(metaModules)
       difficulty: meta.difficulty || "Medium",
       tags: meta.tags || [],
       accent: meta.accent || "#64748b",
-      component: loader ? lazy(() => loader()) : null,
+      component: loader ? React.lazy(() => loader()) : null,
       implemented: !!loader,
     };
   })
@@ -197,11 +198,11 @@ function ProblemPage({
   const Shell = enableTransitions ? motion.div : "div";
   const shellProps = enableTransitions
     ? {
-        initial: { opacity: 0, x: 50 },
-        animate: { opacity: 1, x: 0 },
-        exit: { opacity: 0, x: -50 },
-        transition: { type: "spring", stiffness: 320, damping: 35 },
-      }
+      initial: { opacity: 0, x: 50 },
+      animate: { opacity: 1, x: 0 },
+      exit: { opacity: 0, x: -50 },
+      transition: { type: "spring", stiffness: 320, damping: 35 },
+    }
     : {};
   return (
     <Shell className="problem-page" {...shellProps}>
@@ -336,10 +337,10 @@ function HomePage({
   const Shell = enableTransitions ? motion.div : "div";
   const shellProps = enableTransitions
     ? {
-        initial: { opacity: 0 },
-        animate: { opacity: 1 },
-        exit: { opacity: 0 },
-      }
+      initial: { opacity: 0 },
+      animate: { opacity: 1 },
+      exit: { opacity: 0 },
+    }
     : {};
   const Brand = enableTransitions ? motion.div : "div";
 
@@ -351,10 +352,10 @@ function HomePage({
             className="brand"
             {...(enableTransitions
               ? {
-                  initial: { y: -18, opacity: 0 },
-                  animate: { y: 0, opacity: 1 },
-                  transition: { delay: 0.08, type: "spring", stiffness: 280 },
-                }
+                initial: { y: -18, opacity: 0 },
+                animate: { y: 0, opacity: 1 },
+                transition: { delay: 0.08, type: "spring", stiffness: 280 },
+              }
               : {})}
           >
             <div className="brand-icon">⟨/⟩</div>

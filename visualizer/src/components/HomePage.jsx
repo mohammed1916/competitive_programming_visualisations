@@ -78,6 +78,18 @@ export default function HomePage({
   });
 
   const visible = filtered.slice(0, visibleCount);
+  const implementedCount = allProblems.filter((problem) => problem.implemented).length;
+  const catalogOnlyCount = allProblems.length - implementedCount;
+  const featuredImplemented = [...allProblems]
+    .filter((problem) => problem.implemented)
+    .sort((a, b) => {
+      if (a.difficulty !== b.difficulty) {
+        const order = { Easy: 0, Medium: 1, Hard: 2 };
+        return (order[b.difficulty] ?? 0) - (order[a.difficulty] ?? 0);
+      }
+      return String(a.title).localeCompare(String(b.title));
+    })
+    .slice(0, 4);
 
   return (
     <motion.div
@@ -133,10 +145,8 @@ export default function HomePage({
               ? `Total catalog: ${allProblems.length}`
               : `Basics topics: ${allProblems.length}`}
           </span>
-          <span>
-            Implemented:{" "}
-            {allProblems.filter((problem) => problem.implemented).length}
-          </span>
+          <span>Implemented: {implementedCount}</span>
+          {isLeetCodeTrack ? <span>Catalog only: {catalogOnlyCount}</span> : null}
           <span>Visible: {filtered.length}</span>
           {isLeetCodeTrack && catalogError ? (
             <span>Catalog error: {catalogError}</span>
@@ -199,6 +209,36 @@ export default function HomePage({
             </button>
           ))}
         </div>
+
+        {featuredImplemented.length > 0 ? (
+          <section className="implemented-showcase">
+            <div className="implemented-showcase-copy">
+              <span className="implemented-showcase-kicker">Solved problems</span>
+              <strong>Jump back into the strongest visualizers quickly.</strong>
+              <p>
+                Highlighting implemented problems first makes the library feel more
+                alive, especially for dense topics like trees, DP, and graphs.
+              </p>
+            </div>
+
+            <div className="implemented-showcase-grid">
+              {featuredImplemented.map((problem) => (
+                <button
+                  key={`featured-${problem.id}`}
+                  className="implemented-showcase-card"
+                  style={{ "--accent": problem.accent }}
+                  onClick={() => onSelect(problem)}
+                >
+                  <span className="implemented-showcase-number">
+                    {problem.number}
+                  </span>
+                  <strong>{problem.title}</strong>
+                  <small>{(problem.tags || []).slice(0, 3).join(" • ")}</small>
+                </button>
+              ))}
+            </div>
+          </section>
+        ) : null}
       </header>
 
       <main className="cards-grid">
@@ -220,11 +260,16 @@ export default function HomePage({
             whileTap={{ scale: 0.97 }}
           >
             <div className="card-top">
-              <span
-                className={`badge difficulty-${p.difficulty.toLowerCase()}`}
-              >
-                {p.difficulty}
-              </span>
+              <div className="card-top-left">
+                <span
+                  className={`badge difficulty-${p.difficulty.toLowerCase()}`}
+                >
+                  {p.difficulty}
+                </span>
+                <span className={`status-badge ${p.implemented ? "implemented" : "catalog"}`}>
+                  {p.implemented ? "Visualized" : "Catalog"}
+                </span>
+              </div>
               <span className="card-num">#{p.number}</span>
             </div>
             <h2 className="card-title">{p.title}</h2>
@@ -256,4 +301,3 @@ export default function HomePage({
     </motion.div>
   );
 }
-
