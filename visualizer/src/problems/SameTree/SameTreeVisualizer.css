@@ -1,0 +1,347 @@
+/* ── Shell ──────────────────────────────────────────────────────────────────── */
+.st-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    font-family: inherit;
+}
+
+/* ── Top row ────────────────────────────────────────────────────────────────── */
+.st-top {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* ── Panels ─────────────────────────────────────────────────────────────────── */
+.st-panel {
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 10px;
+    overflow: hidden;
+    flex: 1;
+    min-width: 260px;
+}
+
+.st-panel.main {
+    flex: 3;
+}
+
+.st-panel.side {
+    flex: 1;
+    min-width: 180px;
+}
+
+.st-head {
+    padding: 10px 14px;
+    background: #181825;
+    font-size: 13px;
+    font-weight: 600;
+    color: #cdd6f4;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.st-error {
+    color: #f38ba8;
+    font-size: 11px;
+}
+
+.st-body {
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* ── Example chips ──────────────────────────────────────────────────────────── */
+.st-examples {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.st-chip {
+    background: #313244;
+    color: #cdd6f4;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.st-chip:hover {
+    background: #45475a;
+}
+
+.st-chip.selected {
+    border-color: #89b4fa;
+    color: #89b4fa;
+}
+
+/* ── Inputs ─────────────────────────────────────────────────────────────────── */
+.st-inputs {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.st-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 140px;
+}
+
+.st-input-label {
+    font-size: 11px;
+    color: #6c7086;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.st-input {
+    background: #11111b;
+    color: #cdd6f4;
+    border: 1px solid #45475a;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 13px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.st-input:focus {
+    outline: none;
+    border-color: #89b4fa;
+}
+
+/* ── Side-by-side trees ─────────────────────────────────────────────────────── */
+.st-trees {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.st-tree-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.st-tree-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #89b4fa;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.st-canvas {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    background: #11111b;
+    flex-shrink: 0;
+}
+
+.st-empty-tree {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c7086;
+    font-size: 14px;
+    font-style: italic;
+}
+
+/* ── "vs" divider ───────────────────────────────────────────────────────────── */
+.st-vs {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 52px;
+    padding-top: 28px;   /* align with tree canvases */
+}
+
+.st-vs-label {
+    font-size: 15px;
+    font-weight: 700;
+    color: #45475a;
+}
+
+.st-vs-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.st-vs-badge.true {
+    background: #1e3a2e;
+    color: #a6e3a1;
+    border: 1px solid #a6e3a1;
+}
+
+.st-vs-badge.false {
+    background: #3a1e1e;
+    color: #f38ba8;
+    border: 1px solid #f38ba8;
+}
+
+/* ── Nodes ──────────────────────────────────────────────────────────────────── */
+.st-node {
+    position: absolute;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #313244;
+    border: 2px solid #45475a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: #cdd6f4;
+    user-select: none;
+}
+
+.st-node.active {
+    border-color: #f9e2af;
+    background: #2e2a1a;
+    box-shadow: 0 0 14px #f9e2af55;
+    color: #f9e2af;
+    z-index: 2;
+}
+
+.st-node.match {
+    border-color: #a6e3a1;
+    background: #1a2e1e;
+    color: #a6e3a1;
+}
+
+.st-node.active.match {
+    border-color: #a6e3a1;
+    background: #1a2e1e;
+    box-shadow: 0 0 14px #a6e3a155;
+}
+
+.st-node.mismatch {
+    border-color: #f38ba8;
+    background: #2e1a1e;
+    color: #f38ba8;
+}
+
+.st-node.active.mismatch {
+    border-color: #f38ba8;
+    background: #2e1a1e;
+    box-shadow: 0 0 14px #f38ba855;
+}
+
+/* ── Side-panel state ───────────────────────────────────────────────────────── */
+.st-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.st-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #a6adc8;
+}
+
+.st-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid #45475a;
+    flex-shrink: 0;
+}
+
+.st-dot.active   { border-color: #f9e2af; background: #2e2a1a; }
+.st-dot.match    { border-color: #a6e3a1; background: #1a2e1e; }
+.st-dot.mismatch { border-color: #f38ba8; background: #2e1a1e; }
+
+.st-state-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+}
+
+.st-state-label {
+    color: #6c7086;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+}
+
+.st-state-val {
+    color: #cdd6f4;
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.st-mismatch-count {
+    color: #f38ba8;
+}
+
+.st-result-box {
+    text-align: center;
+    padding: 10px 12px;
+    background: #313244;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #6c7086;
+    margin-top: 4px;
+    font-weight: 600;
+    transition: background 0.2s, color 0.2s;
+}
+
+.st-result-box.true {
+    background: #1e3a2e;
+    color: #a6e3a1;
+    border: 1px solid #a6e3a1;
+}
+
+.st-result-box.false {
+    background: #3a1e1e;
+    color: #f38ba8;
+    border: 1px solid #f38ba8;
+}
+
+/* ── Status bar ─────────────────────────────────────────────────────────────── */
+.st-status {
+    padding: 8px 12px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #a6adc8;
+    min-height: 36px;
+    transition: color 0.2s, border-color 0.2s;
+}
+
+.st-status.ok {
+    color: #a6e3a1;
+    border-color: #a6e3a1;
+}
+
+.st-status.bad {
+    color: #f38ba8;
+    border-color: #f38ba8;
+}

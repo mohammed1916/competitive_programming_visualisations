@@ -1,0 +1,201 @@
+.ksm-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    height: 100%;
+}
+
+.ksm-panel {
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex: 1;
+    min-height: 0;
+}
+
+.ksm-head {
+    padding: 10px 14px;
+    border-bottom: 1px solid #313244;
+    font-size: 13px;
+    font-weight: 700;
+    color: #cdd6f4;
+    background: #313244;
+    flex-shrink: 0;
+}
+
+.ksm-body {
+    padding: 14px;
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ksm-inputs-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.ksm-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-width: 200px;
+}
+
+.ksm-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #8b5cf6;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.ksm-input,
+.ksm-textarea {
+    padding: 8px 10px;
+    background: #313244;
+    border: 1px solid #45475a;
+    border-radius: 6px;
+    color: #cdd6f4;
+    font-size: 12px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    outline: none;
+    transition: all 200ms;
+}
+
+.ksm-input:focus,
+.ksm-textarea:focus {
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.15);
+}
+
+.ksm-textarea {
+    resize: vertical;
+    min-height: 60px;
+    line-height: 1.4;
+}
+
+.ksm-error {
+    color: #f87171;
+    font-size: 11px;
+    font-weight: 500;
+    margin-top: 4px;
+}
+
+.ksm-k-info {
+    font-size: 11px;
+    color: #89b4fa;
+    margin-top: 4px;
+}
+
+.ksm-examples {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.ksm-example-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #89dceb;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.ksm-example-btn {
+    padding: 6px 10px;
+    background: #313244;
+    border: 1px solid #45475a;
+    border-radius: 6px;
+    color: #cdd6f4;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 200ms;
+}
+
+.ksm-example-btn:hover {
+    background: #45475a;
+    border-color: #8b5cf6;
+    color: #8b5cf6;
+}
+
+.ksm-example-btn:active {
+    transform: scale(0.97);
+}
+
+.ksm-status {
+    padding: 12px;
+    background: #313244;
+    border: 1px solid #45475a;
+    border-radius: 8px;
+    border-left: 3px solid #8b5cf6;
+}
+
+.ksm-message {
+    font-size: 12px;
+    color: #cdd6f4;
+    line-height: 1.5;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.ksm-state-box {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.ksm-state-row {
+    display: flex;
+    gap: 12px;
+    font-size: 11px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    color: #89dceb;
+    font-weight: 600;
+}
+
+.ksm-state-row span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.ksm-state-row span:before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: #8b5cf6;
+    border-radius: 50%;
+}
+
+.ksm-matrix-viz {
+    width: 100%;
+    max-width: 600px;
+    height: auto;
+    margin: 12px auto 0;
+    padding: 12px;
+    background: #313244;
+    border-radius: 8px;
+    border: 1px solid #45475a;
+}
+
+/* Catppuccin Mocha theme colors */
+/* #22c55e - green (success/result) */
+/* #8b5cf6 - purple (primary accent) */
+/* #89dceb - cyan (secondary) */
+/* #89b4fa - blue (info) */
+/* #f5c2e7 - pink (highlight) */
+/* #1e1e2e - base background */
+/* #313244 - surface0 */
+/* #45475a - surface1 */
+/* #cdd6f4 - text */
+/* #f87171 - red (error) */

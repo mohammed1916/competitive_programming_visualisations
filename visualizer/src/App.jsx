@@ -6,99 +6,49 @@ import React, {
   Suspense,
 } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  IMPLEMENTED_PROBLEMS as METADATA_IMPLEMENTED,
-  TRACKS,
-  BASICS_PROBLEMS as BASICS_METADATA,
-  buildCatalogProblems as buildCatalogProblemsData,
-} from "./data/implementedProblems";
+
 import ProblemScaffold from "./components/panels/ProblemScaffold";
 import "./App.css";
 
 const lazyProblem = (folder) =>
   folder ? React.lazy(() => import(`./problems/${folder}/index.jsx`)) : null;
 
-const IMPLEMENTED_PROBLEMS = METADATA_IMPLEMENTED.map((p) => ({
-  ...p,
-  component: p.folder ? lazyProblem(p.folder) : null,
-}));
+/* ── Auto-discovery ──────────────────────────────────────────────────── */
 
-const metaModules = import.meta.glob("./problems/**/index.jsx", {
-  eager: true,
-});
-const lazyModules = import.meta.glob("./problems/**/index.jsx");
+const metaModules = import.meta.glob("./problems/*/index.jsx", { eager: true });
+const lazyModules = import.meta.glob("./problems/*/index.jsx");
 
-const slugFromPath = (path) => {
-  const parts = path.split("/");
-  const folder = parts[parts.length - 2];
-  return (
-    (folder && folder.replace(/([a-z0-9])([A-Z])/g, "$1-$2")) ||
-    folder
-  ).toLowerCase();
-};
-
-const inferMeta = (path, mod) => {
-  const slug = mod?.meta?.slug || slugFromPath(path);
-  const title = mod?.meta?.title || slug.replace(/-/g, " ");
-  const number = mod?.meta?.number || "";
-  const difficulty = mod?.meta?.difficulty || "Medium";
-  const tags = mod?.meta?.tags || [];
-  const description =
-    mod?.meta?.description ||
-    "Auto-generated interactive fallback. Plug in problem-specific steps to replace the fallback.";
-  return { slug, title, number, difficulty, tags, description };
-};
-
-const EXTRA_PROBLEMS = Object.keys(metaModules)
-  .map((path) => {
-    const mod = metaModules[path];
-    const { slug, title, number, difficulty, tags, description } = inferMeta(
-      path,
-      mod,
-    );
-    if (IMPLEMENTED_PROBLEMS.some((p) => p.slug === slug)) return null;
+const ALL_PROBLEMS = Object.entries(metaModules)
+  .map(([path, mod]) => {
+    const meta = mod?.meta;
+    if (!meta?.number || !meta?.title) return null;
     const loader = lazyModules[path];
     return {
-      id: `auto-${slug}`,
-      number,
-      title,
-      slug,
-      description,
-      difficulty,
-      tags,
-      accent: "#64748b",
-      component: loader ? React.lazy(loader) : null,
+      id: `prob-${meta.slug || meta.number}`,
+      number: meta.number,
+      title: meta.title,
+      slug: meta.slug || meta.title.toLowerCase().replace(/\s+/g, "-"),
+      description: meta.description || "",
+      difficulty: meta.difficulty || "Medium",
+      tags: meta.tags || [],
+      accent: meta.accent || "#64748b",
+      component: loader ? lazy(() => loader()) : null,
       implemented: !!loader,
     };
   })
   .filter(Boolean);
 
-const ALL_IMPLEMENTED = IMPLEMENTED_PROBLEMS.concat(EXTRA_PROBLEMS);
-
 const IMPLEMENTED_BY_NUMBER = new Map(
-  ALL_IMPLEMENTED.map((problem) => [problem.number, problem]),
+  ALL_PROBLEMS.map((p) => [p.number, p]),
 );
 
-const BASICS_PROBLEMS = (BASICS_METADATA || []).map((p) => ({
-  ...p,
-  component: p.folder ? lazyProblem(p.folder) : null,
-}));
+const BASICS_PROBLEMS = ALL_PROBLEMS.filter((p) =>
+  (p.tags || []).includes("Basics"),
+);
 
-const CODEFORCES_PROBLEMS = [
-  {
-    id: "cf-2000-f-game-on-growing-tree",
-    number: "F",
-    title: "Game on Growing Tree",
-    slug: "game-on-growing-tree",
-    description:
-      "After each insertion in a growing tree, compute Alice's optimal final score against Bob using a compressed DP strategy.",
-    difficulty: "Hard",
-    tags: ["Tree", "Game Theory", "DP", "Codeforces"],
-    accent: "#f97316",
-    component: lazyProblem("GameOnGrowingTree"),
-    implemented: true,
-  },
-];
+const CODEFORCES_PROBLEMS = ALL_PROBLEMS.filter((p) =>
+  (p.tags || []).includes("Codeforces"),
+);
 
 function buildCatalogProblems(catalogProblems) {
   return catalogProblems.map((problem) => {
@@ -113,12 +63,7 @@ function buildCatalogProblems(catalogProblems) {
         implemented: false,
       };
     }
-
-    return {
-      ...problem,
-      ...implemented,
-      implemented: true,
-    };
+    return { ...problem, ...implemented, implemented: true };
   });
 }
 
@@ -646,7 +591,6 @@ export default function App() {
     }
   }, [navigationTransitionsEnabled]);
 
-  // Keep browser history in sync so the browser back button works
   useEffect(() => {
     if (active) {
       window.history.pushState({ slug: active.slug }, "", `#${active.slug}`);
@@ -661,8 +605,6 @@ export default function App() {
     return () => window.removeEventListener("popstate", onPop);
   }, []);
 
-  // The in-app back button: just set state; the history.pushState in the
-  // other effect will update the URL, and popstate won't fire on pushState.
   const goBack = () => setActive(null);
 
   const handleTrackChange = (nextTrack) => {

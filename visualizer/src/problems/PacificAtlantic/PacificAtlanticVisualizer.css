@@ -1,0 +1,204 @@
+/* Catppuccin Mocha Theme Colors */
+:root {
+  --paw-base: #1e1e2e;
+  --paw-surface0: #313244;
+  --paw-surface1: #45475a;
+  --paw-surface2: #585b70;
+  --paw-text: #cdd6f4;
+  --paw-blue: #89b4fa;
+  --paw-yellow: #f9e2af;
+  --paw-lavender: #6366f1;
+  --paw-border: #313244;
+}
+
+.paw-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 16px;
+  overflow: hidden;
+}
+
+.paw-top {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  gap: 16px;
+}
+
+.paw-middle {
+  display: flex;
+  height: 200px;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.paw-bottom {
+  height: auto;
+  flex-shrink: 0;
+}
+
+.paw-panel {
+  background: var(--paw-surface0);
+  border: 1px solid var(--paw-border);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.paw-code-panel {
+  flex: 1;
+  min-width: 0;
+}
+
+.paw-visualization {
+  flex: 1;
+  min-width: 0;
+}
+
+.paw-state {
+  flex: 0.5;
+  min-width: 200px;
+}
+
+.paw-message {
+  flex: 1;
+  min-width: 200px;
+}
+
+.paw-controls {
+  flex: 0.8;
+  min-width: 150px;
+}
+
+.paw-panel-head {
+  padding: 12px 16px;
+  background: var(--paw-surface1);
+  border-bottom: 1px solid var(--paw-border);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--paw-text);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.paw-panel-body {
+  padding: 16px;
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.paw-grid {
+  display: grid;
+  gap: 4px;
+  justify-content: center;
+  align-content: center;
+}
+
+.paw-cell {
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.paw-cell:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 8px rgba(137, 180, 250, 0.3);
+}
+
+.paw-cell-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--paw-text);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.paw-state-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  background: var(--paw-surface2);
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.paw-state-label {
+  color: var(--paw-text);
+  opacity: 0.7;
+  font-weight: 500;
+}
+
+.paw-state-value {
+  color: var(--paw-blue);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.paw-message-text {
+  color: var(--paw-text);
+  font-size: 13px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.paw-input {
+  width: 100%;
+  padding: 8px;
+  background: var(--paw-surface0);
+  border: 1px solid var(--paw-border);
+  border-radius: 6px;
+  color: var(--paw-text);
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+  font-size: 11px;
+  resize: none;
+}
+
+.paw-input:focus {
+  outline: none;
+  border-color: var(--paw-blue);
+  box-shadow: 0 0 0 2px rgba(137, 180, 250, 0.2);
+}
+
+.paw-button {
+  padding: 8px 12px;
+  background: var(--paw-blue);
+  color: var(--paw-base);
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.paw-button:hover {
+  background: #a6d7ff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(137, 180, 250, 0.3);
+}
+
+.paw-button:active {
+  transform: translateY(0);
+}
+
+.paw-button-secondary {
+  background: var(--paw-surface2);
+  color: var(--paw-text);
+}
+
+.paw-button-secondary:hover {
+  background: var(--paw-surface1);
+}
