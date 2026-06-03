@@ -7,6 +7,7 @@ import "./GameOnGrowingTreeVisualizer.css";
 import { Stack3D } from "../../components/viz3d";
 import PartialAnswersPanel from "../../components/PartialAnswersPanel";
 import TreeStatePanel from "./TreeStatePanel";
+import DockableWorkspace from "../../components/shared/DockableWorkspace";
 
 const MAX_TREE_NODES_TO_RENDER = 120;
 
@@ -766,6 +767,209 @@ export default function GameOnGrowingTreeVisualizer() {
     { label: "Final scores", value: answers.length || "—" },
   ];
 
+  const dockPanels = [
+    {
+      id: "input",
+      title: "Input Playground",
+      subtitle: inputError ? "Fix the input to resume playback." : "Edit the tree and replay the solver.",
+      defaultZone: "left",
+      content: (
+        <div className="gogt-panel-body">
+          <div className="gogt-examples">
+            {EXAMPLES.map((example) => (
+              <button
+                key={example.label}
+                type="button"
+                className="gogt-example-btn"
+                onClick={() => {
+                  setQInput(example.q);
+                  setParentsInput(example.parents);
+                }}
+              >
+                {example.label}
+              </button>
+            ))}
+          </div>
+
+          <label className="gogt-field">
+            <span>q insertions</span>
+            <input
+              className="gogt-input"
+              value={qInput}
+              onChange={(event) => setQInput(event.target.value)}
+            />
+          </label>
+
+          <label className="gogt-field">
+            <span>Parent list</span>
+            <textarea
+              className="gogt-textarea"
+              value={parentsInput}
+              onChange={(event) => setParentsInput(event.target.value)}
+            />
+          </label>
+
+          {inputError ? (
+            <div className="gogt-error">{inputError}</div>
+          ) : (
+            <div className="gogt-output-wrap">
+              <div className="gogt-output-label">Final answers</div>
+              <div className="gogt-output mono">{answers.join(" ")}</div>
+            </div>
+          )}
+
+          <div className="gogt-parent-strip">
+            <div className="gogt-output-label">Parent parsing preview</div>
+            <div className="gogt-parent-grid">
+              {(parsedParentSnapshot.length > 0
+                ? parsedParentSnapshot
+                : parentsInput
+                    .trim()
+                    .split(/\s+/)
+                    .filter(Boolean)
+                    .map((value) => Number(value) - 1)
+              ).map((value, idx) => {
+                const isActive = step?.currentParentIndex === idx;
+                const prevValue = prevParsedParentsRef.current?.[idx];
+                const wasRevealed = prevValue != null;
+
+                return (
+                  <div key={`parent-${idx}`} className="gogt-parent-column">
+                    <div className="gogt-parent-column-label">node {idx + 2}</div>
+                    <div
+                      className={`gogt-parent-cell ${isActive ? "active" : ""} ${wasRevealed ? "revealed" : ""}`}
+                    >
+                      <span>{Number.isFinite(value) ? value + 1 : "?"}</span>
+                      <small>parent</small>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="gogt-parent-note">
+              Input is 1-indexed. The solver immediately stores parents in 0-based
+              form for the DP passes.
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "storyboard",
+      title: "Playback Storyboard",
+      subtitle: step ? `Step ${stepIndex + 1} of ${steps.length}` : "Press play to start.",
+      defaultZone: "right",
+      content: (
+        <div className="gogt-panel-body">
+          <div className="gogt-step-overview">
+            <div className="gogt-step-pill">{currentPhase}</div>
+            <div className="gogt-step-copy">
+              <strong>
+                {step ? `Line ${step.activeLine}` : "Playback not started"}
+              </strong>
+              <p>
+                {step
+                  ? step.message
+                  : "Start playback to see the parent parsing, midpoint selection, DP propagation, and answer filling."}
+              </p>
+            </div>
+          </div>
+
+          <PlaybackControls
+            onReset={handleReset}
+            onPrev={stepBack}
+            onPlayToggle={togglePlay}
+            onNext={stepForward}
+            resetDisabled={steps.length === 0}
+            prevDisabled={stepIndex <= 0}
+            nextDisabled={steps.length === 0 || isDone}
+            isPlaying={isPlaying}
+            isDone={isDone}
+            speed={speed}
+            onSpeedChange={(event) => setSpeed(Number(event.target.value))}
+            speedIndicator={`${speed}ms`}
+          />
+
+          <div className="gogt-metrics">
+            <div className="gogt-metric-card">
+              <span>Interval</span>
+              <strong>
+                {step?.intervalLeft != null && step?.intervalRight != null
+                  ? `[${step.intervalLeft}, ${step.intervalRight}]`
+                  : "—"}
+              </strong>
+            </div>
+            <div className="gogt-metric-card">
+              <span>Midpoint</span>
+              <strong>{step?.midpoint ?? "—"}</strong>
+            </div>
+            <div className="gogt-metric-card">
+              <span>Computed value</span>
+              <strong>{step?.computedValue ?? "—"}</strong>
+            </div>
+            <div className="gogt-metric-card">
+              <span>Stack size</span>
+              <strong>{step?.stackSize ?? 0}</strong>
+            </div>
+          </div>
+
+          <div className="gogt-stack-row">
+            <Stack3D
+              label="interval stack"
+              items={step?.stack?.map(([left, right]) => `[${left} — ${right}]`) ?? []}
+              emptyText="empty"
+              topBadge="top"
+              highlightIndex={step?.stack ? step.stack.length - 1 : -1}
+            />
+          </div>
+
+          <div className="gogt-output-wrap">
+            <div className="gogt-output-label">Partial answers at this step</div>
+            <PartialAnswersPanel
+              label=""
+              answers={step?.answers ?? []}
+              prevAnswers={prevAnswersRef.current}
+              labelPrefix="a"
+            />
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "code",
+      title: "Simplified Solution Trace",
+      subtitle: step ? `Active line ${step.activeLine}` : "Line-by-line solution view.",
+      defaultZone: "full",
+      content: (
+        <CodeTracePanel
+          step={step}
+          codeLines={SOLUTION_CODE}
+          title="Simplified Solution Trace"
+          subtitle={
+            step
+              ? `Active line ${step.activeLine}: ${step.message}`
+              : "Trace your simplified Codeforces solution line-by-line."
+          }
+        />
+      ),
+    },
+    {
+      id: "tree",
+      title: "Tree State Preview",
+      subtitle: currentTree?.size ? `Prefix size ${currentTree.size}` : "Waiting for a rendered prefix.",
+      defaultZone: "full",
+      content: (
+        <TreeStatePanel
+          currentTree={currentTree}
+          treeFocus={treeFocus}
+          stepKey={stepKey}
+          dpSnapshot={dpSnapshot}
+          maxTreeNodesToRender={MAX_TREE_NODES_TO_RENDER}
+        />
+      ),
+    },
+  ];
+
   return (
     <div className="gogt-shell">
       <section className="gogt-hero">
@@ -788,197 +992,15 @@ export default function GameOnGrowingTreeVisualizer() {
           ))}
         </div>
       </section>
-
-      <div className="gogt-top">
-        <section className="gogt-panel">
-          <header className="gogt-panel-head">
-            <span>Input Playground</span>
-            <span className="gogt-chip">{inputError ? "needs fix" : "ready"}</span>
-          </header>
-
-          <div className="gogt-panel-body">
-            <div className="gogt-examples">
-              {EXAMPLES.map((example) => (
-                <button
-                  key={example.label}
-                  type="button"
-                  className="gogt-example-btn"
-                  onClick={() => {
-                    setQInput(example.q);
-                    setParentsInput(example.parents);
-                  }}
-                >
-                  {example.label}
-                </button>
-              ))}
-            </div>
-
-            <label className="gogt-field">
-              <span>q insertions</span>
-              <input
-                className="gogt-input"
-                value={qInput}
-                onChange={(event) => setQInput(event.target.value)}
-              />
-            </label>
-
-            <label className="gogt-field">
-              <span>Parent list</span>
-              <textarea
-                className="gogt-textarea"
-                value={parentsInput}
-                onChange={(event) => setParentsInput(event.target.value)}
-              />
-            </label>
-
-            {inputError ? (
-              <div className="gogt-error">{inputError}</div>
-            ) : (
-              <div className="gogt-output-wrap">
-                <div className="gogt-output-label">Final answers</div>
-                <div className="gogt-output mono">{answers.join(" ")}</div>
-              </div>
-            )}
-
-            <div className="gogt-parent-strip">
-              <div className="gogt-output-label">Parent parsing preview</div>
-              <div className="gogt-parent-grid">
-                {(parsedParentSnapshot.length > 0
-                  ? parsedParentSnapshot
-                  : parentsInput
-                      .trim()
-                      .split(/\s+/)
-                      .filter(Boolean)
-                      .map((value) => Number(value) - 1)
-                ).map((value, idx) => {
-                  const isActive = step?.currentParentIndex === idx;
-                  const prevValue = prevParsedParentsRef.current?.[idx];
-                  const wasRevealed = prevValue != null;
-
-                  return (
-                    <div key={`parent-${idx}`} className="gogt-parent-column">
-                      <div className="gogt-parent-column-label">node {idx + 2}</div>
-                      <div
-                        className={`gogt-parent-cell ${isActive ? "active" : ""} ${wasRevealed ? "revealed" : ""}`}
-                      >
-                        <span>{Number.isFinite(value) ? value + 1 : "?"}</span>
-                        <small>parent</small>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="gogt-parent-note">
-                Input is 1-indexed. The solver immediately stores parents in 0-based
-                form for the DP passes.
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="gogt-panel">
-          <header className="gogt-panel-head">
-            <span>Playback Storyboard</span>
-            <span className="gogt-chip">
-              {step ? `step ${stepIndex + 1}/${steps.length}` : "press play"}
-            </span>
-          </header>
-
-          <div className="gogt-panel-body">
-            <div className="gogt-step-overview">
-              <div className="gogt-step-pill">{currentPhase}</div>
-              <div className="gogt-step-copy">
-                <strong>
-                  {step ? `Line ${step.activeLine}` : "Playback not started"}
-                </strong>
-                <p>
-                  {step
-                    ? step.message
-                    : "Start playback to see the parent parsing, midpoint selection, DP propagation, and answer filling."}
-                </p>
-              </div>
-            </div>
-
-            <PlaybackControls
-              onReset={handleReset}
-              onPrev={stepBack}
-              onPlayToggle={togglePlay}
-              onNext={stepForward}
-              resetDisabled={steps.length === 0}
-              prevDisabled={stepIndex <= 0}
-              nextDisabled={steps.length === 0 || isDone}
-              isPlaying={isPlaying}
-              isDone={isDone}
-              speed={speed}
-              onSpeedChange={(event) => setSpeed(Number(event.target.value))}
-              speedIndicator={`${speed}ms`}
-            />
-
-            <div className="gogt-metrics">
-              <div className="gogt-metric-card">
-                <span>Interval</span>
-                <strong>
-                  {step?.intervalLeft != null && step?.intervalRight != null
-                    ? `[${step.intervalLeft}, ${step.intervalRight}]`
-                    : "—"}
-                </strong>
-              </div>
-              <div className="gogt-metric-card">
-                <span>Midpoint</span>
-                <strong>{step?.midpoint ?? "—"}</strong>
-              </div>
-              <div className="gogt-metric-card">
-                <span>Computed value</span>
-                <strong>{step?.computedValue ?? "—"}</strong>
-              </div>
-              <div className="gogt-metric-card">
-                <span>Stack size</span>
-                <strong>{step?.stackSize ?? 0}</strong>
-              </div>
-            </div>
-
-            <div className="gogt-stack-row">
-              <Stack3D
-                label="interval stack"
-                items={
-                  step?.stack?.map(([left, right]) => `[${left} — ${right}]`) ?? []
-                }
-                emptyText="empty"
-                topBadge="top"
-                highlightIndex={step?.stack ? step.stack.length - 1 : -1}
-              />
-            </div>
-
-            <div className="gogt-output-wrap">
-              <div className="gogt-output-label">Partial answers at this step</div>
-              <PartialAnswersPanel
-                label=""
-                answers={step?.answers ?? []}
-                prevAnswers={prevAnswersRef.current}
-                labelPrefix="a"
-              />
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <CodeTracePanel
-        step={step}
-        codeLines={SOLUTION_CODE}
-        title="Simplified Solution Trace"
-        subtitle={
-          step
-            ? `Active line ${step.activeLine}: ${step.message}`
-            : "Trace your simplified Codeforces solution line-by-line."
-        }
-      />
-
-      <TreeStatePanel
-        currentTree={currentTree}
-        treeFocus={treeFocus}
-        stepKey={stepKey}
-        dpSnapshot={dpSnapshot}
-        maxTreeNodesToRender={MAX_TREE_NODES_TO_RENDER}
+      <DockableWorkspace
+        title="Game On Growing Tree Workspace"
+        panels={dockPanels}
+        initialLayout={{
+          left: ["input"],
+          right: ["storyboard"],
+          full: ["tree", "code"],
+          minimized: [],
+        }}
       />
     </div>
   );

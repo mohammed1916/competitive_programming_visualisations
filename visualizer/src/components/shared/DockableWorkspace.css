@@ -1,0 +1,220 @@
+.dock-workspace {
+  display: grid;
+  gap: 14px;
+}
+
+.dock-workspace-head {
+  display: grid;
+  gap: 8px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background:
+    radial-gradient(circle at top left, rgba(14, 165, 233, 0.12), transparent 32%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(17, 24, 39, 0.9));
+}
+
+.dock-workspace-kicker {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #7dd3fc;
+}
+
+.dock-workspace-head h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 1.15rem;
+}
+
+.dock-workspace-head p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+
+.dock-drop-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.dock-drop-zone {
+  min-height: 92px;
+  border-radius: 18px;
+  border: 1px dashed rgba(125, 211, 252, 0.34);
+  background: rgba(15, 23, 42, 0.52);
+  color: var(--text);
+  display: grid;
+  gap: 4px;
+  align-content: center;
+  justify-items: center;
+}
+
+.dock-drop-zone span {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.dock-drop-zone.active {
+  border-style: solid;
+  border-color: rgba(59, 130, 246, 0.72);
+  background: rgba(37, 99, 235, 0.18);
+}
+
+.dock-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.dock-column,
+.dock-full-lane {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.dock-full-lane {
+  grid-column: 1 / -1;
+}
+
+.dock-empty {
+  min-height: 140px;
+  border-radius: 18px;
+  border: 1px dashed var(--border);
+  background: rgba(15, 23, 42, 0.42);
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  text-align: center;
+}
+
+.dock-panel {
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(2, 6, 23, 0.72);
+  overflow: hidden;
+  box-shadow: 0 12px 28px rgba(2, 6, 23, 0.22);
+}
+
+.dock-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(15, 23, 42, 0.76);
+  cursor: grab;
+}
+
+.dock-panel-title-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.dock-panel-title-group strong {
+  display: block;
+  color: var(--text);
+}
+
+.dock-panel-title-group small {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.74rem;
+  margin-top: 2px;
+}
+
+.dock-panel-grip {
+  color: var(--text-dim);
+  letter-spacing: 0.12em;
+  font-size: 0.86rem;
+}
+
+.dock-panel-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.dock-panel-btn {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(30, 41, 59, 0.8);
+  color: var(--text-muted);
+  padding: 0.35rem 0.7rem;
+  font-size: 0.74rem;
+}
+
+.dock-panel-btn:hover {
+  color: var(--text);
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+.dock-panel-body {
+  padding: 12px;
+  display: grid;
+  gap: 12px;
+}
+
+.dock-maximized {
+  border-radius: 20px;
+  border: 1px solid rgba(56, 189, 248, 0.26);
+  background: linear-gradient(135deg, rgba(2, 6, 23, 0.95), rgba(15, 23, 42, 0.92));
+  overflow: hidden;
+}
+
+.dock-maximized-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.dock-maximized-bar strong {
+  color: var(--text);
+}
+
+.dock-maximized-body {
+  padding: 12px;
+}
+
+.dock-minimized-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.dock-minimized-label {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.dock-minimized-pill {
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(15, 23, 42, 0.72);
+  color: var(--text);
+  padding: 0.45rem 0.8rem;
+  font-size: 0.78rem;
+}
+
+@media (max-width: 900px) {
+  .dock-drop-row,
+  .dock-grid {
+    grid-template-columns: 1fr;
+  }
+}
