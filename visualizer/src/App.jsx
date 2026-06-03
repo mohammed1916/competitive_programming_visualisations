@@ -3,7 +3,6 @@ import React, {
   useMemo,
   useState,
   Component,
-  lazy,
   Suspense,
 } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,11 +10,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import ProblemScaffold from "./components/panels/ProblemScaffold";
 import "./App.css";
 
-const TRACKS = {
-  LEETCODE: "leetcode",
-  BASICS: "basics",
-  CODEFORCES: "codeforces",
-};
+const lazyProblem = (folder) =>
+  folder ? React.lazy(() => import(`./problems/${folder}/index.jsx`)) : null;
 
 /* ── Auto-discovery ──────────────────────────────────────────────────── */
 
