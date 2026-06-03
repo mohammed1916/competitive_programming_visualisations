@@ -1,198 +1,335 @@
-import { useState, useMemo, useCallback } from "react";
-import { motion } from "framer-motion";
-import CodeTracePanel from "../../components/CodeTracePanel";
-import PlaybackControls from "../../components/PlaybackControls";
-import { usePlaybackState } from "../../hooks/usePlaybackState";
-import "./MaximalRectangleVisualizer.css";
+import { useState, useCallback, useMemo } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import CodeTracePanel from '../../components/CodeTracePanel'
+import PlaybackControls from '../../components/PlaybackControls'
+import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { useCodeVisualConnectivity } from '../../hooks/useCodeVisualConnectivity'
+import './MaximalRectangleVisualizer.css'
 
 const SOLUTION_CODE = [
-  { line: 1,  text: "def maximalRectangle(matrix):" },
-  { line: 2,  text: "    heights = [0] * cols" },
-  { line: 3,  text: "    best = 0" },
-  { line: 4,  text: "    for row in matrix:" },
-  { line: 5,  text: "        for j, cell in enumerate(row):" },
-  { line: 6,  text: "            heights[j] = heights[j]+1 if cell=='1' else 0" },
-  { line: 7,  text: "        best = max(best, largestInHistogram(heights))" },
-  { line: 8,  text: "def largestInHistogram(h):" },
-  { line: 9,  text: "    stack, best = [], 0" },
-  { line: 10, text: "    for i, ht in enumerate(h + [0]):" },
-  { line: 11, text: "        while stack and h[stack[-1]] >= ht:" },
-  { line: 12, text: "            height = h[stack.pop()]" },
-  { line: 13, text: "            width = i if not stack else i - stack[-1] - 1" },
-  { line: 14, text: "            best = max(best, height * width)" },
-  { line: 15, text: "        stack.append(i)" },
-];
-
-const EXAMPLES = [
-  { label: "Ex 1", matrix: [["1","0","1","0","0"],["1","0","1","1","1"],["1","1","1","1","1"],["1","0","0","1","0"]] },
-  { label: "Ex 2", matrix: [["0","1"],["1","0"]] },
-  { label: "Ex 3", matrix: [["1","1","1","1"],["1","1","1","1"],["0","0","1","0"]] },
-];
+  { line: 1, text: 'class Solution:' },
+  { line: 2, text: '    def maximalRectangle(self, matrix):' },
+  { line: 3, text: '        if not matrix: return 0' },
+  { line: 4, text: '        m, n = len(matrix), len(matrix[0])' },
+  { line: 5, text: '        heights = [0] * n' },
+  { line: 6, text: '        max_area = 0' },
+  { line: 7, text: '        ' },
+  { line: 8, text: '        for row in matrix:' },
+  { line: 9, text: '            for i in range(n):' },
+  { line: 10, text: '                if row[i] == "1":' },
+  { line: 11, text: '                    heights[i] += 1' },
+  { line: 12, text: '                else:' },
+  { line: 13, text: '                    heights[i] = 0' },
+  { line: 14, text: '            ' },
+  { line: 15, text: '            max_area = max(max_area, largestRectangleArea(heights))' },
+]
 
 function generateSteps(matrix) {
-  const steps = [];
-  const rows = matrix.length;
-  const cols = matrix[0].length;
-  const heights = Array(cols).fill(0);
-  let globalBest = 0;
+  const steps = []
 
-  steps.push({ activeLine: 2, heights: [...heights], matrix, activeRow: -1, activeCol: -1, stack: [], best: 0, phase: "init", message: "Init heights = all zeros." });
-
-  for (let r = 0; r < rows; r++) {
-    // Update heights
-    for (let c = 0; c < cols; c++) {
-      heights[c] = matrix[r][c] === "1" ? heights[c] + 1 : 0;
-    }
+  if (!matrix || matrix.length === 0) {
     steps.push({
-      activeLine: 6, heights: [...heights], matrix, activeRow: r, activeCol: -1, stack: [], best: globalBest, phase: "update",
-      message: `Row ${r}: updated heights = [${heights.join(", ")}]`,
-    });
+      phase: 'done',
+      currentRow: -1,
+      heights: [],
+      maxArea: 0,
+      activeLine: 3,
+      message: 'Empty matrix.',
+    })
+    return steps
+  }
 
-    // Histogram largest rectangle
-    const h = [...heights, 0];
-    const stack = [];
-    let rowBest = 0;
+  const m = matrix.length
+  const n = matrix[0].length
 
-    for (let i = 0; i <= cols; i++) {
-      steps.push({
-        activeLine: 10, heights: [...heights], matrix, activeRow: r, activeCol: i < cols ? i : -1,
-        stack: [...stack], best: globalBest, phase: "hist",
-        message: `Histogram i=${i}, h=${h[i]}. Stack=[${stack.join(",")}]`,
-      });
-      while (stack.length > 0 && h[stack[stack.length - 1]] >= h[i]) {
-        const top = stack.pop();
-        const height = h[top];
-        const width = stack.length === 0 ? i : i - stack[stack.length - 1] - 1;
-        const area = height * width;
-        rowBest = Math.max(rowBest, area);
-        globalBest = Math.max(globalBest, area);
-        steps.push({
-          activeLine: 14, heights: [...heights], matrix, activeRow: r, activeCol: i,
-          stack: [...stack], best: globalBest, phase: "pop",
-          rectLeft: stack.length === 0 ? 0 : stack[stack.length - 1] + 1,
-          rectRight: i - 1, rectHeight: height,
-          message: `Pop idx=${top}: h=${height}×w=${width}=${area}. Best=${globalBest}`,
-        });
+  steps.push({
+    phase: 'init',
+    currentRow: -1,
+    heights: new Array(n).fill(0),
+    maxArea: 0,
+    activeLine: 5,
+    message: `Matrix ${m}x${n}. Initialize heights=[0]*${n}`,
+  })
+
+  let heights = new Array(n).fill(0)
+  let maxArea = 0
+
+  for (let row = 0; row < m; row++) {
+    steps.push({
+      phase: 'row_start',
+      currentRow: row,
+      heights: [...heights],
+      maxArea,
+      activeLine: 8,
+      message: `Process row ${row}: [${matrix[row].map(x => x).join(',')}]`,
+    })
+
+    for (let i = 0; i < n; i++) {
+      if (matrix[row][i] === '1' || matrix[row][i] === 1) {
+        heights[i] += 1
+      } else {
+        heights[i] = 0
       }
-      stack.push(i);
+
+      steps.push({
+        phase: 'height_update',
+        currentRow: row,
+        heights: [...heights],
+        maxArea,
+        activeLine: matrix[row][i] === '1' || matrix[row][i] === 1 ? 11 : 13,
+        message: `Col ${i}: matrix[${row}][${i}]=${matrix[row][i]}, heights[${i}]=${heights[i]}`,
+      })
     }
+
+    const stack = []
+    let currentMaxArea = 0
+
+    for (let i = 0; i < n; i++) {
+      while (stack.length > 0 && heights[stack[stack.length - 1]] > heights[i]) {
+        const popIdx = stack.pop()
+        const h = heights[popIdx]
+        const width = i - (stack.length > 0 ? stack[stack.length - 1] + 1 : 0)
+        const area = h * width
+
+        steps.push({
+          phase: 'area_calc',
+          currentRow: row,
+          heights: [...heights],
+          maxArea,
+          currentArea: area,
+          activeLine: 15,
+          message: `Pop[${popIdx}]: h=${h}, width=${width}, area=${area}`,
+        })
+
+        currentMaxArea = Math.max(currentMaxArea, area)
+      }
+
+      stack.push(i)
+    }
+
+    while (stack.length > 0) {
+      const popIdx = stack.pop()
+      const h = heights[popIdx]
+      const width = n - (stack.length > 0 ? stack[stack.length - 1] + 1 : 0)
+      const area = h * width
+
+      steps.push({
+        phase: 'area_final',
+        currentRow: row,
+        heights: [...heights],
+        maxArea,
+        currentArea: area,
+        activeLine: 15,
+        message: `Final pop[${popIdx}]: h=${h}, width=${width}, area=${area}`,
+      })
+
+      currentMaxArea = Math.max(currentMaxArea, area)
+    }
+
+    maxArea = Math.max(maxArea, currentMaxArea)
+
+    steps.push({
+      phase: 'row_end',
+      currentRow: row,
+      heights: [...heights],
+      maxArea,
+      activeLine: 15,
+      message: `Row ${row} complete. Max area so far: ${maxArea}`,
+    })
   }
 
   steps.push({
-    activeLine: 7, heights: [...heights], matrix, activeRow: -1, activeCol: -1, stack: [], best: globalBest, phase: "done", done: true,
-    message: `Maximal Rectangle = ${globalBest}`,
-  });
-  return steps;
+    phase: 'done',
+    currentRow: m,
+    heights: [...heights],
+    maxArea,
+    activeLine: 15,
+    message: `Complete. Maximum rectangle: ${maxArea}`,
+  })
+
+  return steps
 }
 
-const CELL_SIZE = 36;
+function MaximalRectangleVisualizer() {
+  const defaultMatrix = [
+    ['1', '0', '1'],
+    ['1', '0', '1'],
+    ['1', '1', '1'],
+  ]
 
-export default function MaximalRectangleVisualizer() {
-  const [ex, setEx] = useState(EXAMPLES[0]);
-  const steps = useMemo(() => generateSteps(ex.matrix), [ex]);
-  const { stepIndex, stepForward, stepBack, togglePlay, handleReset, isPlaying, speed, setSpeed, isDone } =
-    usePlaybackState(steps.length);
-  const step = stepIndex >= 0 ? steps[stepIndex] : null;
-  const applyEx = useCallback((e) => { setEx(e); handleReset(); }, [handleReset]);
+  const [matrix, setMatrix] = useState(defaultMatrix)
+  const [inputValue, setInputValue] = useState(JSON.stringify(defaultMatrix))
 
-  const matrix = ex.matrix;
-  const rows = matrix.length;
-  const cols = matrix[0].length;
-  const heights = step?.heights ?? Array(cols).fill(0);
-  const activeRow = step?.activeRow ?? -1;
-  const activeCol = step?.activeCol ?? -1;
-  const stackSet = new Set(step?.stack ?? []);
-  const best = step?.best ?? 0;
-  const phase = step?.phase ?? "init";
-  const rectLeft = step?.rectLeft ?? -1;
-  const rectRight = step?.rectRight ?? -1;
-  const rectHeight = step?.rectHeight ?? 0;
-  const maxH = Math.max(...heights, 1);
+  const steps = useMemo(() => generateSteps(matrix), [matrix])
+  const { activeStepIndex, isPlaying, togglePlayback, reset, setActiveStepIndex } =
+    usePlaybackState(steps)
+
+  const { highlightLines } = useCodeVisualConnectivity(activeStepIndex, steps)
+
+  const activeStep = steps[activeStepIndex]
+
+  const handleRun = useCallback(() => {
+    try {
+      const parsed = JSON.parse(inputValue)
+      setMatrix(parsed)
+      reset()
+    } catch (e) {
+      alert('Invalid JSON input')
+    }
+  }, [inputValue, reset])
+
+  const handleReset = useCallback(() => {
+    setMatrix(defaultMatrix)
+    setInputValue(JSON.stringify(defaultMatrix))
+    reset()
+  }, [reset])
+
+  const m = matrix.length
+  const n = matrix[0]?.length || 0
+  const cellSize = Math.min(300 / n, 200 / m, 50)
+
+  const getCellColor = (r, c) => {
+    if (activeStep?.currentRow === r) {
+      return matrix[r][c] === '1' || matrix[r][c] === 1
+        ? '#a6e3a1'
+        : '#f5c6de'
+    }
+    return matrix[r][c] === '1' || matrix[r][c] === 1
+      ? '#45475a'
+      : '#313244'
+  }
 
   return (
     <div className="mr-shell">
-      <div className="mr-examples">
-        {EXAMPLES.map(e => (
-          <button key={e.label} className={`mr-chip ${ex.label === e.label ? "active" : ""}`} onClick={() => applyEx(e)}>
-            {e.label}: {e.matrix.length}×{e.matrix[0].length}
-          </button>
-        ))}
-      </div>
+      <div className="mr-top">
+        <div className="mr-panel mr-code-panel">
+          <CodeTracePanel
+            lines={SOLUTION_CODE}
+            highlightLines={highlightLines}
+            title="Solution Code"
+          />
+        </div>
 
-      <div className="mr-panel">
-        <div className="mr-panel-label">Binary Matrix</div>
-        <div className="mr-matrix" style={{ gridTemplateColumns: `repeat(${cols}, ${CELL_SIZE}px)` }}>
-          {matrix.map((row, r) => row.map((cell, c) => {
-            const isActiveRow = r === activeRow;
-            const isRect = phase === "pop" && r >= activeRow - rectHeight + 1 && r <= activeRow && c >= rectLeft && c <= rectRight;
-            return (
-              <motion.div
-                key={`${r}-${c}`}
-                className={`mr-cell ${cell === "1" ? "one" : "zero"} ${isActiveRow ? "active-row" : ""} ${isRect ? "rect" : ""}`}
-                animate={{ scale: isRect ? 1.08 : 1 }}
-                transition={{ type: "spring", stiffness: 400, damping: 20 }}
-              >
-                {cell}
-              </motion.div>
-            );
-          }))}
+        <div className="mr-panel mr-visualization">
+          <div className="mr-panel-head">Matrix Visualization</div>
+          <div className="mr-panel-body">
+            <div
+              className="mr-grid"
+              style={{
+                gridTemplateColumns: `repeat(${n}, ${cellSize}px)`,
+                gap: '4px',
+              }}
+            >
+              <AnimatePresence mode="popLayout">
+                {matrix.map((row, r) =>
+                  row.map((val, c) => (
+                    <motion.div
+                      key={`${r}-${c}`}
+                      className="mr-cell"
+                      style={{
+                        backgroundColor: getCellColor(r, c),
+                        width: cellSize,
+                        height: cellSize,
+                      }}
+                      initial={{ opacity: 0.3 }}
+                      animate={{ opacity: 0.8 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <div className="mr-cell-value">{val}</div>
+                    </motion.div>
+                  ))
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
+
+        <div className="mr-panel mr-histogram">
+          <div className="mr-panel-head">Heights Histogram</div>
+          <div className="mr-panel-body">
+            <div className="mr-histogram-container">
+              {activeStep?.heights?.map((h, i) => (
+                <motion.div
+                  key={i}
+                  className="mr-histogram-bar"
+                  animate={{
+                    height: `${(h / Math.max(...(activeStep?.heights || [1]))) * 100}%`,
+                  }}
+                  transition={{ duration: 0.2 }}
+                  style={{
+                    backgroundColor:
+                      activeStep?.currentHistIdx === i ? '#f38ba8' : '#a6e3a1',
+                  }}
+                  title={`heights[${i}] = ${h}`}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="mr-panel">
-        <div className="mr-panel-label">Heights (histogram for current row)</div>
-        <div className="mr-hist">
-          {heights.map((h, idx) => {
-            const inStack = stackSet.has(idx);
-            const isActive = idx === activeCol;
-            return (
-              <div key={idx} className="mr-bar-col">
-                <div className="mr-bar-wrap">
-                  <motion.div
-                    className={`mr-bar ${inStack ? "in-stack" : ""} ${isActive ? "active-bar" : ""}`}
-                    style={{ height: `${Math.max(4, (h / maxH) * 70)}px` }}
-                    animate={{ height: `${Math.max(4, (h / maxH) * 70)}px` }}
-                    transition={{ type: "spring", stiffness: 300, damping: 22 }}
-                  >
-                    {h > 0 && <span className="mr-bar-val">{h}</span>}
-                  </motion.div>
-                </div>
-                <div className="mr-bar-idx">{idx}</div>
+      <div className="mr-middle">
+        <div className="mr-panel mr-state">
+          <div className="mr-panel-head">State</div>
+          <div className="mr-panel-body">
+            <div className="mr-state-item">
+              <div className="mr-state-label">Phase:</div>
+              <div className="mr-state-value">{activeStep?.phase}</div>
+            </div>
+            <div className="mr-state-item">
+              <div className="mr-state-label">Current Row:</div>
+              <div className="mr-state-value">{activeStep?.currentRow}</div>
+            </div>
+            <div className="mr-state-item">
+              <div className="mr-state-label">Max Area:</div>
+              <div className="mr-state-value">{activeStep?.maxArea}</div>
+            </div>
+            {activeStep?.currentArea !== undefined && (
+              <div className="mr-state-item">
+                <div className="mr-state-label">Current Area:</div>
+                <div className="mr-state-value">{activeStep?.currentArea}</div>
               </div>
-            );
-          })}
+            )}
+          </div>
+        </div>
+
+        <div className="mr-panel mr-message">
+          <div className="mr-panel-head">Trace</div>
+          <div className="mr-panel-body">
+            <div className="mr-message-text">{activeStep?.message}</div>
+          </div>
+        </div>
+
+        <div className="mr-panel mr-controls">
+          <div className="mr-panel-head">Input</div>
+          <div className="mr-panel-body">
+            <textarea
+              className="mr-input"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              rows={3}
+            />
+            <button className="mr-button" onClick={handleRun}>
+              Run
+            </button>
+            <button className="mr-button mr-button-secondary" onClick={handleReset}>
+              Reset
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="mr-trackers">
-        <div className="mr-tracker">
-          <span className="mr-tracker-label">Best Area</span>
-          <motion.span key={best} className="mr-tracker-val mr-best" initial={{ scale: 1.3 }} animate={{ scale: 1 }}>{best}</motion.span>
-        </div>
-        <div className="mr-tracker">
-          <span className="mr-tracker-label">Row</span>
-          <span className="mr-tracker-val">{activeRow < 0 ? "—" : activeRow}</span>
-        </div>
-        <div className="mr-tracker">
-          <span className="mr-tracker-label">Stack</span>
-          <span className="mr-tracker-val mr-small">[{(step?.stack ?? []).join(",")}]</span>
-        </div>
-        <div className="mr-tracker">
-          <span className="mr-tracker-label">Phase</span>
-          <span className={`mr-tracker-val mr-phase ${phase}`}>{phase}</span>
-        </div>
+      <div className="mr-bottom">
+        <PlaybackControls
+          activeStep={activeStepIndex}
+          totalSteps={steps.length}
+          isPlaying={isPlaying}
+          onTogglePlayback={togglePlayback}
+          onStepChange={setActiveStepIndex}
+        />
       </div>
-
-      {step?.done && <div className="mr-result">✓ Maximal Rectangle Area = {best}</div>}
-
-      <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
-      <div className="mr-status">{step?.message ?? "Press Play to begin."}</div>
-      <PlaybackControls
-        isPlaying={isPlaying} isDone={isDone} speed={speed}
-        onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward} onReset={handleReset}
-        prevDisabled={stepIndex < 0} nextDisabled={isDone} resetDisabled={stepIndex < 0}
-        onSpeedChange={e => setSpeed(Number(e.target.value))}
-      />
     </div>
-  );
+  )
 }
+
+export default MaximalRectangleVisualizer

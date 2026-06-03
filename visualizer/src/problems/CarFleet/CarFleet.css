@@ -1,0 +1,349 @@
+/* Catppuccin colors */
+:root {
+  --cf-accent: #f97316;
+  --cf-surface: var(--surface);
+  --cf-surface2: var(--surface2);
+  --cf-border: var(--border);
+  --cf-text: var(--text);
+  --cf-text-muted: var(--text-muted);
+}
+
+.cf-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 14px;
+  overflow: hidden;
+}
+
+.cf-container {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 14px;
+  flex: 1;
+  min-height: 0;
+}
+
+.cf-input-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cf-visualization-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cf-info-section {
+  height: auto;
+}
+
+.cf-panel {
+  background: var(--cf-surface);
+  border: 1px solid var(--cf-border);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.cf-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--cf-border);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--cf-text);
+  background: var(--cf-surface2);
+}
+
+.cf-panel-body {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.cf-field {
+  display: grid;
+  gap: 6px;
+}
+
+.cf-field span {
+  font-size: 0.72rem;
+  color: var(--cf-text-muted);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.cf-input {
+  border: 1px solid var(--cf-border);
+  border-radius: 10px;
+  background: var(--cf-surface2);
+  color: var(--cf-text);
+  font-size: 0.84rem;
+  padding: 0.55rem 0.7rem;
+  font-family: monospace;
+  transition: all 0.2s ease;
+}
+
+.cf-input:focus {
+  outline: none;
+  border-color: var(--cf-accent);
+  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.1);
+}
+
+.cf-error {
+  font-size: 0.75rem;
+  color: #f87171;
+  padding: 8px;
+  background: rgba(248, 113, 113, 0.1);
+  border-radius: 8px;
+  border-left: 3px solid #f87171;
+}
+
+.cf-examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cf-example-btn {
+  border: 1px solid var(--cf-border);
+  border-radius: 999px;
+  background: var(--cf-surface2);
+  color: var(--cf-text-muted);
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 600;
+}
+
+.cf-example-btn:hover {
+  color: var(--cf-text);
+  border-color: var(--cf-accent);
+  background: rgba(249, 115, 22, 0.1);
+}
+
+/* Track visualization */
+.cf-track-container {
+  border: 1px solid var(--cf-border);
+  border-radius: 12px;
+  padding: 12px;
+  background: rgba(249, 115, 22, 0.03);
+}
+
+.cf-track-label {
+  font-size: 0.72rem;
+  color: var(--cf-text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  letter-spacing: 0.04em;
+}
+
+.cf-track {
+  position: relative;
+  height: 80px;
+  background: var(--cf-surface2);
+  border: 1px solid var(--cf-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.cf-target-marker {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 4px;
+  background: var(--cf-accent);
+  box-shadow: -4px 0 16px rgba(249, 115, 22, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 6px;
+  font-size: 0.7rem;
+  color: var(--cf-accent);
+  font-weight: 700;
+}
+
+.cf-car {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 60px;
+  height: 50px;
+  background: linear-gradient(135deg, var(--cf-accent), rgba(249, 115, 22, 0.7));
+  border: 2px solid var(--cf-accent);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.2);
+}
+
+.cf-car:hover {
+  box-shadow: 0 6px 16px rgba(249, 115, 22, 0.4);
+  transform: translateY(-50%) scale(1.05);
+}
+
+.cf-car.active {
+  box-shadow: 0 0 20px rgba(249, 115, 22, 0.6);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.cf-car-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.cf-unit {
+  font-size: 0.6rem;
+  opacity: 0.8;
+}
+
+/* Stack section */
+.cf-stack-section {
+  border: 1px solid var(--cf-border);
+  border-radius: 12px;
+  padding: 12px;
+  background: rgba(249, 115, 22, 0.05);
+}
+
+.cf-stack-label {
+  font-size: 0.72rem;
+  color: var(--cf-text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  letter-spacing: 0.04em;
+}
+
+.cf-stack-display {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 40px;
+  align-content: flex-start;
+}
+
+.cf-stack-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.cf-fleet-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: linear-gradient(90deg, rgba(249, 115, 22, 0.1), rgba(249, 115, 22, 0.05));
+  border: 1px solid var(--cf-accent);
+  border-radius: 8px;
+  font-size: 0.8rem;
+}
+
+.cf-fleet-number {
+  font-weight: 700;
+  color: var(--cf-accent);
+}
+
+.cf-fleet-time {
+  font-family: monospace;
+  color: var(--cf-text);
+  font-weight: 600;
+}
+
+.cf-empty-stack {
+  font-size: 0.8rem;
+  color: var(--cf-text-muted);
+  padding: 12px;
+  text-align: center;
+}
+
+.cf-trace-message {
+  font-size: 0.9rem;
+  color: var(--cf-text);
+  line-height: 1.5;
+  padding: 8px;
+  background: rgba(249, 115, 22, 0.05);
+  border-left: 3px solid var(--cf-accent);
+  border-radius: 4px;
+}
+
+.cf-trace-detail {
+  font-size: 0.8rem;
+  color: var(--cf-text-muted);
+  display: flex;
+  gap: 8px;
+  padding: 4px 8px;
+  margin-top: 4px;
+}
+
+.cf-trace-detail span {
+  font-weight: 700;
+  color: var(--cf-accent);
+}
+
+.cf-trace-result {
+  font-size: 0.85rem;
+  color: var(--cf-text);
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  background: rgba(249, 115, 22, 0.1);
+  border-radius: 8px;
+  margin-top: 8px;
+  font-weight: 600;
+}
+
+.cf-trace-result span {
+  color: var(--cf-accent);
+  font-weight: 700;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .cf-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .cf-shell {
+    gap: 10px;
+  }
+
+  .cf-container {
+    gap: 10px;
+  }
+
+  .cf-car {
+    width: 50px;
+    height: 40px;
+  }
+
+  .cf-track {
+    height: 60px;
+  }
+}

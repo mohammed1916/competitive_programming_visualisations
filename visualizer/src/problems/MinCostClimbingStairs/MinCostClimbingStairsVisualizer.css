@@ -1,0 +1,197 @@
+.mcs-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    font-family: inherit;
+}
+
+.mcs-top {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.mcs-panel {
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 10px;
+    overflow: hidden;
+    flex: 1;
+    min-width: 260px;
+}
+
+.mcs-panel.main {
+    flex: 2;
+}
+
+.mcs-head {
+    padding: 10px 14px;
+    background: #181825;
+    font-size: 13px;
+    font-weight: 600;
+    color: #cdd6f4;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.mcs-body {
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.mcs-examples {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.mcs-chip {
+    background: #313244;
+    color: #cdd6f4;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.mcs-chip:hover {
+    background: #45475a;
+}
+
+.mcs-array-container {
+    position: relative;
+    overflow: auto;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    background: #11111b;
+    padding: 12px;
+}
+
+.mcs-array-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+.mcs-cell,
+.mcs-cost-cell {
+    width: 56px;
+    height: 64px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border-radius: 6px;
+    border: 2px solid #45475a;
+    background: #313244;
+    color: #cdd6f4;
+}
+
+.mcs-cell.current {
+    border-color: #f9e2af;
+    background: #2a2410;
+}
+
+.mcs-cell.computed {
+    border-color: #89b4fa;
+    background: #1d2a3a;
+}
+
+.mcs-cell.uncomputed {
+    border-color: #45475a;
+    background: #313244;
+}
+
+.mcs-cost-cell {
+    border-color: #a6adc8;
+}
+
+.mcs-cell-label {
+    font-size: 10px;
+    color: #6c7086;
+    font-weight: 600;
+}
+
+.mcs-cell-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: #cdd6f4;
+}
+
+.mcs-cell.current .mcs-cell-value {
+    color: #f9e2af;
+}
+
+.mcs-cell.computed .mcs-cell-value {
+    color: #89b4fa;
+}
+
+.mcs-metric {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: #11111b;
+    border-radius: 8px;
+}
+
+.mcs-label {
+    font-size: 11px;
+    color: #6c7086;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.mcs-val {
+    font-size: 18px;
+    color: #f9e2af;
+}
+
+.mcs-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.mcs-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #a6adc8;
+}
+
+.mcs-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid #45475a;
+    background: #313244;
+}
+
+.mcs-dot.uncomputed {
+    border-color: #45475a;
+    background: #313244;
+}
+
+.mcs-dot.computed {
+    border-color: #89b4fa;
+    background: #1d2a3a;
+}
+
+.mcs-status {
+    padding: 8px 12px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #a6adc8;
+    min-height: 36px;
+}

@@ -1,0 +1,324 @@
+/* Catppuccin Mocha Theme */
+:root {
+  --ctp-rosewater: #f5e0dc;
+  --ctp-flamingo: #f2cdcd;
+  --ctp-pink: #f5c2e7;
+  --ctp-mauve: #cba6f7;
+  --ctp-red: #f38ba8;
+  --ctp-maroon: #eba0ac;
+  --ctp-peach: #fab387;
+  --ctp-yellow: #f9e2af;
+  --ctp-green: #a6e3a1;
+  --ctp-teal: #94e2d5;
+  --ctp-sky: #89dceb;
+  --ctp-sapphire: #74c7ec;
+  --ctp-blue: #89b4fa;
+  --ctp-lavender: #b4befe;
+  --ctp-text: #cdd6f4;
+  --ctp-subtext1: #bac2de;
+  --ctp-subtext0: #a6adc8;
+  --ctp-overlay2: #9399b2;
+  --ctp-overlay1: #7f849c;
+  --ctp-overlay0: #6c7086;
+  --ctp-surface2: #585b70;
+  --ctp-surface1: #45475a;
+  --ctp-surface0: #313244;
+  --ctp-base: #1e1e2e;
+  --ctp-mantle: #181825;
+  --ctp-crust: #11111b;
+}
+
+.cooldown-container {
+  background: linear-gradient(135deg, var(--ctp-base) 0%, var(--ctp-mantle) 100%);
+  color: var(--ctp-text);
+  padding: 2rem;
+  border-radius: 1rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.cooldown-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(135deg, #a855f7, #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.cooldown-input-section {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.cooldown-input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  background: var(--ctp-surface0);
+  border: 2px solid var(--ctp-surface2);
+  border-radius: 0.5rem;
+  color: var(--ctp-text);
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.cooldown-input:focus {
+  outline: none;
+  border-color: #a855f7;
+}
+
+.cooldown-btn {
+  padding: 0.75rem 1.5rem;
+  background: #a855f7;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cooldown-btn:hover {
+  background: #9333ea;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.4);
+}
+
+.cooldown-btn:active {
+  transform: translateY(0);
+}
+
+.cooldown-controls {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.cooldown-speed-control {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--ctp-surface0);
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  border: 2px solid var(--ctp-surface2);
+}
+
+.cooldown-speed-control label {
+  font-weight: 600;
+}
+
+.cooldown-slider {
+  width: 150px;
+  cursor: pointer;
+  accent-color: #a855f7;
+}
+
+.cooldown-chart-container {
+  margin-bottom: 2rem;
+}
+
+.cooldown-price-chart {
+  background: var(--ctp-surface0);
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  border: 2px solid var(--ctp-surface2);
+}
+
+.cooldown-chart-label {
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--ctp-lavender);
+}
+
+.cooldown-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  height: 200px;
+  padding: 1rem;
+  background: var(--ctp-mantle);
+  border-radius: 0.5rem;
+}
+
+.cooldown-bar {
+  flex: 1;
+  background: linear-gradient(180deg, #74c7ec, #89b4fa);
+  border-radius: 0.25rem 0.25rem 0 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  position: relative;
+  transition: all 0.3s ease;
+  opacity: 0.7;
+}
+
+.cooldown-bar-active {
+  background: linear-gradient(180deg, #a855f7, #ec4899);
+  opacity: 1;
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.6);
+  transform: scaleY(1.05);
+}
+
+.cooldown-bar-label {
+  position: absolute;
+  bottom: -1.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--ctp-subtext1);
+}
+
+.cooldown-states-section {
+  margin-bottom: 2rem;
+}
+
+.cooldown-states-label {
+  font-weight: 700;
+  margin-bottom: 1rem;
+  font-size: 1.125rem;
+  color: var(--ctp-lavender);
+}
+
+.cooldown-states-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+.cooldown-states-grid::-webkit-scrollbar {
+  width: 8px;
+}
+
+.cooldown-states-grid::-webkit-scrollbar-track {
+  background: var(--ctp-surface0);
+  border-radius: 4px;
+}
+
+.cooldown-states-grid::-webkit-scrollbar-thumb {
+  background: var(--ctp-surface2);
+  border-radius: 4px;
+}
+
+.cooldown-states-grid::-webkit-scrollbar-thumb:hover {
+  background: var(--ctp-overlay1);
+}
+
+.cooldown-state-card {
+  background: var(--ctp-surface0);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border: 2px solid var(--ctp-surface2);
+  transition: all 0.3s;
+}
+
+.cooldown-state-active {
+  border-color: #a855f7;
+  background: var(--ctp-surface1);
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.3);
+  transform: scale(1.05);
+}
+
+.cooldown-state-day {
+  font-weight: 700;
+  color: var(--ctp-lavender);
+  margin-bottom: 0.5rem;
+}
+
+.cooldown-state-price {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ctp-green);
+  margin-bottom: 0.75rem;
+}
+
+.cooldown-state-values {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cooldown-state-value {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem;
+  background: var(--ctp-mantle);
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.cooldown-label {
+  color: var(--ctp-subtext0);
+  font-weight: 600;
+}
+
+.cooldown-value {
+  font-weight: 700;
+  margin-left: 0.5rem;
+}
+
+.cooldown-value.hold {
+  color: #ec4899;
+}
+
+.cooldown-value.sold {
+  color: #a6e3a1;
+}
+
+.cooldown-value.rest {
+  color: #89dceb;
+}
+
+.cooldown-transition {
+  text-align: center;
+  margin-top: 0.5rem;
+  color: var(--ctp-overlay0);
+}
+
+.cooldown-arrow {
+  font-size: 0.875rem;
+}
+
+.cooldown-info-section {
+  background: var(--ctp-surface0);
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  border: 2px solid var(--ctp-surface2);
+  border-left: 4px solid #a855f7;
+}
+
+.cooldown-info-section h3 {
+  color: var(--ctp-lavender);
+  margin-bottom: 1rem;
+  font-size: 1.125rem;
+}
+
+.cooldown-info-section ul {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 1rem;
+}
+
+.cooldown-info-section li {
+  padding: 0.5rem 0;
+  color: var(--ctp-subtext1);
+  font-family: 'Courier New', monospace;
+  font-size: 0.875rem;
+}
+
+.cooldown-info-section li strong {
+  color: var(--ctp-text);
+}
+
+.cooldown-info-section p {
+  margin: 0;
+  color: var(--ctp-text);
+  font-weight: 600;
+}
