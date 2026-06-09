@@ -16,6 +16,7 @@ export default function TreeStatePanel({
 }) {
     const [treeViewport, setTreeViewport] = useState({ x: 0, y: 0, scale: 1 });
     const [isDraggingTree, setIsDraggingTree] = useState(false);
+    const [gameHierarchyLevel, setGameHierarchyLevel] = useState("overview");
     const treeDragRef = useRef(null);
     const prevDpSnapshotRef = useRef(null);
 
@@ -336,6 +337,97 @@ export default function TreeStatePanel({
                 {currentTree?.truncated ? (
                     <div className="gogt-tree-truncated">
                         Rendering first {maxTreeNodesToRender} nodes only for clarity.
+                    </div>
+                ) : null}
+
+                {currentTree?.stateHierarchy ? (
+                    <div className="gogt-state-hierarchy">
+                        <div className="gogt-hierarchy-controls">
+                            <button
+                                type="button"
+                                className={`gogt-level-btn ${gameHierarchyLevel === "overview" ? "active" : ""}`}
+                                onClick={() => setGameHierarchyLevel("overview")}
+                            >
+                                🔭 Bird's Eye
+                            </button>
+                            <button
+                                type="button"
+                                className={`gogt-level-btn ${gameHierarchyLevel === "intermediate" ? "active" : ""}`}
+                                onClick={() => setGameHierarchyLevel("intermediate")}
+                            >
+                                🔍 Rounds
+                            </button>
+                            <button
+                                type="button"
+                                className={`gogt-level-btn ${gameHierarchyLevel === "detailed" ? "active" : ""}`}
+                                onClick={() => setGameHierarchyLevel("detailed")}
+                            >
+                                🔎 Moves
+                            </button>
+                        </div>
+
+                        {gameHierarchyLevel === "overview" && (
+                            <div className="gogt-hierarchy-content">
+                                <div className="gogt-overview-state">
+                                    <div className="gogt-overview-label">Algorithm Phase</div>
+                                    <div className="gogt-overview-value">{currentTree.stateHierarchy.overallPhase}</div>
+                                    <div className="gogt-overview-message">{currentTree.stateHierarchy.overallMessage}</div>
+                                    <div className="gogt-overview-stats">
+                                        <div className="stat">
+                                            <span>Rounds</span>
+                                            <strong>{currentTree.stateHierarchy.substates.filter(s => s.level === "round-bob").length}</strong>
+                                        </div>
+                                        <div className="stat">
+                                            <span>Final Path</span>
+                                            <strong>{currentTree.chipPath.length} nodes</strong>
+                                        </div>
+                                        <div className="stat">
+                                            <span>Moves Total</span>
+                                            <strong>{currentTree.moves.length}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {gameHierarchyLevel === "intermediate" && (
+                            <div className="gogt-hierarchy-content">
+                                <div className="gogt-substates-list">
+                                    {currentTree.stateHierarchy.substates.map((state, idx) => (
+                                        <div key={idx} className={`gogt-substate gogt-substate-${state.level}`}>
+                                            <div className="gogt-substate-label">
+                                                {state.level === "initialization" && "🎮"}
+                                                {state.level === "round-bob" && "🔵"}
+                                                {state.level === "round-alice" && "🔴"}
+                                                {state.level === "game-end" && "🏁"}
+                                            </div>
+                                            <div className="gogt-substate-message">{state.message}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {gameHierarchyLevel === "detailed" && (
+                            <div className="gogt-hierarchy-content">
+                                <div className="gogt-game-moves-list">
+                                    {currentTree.moves.map((move, idx) => (
+                                        <div
+                                            key={idx}
+                                            className={`gogt-game-move gogt-game-move-${move.type}`}
+                                        >
+                                            <div className="gogt-game-move-label">
+                                                {move.type === "game-start" && "🎮 Start"}
+                                                {move.type === "alice-move" && "🔴 Alice"}
+                                                {move.type === "bob-block" && "🔵 Bob"}
+                                                {move.type === "game-end" && "🏁 End"}
+                                            </div>
+                                            <div className="gogt-game-move-message">{move.message}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 ) : null}
             </div>

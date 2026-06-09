@@ -592,10 +592,16 @@ function pickAliceMove(adj, states, chip) {
   return best;
 }
 
-function simulateTreeGame(treeData) {
+function simulateTreeGameWithTrace(treeData) {
   const { renderCount, adj } = treeData;
   const states = new Array(renderCount).fill("white");
   const chipPath = [];
+  const moves = [];
+  const stateHierarchy = {
+    overallPhase: "game-simulation",
+    overallMessage: "Simulating Alice vs Bob game on tree",
+    substates: [],
+  };
 
   let start = 0;
   let startDegree = -1;
@@ -611,16 +617,88 @@ function simulateTreeGame(treeData) {
   chipPath.push(start);
   let chip = start;
 
+  stateHierarchy.substates.push({
+    level: "initialization",
+    message: `Game initialized: Alice starts at node ${start + 1} (degree ${startDegree})`,
+  });
+
+  moves.push({
+    type: "game-start",
+    message: `Alice starts at node ${start + 1} (highest degree).`,
+    states: states.slice(),
+    chip,
+    chipPath: chipPath.slice(),
+    hierarchyLevel: "detail",
+  });
+
+  let roundNum = 1;
   while (true) {
     const bob = pickBobNode(adj, states, chip);
-    if (bob !== -1) states[bob] = "blue";
+    if (bob !== -1) {
+      states[bob] = "blue";
+      const whiteNeighbors = adj[bob].filter(v => states[v] === "white").length;
+
+      stateHierarchy.substates.push({
+        level: "round-bob",
+        roundNum,
+        message: `Round ${roundNum}: Bob blocks node ${bob + 1} (${whiteNeighbors} white neighbors)`,
+      });
+
+      moves.push({
+        type: "bob-block",
+        message: `Bob blocks node ${bob + 1} (closest white node with most white neighbors).`,
+        states: states.slice(),
+        chip,
+        chipPath: chipPath.slice(),
+        blockNode: bob,
+        hierarchyLevel: "detail",
+        round: roundNum,
+      });
+    }
 
     const next = pickAliceMove(adj, states, chip);
-    if (next === -1) break;
+    if (next === -1) {
+      stateHierarchy.substates.push({
+        level: "game-end",
+        message: `Game ended: Alice trapped at node ${chip + 1}, no valid moves`,
+        finalChipPosition: chip + 1,
+        pathLength: chipPath.length,
+      });
+
+      moves.push({
+        type: "game-end",
+        message: `Alice has no moves. Game ends.`,
+        states: states.slice(),
+        chip,
+        chipPath: chipPath.slice(),
+        hierarchyLevel: "detail",
+      });
+      break;
+    }
 
     states[next] = "red";
     chip = next;
     chipPath.push(chip);
+    const onwardOptions = adj[next].filter(v => states[v] === "white").length;
+
+    stateHierarchy.substates.push({
+      level: "round-alice",
+      roundNum,
+      message: `Round ${roundNum}: Alice moves to node ${next + 1} (${onwardOptions} onward options)`,
+    });
+
+    moves.push({
+      type: "alice-move",
+      message: `Alice moves to node ${next + 1} (neighbor with most onward options).`,
+      states: states.slice(),
+      chip,
+      chipPath: chipPath.slice(),
+      moveNode: next,
+      hierarchyLevel: "detail",
+      round: roundNum,
+    });
+
+    roundNum++;
   }
 
   const blockedEdges = new Set();
@@ -637,6 +715,8 @@ function simulateTreeGame(treeData) {
     chip,
     chipPath,
     blockedEdges,
+    moves,
+    stateHierarchy,
   };
 }
 
@@ -725,7 +805,7 @@ export default function GameOnGrowingTreeVisualizer() {
     }
 
     const treeData = buildTreeData(parentZeroBased, size);
-    const game = simulateTreeGame(treeData);
+    const game = simulateTreeGameWithTrace(treeData);
     return { ...treeData, ...game, size };
   }, [answers.length, parentsInput, previewSize]);
 

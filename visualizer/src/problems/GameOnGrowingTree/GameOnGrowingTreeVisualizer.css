@@ -666,6 +666,211 @@
     }
 }
 
+/* Hierarchical state view */
+.gogt-state-hierarchy {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: rgba(15, 23, 42, 0.45);
+    overflow: hidden;
+    display: grid;
+    gap: 0;
+}
+
+.gogt-hierarchy-controls {
+    display: flex;
+    gap: 8px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(15, 23, 42, 0.58);
+}
+
+.gogt-level-btn {
+    flex: 1;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface2);
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.gogt-level-btn:hover {
+    border-color: rgba(148, 163, 184, 0.45);
+    color: var(--text);
+}
+
+.gogt-level-btn.active {
+    background: rgba(249, 115, 22, 0.16);
+    border-color: rgba(249, 115, 22, 0.5);
+    color: #fdba74;
+}
+
+.gogt-hierarchy-content {
+    padding: 10px 12px;
+    display: grid;
+    gap: 10px;
+}
+
+.gogt-overview-state {
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    border-radius: 10px;
+    padding: 12px;
+    background: linear-gradient(180deg, rgba(251, 191, 36, 0.08), rgba(251, 191, 36, 0.02));
+    display: grid;
+    gap: 12px;
+}
+
+.gogt-overview-label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+}
+
+.gogt-overview-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fdba74;
+    text-transform: capitalize;
+}
+
+.gogt-overview-message {
+    font-size: 0.8rem;
+    color: var(--text);
+    line-height: 1.4;
+}
+
+.gogt-overview-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.gogt-overview-stats .stat {
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 8px;
+    padding: 8px;
+    background: rgba(15, 23, 42, 0.45);
+    display: grid;
+    gap: 2px;
+    text-align: center;
+}
+
+.gogt-overview-stats .stat span {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 700;
+}
+
+.gogt-overview-stats .stat strong {
+    font-size: 0.95rem;
+    color: var(--text);
+}
+
+.gogt-substates-list {
+    display: grid;
+    gap: 6px;
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.gogt-substate {
+    border-left: 3px solid rgba(148, 163, 184, 0.3);
+    border-radius: 6px;
+    padding: 10px 12px;
+    background: rgba(15, 23, 42, 0.3);
+    display: grid;
+    gap: 4px;
+}
+
+.gogt-substate-initialization {
+    border-left-color: rgba(251, 191, 36, 0.8);
+    background: rgba(251, 191, 36, 0.04);
+}
+
+.gogt-substate-round-bob {
+    border-left-color: rgba(59, 130, 246, 0.8);
+    background: rgba(59, 130, 246, 0.04);
+}
+
+.gogt-substate-round-alice {
+    border-left-color: rgba(239, 68, 68, 0.8);
+    background: rgba(239, 68, 68, 0.04);
+}
+
+.gogt-substate-game-end {
+    border-left-color: rgba(34, 197, 94, 0.8);
+    background: rgba(34, 197, 94, 0.04);
+}
+
+.gogt-substate-label {
+    font-size: 0.85rem;
+}
+
+.gogt-substate-message {
+    font-size: 0.78rem;
+    color: var(--text);
+    line-height: 1.35;
+}
+
+.gogt-game-moves-list {
+    display: grid;
+    gap: 6px;
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.gogt-game-move {
+    background: rgba(15, 23, 42, 0.3);
+    padding: 10px 12px;
+    display: grid;
+    gap: 4px;
+    border-left: 3px solid rgba(148, 163, 184, 0.3);
+    border-radius: 6px;
+}
+
+.gogt-game-move-game-start {
+    border-left-color: rgba(251, 191, 36, 0.8);
+    background: rgba(251, 191, 36, 0.04);
+}
+
+.gogt-game-move-alice-move {
+    border-left-color: rgba(239, 68, 68, 0.8);
+    background: rgba(239, 68, 68, 0.04);
+}
+
+.gogt-game-move-bob-block {
+    border-left-color: rgba(59, 130, 246, 0.8);
+    background: rgba(59, 130, 246, 0.04);
+}
+
+.gogt-game-move-game-end {
+    border-left-color: rgba(34, 197, 94, 0.8);
+    background: rgba(34, 197, 94, 0.04);
+}
+
+.gogt-game-move-label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+}
+
+.gogt-game-move-message {
+    font-size: 0.8rem;
+    color: var(--text);
+    line-height: 1.4;
+}
+
 @media (max-width: 640px) {
     .gogt-summary-grid,
     .gogt-metrics {
