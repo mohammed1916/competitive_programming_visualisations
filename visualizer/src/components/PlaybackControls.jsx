@@ -1,6 +1,15 @@
 import { Fragment, useRef, useState, useEffect } from 'react'
 import './PlaybackControls.css'
 
+const LAYOUT_ZONES = {
+  topLeft: { name: 'Code Panel', label: 'CODE', row: 0, col: 0 },
+  topCenter: { name: 'Visualization', label: 'VIZ', row: 0, col: 1 },
+  topRight: { name: 'Problem Info', label: 'INFO', row: 0, col: 2 },
+  bottomLeft: { name: 'Console / Output', label: 'OUTPUT', row: 1, col: 0 },
+  bottomCenter: { name: 'Details Panel', label: 'DETAILS', row: 1, col: 1 },
+  bottomRight: { name: 'Chat / Hints', label: 'CHAT', row: 1, col: 2 },
+}
+
 export default function PlaybackControls({
   className,
   buttonsGroupClassName,
@@ -47,7 +56,36 @@ export default function PlaybackControls({
   const [y, setY] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const [offset, setOffset] = useState({ x: 0, y: 0 })
+  const [hoveredRegion, setHoveredRegion] = useState(null)
   const dragRef = useRef(null)
+
+  const getClosestZone = (mouseX, mouseY) => {
+    const centerX = window.innerWidth / 2
+    const centerY = window.innerHeight / 2
+    const previewWidth = 600
+    const previewHeight = 400
+    const startX = centerX - previewWidth / 2
+    const startY = centerY - previewHeight / 2
+
+    const cellWidth = previewWidth / 3
+    const cellHeight = previewHeight / 2
+
+    let closest = null
+    let minDistance = Infinity
+
+    Object.entries(LAYOUT_ZONES).forEach(([key, zone]) => {
+      const zoneX = startX + zone.col * cellWidth + cellWidth / 2
+      const zoneY = startY + zone.row * cellHeight + cellHeight / 2
+      const distance = Math.sqrt(Math.pow(mouseX - zoneX, 2) + Math.pow(mouseY - zoneY, 2))
+
+      if (distance < minDistance) {
+        minDistance = distance
+        closest = key
+      }
+    })
+
+    return closest
+  }
 
   const handleMouseDown = (e) => {
     if (dragRef.current) {
@@ -63,11 +101,36 @@ export default function PlaybackControls({
     if (isDragging) {
       setX(e.clientX - offset.x)
       setY(e.clientY - offset.y)
+      const zone = getClosestZone(e.clientX, e.clientY)
+      setHoveredRegion(zone)
     }
   }
 
   const handleMouseUp = () => {
+    if (hoveredRegion) {
+      snapToZone(hoveredRegion)
+    }
     setIsDragging(false)
+    setHoveredRegion(null)
+  }
+
+  const snapToZone = (zoneKey) => {
+    const zone = LAYOUT_ZONES[zoneKey]
+    const centerX = window.innerWidth / 2
+    const centerY = window.innerHeight / 2
+    const previewWidth = 600
+    const previewHeight = 400
+    const startX = centerX - previewWidth / 2
+    const startY = centerY - previewHeight / 2
+
+    const cellWidth = previewWidth / 3
+    const cellHeight = previewHeight / 2
+
+    const newX = startX + zone.col * cellWidth + cellWidth / 2 - 30
+    const newY = startY + zone.row * cellHeight + cellHeight / 2 - 15
+
+    setX(newX)
+    setY(newY)
   }
 
   useEffect(() => {
@@ -79,7 +142,7 @@ export default function PlaybackControls({
         document.removeEventListener('mouseup', handleMouseUp)
       }
     }
-  }, [isDragging, offset])
+  }, [isDragging, offset, hoveredRegion])
 
   const resolvedRootClass = className || 'pc'
   const resolvedButtonsGroupClass = buttonsGroupClassName || 'pc-buttons'
@@ -96,51 +159,92 @@ export default function PlaybackControls({
   const resolvedPlayLabel = isPlaying ? pauseLabel : isDone ? replayLabel : playLabel
 
   return (
-    <div
-      ref={dragRef}
-      className={resolvedRootClass}
-      onMouseDown={handleMouseDown}
-      style={{
-        position: 'fixed',
-        left: `${x}px`,
-        top: `${y}px`,
-        zIndex: 1000,
-        cursor: isDragging ? 'grabbing' : 'grab',
-        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-        border: '1px solid #ccc',
-        borderRadius: '8px',
-        padding: '8px',
-      }}>
-      <ButtonGroup {...buttonGroupProps}>
-        {leftSlot}
-        <button type="button" className={resetClasses} onClick={onReset} disabled={resetDisabled} title={resetTitle}>
-          {renderResetContent ? renderResetContent() : resetLabel}
-        </button>
-        <button type="button" className={ghostClasses} onClick={onPrev} disabled={prevDisabled}>{prevLabel}</button>
-        <button type="button" className={playClasses} onClick={onPlayToggle}>{resolvedPlayLabel}</button>
-        <button type="button" className={ghostClasses} onClick={onNext} disabled={nextDisabled}>{nextLabel}</button>
-      </ButtonGroup>
-
-      {middleSlot}
-
-      {showSpeed && (
-        <div className={resolvedSpeedOuterClass}>
-          <div className={resolvedSpeedWrapClass}>
-            <span className={resolvedSpeedLabelClass}>{speedLabel}</span>
-            <input
-              className={resolvedSpeedInputClass}
-              type="range"
-              min={speedMin}
-              max={speedMax}
-              step={speedStep}
-              value={speedRangeValue ?? speed}
-              onChange={onSpeedChange}
-              aria-label={speedAriaLabel}
-            />
-            {speedIndicator && <span className={resolvedSpeedIndicatorClass}>{speedIndicator}</span>}
+    <>
+      {isDragging && (
+        <div className="pc-layout-preview-wrapper">
+          <div className="pc-layout-preview">
+            <div className="pc-layout-grid">
+              {Object.entries(LAYOUT_ZONES).map(([key, zone]) => {
+                const isHovered = key === hoveredRegion
+                return (
+                  <div
+                    key={key}
+                    className={`pc-zone ${isHovered ? 'hovered' : ''}`}
+                    style={{
+                      gridRow: zone.row + 1,
+                      gridColumn: zone.col + 1,
+                    }}>
+                    <div className="pc-zone-inner">
+                      <div className="pc-zone-label">{zone.label}</div>
+                      <div className="pc-zone-name">{zone.name}</div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+            <div className="pc-preview-title">Drop Panel Here</div>
           </div>
+          <div className="pc-preview-backdrop" />
         </div>
       )}
-    </div>
+
+      <div
+        ref={dragRef}
+        className={resolvedRootClass}
+        onMouseDown={handleMouseDown}
+        style={{
+          position: 'fixed',
+          left: `${x}px`,
+          top: `${y}px`,
+          zIndex: 1000,
+          cursor: isDragging ? 'grabbing' : 'grab',
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          border: '1px solid #ccc',
+          borderRadius: '8px',
+          padding: isDragging ? '4px' : '8px',
+          opacity: isDragging ? 0.7 : 1,
+          transform: isDragging ? 'scale(0.85)' : 'scale(1)',
+          transition: isDragging ? 'none' : 'all 0.3s ease',
+        }}>
+        {!isDragging ? (
+          <>
+            <ButtonGroup {...buttonGroupProps}>
+              {leftSlot}
+              <button type="button" className={resetClasses} onClick={onReset} disabled={resetDisabled} title={resetTitle}>
+                {renderResetContent ? renderResetContent() : resetLabel}
+              </button>
+              <button type="button" className={ghostClasses} onClick={onPrev} disabled={prevDisabled}>{prevLabel}</button>
+              <button type="button" className={playClasses} onClick={onPlayToggle}>{resolvedPlayLabel}</button>
+              <button type="button" className={ghostClasses} onClick={onNext} disabled={nextDisabled}>{nextLabel}</button>
+            </ButtonGroup>
+
+            {middleSlot}
+
+            {showSpeed && (
+              <div className={resolvedSpeedOuterClass}>
+                <div className={resolvedSpeedWrapClass}>
+                  <span className={resolvedSpeedLabelClass}>{speedLabel}</span>
+                  <input
+                    className={resolvedSpeedInputClass}
+                    type="range"
+                    min={speedMin}
+                    max={speedMax}
+                    step={speedStep}
+                    value={speedRangeValue ?? speed}
+                    onChange={onSpeedChange}
+                    aria-label={speedAriaLabel}
+                  />
+                  {speedIndicator && <span className={resolvedSpeedIndicatorClass}>{speedIndicator}</span>}
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          <div style={{ padding: '6px 12px', fontWeight: '600', color: '#0f172a', fontSize: '13px' }}>
+            ▼ Playback Controls
+          </div>
+        )}
+      </div>
+    </>
   )
 }
