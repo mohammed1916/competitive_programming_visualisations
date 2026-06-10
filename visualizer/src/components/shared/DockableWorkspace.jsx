@@ -3,6 +3,15 @@ import "./DockableWorkspace.css";
 
 const ZONES = ["left", "right", "full"];
 
+const LAYOUT_ZONES = {
+  topLeft: { name: 'Left Panel', label: 'LEFT', row: 0, col: 0, zone: 'left' },
+  topCenter: { name: 'Visualization', label: 'VIZ', row: 0, col: 1, zone: 'full' },
+  topRight: { name: 'Right Panel', label: 'RIGHT', row: 0, col: 2, zone: 'right' },
+  bottomLeft: { name: 'Left Panel', label: 'LEFT', row: 1, col: 0, zone: 'left' },
+  bottomCenter: { name: 'Full Width', label: 'FULL', row: 1, col: 1, zone: 'full' },
+  bottomRight: { name: 'Right Panel', label: 'RIGHT', row: 1, col: 2, zone: 'right' },
+};
+
 function removeFromZones(layout, panelId) {
   return {
     left: layout.left.filter((id) => id !== panelId),
@@ -30,13 +39,43 @@ export default function DockableWorkspace({
   const [layout, setLayout] = useState(initialLayout);
   const [draggedId, setDraggedId] = useState(null);
   const [hoverZone, setHoverZone] = useState(null);
+  const [hoveredLayoutZone, setHoveredLayoutZone] = useState(null);
   const [maximizedId, setMaximizedId] = useState(null);
 
   const activeMaximizedPanel = maximizedId ? panelMap.get(maximizedId) : null;
 
+  const getClosestLayoutZone = (mouseX, mouseY) => {
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
+    const previewWidth = 600;
+    const previewHeight = 400;
+    const startX = centerX - previewWidth / 2;
+    const startY = centerY - previewHeight / 2;
+
+    const cellWidth = previewWidth / 3;
+    const cellHeight = previewHeight / 2;
+
+    let closest = null;
+    let minDistance = Infinity;
+
+    Object.entries(LAYOUT_ZONES).forEach(([key, zone]) => {
+      const zoneX = startX + zone.col * cellWidth + cellWidth / 2;
+      const zoneY = startY + zone.row * cellHeight + cellHeight / 2;
+      const distance = Math.sqrt(Math.pow(mouseX - zoneX, 2) + Math.pow(mouseY - zoneY, 2));
+
+      if (distance < minDistance) {
+        minDistance = distance;
+        closest = key;
+      }
+    });
+
+    return closest;
+  };
+
   const placePanel = (panelId, targetZone) => {
     setLayout((current) => movePanel(current, panelId, targetZone));
     setHoverZone(null);
+    setHoveredLayoutZone(null);
   };
 
   const minimizePanel = (panelId) => {
@@ -69,6 +108,13 @@ export default function DockableWorkspace({
         onDragEnd={() => {
           setDraggedId(null);
           setHoverZone(null);
+          setHoveredLayoutZone(null);
+        }}
+        onDragOver={(e) => {
+          if (draggedId) {
+            const zone = getClosestLayoutZone(e.clientX, e.clientY);
+            setHoveredLayoutZone(zone);
+          }
         }}
       >
         <header className="dock-panel-head">
@@ -122,36 +168,43 @@ export default function DockableWorkspace({
         </p>
       </header>
 
-      {draggedId ? (
-        <div className="dock-drop-row">
-          {ZONES.map((zone) => (
-            <button
-              key={zone}
-              type="button"
-              className={`dock-drop-zone ${hoverZone === zone ? "active" : ""}`}
-              onDragOver={(event) => {
-                event.preventDefault();
-                setHoverZone(zone);
-              }}
-              onDragLeave={() => setHoverZone((current) => (current === zone ? null : current))}
-              onDrop={(event) => {
-                event.preventDefault();
-                placePanel(draggedId, zone);
-                setDraggedId(null);
-              }}
-            >
-              <span>{zone === "full" ? "Full width" : `${zone} half`}</span>
-              <strong>
-                {zone === "left"
-                  ? "Snap to left"
-                  : zone === "right"
-                    ? "Snap to right"
-                    : "Take the whole row"}
-              </strong>
-            </button>
-          ))}
+      {draggedId && (
+        <div className="dock-layout-preview-wrapper">
+          <div className="dock-layout-preview">
+            <div className="dock-layout-grid">
+              {Object.entries(LAYOUT_ZONES).map(([key, zone]) => {
+                const isHovered = key === hoveredLayoutZone;
+                return (
+                  <div
+                    key={key}
+                    className={`dock-zone ${isHovered ? 'hovered' : ''}`}
+                    style={{
+                      gridRow: zone.row + 1,
+                      gridColumn: zone.col + 1,
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setHoveredLayoutZone(key);
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      placePanel(draggedId, zone.zone);
+                      setDraggedId(null);
+                    }}
+                  >
+                    <div className="dock-zone-inner">
+                      <div className="dock-zone-label">{zone.label}</div>
+                      <div className="dock-zone-name">{zone.name}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="dock-preview-title">Drop Panel Here</div>
+          </div>
+          <div className="dock-preview-backdrop" />
         </div>
-      ) : null}
+      )}
 
       {activeMaximizedPanel ? (
         <div className="dock-maximized">
