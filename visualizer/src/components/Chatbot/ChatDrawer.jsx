@@ -6,6 +6,15 @@ import ChatMessage from "./ChatMessage";
 import ChatInput from "./ChatInput";
 import ResizablePanel from "../ResizablePanel";
 
+const LAYOUT_ZONES = {
+  topLeft: { name: 'Code Panel', label: 'CODE', row: 0, col: 0 },
+  topCenter: { name: 'Visualization', label: 'VIZ', row: 0, col: 1 },
+  topRight: { name: 'Problem Info', label: 'INFO', row: 0, col: 2 },
+  bottomLeft: { name: 'Console / Output', label: 'OUTPUT', row: 1, col: 0 },
+  bottomCenter: { name: 'Details Panel', label: 'DETAILS', row: 1, col: 1 },
+  bottomRight: { name: 'Chat / Hints', label: 'CHAT', row: 1, col: 2 },
+};
+
 /**
  * Formats the current visualizer step as a readable context string
  * to inject into the chat message before the user's question.
@@ -48,6 +57,7 @@ export default function ChatDrawer() {
   } = useChatContext();
   const [selectAnnouncement, setSelectAnnouncement] = useState('');
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [hoveredZone, setHoveredZone] = useState(null);
 
   const handleToggleSelectMode = useCallback(() => {
     const newMode = !selectMode;
@@ -97,10 +107,21 @@ export default function ChatDrawer() {
       const nx = Math.max(6, Math.min(window.innerWidth - 200, dragStartRef.current.origX + dx));
       const ny = Math.max(6, Math.min(window.innerHeight - 120, dragStartRef.current.origY + dy));
       setPos({ x: nx, y: ny });
+
+      // Track hovered zone
+      const zone = getClosestZone(clientX, clientY);
+      setHoveredZone(zone);
     };
     const onUp = () => {
       if (!draggingRef.current) return;
       draggingRef.current = false;
+
+      // Snap to zone if hovering
+      if (hoveredZone) {
+        snapToZone(hoveredZone);
+      }
+
+      setHoveredZone(null);
       try { window.localStorage.setItem('chat.pos', JSON.stringify(pos)); } catch (err) { void err }
       document.body.style.userSelect = '';
     };
@@ -114,7 +135,7 @@ export default function ChatDrawer() {
       window.removeEventListener('mouseup', onUp);
       window.removeEventListener('touchend', onUp);
     };
-  }, [pos]);
+  }, [pos, hoveredZone]);
 
   // Attach current step to context
   const handleAttachStep = useCallback(() => {
@@ -220,6 +241,52 @@ export default function ChatDrawer() {
   );
 
   if (!isOpen) return null;
+  const getClosestZone = (mouseX, mouseY) => {
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
+    const previewWidth = 600;
+    const previewHeight = 400;
+    const startX = centerX - previewWidth / 2;
+    const startY = centerY - previewHeight / 2;
+
+    const cellWidth = previewWidth / 3;
+    const cellHeight = previewHeight / 2;
+
+    let closest = null;
+    let minDistance = Infinity;
+
+    Object.entries(LAYOUT_ZONES).forEach(([key, zone]) => {
+      const zoneX = startX + zone.col * cellWidth + cellWidth / 2;
+      const zoneY = startY + zone.row * cellHeight + cellHeight / 2;
+      const distance = Math.sqrt(Math.pow(mouseX - zoneX, 2) + Math.pow(mouseY - zoneY, 2));
+
+      if (distance < minDistance) {
+        minDistance = distance;
+        closest = key;
+      }
+    });
+
+    return closest;
+  };
+
+  const snapToZone = (zoneKey) => {
+    const zone = LAYOUT_ZONES[zoneKey];
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
+    const previewWidth = 600;
+    const previewHeight = 400;
+    const startX = centerX - previewWidth / 2;
+    const startY = centerY - previewHeight / 2;
+
+    const cellWidth = previewWidth / 3;
+    const cellHeight = previewHeight / 2;
+
+    const newX = startX + zone.col * cellWidth + cellWidth / 2 - 100;
+    const newY = startY + zone.row * cellHeight + cellHeight / 2 - 80;
+
+    setPos({ x: Math.max(6, Math.min(window.innerWidth - 200, newX)), y: Math.max(6, Math.min(window.innerHeight - 120, newY)) });
+  };
+
   // Floating position (persisted)
   const startDrag = (e) => {
     e.preventDefault();
@@ -391,6 +458,35 @@ export default function ChatDrawer() {
 
   return (
     <>
+      {/* Layout preview overlay when dragging */}
+      {floatingMode && draggingRef.current && (
+        <div className="chat-layout-preview-wrapper">
+          <div className="chat-layout-preview">
+            <div className="chat-layout-grid">
+              {Object.entries(LAYOUT_ZONES).map(([key, zone]) => {
+                const isHovered = key === hoveredZone;
+                return (
+                  <div
+                    key={key}
+                    className={`chat-zone ${isHovered ? 'hovered' : ''}`}
+                    style={{
+                      gridRow: zone.row + 1,
+                      gridColumn: zone.col + 1,
+                    }}>
+                    <div className="chat-zone-inner">
+                      <div className="chat-zone-label">{zone.label}</div>
+                      <div className="chat-zone-name">{zone.name}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="chat-preview-title">Drop Chat Here</div>
+          </div>
+          <div className="chat-preview-backdrop" />
+        </div>
+      )}
+
       {/* Backdrop (click to close) — ignore when select or floating mode is active */}
       <div
         className="chat-backdrop"
