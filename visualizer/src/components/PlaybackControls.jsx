@@ -191,23 +191,37 @@ export default function PlaybackControls({
       <div
         ref={dragRef}
         className={resolvedRootClass}
-        onMouseDown={handleMouseDown}
         style={{
           position: 'fixed',
           left: `${x}px`,
           top: `${y}px`,
           zIndex: 1000,
-          cursor: isDragging ? 'grabbing' : 'grab',
           backgroundColor: 'rgba(255, 255, 255, 0.9)',
           border: '1px solid #ccc',
           borderRadius: '8px',
-          padding: isDragging ? '4px' : '8px',
+          overflow: 'hidden',
           opacity: isDragging ? 0.7 : 1,
           transform: isDragging ? 'scale(0.85)' : 'scale(1)',
           transition: isDragging ? 'none' : 'all 0.3s ease',
         }}>
+        <div
+          className="pc-drag-handle"
+          onMouseDown={handleMouseDown}
+          style={{
+            cursor: isDragging ? 'grabbing' : 'grab',
+            padding: '6px 12px',
+            backgroundColor: 'rgba(220, 220, 220, 0.3)',
+            borderBottom: '1px solid #ddd',
+            userSelect: 'none',
+            fontSize: '12px',
+            fontWeight: '600',
+            color: '#0f172a',
+          }}>
+          ≡ Playback Controls
+        </div>
+
         {!isDragging ? (
-          <>
+          <div style={{ padding: '8px' }}>
             <ButtonGroup {...buttonGroupProps}>
               {leftSlot}
               <button type="button" className={resetClasses} onClick={onReset} disabled={resetDisabled} title={resetTitle}>
@@ -238,12 +252,8 @@ export default function PlaybackControls({
                 </div>
               </div>
             )}
-          </>
-        ) : (
-          <div style={{ padding: '6px 12px', fontWeight: '600', color: '#0f172a', fontSize: '13px' }}>
-            ▼ Playback Controls
           </div>
-        )}
+        ) : null}
       </div>
     </>
   )

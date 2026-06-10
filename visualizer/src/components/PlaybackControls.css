@@ -85,6 +85,19 @@
   text-align: right;
 }
 
+.pc-drag-handle {
+  cursor: grab;
+  transition: background-color 0.2s ease;
+}
+
+.pc-drag-handle:hover {
+  background-color: rgba(200, 200, 200, 0.4);
+}
+
+.pc-drag-handle:active {
+  cursor: grabbing;
+}
+
 .pc-layout-preview-wrapper {
   position: fixed;
   top: 0;
