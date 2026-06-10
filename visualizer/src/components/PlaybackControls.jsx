@@ -1,4 +1,4 @@
-import { Fragment } from 'react'
+import { Fragment, useRef, useState, useEffect } from 'react'
 import './PlaybackControls.css'
 
 export default function PlaybackControls({
@@ -43,6 +43,44 @@ export default function PlaybackControls({
   speedIndicator = null,
   showSpeed = true,
 }) {
+  const [x, setX] = useState(0)
+  const [y, setY] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
+  const [offset, setOffset] = useState({ x: 0, y: 0 })
+  const dragRef = useRef(null)
+
+  const handleMouseDown = (e) => {
+    if (dragRef.current) {
+      setIsDragging(true)
+      setOffset({
+        x: e.clientX - x,
+        y: e.clientY - y,
+      })
+    }
+  }
+
+  const handleMouseMove = (e) => {
+    if (isDragging) {
+      setX(e.clientX - offset.x)
+      setY(e.clientY - offset.y)
+    }
+  }
+
+  const handleMouseUp = () => {
+    setIsDragging(false)
+  }
+
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove)
+        document.removeEventListener('mouseup', handleMouseUp)
+      }
+    }
+  }, [isDragging, offset])
+
   const resolvedRootClass = className || 'pc'
   const resolvedButtonsGroupClass = buttonsGroupClassName || 'pc-buttons'
   const resolvedSpeedOuterClass = speedOuterClassName || 'pc-speed-outer'
@@ -58,7 +96,21 @@ export default function PlaybackControls({
   const resolvedPlayLabel = isPlaying ? pauseLabel : isDone ? replayLabel : playLabel
 
   return (
-    <div className={resolvedRootClass}>
+    <div
+      ref={dragRef}
+      className={resolvedRootClass}
+      onMouseDown={handleMouseDown}
+      style={{
+        position: 'fixed',
+        left: `${x}px`,
+        top: `${y}px`,
+        zIndex: 1000,
+        cursor: isDragging ? 'grabbing' : 'grab',
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        border: '1px solid #ccc',
+        borderRadius: '8px',
+        padding: '8px',
+      }}>
       <ButtonGroup {...buttonGroupProps}>
         {leftSlot}
         <button type="button" className={resetClasses} onClick={onReset} disabled={resetDisabled} title={resetTitle}>
