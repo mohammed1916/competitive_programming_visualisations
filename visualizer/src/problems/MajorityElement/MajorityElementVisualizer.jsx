@@ -2,8 +2,10 @@ import { useState, useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import { useCodeVisualConnectivity } from '../../hooks/useCodeVisualConnectivity'
+import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './MajorityElementVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -95,6 +97,8 @@ export default function MajorityElementVisualizer() {
         onStepJump: setStepIndex,
     })
 
+    const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
+
     return (
         <div className="me-shell">
             <div className="me-top">
@@ -168,6 +172,7 @@ export default function MajorityElementVisualizer() {
                 codeLines={SOLUTION_CODE}
                 highlightedLines={connectivity.highlightedLines}
                 onLineSelect={connectivity.handleLineSelect}
+                onActiveLineDomChange={setActiveLineDom}
             />
             <div className={`me-status ${step?.phase === 'done' ? 'ok' : ''}`}>{step?.message || 'Press Play to begin.'}</div>
             <PlaybackControls
@@ -182,7 +187,12 @@ export default function MajorityElementVisualizer() {
                 nextDisabled={isDone}
                 resetDisabled={stepIndex < 0}
                 onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+                showPatternOverlay={showPatternOverlay}
+                onShowPatternOverlayChange={setShowPatternOverlay}
+                patternOverlayLabel="Show pattern overlay"
+                showPatternOverlayToggle
             />
+            {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     )
 }

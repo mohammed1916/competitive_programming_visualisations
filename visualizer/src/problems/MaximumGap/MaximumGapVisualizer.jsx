@@ -6,7 +6,7 @@ import { usePlaybackState } from "../../hooks/usePlaybackState";
 import Selectable from "../../components/Selectable";
 import { useVisualizationContext } from "../../context/VisualizationContext";
 import PatternOverlay from "../../components/PatternOverlay";
-import usePatternOverlay from "../../hooks/usePatternOverlay";
+import { usePatternOverlay } from "../../hooks/usePatternOverlay";
 import "./MaximumGapVisualizer.css";
 
 const SOLUTION_CODE = [

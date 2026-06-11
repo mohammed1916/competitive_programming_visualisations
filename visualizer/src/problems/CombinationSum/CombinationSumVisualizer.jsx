@@ -2,7 +2,9 @@ import { useState, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './CombinationSumVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -202,6 +204,8 @@ export default function CombinationSumVisualizer() {
   const [candidatesInput, setCandidatesInput] = useState('[2, 3, 6, 7]')
   const [targetInput, setTargetInput] = useState('7')
 
+  const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
+
   const { candidates, target, inputError } = useMemo(() => {
     try {
       const c = JSON.parse(candidatesInput)
@@ -337,7 +341,7 @@ export default function CombinationSumVisualizer() {
       </div>
 
       <div className="combination-sum-middle">
-        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
       </div>
 
       <div className={`cs-status ${step?.phase === 'found' ? 'found' : step?.phase === 'return_bound' ? 'bound' : ''}`}>
@@ -357,8 +361,14 @@ export default function CombinationSumVisualizer() {
           nextDisabled={isDone}
           resetDisabled={stepIndex < 0}
           onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+          showPatternOverlay={showPatternOverlay}
+          onShowPatternOverlayChange={setShowPatternOverlay}
+          patternOverlayLabel="Show pattern overlay"
+          showPatternOverlayToggle
         />
       </div>
+
+      {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
     </div>
   )
 }

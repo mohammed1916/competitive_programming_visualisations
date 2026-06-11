@@ -2,8 +2,10 @@ import { useState, useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import { useCodeVisualConnectivity } from '../../hooks/useCodeVisualConnectivity'
+import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './BestTimeBuySellStockVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -109,6 +111,7 @@ const EXAMPLES = [
 
 export default function BestTimeBuySellStockVisualizer() {
     const [pricesInput, setPricesInput] = useState('[7,1,5,3,6,4]')
+    const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
     const { prices, inputError } = useMemo(() => {
         try {
@@ -248,6 +251,7 @@ export default function BestTimeBuySellStockVisualizer() {
                 codeLines={SOLUTION_CODE}
                 highlightedLines={connectivity.highlightedLines}
                 onLineSelect={connectivity.handleLineSelect}
+                onActiveLineDomChange={setActiveLineDom}
             />
 
             <div className={`btbs-status${step?.phase === 'done' ? (maxProfit > 0 ? ' ok' : ' zero') : ''}`}>
@@ -260,7 +264,13 @@ export default function BestTimeBuySellStockVisualizer() {
                 onReset={handleReset} prevDisabled={stepIndex < 0}
                 nextDisabled={isDone} resetDisabled={stepIndex < 0}
                 onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+                showPatternOverlay={showPatternOverlay}
+                onShowPatternOverlayChange={setShowPatternOverlay}
+                patternOverlayLabel="Show pattern overlay"
+                showPatternOverlayToggle
             />
+
+            {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     )
 }

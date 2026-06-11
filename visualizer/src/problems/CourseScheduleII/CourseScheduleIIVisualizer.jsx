@@ -2,7 +2,9 @@ import { useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import { GraphCanvas3D } from '../../components/viz3d'
 import './CourseScheduleIIVisualizer.css'
 
@@ -110,6 +112,7 @@ const EXAMPLES = [
 export default function CourseScheduleIIVisualizer() {
   const [numInput, setNumInput] = useState('4')
   const [preInput, setPreInput] = useState('[[1,0],[2,0],[3,1],[3,2]]')
+  const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
   const { numCourses, prerequisites, inputError } = useMemo(() => {
     try {
@@ -209,7 +212,7 @@ export default function CourseScheduleIIVisualizer() {
         </section>
       </div>
 
-      <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+      <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
       <div className={`cs2-status ${step?.phase === 'done' ? (step?.ok ? 'ok' : 'bad') : ''}`}>{step?.message || 'Press Play to start.'}</div>
       <PlaybackControls
         isPlaying={isPlaying}
@@ -223,7 +226,12 @@ export default function CourseScheduleIIVisualizer() {
         nextDisabled={isDone}
         resetDisabled={stepIndex < 0}
         onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+        showPatternOverlay={showPatternOverlay}
+        onShowPatternOverlayChange={setShowPatternOverlay}
+        patternOverlayLabel="Show pattern overlay"
+        showPatternOverlayToggle
       />
+      {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
     </div>
   )
 }

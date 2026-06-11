@@ -2,8 +2,10 @@ import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import { useApplyExample } from '../../hooks/useApplyExample'
+import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './LongestSubstringWithoutRepeatingVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -104,6 +106,8 @@ const EXAMPLES = [
 
 export default function LongestSubstringWithoutRepeatingVisualizer() {
   const [strInput, setStrInput] = useState('abcabcbb')
+
+  const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
   const { s, inputError } = useMemo(() => {
     return { s: strInput, inputError: '' } // Any string is valid
@@ -237,7 +241,7 @@ export default function LongestSubstringWithoutRepeatingVisualizer() {
       </div>
 
       <div className="lswrc-middle">
-        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
 
         <div className="lswrc-panel">
           <div className="lswrc-panel-head">Variables</div>
@@ -281,8 +285,14 @@ export default function LongestSubstringWithoutRepeatingVisualizer() {
           nextDisabled={isDone}
           resetDisabled={stepIndex < 0}
           onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+          showPatternOverlay={showPatternOverlay}
+          onShowPatternOverlayChange={setShowPatternOverlay}
+          patternOverlayLabel="Show pattern overlay"
+          showPatternOverlayToggle
         />
       </div>
+
+      {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
     </div>
   )
 }

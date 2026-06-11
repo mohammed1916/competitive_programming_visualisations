@@ -3,7 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import ResizablePanel from '../../components/ResizablePanel'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './PalindromeVisualizer.css'
 
 const MIN_PANEL_PERCENT = 16
@@ -562,6 +564,9 @@ export default function PalindromeVisualizer() {
     isDone,
   } = usePlaybackState(steps.length, 500)
 
+  // Pattern overlay hook
+  const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
+
   const trimmedInput = inputStr.trim()
   const n = str.length
   const currentStep = stepIdx >= 0 ? steps[stepIdx] : null
@@ -970,6 +975,7 @@ export default function PalindromeVisualizer() {
                 activeLabelPrefix="Currently executing line"
                 activeLabelSuffix=""
                 idleLabel="Press Play to start code tracking"
+                onActiveLineDomChange={setActiveLineDom}
               />
             </>
           )}
@@ -1005,6 +1011,10 @@ export default function PalindromeVisualizer() {
           speedRangeValue={1480 - speed}
           onSpeedChange={(e) => setSpeed(1480 - Number(e.target.value))}
           speedIndicator={speed < 300 ? '🚀 Fast' : speed < 700 ? '⚡ Med' : '🐢 Slow'}
+          showPatternOverlay={showPatternOverlay}
+          onShowPatternOverlayChange={setShowPatternOverlay}
+          patternOverlayLabel="Show pattern overlay"
+          showPatternOverlayToggle
         />
       )}
 
@@ -1028,6 +1038,8 @@ export default function PalindromeVisualizer() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {showPatternOverlay && currentStep && <PatternOverlay step={currentStep} activeLineDom={activeLineDom} />}
 
     </div>
   )

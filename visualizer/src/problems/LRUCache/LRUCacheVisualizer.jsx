@@ -2,7 +2,9 @@ import { useState, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './LRUCacheVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -198,6 +200,7 @@ const EXAMPLES = [
 export default function LRUCacheVisualizer() {
   const [commandsInput, setCommandsInput] = useState('["LRUCache", "put", "put", "get", "put", "get", "put", "get", "get", "get"]')
   const [argsInput, setArgsInput] = useState('[[2], [1, 1], [2, 2], [1], [3, 3], [2], [4, 4], [1], [3], [4]]')
+  const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
   const { commands, argsList, inputError } = useMemo(() => {
     try {
@@ -376,7 +379,7 @@ export default function LRUCacheVisualizer() {
       </div>
 
       <div className="lru-middle">
-        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
       </div>
 
       <div className={`lru-status \${step?.phase?.includes('return') ? 'success' : step?.phase?.includes('notfound') || step?.phase?.includes('lru') ? 'fail' : ''}`}>
@@ -396,8 +399,14 @@ export default function LRUCacheVisualizer() {
           nextDisabled={isDone}
           resetDisabled={stepIndex < 0}
           onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+          showPatternOverlay={showPatternOverlay}
+          onShowPatternOverlayChange={setShowPatternOverlay}
+          patternOverlayLabel="Show pattern overlay"
+          showPatternOverlayToggle
         />
       </div>
+
+      {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
     </div>
   )
 }

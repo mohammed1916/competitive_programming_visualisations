@@ -2,7 +2,9 @@ import { useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './CoinChangeVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -123,6 +125,8 @@ export default function CoinChangeVisualizer() {
         stepIndex, stepForward, stepBack, togglePlay,
         handleReset, isPlaying, speed, setSpeed, isDone,
     } = usePlaybackState(steps.length)
+
+    const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
     const step = stepIndex >= 0 ? steps[stepIndex] : null
 
@@ -269,7 +273,7 @@ export default function CoinChangeVisualizer() {
                 </section>
             </div>
 
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
 
             <div className={`cc-status${step?.result === -1 ? ' fail' : step?.result > 0 ? ' ok' : ''}`}>
                 {step?.message ?? 'Press Play or Step to begin.'}
@@ -287,7 +291,12 @@ export default function CoinChangeVisualizer() {
                 nextDisabled={isDone}
                 resetDisabled={stepIndex < 0}
                 onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+                showPatternOverlay={showPatternOverlay}
+                onShowPatternOverlayChange={setShowPatternOverlay}
+                patternOverlayLabel="Show pattern overlay"
+                showPatternOverlayToggle
             />
+            {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     )
 }

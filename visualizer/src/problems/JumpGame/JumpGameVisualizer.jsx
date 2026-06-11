@@ -2,7 +2,9 @@ import { useState, useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './JumpGameVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -84,6 +86,7 @@ const EXAMPLES = [
 
 export default function JumpGameVisualizer() {
     const [numsInput, setNumsInput] = useState('[2,3,1,1,4]')
+    const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
     const { nums, inputError } = useMemo(() => {
         try {
@@ -188,7 +191,7 @@ export default function JumpGameVisualizer() {
                 </div>
             </section>
 
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
 
             <div className={`jg-status${step?.result === true ? ' ok' : step?.result === false ? ' fail' : ''}`}>
                 {step?.message ?? 'Press Play or Step to begin.'}
@@ -206,7 +209,13 @@ export default function JumpGameVisualizer() {
                 nextDisabled={isDone}
                 resetDisabled={stepIndex < 0}
                 onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+                showPatternOverlay={showPatternOverlay}
+                onShowPatternOverlayChange={setShowPatternOverlay}
+                patternOverlayLabel="Show pattern overlay"
+                showPatternOverlayToggle
             />
+
+            {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     )
 }

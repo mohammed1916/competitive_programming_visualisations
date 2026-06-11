@@ -2,10 +2,12 @@ import { useState, useCallback, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import PatternOverlay from '../../components/PatternOverlay'
 import ResizableSplitPanels from '../../components/shared/ResizableSplitPanels'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import { useCodeVisualConnectivity } from '../../hooks/useCodeVisualConnectivity'
 import { useProblemCode } from '../../hooks/useProblemCode'
+import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './AddTwoNumbersVisualizer.css'
 
 function generateSteps(list1, list2) {
@@ -119,6 +121,8 @@ export default function AddTwoNumbersVisualizer({ problem }) {
     stepIndex, setStepIndex, stepForward, stepBack, togglePlay,
     handleReset, isPlaying, speed, setSpeed, isDone,
   } = usePlaybackState(steps.length)
+
+  const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
   const step = stepIndex >= 0 ? steps[stepIndex] : null
 
@@ -292,6 +296,7 @@ export default function AddTwoNumbersVisualizer({ problem }) {
           codeLines={codeLines}
           highlightedLines={connectivity.highlightedLines}
           onLineSelect={connectivity.handleLineSelect}
+          onActiveLineDomChange={setActiveLineDom}
         />
       </div>
 
@@ -312,8 +317,13 @@ export default function AddTwoNumbersVisualizer({ problem }) {
           nextDisabled={isDone}
           resetDisabled={stepIndex < 0}
           onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+          showPatternOverlay={showPatternOverlay}
+          onShowPatternOverlayChange={setShowPatternOverlay}
+          patternOverlayLabel="Show pattern overlay"
+          showPatternOverlayToggle
         />
       </div>
+      {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
     </div>
   )
 }

@@ -2,7 +2,9 @@ import { useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './ImplementTrieVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -89,6 +91,7 @@ export default function ImplementTrieVisualizer() {
   const step = stepIndex >= 0 ? steps[stepIndex] : null
   const nodes = useMemo(() => renderTrie(step?.trie || { end: false, children: {} }), [step])
   const applyExample = useCallback((ex) => { setOpsInput(JSON.stringify(ex.ops)); handleReset() }, [handleReset])
+  const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
   return (
     <div className="trie-shell">
@@ -120,7 +123,7 @@ export default function ImplementTrieVisualizer() {
           </div>
         </section>
       </div>
-      <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+      <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
       <div className={`trie-status ${step?.result === false ? 'bad' : step?.result === true ? 'ok' : ''}`}>{step?.message || 'Press Play.'}</div>
       <PlaybackControls
         isPlaying={isPlaying}
@@ -134,7 +137,12 @@ export default function ImplementTrieVisualizer() {
         nextDisabled={isDone}
         resetDisabled={stepIndex < 0}
         onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+        showPatternOverlay={showPatternOverlay}
+        onShowPatternOverlayChange={setShowPatternOverlay}
+        patternOverlayLabel="Show pattern overlay"
+        showPatternOverlayToggle
       />
+      {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
     </div>
   )
 }

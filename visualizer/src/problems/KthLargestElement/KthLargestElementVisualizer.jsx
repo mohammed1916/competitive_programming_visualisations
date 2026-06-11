@@ -2,7 +2,9 @@ import { useState, useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './KthLargestElementVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -49,6 +51,7 @@ const EXAMPLES = [
 export default function KthLargestElementVisualizer() {
   const [numsInput, setNumsInput] = useState('[3,2,1,5,6,4]')
   const [kInput, setKInput] = useState('2')
+  const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
   const { nums, k, inputError } = useMemo(() => {
     try {
@@ -96,7 +99,7 @@ export default function KthLargestElementVisualizer() {
           </div>
         </section>
       </div>
-      <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+      <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
       <PlaybackControls
         isPlaying={isPlaying}
         isDone={isDone}
@@ -109,7 +112,12 @@ export default function KthLargestElementVisualizer() {
         nextDisabled={isDone}
         resetDisabled={stepIndex < 0}
         onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+        showPatternOverlay={showPatternOverlay}
+        onShowPatternOverlayChange={setShowPatternOverlay}
+        patternOverlayLabel="Show pattern overlay"
+        showPatternOverlayToggle
       />
+      {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
     </div>
   )
 }

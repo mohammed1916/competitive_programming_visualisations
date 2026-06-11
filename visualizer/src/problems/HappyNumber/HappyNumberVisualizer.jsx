@@ -2,8 +2,10 @@ import { useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
+import PatternOverlay from "../../components/PatternOverlay";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
 import { useCodeVisualConnectivity } from "../../hooks/useCodeVisualConnectivity";
+import { usePatternOverlay } from "../../hooks/usePatternOverlay";
 import "./HappyNumberVisualizer.css";
 
 const SOLUTION_CODE = [
@@ -73,6 +75,7 @@ export default function HappyNumberVisualizer() {
     stepIndex,
     onStepJump: setStepIndex,
   });
+  const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay();
 
   const chain = step?.chain ?? [ex.n];
 
@@ -143,6 +146,7 @@ export default function HappyNumberVisualizer() {
         codeLines={SOLUTION_CODE}
         highlightedLines={connectivity.highlightedLines}
         onLineSelect={connectivity.handleLineSelect}
+        onActiveLineDomChange={setActiveLineDom}
       />
       <div className="hn-status">{step?.message ?? "Press Play to begin."}</div>
       <PlaybackControls
@@ -150,7 +154,12 @@ export default function HappyNumberVisualizer() {
         onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward} onReset={handleReset}
         prevDisabled={stepIndex < 0} nextDisabled={isDone} resetDisabled={stepIndex < 0}
         onSpeedChange={e => setSpeed(Number(e.target.value))}
+        showPatternOverlay={showPatternOverlay}
+        onShowPatternOverlayChange={setShowPatternOverlay}
+        patternOverlayLabel="Show pattern overlay"
+        showPatternOverlayToggle
       />
+      {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
     </div>
   );
 }

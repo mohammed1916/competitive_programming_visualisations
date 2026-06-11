@@ -2,8 +2,10 @@ import { useState, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import { useCodeVisualConnectivity } from '../../hooks/useCodeVisualConnectivity'
+import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './ContainerWithMostWaterVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -122,6 +124,7 @@ const EXAMPLES = [
 
 export default function ContainerWithMostWaterVisualizer() {
   const [heightInput, setHeightInput] = useState('[1, 8, 6, 2, 5, 4, 8, 3, 7]')
+  const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
   const { height, inputError } = useMemo(() => {
     try {
@@ -231,6 +234,7 @@ export default function ContainerWithMostWaterVisualizer() {
           codeLines={SOLUTION_CODE}
           highlightedLines={connectivity.highlightedLines}
           onLineSelect={connectivity.handleLineSelect}
+          onActiveLineDomChange={setActiveLineDom}
         />
 
         <div className="cw-panel">
@@ -283,8 +287,14 @@ export default function ContainerWithMostWaterVisualizer() {
           nextDisabled={isDone}
           resetDisabled={stepIndex < 0}
           onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+          showPatternOverlay={showPatternOverlay}
+          onShowPatternOverlayChange={setShowPatternOverlay}
+          patternOverlayLabel="Show pattern overlay"
+          showPatternOverlayToggle
         />
       </div>
+
+      {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
     </div>
   )
 }

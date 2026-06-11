@@ -2,7 +2,9 @@ import { useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './GroupAnagramsVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -111,6 +113,7 @@ const EXAMPLES = [
 
 export default function GroupAnagramsVisualizer() {
     const [input, setInput] = useState('["eat","tea","tan","ate","nat","bat"]')
+    const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
     const { strs, inputError } = useMemo(() => {
         try {
@@ -219,7 +222,7 @@ export default function GroupAnagramsVisualizer() {
                 </div>
             </section>
 
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
 
             <div className={`ga-status${step?.phase === 'done' ? ' ok' : ''}`}>
                 {step?.message ?? 'Press Play or Step to begin.'}
@@ -231,7 +234,13 @@ export default function GroupAnagramsVisualizer() {
                 onReset={handleReset} prevDisabled={stepIndex < 0}
                 nextDisabled={isDone} resetDisabled={stepIndex < 0}
                 onSpeedChange={e => setSpeed(Number(e.target.value))}
+                showPatternOverlay={showPatternOverlay}
+                onShowPatternOverlayChange={setShowPatternOverlay}
+                patternOverlayLabel="Show pattern overlay"
+                showPatternOverlayToggle
             />
+
+            {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     )
 }

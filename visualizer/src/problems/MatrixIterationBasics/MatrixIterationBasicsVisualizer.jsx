@@ -1,7 +1,9 @@
 import { useCallback, useMemo, useState } from 'react'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './MatrixIterationBasicsVisualizer.css'
 
 const MODE_META = {
@@ -180,6 +182,8 @@ export default function MatrixIterationBasicsVisualizer({ problem }) {
     isDone,
   } = usePlaybackState(steps.length)
 
+  const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
+
   const step = stepIndex >= 0 ? steps[stepIndex] : null
 
   const applySize = useCallback((nextSize) => {
@@ -322,6 +326,7 @@ export default function MatrixIterationBasicsVisualizer({ problem }) {
           idleLabel="Pick a pattern, then Play or Next."
           activeLabelPrefix="Executing"
           activeLabelSuffix=""
+          onActiveLineDomChange={setActiveLineDom}
         />
 
         <section className="mib-panel">
@@ -353,8 +358,14 @@ export default function MatrixIterationBasicsVisualizer({ problem }) {
           nextDisabled={isDone}
           resetDisabled={stepIndex < 0}
           onSpeedChange={(event) => setSpeed(Number(event.target.value))}
+          showPatternOverlay={showPatternOverlay}
+          onShowPatternOverlayChange={setShowPatternOverlay}
+          patternOverlayLabel="Show pattern overlay"
+          showPatternOverlayToggle
         />
       </div>
+
+      {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
     </div>
   )
 }

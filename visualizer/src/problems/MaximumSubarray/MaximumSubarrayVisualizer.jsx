@@ -2,7 +2,9 @@ import { useState, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './MaximumSubarrayVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -101,6 +103,8 @@ const EXAMPLES = [
 
 export default function MaximumSubarrayVisualizer() {
   const [numsInput, setNumsInput] = useState('[-2, 1, -3, 4, -1, 2, 1, -5, 4]')
+
+  const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
   const { nums, inputError } = useMemo(() => {
     try {
@@ -245,7 +249,7 @@ export default function MaximumSubarrayVisualizer() {
       </div>
 
       <div className="maxsub-middle">
-        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
       </div>
 
       <div className={`maxsub-status \${step?.phase === 'done' ? 'success' : step?.phase === 'reset_cur' ? 'reset' : step?.updatedMax ? 'newmax' : ''}`}>
@@ -265,8 +269,14 @@ export default function MaximumSubarrayVisualizer() {
           nextDisabled={isDone}
           resetDisabled={stepIndex < 0}
           onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+          showPatternOverlay={showPatternOverlay}
+          onShowPatternOverlayChange={setShowPatternOverlay}
+          patternOverlayLabel="Show pattern overlay"
+          showPatternOverlayToggle
         />
       </div>
+
+      {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
     </div>
   )
 }
