@@ -3,8 +3,11 @@ import { motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import PatternOverlay from '../../components/PatternOverlay'
+import DockableWorkspace from '../../components/shared/DockableWorkspace'
+import FloatingPanel from '../../components/shared/FloatingPanel'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import { usePatternOverlay } from '../../hooks/usePatternOverlay'
+import { useAutoScroll } from '../../hooks/useAutoScroll'
 import './MergeKSortedListsVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -83,6 +86,43 @@ const EXAMPLES = [
   { label: 'Uneven', lists: [[1, 10], [2, 3, 4], [5], [6, 7, 8, 9]] },
 ]
 
+// Visualization component for the k lists and heap state
+function HeapVisualizationPanel({ step, lists, inputError, input, onInputChange, onApplyExample }) {
+  return (
+    <div className="mk-body">
+      <div className="mk-examples">{EXAMPLES.map((ex) => <button key={ex.label} className="mk-chip" onClick={() => onApplyExample(ex)}>{ex.label}</button>)}</div>
+      {inputError ? (
+        <>
+          <input className="mk-input" value={input} onChange={onInputChange} />
+          <div className="mk-error-box">{inputError}</div>
+        </>
+      ) : (
+        <>
+          <input className="mk-input" value={input} onChange={onInputChange} />
+          <div className="mk-row-group">
+            <div className="mk-row-label-title">Input Lists</div>
+            {(step?.lists || lists).map((list, li) => (
+              <div key={li} className="mk-row">
+                <span className="mk-row-label">L{li}</span>
+                {list.map((v, i) => <motion.div key={`${li}-${i}-${v}`} className={`mk-cell ${(step?.pointers?.[li] ?? 0) === i ? 'ptr' : ''}`}>{v}</motion.div>)}
+              </div>
+            ))}
+          </div>
+          <div className="mk-row-group">
+            <div className="mk-row-label-title">Heap State</div>
+            <div className="mk-heap">{(step?.heap || []).map((h, i) => <div key={`${h.listIdx}-${h.pos}-${i}`} className="mk-heap-item">{h.val} <small>L{h.listIdx}</small></div>)}</div>
+          </div>
+          <div className="mk-row-group">
+            <div className="mk-row-label-title">Merged Output</div>
+            <div className="mk-merged">{(step?.merged || []).map((v, i) => <span key={`${v}-${i}`}>{v}</span>)}</div>
+          </div>
+          <div className="mk-status">{step?.message || 'Press Play.'}</div>
+        </>
+      )}
+    </div>
+  )
+}
+
 export default function MergeKSortedListsVisualizer() {
   const [input, setInput] = useState('[[1,4,5],[1,3,4],[2,6]]')
   const { lists, inputError } = useMemo(() => {
@@ -98,50 +138,82 @@ export default function MergeKSortedListsVisualizer() {
   const step = stepIndex >= 0 ? steps[stepIndex] : null
   const applyExample = useCallback((ex) => { setInput(JSON.stringify(ex.lists)); handleReset() }, [handleReset])
   const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
+  const [autoScrollCode, setAutoScrollCode] = useAutoScroll()
+
+  const handleInputChange = (e) => {
+    setInput(e.target.value)
+    handleReset()
+  }
+
+  const dockPanels = [
+    {
+      id: 'viz',
+      title: 'Heap Visualization',
+      subtitle: step ? `Step ${stepIndex + 1} of ${steps.length}` : 'Press play to start.',
+      defaultZone: 'left',
+      content: (
+        <HeapVisualizationPanel
+          step={step}
+          lists={lists}
+          inputError={inputError}
+          input={input}
+          onInputChange={handleInputChange}
+          onApplyExample={applyExample}
+        />
+      ),
+    },
+    {
+      id: 'code',
+      title: 'Code Trace',
+      subtitle: step ? `Active line ${step.activeLine}` : 'Line-by-line solution view.',
+      defaultZone: 'right',
+      content: (
+        <CodeTracePanel
+          step={step}
+          codeLines={SOLUTION_CODE}
+          onActiveLineDomChange={setActiveLineDom}
+          autoScroll={autoScrollCode}
+        />
+      ),
+    },
+  ]
 
   return (
     <div className="mk-shell">
-      <div className="mk-top">
-        <section className="mk-panel">
-          <header className="mk-head"><span>k Lists</span>{inputError && <span className="mk-error">{inputError}</span>}</header>
-          <div className="mk-body">
-            <div className="mk-examples">{EXAMPLES.map((ex) => <button key={ex.label} className="mk-chip" onClick={() => applyExample(ex)}>{ex.label}</button>)}</div>
-            <input className="mk-input" value={input} onChange={(e) => { setInput(e.target.value); handleReset() }} />
-            {(step?.lists || lists).map((list, li) => (
-              <div key={li} className="mk-row">
-                <span className="mk-row-label">L{li}</span>
-                {list.map((v, i) => <motion.div key={`${li}-${i}-${v}`} className={`mk-cell ${(step?.pointers?.[li] ?? 0) === i ? 'ptr' : ''}`}>{v}</motion.div>)}
-              </div>
-            ))}
-          </div>
-        </section>
-        <section className="mk-panel side">
-          <header className="mk-head"><span>Heap + Output</span></header>
-          <div className="mk-body">
-            <div className="mk-heap">{(step?.heap || []).map((h, i) => <div key={`${h.listIdx}-${h.pos}-${i}`} className="mk-heap-item">{h.val} <small>L{h.listIdx}</small></div>)}</div>
-            <div className="mk-merged">{(step?.merged || []).map((v, i) => <span key={`${v}-${i}`}>{v}</span>)}</div>
-            <div className="mk-status">{step?.message || 'Press Play.'}</div>
-          </div>
-        </section>
-      </div>
-      <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
-      <PlaybackControls
-        isPlaying={isPlaying}
-        isDone={isDone}
-        speed={speed}
-        onPlayToggle={togglePlay}
-        onPrev={stepBack}
-        onNext={stepForward}
-        onReset={handleReset}
-        prevDisabled={stepIndex < 0}
-        nextDisabled={isDone}
-        resetDisabled={stepIndex < 0}
-        onSpeedChange={(e) => setSpeed(Number(e.target.value))}
-        showPatternOverlay={showPatternOverlay}
-        onShowPatternOverlayChange={setShowPatternOverlay}
-        patternOverlayLabel="Show pattern overlay"
-        showPatternOverlayToggle
+      <DockableWorkspace
+        title="Merge K Sorted Lists Workspace"
+        panels={dockPanels}
+        initialLayout={{
+          rows: [['viz', 'code']],
+          minimized: [],
+        }}
       />
+
+      <FloatingPanel title="Playback Controls">
+        <PlaybackControls
+          isPlaying={isPlaying}
+          isDone={isDone}
+          speed={speed}
+          onPlayToggle={togglePlay}
+          onPrev={stepBack}
+          onNext={stepForward}
+          onReset={handleReset}
+          prevDisabled={stepIndex < 0}
+          nextDisabled={isDone}
+          resetDisabled={stepIndex < 0}
+          onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+          speedIndicator={`${speed}ms`}
+          showPatternOverlay={showPatternOverlay}
+          onShowPatternOverlayChange={setShowPatternOverlay}
+          patternOverlayLabel="Show pattern overlay"
+          showPatternOverlayToggle
+          autoScroll={autoScrollCode}
+          onAutoScrollChange={setAutoScrollCode}
+          autoScrollLabel="Auto-scroll code"
+          showAutoScroll
+        />
+      </FloatingPanel>
+
       {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
     </div>
   )

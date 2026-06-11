@@ -212,9 +212,8 @@ export default function LCSVisualizer() {
     ]
 
     return (
-        <div className="lcs-shell">
+        <div className="problem-shell">
             <DockableWorkspace
-                title="Longest Common Subsequence Workspace"
                 panels={dockPanels}
                 initialLayout={{
                     rows: [

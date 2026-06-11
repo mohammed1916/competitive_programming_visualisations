@@ -5,32 +5,40 @@
     height: 100%;
 }
 
-.ms-top {
-    flex: 1;
-    min-height: 0;
-}
-
-.ms-panel {
+.ms-hero {
+    padding: 20px 24px;
     background: var(--surface2);
     border: 1px solid var(--border);
     border-radius: 12px;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    height: 100%;
-}
-
-.ms-head {
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--border);
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--text);
-    background: var(--surface3);
     flex-shrink: 0;
 }
 
-.ms-body {
+.ms-hero-copy {
+    margin-bottom: 16px;
+}
+
+.ms-kicker {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.ms-hero h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 8px 0;
+}
+
+.ms-hero p {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.ms-panel-body {
     padding: 14px;
     flex: 1;
     overflow-y: auto;

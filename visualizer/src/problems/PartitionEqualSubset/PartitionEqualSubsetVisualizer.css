@@ -2,6 +2,7 @@
 .pes-examples { display: flex; gap: 8px; flex-wrap: wrap; }
 .pes-chip { background: #313244; color: #cdd6f4; border: 2px solid #45475a; border-radius: 6px; padding: 4px 12px; font-size: 12px; cursor: pointer; }
 .pes-chip.active, .pes-chip:hover { border-color: #f9e2af; color: #f9e2af; }
+.pes-panel-body { display: flex; flex-direction: column; gap: 12px; }
 .pes-panel { background: #1e1e2e; border: 1px solid #313244; border-radius: 10px; padding: 12px 14px; }
 .pes-panel-label { font-size: 11px; font-weight: 700; color: #6c7086; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
 .pes-array-row { display: flex; gap: 6px; flex-wrap: wrap; }

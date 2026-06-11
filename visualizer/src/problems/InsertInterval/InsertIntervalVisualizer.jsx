@@ -1,10 +1,13 @@
 import { useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import DockableWorkspace from "../../components/shared/DockableWorkspace";
+import FloatingPanel from "../../components/shared/FloatingPanel";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
 import PatternOverlay from "../../components/PatternOverlay";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
 import { usePatternOverlay } from "../../hooks/usePatternOverlay";
+import { useAutoScroll } from "../../hooks/useAutoScroll";
 import "./InsertIntervalVisualizer.css";
 
 const SOLUTION_CODE = [
@@ -65,41 +68,15 @@ const EXAMPLES = [
 
 const BAR_SCALE = 14; // px per unit
 
-export default function InsertIntervalVisualizer() {
-    const [sel, setSel] = useState(0);
-    const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay();
-
-    const { intervals, newInterval } = EXAMPLES[sel];
-    const steps = useMemo(() => generateSteps(intervals, newInterval), [intervals, newInterval]);
-    const { stepIndex, stepForward, stepBack, togglePlay, handleReset, isPlaying, speed, setSpeed, isDone } =
-        usePlaybackState(steps.length);
-    const step = stepIndex >= 0 ? steps[stepIndex] : steps[0];
-
-    const applyExample = useCallback((i) => { setSel(i); handleReset(); }, [handleReset]);
-
+function IntervalVisualization({ intervals, newInterval, step, maxVal }) {
     const res = step?.res ?? [];
     const ni = step?.ni ?? newInterval;
     const ci = step?.ci ?? -1;
 
-    const allIntervals = [...intervals];
-    const maxVal = Math.max(...allIntervals.flat(), ...newInterval) + 1;
-
     return (
-        <div className="ii-shell">
-            <div className="ii-controls-row">
-                <div className="ii-examples">
-                    {EXAMPLES.map((ex, i) => (
-                        <button key={ex.label} className={`ii-chip ${sel === i ? "active" : ""}`} onClick={() => applyExample(i)}>
-                            {ex.label}
-                        </button>
-                    ))}
-                </div>
-                <span className="ii-new-tag">new = [{newInterval.join(",")}]</span>
-            </div>
-
-            {/* Input intervals */}
-            <div className="ii-panel">
-                <div className="ii-panel-label">Input intervals</div>
+        <div>
+            <div style={{ marginBottom: "16px" }}>
+                <div style={{ fontSize: "12px", fontWeight: "600", marginBottom: "8px" }}>Input intervals</div>
                 <div className="ii-bars-col">
                     {intervals.map(([s, e], i) => (
                         <div key={i} className="ii-bar-row">
@@ -132,8 +109,8 @@ export default function InsertIntervalVisualizer() {
 
             {/* Result */}
             {res.length > 0 && (
-                <div className="ii-panel">
-                    <div className="ii-panel-label">Result</div>
+                <div>
+                    <div style={{ fontSize: "12px", fontWeight: "600", marginBottom: "8px" }}>Result</div>
                     <div className="ii-bars-col">
                         <div className="ii-bar-row">
                             <span className="ii-bar-idx"> </span>
@@ -155,18 +132,71 @@ export default function InsertIntervalVisualizer() {
                 </div>
             )}
 
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
-            <div className="ii-status">{step?.message ?? "Press Play to begin."}</div>
-            <PlaybackControls
-                isPlaying={isPlaying} isDone={isDone} speed={speed}
-                onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward} onReset={handleReset}
-                prevDisabled={stepIndex <= 0} nextDisabled={isDone} resetDisabled={stepIndex <= 0}
-                onSpeedChange={(e) => setSpeed(Number(e.target.value))}
-                showPatternOverlay={showPatternOverlay}
-                onShowPatternOverlayChange={setShowPatternOverlay}
-                patternOverlayLabel="Show pattern overlay"
-                showPatternOverlayToggle
-            />
+            <div style={{ marginTop: "16px", fontSize: "13px", color: "#666" }}>
+                {step?.message ?? "Press Play to begin."}
+            </div>
+        </div>
+    );
+}
+
+export default function InsertIntervalVisualizer() {
+    const [sel, setSel] = useState(0);
+    const [autoScrollCode, setAutoScrollCode] = useAutoScroll();
+    const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay();
+
+    const { intervals, newInterval } = EXAMPLES[sel];
+    const steps = useMemo(() => generateSteps(intervals, newInterval), [intervals, newInterval]);
+    const { stepIndex, stepForward, stepBack, togglePlay, handleReset, isPlaying, speed, setSpeed, isDone } =
+        usePlaybackState(steps.length);
+    const step = stepIndex >= 0 ? steps[stepIndex] : steps[0];
+
+    const applyExample = useCallback((i) => { setSel(i); handleReset(); }, [handleReset]);
+
+    const allIntervals = [...intervals];
+    const maxVal = Math.max(...allIntervals.flat(), ...newInterval) + 1;
+
+    const dockPanels = [
+        {
+            id: 'code',
+            title: 'Code',
+            content: <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} autoScroll={autoScrollCode} />,
+        },
+        {
+            id: 'viz',
+            title: 'Visualization',
+            content: <IntervalVisualization intervals={intervals} newInterval={newInterval} step={step} maxVal={maxVal} />,
+        },
+    ];
+
+    return (
+        <div className="problem-shell">
+            <div className="ii-controls-row">
+                <div className="ii-examples">
+                    {EXAMPLES.map((ex, i) => (
+                        <button key={ex.label} className={`ii-chip ${sel === i ? "active" : ""}`} onClick={() => applyExample(i)}>
+                            {ex.label}
+                        </button>
+                    ))}
+                </div>
+                <span className="ii-new-tag">new = [{newInterval.join(",")}]</span>
+            </div>
+
+            <DockableWorkspace panels={dockPanels} initialLayout={{ rows: [['code', 'viz']], minimized: [] }} />
+
+            <FloatingPanel title="Playback Controls">
+                <PlaybackControls
+                    isPlaying={isPlaying} isDone={isDone} speed={speed}
+                    onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward} onReset={handleReset}
+                    prevDisabled={stepIndex <= 0} nextDisabled={isDone} resetDisabled={stepIndex <= 0}
+                    onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+                    autoScroll={autoScrollCode} onAutoScrollChange={setAutoScrollCode} showAutoScroll
+                    showPatternOverlay={showPatternOverlay}
+                    onShowPatternOverlayChange={setShowPatternOverlay}
+                    patternOverlayLabel="Show pattern overlay"
+                    showPatternOverlayToggle
+                />
+            </FloatingPanel>
+
             {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     );

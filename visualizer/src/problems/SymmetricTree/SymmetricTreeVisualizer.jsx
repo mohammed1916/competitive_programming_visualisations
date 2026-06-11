@@ -3,8 +3,11 @@ import { motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import PatternOverlay from '../../components/PatternOverlay'
+import DockableWorkspace from '../../components/shared/DockableWorkspace'
+import FloatingPanel from '../../components/shared/FloatingPanel'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import { usePatternOverlay } from '../../hooks/usePatternOverlay'
+import { useAutoScroll } from '../../hooks/useAutoScroll'
 import './SymmetricTreeVisualizer.css'
 
 const CANVAS_W = 340
@@ -238,6 +241,7 @@ export default function SymmetricTreeVisualizer() {
     const [selected, setSelected] = useState(0)
     const [treeInput, setTreeInput] = useState(JSON.stringify(EXAMPLES[0].tree))
     const [inputError, setInputError] = useState('')
+    const [autoScrollCode, setAutoScrollCode] = useAutoScroll()
     const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
     function parseArr(str) {
@@ -275,9 +279,9 @@ export default function SymmetricTreeVisualizer() {
     const finalResult = step?.finalResult
     const hasFinal    = finalResult !== null && finalResult !== undefined
 
-    return (
-        <div className="sym-shell">
-
+    // Visualization panel component
+    function VisualizationPanel() {
+        return (
             <div className="sym-top">
                 <section className="sym-panel main">
                     <header className="sym-head">
@@ -390,30 +394,47 @@ export default function SymmetricTreeVisualizer() {
                     </div>
                 </section>
             </div>
+        )
+    }
 
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
+    const dockPanels = [
+        {
+            id: 'code',
+            title: 'Code',
+            content: <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} autoScroll={autoScrollCode} />,
+        },
+        {
+            id: 'viz',
+            title: 'Visualization',
+            content: <VisualizationPanel />,
+        },
+    ]
 
-            <div className={`sym-status ${hasFinal ? (finalResult ? 'ok' : 'bad') : ''}`}>
-                {step?.message || 'Press Play or Step to begin.'}
-            </div>
-
-            <PlaybackControls
-                isPlaying={isPlaying}
-                isDone={isDone}
-                speed={speed}
-                onPlayToggle={togglePlay}
-                onPrev={stepBack}
-                onNext={stepForward}
-                onReset={handleReset}
-                prevDisabled={stepIndex < 0}
-                nextDisabled={isDone}
-                resetDisabled={stepIndex < 0}
-                onSpeedChange={(e) => setSpeed(Number(e.target.value))}
-                showPatternOverlay={showPatternOverlay}
-                onShowPatternOverlayChange={setShowPatternOverlay}
-                patternOverlayLabel="Show pattern overlay"
-                showPatternOverlayToggle
-            />
+    return (
+        <div className="problem-shell">
+            <DockableWorkspace panels={dockPanels} initialLayout={{ rows: [['code', 'viz']], minimized: [] }} />
+            <FloatingPanel title="Playback Controls">
+                <PlaybackControls
+                    isPlaying={isPlaying}
+                    isDone={isDone}
+                    speed={speed}
+                    onPlayToggle={togglePlay}
+                    onPrev={stepBack}
+                    onNext={stepForward}
+                    onReset={handleReset}
+                    prevDisabled={stepIndex < 0}
+                    nextDisabled={isDone}
+                    resetDisabled={stepIndex < 0}
+                    onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+                    autoScroll={autoScrollCode}
+                    onAutoScrollChange={setAutoScrollCode}
+                    showAutoScroll
+                    showPatternOverlay={showPatternOverlay}
+                    onShowPatternOverlayChange={setShowPatternOverlay}
+                    patternOverlayLabel="Show pattern overlay"
+                    showPatternOverlayToggle
+                />
+            </FloatingPanel>
             {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     )

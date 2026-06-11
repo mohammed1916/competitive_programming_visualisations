@@ -1,10 +1,13 @@
 import { useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
+import DockableWorkspace from "../../components/shared/DockableWorkspace";
+import FloatingPanel from "../../components/shared/FloatingPanel";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
 import PatternOverlay from "../../components/PatternOverlay";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
 import { usePatternOverlay } from "../../hooks/usePatternOverlay";
+import { useAutoScroll } from "../../hooks/useAutoScroll";
 import "./MaxPointsOnALineVisualizer.css";
 
 const SOLUTION_CODE = [
@@ -102,6 +105,7 @@ export default function MaxPointsOnALineVisualizer() {
     const step = stepIndex >= 0 ? steps[stepIndex] : null;
     const applyEx = useCallback((e) => { setEx(e); handleReset(); }, [handleReset]);
     const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay();
+    const [autoScrollCode, setAutoScrollCode] = useAutoScroll();
 
     const svgPts = useMemo(() => toSvg(ex.points, W, H, PAD), [ex]);
     const origin = step?.origin ?? -1;
@@ -121,8 +125,9 @@ export default function MaxPointsOnALineVisualizer() {
         }, [])
         : [];
 
-    return (
-        <div className="mpl-shell">
+    // Visualization component
+    const VizPanel = () => (
+        <div className="mpl-viz-container">
             <div className="mpl-examples">
                 {EXAMPLES.map(e => (
                     <button key={e.label} className={`mpl-chip ${ex.label === e.label ? "active" : ""}`} onClick={() => applyEx(e)}>
@@ -193,20 +198,41 @@ export default function MaxPointsOnALineVisualizer() {
             </div>
 
             {step?.done && <div className="mpl-result">✓ Max points on a line = {res}</div>}
-            {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
-
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
             <div className="mpl-status">{step?.message ?? "Press Play to begin."}</div>
-            <PlaybackControls
-                isPlaying={isPlaying} isDone={isDone} speed={speed}
-                onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward} onReset={handleReset}
-                prevDisabled={stepIndex < 0} nextDisabled={isDone} resetDisabled={stepIndex < 0}
-                onSpeedChange={e => setSpeed(Number(e.target.value))}
-                showPatternOverlay={showPatternOverlay}
-                onShowPatternOverlayChange={setShowPatternOverlay}
-                patternOverlayLabel="Show pattern overlay"
-                showPatternOverlayToggle
-            />
+        </div>
+    );
+
+    const dockPanels = [
+        {
+            id: 'code',
+            title: 'Code',
+            content: <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} autoScroll={autoScrollCode} />,
+        },
+        {
+            id: 'viz',
+            title: 'Visualization',
+            content: <VizPanel />,
+        },
+    ];
+
+    return (
+        <div className="problem-shell">
+            <DockableWorkspace panels={dockPanels} initialLayout={{ rows: [['code', 'viz']], minimized: [] }} />
+            <FloatingPanel title="Playback Controls">
+                <PlaybackControls
+                    isPlaying={isPlaying} isDone={isDone} speed={speed}
+                    onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward} onReset={handleReset}
+                    prevDisabled={stepIndex < 0} nextDisabled={isDone} resetDisabled={stepIndex < 0}
+                    onSpeedChange={e => setSpeed(Number(e.target.value))}
+                    autoScroll={autoScrollCode}
+                    onAutoScrollChange={setAutoScrollCode}
+                    showAutoScroll
+                    showPatternOverlay={showPatternOverlay}
+                    onShowPatternOverlayChange={setShowPatternOverlay}
+                    showPatternOverlayToggle
+                />
+            </FloatingPanel>
+            {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     );
 }

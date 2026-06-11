@@ -1,10 +1,13 @@
 import { useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
+import DockableWorkspace from "../../components/shared/DockableWorkspace";
+import FloatingPanel from "../../components/shared/FloatingPanel";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
 import PatternOverlay from "../../components/PatternOverlay";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
 import { usePatternOverlay } from "../../hooks/usePatternOverlay";
+import { useAutoScroll } from "../../hooks/useAutoScroll";
 import "./PalindromeLinkedListVisualizer.css";
 
 const SOLUTION_CODE = [
@@ -79,15 +82,7 @@ function generateSteps(nums) {
     return steps;
 }
 
-export default function PalindromeLinkedListVisualizer() {
-    const [ex, setEx] = useState(EXAMPLES[0]);
-    const steps = useMemo(() => generateSteps(ex.nums), [ex]);
-    const { stepIndex, stepForward, stepBack, togglePlay, handleReset, isPlaying, speed, setSpeed, isDone } =
-        usePlaybackState(steps.length);
-    const step = stepIndex >= 0 ? steps[stepIndex] : null;
-    const applyEx = useCallback((e) => { setEx(e); handleReset(); }, [handleReset]);
-    const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay();
-
+function VisualizationPanel({ step, ex, onExampleChange }) {
     const nums = ex.nums;
     const n = nums.length;
     const slow = step?.slow ?? 0;
@@ -96,10 +91,10 @@ export default function PalindromeLinkedListVisualizer() {
     const phase = step?.phase ?? 1;
 
     return (
-        <div className="pll-shell">
+        <div className="pll-viz-container">
             <div className="pll-examples">
                 {EXAMPLES.map(e => (
-                    <button key={e.label} className={`pll-chip ${ex.label === e.label ? "active" : ""}`} onClick={() => applyEx(e)}>{e.label}</button>
+                    <button key={e.label} className={`pll-chip ${ex.label === e.label ? "active" : ""}`} onClick={() => onExampleChange(e)}>{e.label}</button>
                 ))}
             </div>
 
@@ -163,20 +158,53 @@ export default function PalindromeLinkedListVisualizer() {
                     {step.result ? `✓ [${nums.join("→")}] is a palindrome` : `✗ [${nums.join("→")}] is NOT a palindrome`}
                 </div>
             )}
-
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
-            {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
             <div className="pll-status">{step?.message ?? "Press Play to begin."}</div>
-            <PlaybackControls
-                isPlaying={isPlaying} isDone={isDone} speed={speed}
-                onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward} onReset={handleReset}
-                prevDisabled={stepIndex < 0} nextDisabled={isDone} resetDisabled={stepIndex < 0}
-                onSpeedChange={e => setSpeed(Number(e.target.value))}
-                showPatternOverlay={showPatternOverlay}
-                onShowPatternOverlayChange={setShowPatternOverlay}
-                patternOverlayLabel="Show pattern overlay"
-                showPatternOverlayToggle
-            />
+        </div>
+    );
+}
+
+export default function PalindromeLinkedListVisualizer() {
+    const [ex, setEx] = useState(EXAMPLES[0]);
+    const steps = useMemo(() => generateSteps(ex.nums), [ex]);
+    const { stepIndex, stepForward, stepBack, togglePlay, handleReset, isPlaying, speed, setSpeed, isDone } =
+        usePlaybackState(steps.length);
+    const step = stepIndex >= 0 ? steps[stepIndex] : null;
+    const applyEx = useCallback((e) => { setEx(e); handleReset(); }, [handleReset]);
+    const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay();
+    const [autoScrollCode, setAutoScrollCode] = useAutoScroll();
+
+    const dockPanels = [
+        {
+            id: 'code',
+            title: 'Code',
+            content: <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} autoScroll={autoScrollCode} />,
+        },
+        {
+            id: 'viz',
+            title: 'Visualization',
+            content: <VisualizationPanel step={step} ex={ex} onExampleChange={applyEx} />,
+        },
+    ];
+
+    return (
+        <div className="problem-shell">
+            <DockableWorkspace panels={dockPanels} initialLayout={{ rows: [['code', 'viz']], minimized: [] }} />
+            <FloatingPanel title="Playback Controls">
+                <PlaybackControls
+                    isPlaying={isPlaying} isDone={isDone} speed={speed}
+                    onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward} onReset={handleReset}
+                    prevDisabled={stepIndex < 0} nextDisabled={isDone} resetDisabled={stepIndex < 0}
+                    onSpeedChange={e => setSpeed(Number(e.target.value))}
+                    autoScroll={autoScrollCode}
+                    onAutoScrollChange={setAutoScrollCode}
+                    showAutoScroll
+                    showPatternOverlay={showPatternOverlay}
+                    onShowPatternOverlayChange={setShowPatternOverlay}
+                    patternOverlayLabel="Show pattern overlay"
+                    showPatternOverlayToggle
+                />
+            </FloatingPanel>
+            {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     );
 }

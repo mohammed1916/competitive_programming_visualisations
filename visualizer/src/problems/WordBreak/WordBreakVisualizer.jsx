@@ -1,10 +1,13 @@
 import { useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import DockableWorkspace from '../../components/shared/DockableWorkspace'
+import FloatingPanel from '../../components/shared/FloatingPanel'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import { usePatternOverlay } from '../../hooks/usePatternOverlay'
+import { useAutoScroll } from '../../hooks/useAutoScroll'
 import './WordBreakVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -114,6 +117,7 @@ export default function WordBreakVisualizer() {
     } = usePlaybackState(steps.length)
 
     const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
+    const [autoScrollCode, setAutoScrollCode] = useAutoScroll()
 
     const step = stepIndex >= 0 ? steps[stepIndex] : null
     const applyExample = useCallback((ex) => {
@@ -125,130 +129,145 @@ export default function WordBreakVisualizer() {
     const currJ = step?.j ?? -1
     const slice = step?.slice ?? null
 
-    return (
-        <div className="wb-shell">
-            <div className="wb-top">
-                <section className="wb-panel main">
-                    <header className="wb-head"><span>Word Break · DP</span>{inputError && <span className="wb-error">{inputError}</span>}</header>
-                    <div className="wb-body">
-                        <div className="wb-examples">
-                            {EXAMPLES.map((ex) => (
-                                <button key={ex.label} className="wb-chip" onClick={() => applyExample(ex)}>{ex.label}</button>
-                            ))}
-                        </div>
-
-                        <div className="wb-inputs">
-                            <div className="wb-input-group">
-                                <label className="wb-label">s</label>
-                                <input className="wb-input" value={sInput}
-                                    onChange={(e) => { setSInput(e.target.value); handleReset() }} placeholder="leetcode" />
-                            </div>
-                            <div className="wb-input-group">
-                                <label className="wb-label">wordDict (comma-separated)</label>
-                                <input className="wb-input wide" value={dictInput}
-                                    onChange={(e) => { setDictInput(e.target.value); handleReset() }} placeholder="leet,code" />
-                            </div>
-                        </div>
-
-                        {/* String with highlighted slice */}
-                        <div className="wb-str-row">
-                            {s.split('').map((ch, idx) => {
-                                const inSlice = slice && idx >= currJ && idx < currI
-                                const isMatch = inSlice && step?.phase === 'match'
-                                const isSet = inSlice && step?.phase === 'set_true'
-                                return (
-                                    <div
-                                        key={idx}
-                                        className={`wb-char${inSlice ? ' in-slice' : ''}${isMatch || isSet ? ' match' : ''}${dp[idx + 1] === true && step?.phase !== 'init' ? ' reachable' : ''}`}
-                                    >
-                                        {ch}
-                                        <span className="wb-char-idx">{idx}</span>
-                                    </div>
-                                )
-                            })}
-                        </div>
-
-                        {/* DP array */}
-                        <div className="wb-dp-row">
-                            {dp.map((val, idx) => {
-                                const isCurrI = idx === currI
-                                const isCurrJ = idx === currJ
-                                const isDone = step?.phase === 'done'
-                                const isResult = isDone && idx === s.length
-                                return (
-                                    <div key={idx} className="wb-dp-col">
-                                        <motion.div
-                                            className={`wb-dp-cell${isCurrI ? ' curr-i' : ''}${isCurrJ ? ' curr-j' : ''}${val ? ' true' : ' false'}${isResult ? ' result' : ''}`}
-                                            animate={{ y: isCurrI ? -6 : 0, scale: isCurrI || isResult ? 1.1 : 1 }}
-                                            transition={{ type: 'spring', stiffness: 380, damping: 24 }}
-                                        >
-                                            {val ? 'T' : 'F'}
-                                        </motion.div>
-                                        <span className="wb-dp-idx">[{idx}]</span>
-                                    </div>
-                                )
-                            })}
-                        </div>
-
-                        {/* Slice check */}
-                        {slice && (
-                            <div className={`wb-slice-box${step?.phase === 'match' || step?.phase === 'set_true' ? ' match' : ''}`}>
-                                s[{currJ}:{currI}] = <strong>"{slice}"</strong>
-                                {step?.phase === 'match' || step?.phase === 'set_true'
-                                    ? <span className="wb-in"> ∈ wordDict ✓</span>
-                                    : <span className="wb-out"> ∉ wordDict</span>}
-                            </div>
-                        )}
-
-                        <AnimatePresence>
-                            {step?.phase === 'done' && (
-                                <motion.div
-                                    className={`wb-result${step.result ? ' ok' : ' fail'}`}
-                                    initial={{ opacity: 0, y: 8 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0 }}
-                                >
-                                    {step.result ? `"${s}" can be segmented ✓` : `"${s}" cannot be segmented ✗`}
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-                    </div>
-                </section>
-
-                {/* Word dict panel */}
-                <section className="wb-panel dict">
-                    <header className="wb-head"><span>wordDict</span></header>
-                    <div className="wb-body">
-                        {wordDict.map((w) => (
-                            <div
-                                key={w}
-                                className={`wb-word${slice === w ? ' active' : ''}`}
-                            >
-                                "{w}"
-                            </div>
-                        ))}
-                    </div>
-                </section>
+    const VisualizationContent = () => (
+        <div>
+            <div className="wb-examples">
+                {EXAMPLES.map((ex) => (
+                    <button key={ex.label} className="wb-chip" onClick={() => applyExample(ex)}>{ex.label}</button>
+                ))}
             </div>
 
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
+            <div className="wb-inputs">
+                <div className="wb-input-group">
+                    <label className="wb-label">s</label>
+                    <input className="wb-input" value={sInput}
+                        onChange={(e) => { setSInput(e.target.value); handleReset() }} placeholder="leetcode" />
+                </div>
+                <div className="wb-input-group">
+                    <label className="wb-label">wordDict (comma-separated)</label>
+                    <input className="wb-input wide" value={dictInput}
+                        onChange={(e) => { setDictInput(e.target.value); handleReset() }} placeholder="leet,code" />
+                </div>
+            </div>
+
+            {inputError && <span className="wb-error">{inputError}</span>}
+
+            {/* String with highlighted slice */}
+            <div className="wb-str-row">
+                {s.split('').map((ch, idx) => {
+                    const inSlice = slice && idx >= currJ && idx < currI
+                    const isMatch = inSlice && step?.phase === 'match'
+                    const isSet = inSlice && step?.phase === 'set_true'
+                    return (
+                        <div
+                            key={idx}
+                            className={`wb-char${inSlice ? ' in-slice' : ''}${isMatch || isSet ? ' match' : ''}${dp[idx + 1] === true && step?.phase !== 'init' ? ' reachable' : ''}`}
+                        >
+                            {ch}
+                            <span className="wb-char-idx">{idx}</span>
+                        </div>
+                    )
+                })}
+            </div>
+
+            {/* DP array */}
+            <div className="wb-dp-row">
+                {dp.map((val, idx) => {
+                    const isCurrI = idx === currI
+                    const isCurrJ = idx === currJ
+                    const isDone = step?.phase === 'done'
+                    const isResult = isDone && idx === s.length
+                    return (
+                        <div key={idx} className="wb-dp-col">
+                            <motion.div
+                                className={`wb-dp-cell${isCurrI ? ' curr-i' : ''}${isCurrJ ? ' curr-j' : ''}${val ? ' true' : ' false'}${isResult ? ' result' : ''}`}
+                                animate={{ y: isCurrI ? -6 : 0, scale: isCurrI || isResult ? 1.1 : 1 }}
+                                transition={{ type: 'spring', stiffness: 380, damping: 24 }}
+                            >
+                                {val ? 'T' : 'F'}
+                            </motion.div>
+                            <span className="wb-dp-idx">[{idx}]</span>
+                        </div>
+                    )
+                })}
+            </div>
+
+            {/* Slice check */}
+            {slice && (
+                <div className={`wb-slice-box${step?.phase === 'match' || step?.phase === 'set_true' ? ' match' : ''}`}>
+                    s[{currJ}:{currI}] = <strong>"{slice}"</strong>
+                    {step?.phase === 'match' || step?.phase === 'set_true'
+                        ? <span className="wb-in"> ∈ wordDict ✓</span>
+                        : <span className="wb-out"> ∉ wordDict</span>}
+                </div>
+            )}
+
+            <AnimatePresence>
+                {step?.phase === 'done' && (
+                    <motion.div
+                        className={`wb-result${step.result ? ' ok' : ' fail'}`}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                    >
+                        {step.result ? `"${s}" can be segmented ✓` : `"${s}" cannot be segmented ✗`}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Word dict panel */}
+            <div style={{ marginTop: '1rem' }}>
+                <h3 style={{ margin: '0.5rem 0' }}>wordDict</h3>
+                <div>
+                    {wordDict.map((w) => (
+                        <div
+                            key={w}
+                            className={`wb-word${slice === w ? ' active' : ''}`}
+                        >
+                            "{w}"
+                        </div>
+                    ))}
+                </div>
+            </div>
 
             <div className={`wb-status${step?.result === true ? ' ok' : step?.result === false ? ' fail' : ''}`}>
                 {step?.message ?? 'Press Play or Step to begin.'}
             </div>
+        </div>
+    )
 
-            <PlaybackControls
-                isPlaying={isPlaying} isDone={isDone} speed={speed}
-                onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward}
-                onReset={handleReset} prevDisabled={stepIndex < 0}
-                nextDisabled={isDone} resetDisabled={stepIndex < 0}
-                onSpeedChange={(e) => setSpeed(Number(e.target.value))}
-                showPatternOverlay={showPatternOverlay}
-                onShowPatternOverlayChange={setShowPatternOverlay}
-                patternOverlayLabel="Show pattern overlay"
-                showPatternOverlayToggle
-            />
+    const dockPanels = [
+        {
+            id: 'code',
+            title: 'Code',
+            content: <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} autoScroll={autoScrollCode} />,
+        },
+        {
+            id: 'viz',
+            title: 'Visualization',
+            content: <VisualizationContent />,
+        },
+    ]
 
+    return (
+        <div className="problem-shell">
+            <DockableWorkspace panels={dockPanels} initialLayout={{ rows: [['code', 'viz']], minimized: [] }} />
+            <FloatingPanel title="Playback Controls">
+                <PlaybackControls
+                    isPlaying={isPlaying} isDone={isDone} speed={speed}
+                    onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward}
+                    onReset={handleReset} prevDisabled={stepIndex < 0}
+                    nextDisabled={isDone} resetDisabled={stepIndex < 0}
+                    onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+                    autoScroll={autoScrollCode}
+                    onAutoScrollChange={setAutoScrollCode}
+                    showAutoScroll
+                    showPatternOverlay={showPatternOverlay}
+                    onShowPatternOverlayChange={setShowPatternOverlay}
+                    patternOverlayLabel="Show pattern overlay"
+                    showPatternOverlayToggle
+                />
+            </FloatingPanel>
             {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     )

@@ -4,10 +4,13 @@ import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
 import PatternOverlay from "../../components/PatternOverlay";
 import AnimatedIterationList from "../../components/shared/AnimatedIterationList";
+import DockableWorkspace from "../../components/shared/DockableWorkspace";
+import FloatingPanel from "../../components/shared/FloatingPanel";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
 import { useCodeVisualConnectivity } from "../../hooks/useCodeVisualConnectivity";
 import { useProblemCode } from "../../hooks/useProblemCode";
 import { usePatternOverlay } from "../../hooks/usePatternOverlay";
+import { useAutoScroll } from "../../hooks/useAutoScroll";
 import "./MoveZeroesVisualizer.css";
 
 const EXAMPLES = [
@@ -37,6 +40,7 @@ function generateSteps(numsIn) {
 export default function MoveZeroesVisualizer({ problem }) {
     const [ex, setEx] = useState(EXAMPLES[0]);
     const codeLines = useProblemCode(problem, "move-zeroes");
+    const [autoScrollCode, setAutoScrollCode] = useAutoScroll();
     const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay();
     const steps = useMemo(
         () =>
@@ -60,73 +64,136 @@ export default function MoveZeroesVisualizer({ problem }) {
     const k = step?.k ?? 0;
     const i = step?.i ?? -1;
 
+    const dockPanels = [
+        {
+            id: "input",
+            title: "Input Examples",
+            subtitle: "Select an example or reset.",
+            defaultZone: "left",
+            content: (
+                <div className="mz-panel-body">
+                    <div className="mz-examples">
+                        {EXAMPLES.map(e => (
+                            <button
+                                key={e.label}
+                                className={`mz-chip ${ex.label === e.label ? "active" : ""}`}
+                                onClick={() => applyEx(e)}
+                            >
+                                {e.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            ),
+        },
+        {
+            id: "viz",
+            title: "Array Visualization",
+            subtitle: step ? `Step ${stepIndex + 1} of ${steps.length}` : "Array state visualization.",
+            defaultZone: "right",
+            content: (
+                <div className="mz-panel-body">
+                    <div className="mz-panel">
+                        <div className="mz-panel-label">Array (in-place)</div>
+                        <AnimatedIterationList
+                            items={arr}
+                            styleName="pointer-lane"
+                            className="mz-arr"
+                            getItemState={(value, index) => {
+                                const isI = index === i;
+                                const isK = index === k;
+                                const isZero = value === 0;
+                                return {
+                                    stateClass: `${isI ? 'i-cell' : ''} ${isK && !isI ? 'k-cell' : ''} ${isZero && !isI && !isK ? 'zero' : ''}`.trim(),
+                                    isActive: isI || isK,
+                                };
+                            }}
+                            renderBelow={(_, index) => {
+                                const isI = index === i;
+                                const isK = index === k;
+                                return (
+                                    <div className="mz-ptrs">
+                                        {isI && <span className="mz-ptr i">i</span>}
+                                        {isK && <span className="mz-ptr k">k</span>}
+                                    </div>
+                                );
+                            }}
+                        />
+                    </div>
+
+                    <div className="mz-trackers">
+                        <div className="mz-tracker"><span className="mz-tracker-label">k</span>
+                            <motion.span key={k} className="mz-tracker-val" initial={{ scale: 1.3 }} animate={{ scale: 1 }}>{k}</motion.span>
+                        </div>
+                        <div className="mz-tracker"><span className="mz-tracker-label">i</span>
+                            <span className="mz-tracker-val">{i < 0 ? "-" : i}</span>
+                        </div>
+                    </div>
+
+                    {step?.done && (
+                        <div className="mz-result">✓ Zeroes moved to end: [{arr.join(", ")}]</div>
+                    )}
+
+                    <div className="mz-status">{step?.message ?? "Press Play to begin."}</div>
+                </div>
+            ),
+        },
+        {
+            id: "code",
+            title: "Code Trace",
+            subtitle: step ? `Active line ${step.activeLine}` : "Code line-by-line trace.",
+            defaultZone: "full",
+            content: (
+                <CodeTracePanel
+                    step={step}
+                    codeLines={codeLines}
+                    highlightedLines={connectivity.highlightedLines}
+                    onLineSelect={connectivity.handleLineSelect}
+                    onActiveLineDomChange={setActiveLineDom}
+                    autoScroll={autoScrollCode}
+                />
+            ),
+        },
+    ];
+
     return (
         <div className="mz-shell">
-            <div className="mz-examples">
-                {EXAMPLES.map(e => (
-                    <button key={e.label} className={`mz-chip ${ex.label === e.label ? "active" : ""}`} onClick={() => applyEx(e)}>{e.label}</button>
-                ))}
-            </div>
+            <DockableWorkspace
+                title="Move Zeroes Workspace"
+                panels={dockPanels}
+                initialLayout={{
+                    rows: [
+                        ["input", "viz"],
+                        ["code"],
+                    ],
+                    minimized: [],
+                }}
+            />
 
-            <div className="mz-panel">
-                <div className="mz-panel-label">Array (in-place)</div>
-                <AnimatedIterationList
-                    items={arr}
-                    styleName="pointer-lane"
-                    className="mz-arr"
-                    getItemState={(value, index) => {
-                        const isI = index === i;
-                        const isK = index === k;
-                        const isZero = value === 0;
-                        return {
-                            stateClass: `${isI ? 'i-cell' : ''} ${isK && !isI ? 'k-cell' : ''} ${isZero && !isI && !isK ? 'zero' : ''}`.trim(),
-                            isActive: isI || isK,
-                        };
-                    }}
-                    renderBelow={(_, index) => {
-                        const isI = index === i;
-                        const isK = index === k;
-                        return (
-                            <div className="mz-ptrs">
-                                {isI && <span className="mz-ptr i">i</span>}
-                                {isK && <span className="mz-ptr k">k</span>}
-                            </div>
-                        );
-                    }}
+            <FloatingPanel title="Playback Controls">
+                <PlaybackControls
+                    isPlaying={isPlaying}
+                    isDone={isDone}
+                    speed={speed}
+                    onPlayToggle={togglePlay}
+                    onPrev={stepBack}
+                    onNext={stepForward}
+                    onReset={handleReset}
+                    prevDisabled={stepIndex < 0}
+                    nextDisabled={isDone}
+                    resetDisabled={stepIndex < 0}
+                    onSpeedChange={e => setSpeed(Number(e.target.value))}
+                    autoScroll={autoScrollCode}
+                    onAutoScrollChange={setAutoScrollCode}
+                    autoScrollLabel="Auto-scroll code"
+                    showAutoScroll
+                    showPatternOverlay={showPatternOverlay}
+                    onShowPatternOverlayChange={setShowPatternOverlay}
+                    patternOverlayLabel="Show pattern overlay"
+                    showPatternOverlayToggle
                 />
-            </div>
+            </FloatingPanel>
 
-            <div className="mz-trackers">
-                <div className="mz-tracker"><span className="mz-tracker-label">k</span>
-                    <motion.span key={k} className="mz-tracker-val" initial={{ scale: 1.3 }} animate={{ scale: 1 }}>{k}</motion.span>
-                </div>
-                <div className="mz-tracker"><span className="mz-tracker-label">i</span>
-                    <span className="mz-tracker-val">{i < 0 ? "-" : i}</span>
-                </div>
-            </div>
-
-            {step?.done && (
-                <div className="mz-result">✓ Zeroes moved to end: [{arr.join(", ")}]</div>
-            )}
-
-            <CodeTracePanel
-                step={step}
-                codeLines={codeLines}
-                highlightedLines={connectivity.highlightedLines}
-                onLineSelect={connectivity.handleLineSelect}
-                onActiveLineDomChange={setActiveLineDom}
-            />
-            <div className="mz-status">{step?.message ?? "Press Play to begin."}</div>
-            <PlaybackControls
-                isPlaying={isPlaying} isDone={isDone} speed={speed}
-                onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward} onReset={handleReset}
-                prevDisabled={stepIndex < 0} nextDisabled={isDone} resetDisabled={stepIndex < 0}
-                onSpeedChange={e => setSpeed(Number(e.target.value))}
-                showPatternOverlay={showPatternOverlay}
-                onShowPatternOverlayChange={setShowPatternOverlay}
-                patternOverlayLabel="Show pattern overlay"
-                showPatternOverlayToggle
-            />
             {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     );

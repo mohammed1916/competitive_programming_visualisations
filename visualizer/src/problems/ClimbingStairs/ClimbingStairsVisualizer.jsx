@@ -1,11 +1,14 @@
 import { useState, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import DockableWorkspace from '../../components/shared/DockableWorkspace'
+import FloatingPanel from '../../components/shared/FloatingPanel'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import { useCodeVisualConnectivity } from '../../hooks/useCodeVisualConnectivity'
 import { usePatternOverlay } from '../../hooks/usePatternOverlay'
+import { useAutoScroll } from '../../hooks/useAutoScroll'
 import './ClimbingStairsVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -108,6 +111,7 @@ export default function ClimbingStairsVisualizer() {
   } = usePlaybackState(steps.length)
 
   const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
+  const [autoScrollCode, setAutoScrollCode] = useAutoScroll()
 
   const step = stepIndex >= 0 ? steps[stepIndex] : null
 
@@ -137,187 +141,208 @@ export default function ClimbingStairsVisualizer() {
 
   const currentStairIndex = step ? (step.i !== null ? step.i + 2 : (step.phase === 'init' ? 1 : n)) : 1
 
-  return (
-    <div className="cs-dp-shell">
-      <div className="cs-dp-top">
-        <div className="cs-dp-panel" style={{ flex: 1.5 }}>
-          <div className="cs-dp-panel-head">
-            Stairs & DP Array
-            {inputError && <span style={{ color: '#f87171', marginLeft: 8 }}>{inputError}</span>}
+  // Visualization Panel Component
+  const VisualizationPanel = () => (
+    <div className="cs-dp-panel" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div className="cs-dp-panel-head">
+        Stairs & DP Array
+        {inputError && <span style={{ color: '#f87171', marginLeft: 8 }}>{inputError}</span>}
+      </div>
+      <div className="cs-dp-panel-body" style={{ flex: 1, overflow: 'auto' }}>
+        <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
+          {EXAMPLES.map((ex) => (
+            <button
+              key={ex.label}
+              onClick={() => applyExample(ex)}
+              className="cs-dp-example-btn"
+            >
+              {ex.label}
+            </button>
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', gap: 12, marginBottom: 24, alignItems: 'center' }}>
+          <span style={{ color: '#64748b', fontSize: 13, fontFamily: 'monospace' }}>n =</span>
+          <input
+            type="number"
+            value={nInput}
+            onChange={(e) => { setNInput(e.target.value); handleReset() }}
+            placeholder="5"
+            className="cs-dp-input"
+            style={{ width: '80px', margin: 0, textAlign: 'center' }}
+            min="1"
+            max="45"
+          />
+        </div>
+
+        <div className="cs-dp-visual-area">
+          <div className="cs-dp-stairs-container">
+            {/* Draw actual stairs SVG */}
+            <svg width="100%" height="200px" viewBox={`0 0 \${Math.max(300, (n+1) * 40)} 200`}>
+              <g transform="translate(20, 180)">
+                {Array.from({ length: n + 1 }).map((_, idx) => {
+                  const stepWidth = 40
+                  const stepHeight = 150 / n
+                  const x = idx * stepWidth
+                  const y = -idx * stepHeight
+
+                  const isActive = currentStairIndex === idx
+                  const isTarget = idx === n
+                  const isVisited = currentStairIndex >= idx
+
+                  return (
+                    <g key={idx}>
+                      <rect
+                        x={x} y={y}
+                        width={stepWidth} height={180 - y}
+                        fill={isActive ? 'rgba(14, 165, 233, 0.2)' : isVisited ? '#1e293b' : '#0f172a'}
+                        stroke={isActive ? '#0ea5e9' : '#334155'}
+                        strokeWidth={isActive ? 2 : 1}
+                      />
+                      <text
+                        x={x + stepWidth / 2} y={y - 10}
+                        textAnchor="middle"
+                        fill={isActive ? '#38bdf8' : isVisited ? '#94a3b8' : '#475569'}
+                        fontSize="12"
+                        fontWeight={isActive ? "bold" : "normal"}
+                      >
+                        {idx === 0 ? "Ground" : `Stair \${idx}`}
+                      </text>
+                      {/* Draw a little character */}
+                      {isActive && (
+                        <circle cx={x + stepWidth / 2} cy={y - 30} r="8" fill="#eab308" />
+                      )}
+                      {isTarget && !isActive && (
+                        <text x={x + stepWidth / 2} y={y - 30} textAnchor="middle" fontSize="16">🏁</text>
+                      )}
+                    </g>
+                  )
+                })}
+              </g>
+            </svg>
           </div>
-          <div className="cs-dp-panel-body">
-            <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
-              {EXAMPLES.map((ex) => (
-                <button
-                  key={ex.label}
-                  onClick={() => applyExample(ex)}
-                  className="cs-dp-example-btn"
-                >
-                  {ex.label}
-                </button>
-              ))}
+
+          <div className="cs-dp-array-container">
+            <span className="cs-dp-section-title">DP Array (Ways to reach each step)</span>
+            <div className="cs-dp-array">
+              {dpTable.map((val, idx) => {
+                const isOne = idx === currentStairIndex
+                const isTwo = idx === currentStairIndex - 1
+
+                let cellClass = "cs-dp-cell "
+                if (isOne) cellClass += "one "
+                if (isTwo) cellClass += "two "
+                if (idx > currentStairIndex && idx !== 0 && idx !== 1) cellClass += "unknown "
+
+                return (
+                  <div key={idx} className="cs-dp-cell-wrapper">
+                    <span className="cs-dp-index">{idx}</span>
+                    <motion.div
+                      className={cellClass}
+                      animate={isOne || isTwo ? { y: -5 } : { y: 0 }}
+                    >
+                      {(idx > currentStairIndex && idx > 1) ? "?" : val}
+                    </motion.div>
+                    <div className="cs-dp-ptr-container">
+                      {isTwo && step?.phase !== 'done' && <div className="cs-dp-ptr two">two</div>}
+                      {isOne && step?.phase !== 'done' && <div className="cs-dp-ptr one">one</div>}
+                      {step?.phase === 'done' && idx === n && <div className="cs-dp-ptr one">Ans</div>}
+                    </div>
+                  </div>
+                )
+              })}
             </div>
-
-            <div style={{ display: 'flex', gap: 12, marginBottom: 24, alignItems: 'center' }}>
-              <span style={{ color: '#64748b', fontSize: 13, fontFamily: 'monospace' }}>n =</span>
-              <input
-                type="number"
-                value={nInput}
-                onChange={(e) => { setNInput(e.target.value); handleReset() }}
-                placeholder="5"
-                className="cs-dp-input"
-                style={{ width: '80px', margin: 0, textAlign: 'center' }}
-                min="1"
-                max="45"
-              />
-            </div>
-
-            <div className="cs-dp-visual-area">
-              <div className="cs-dp-stairs-container">
-                {/* Draw actual stairs SVG */}
-                <svg width="100%" height="200px" viewBox={`0 0 \${Math.max(300, (n+1) * 40)} 200`}>
-                  <g transform="translate(20, 180)">
-                    {Array.from({ length: n + 1 }).map((_, idx) => {
-                      const stepWidth = 40
-                      const stepHeight = 150 / n
-                      const x = idx * stepWidth
-                      const y = -idx * stepHeight
-
-                      const isActive = currentStairIndex === idx
-                      const isTarget = idx === n
-                      const isVisited = currentStairIndex >= idx
-
-                      return (
-                        <g key={idx}>
-                          <rect
-                            x={x} y={y}
-                            width={stepWidth} height={180 - y}
-                            fill={isActive ? 'rgba(14, 165, 233, 0.2)' : isVisited ? '#1e293b' : '#0f172a'}
-                            stroke={isActive ? '#0ea5e9' : '#334155'}
-                            strokeWidth={isActive ? 2 : 1}
-                          />
-                          <text
-                            x={x + stepWidth / 2} y={y - 10}
-                            textAnchor="middle"
-                            fill={isActive ? '#38bdf8' : isVisited ? '#94a3b8' : '#475569'}
-                            fontSize="12"
-                            fontWeight={isActive ? "bold" : "normal"}
-                          >
-                            {idx === 0 ? "Ground" : `Stair \${idx}`}
-                          </text>
-                          {/* Draw a little character */}
-                          {isActive && (
-                            <circle cx={x + stepWidth / 2} cy={y - 30} r="8" fill="#eab308" />
-                          )}
-                          {isTarget && !isActive && (
-                            <text x={x + stepWidth / 2} y={y - 30} textAnchor="middle" fontSize="16">🏁</text>
-                          )}
-                        </g>
-                      )
-                    })}
-                  </g>
-                </svg>
-              </div>
-
-              <div className="cs-dp-array-container">
-                <span className="cs-dp-section-title">DP Array (Ways to reach each step)</span>
-                <div className="cs-dp-array">
-                  {dpTable.map((val, idx) => {
-                    const isOne = idx === currentStairIndex
-                    const isTwo = idx === currentStairIndex - 1
-
-                    let cellClass = "cs-dp-cell "
-                    if (isOne) cellClass += "one "
-                    if (isTwo) cellClass += "two "
-                    if (idx > currentStairIndex && idx !== 0 && idx !== 1) cellClass += "unknown "
-
-                    return (
-                      <div key={idx} className="cs-dp-cell-wrapper">
-                        <span className="cs-dp-index">{idx}</span>
-                        <motion.div
-                          className={cellClass}
-                          animate={isOne || isTwo ? { y: -5 } : { y: 0 }}
-                        >
-                          {(idx > currentStairIndex && idx > 1) ? "?" : val}
-                        </motion.div>
-                        <div className="cs-dp-ptr-container">
-                          {isTwo && step?.phase !== 'done' && <div className="cs-dp-ptr two">two</div>}
-                          {isOne && step?.phase !== 'done' && <div className="cs-dp-ptr one">one</div>}
-                          {step?.phase === 'done' && idx === n && <div className="cs-dp-ptr one">Ans</div>}
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            </div>
-
           </div>
         </div>
 
-        <div className="cs-dp-panel" style={{ flex: 1 }}>
-          <div className="cs-dp-panel-head">Variables</div>
-          <div className="cs-dp-panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      </div>
+    </div>
+  )
 
-            <div className="cs-dp-var-card one">
-              <span className="cs-dp-var-name">one</span>
-              <span className="cs-dp-var-val">{step?.one ?? 1}</span>
-              <span className="cs-dp-var-desc">Ways to reach current step</span>
+  // Variables Panel Component
+  const VariablesPanel = () => (
+    <div className="cs-dp-panel" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div className="cs-dp-panel-head">Variables</div>
+      <div className="cs-dp-panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+        <div className="cs-dp-var-card one">
+          <span className="cs-dp-var-name">one</span>
+          <span className="cs-dp-var-val">{step?.one ?? 1}</span>
+          <span className="cs-dp-var-desc">Ways to reach current step</span>
+        </div>
+
+        <div className="cs-dp-var-card two">
+          <span className="cs-dp-var-name">two</span>
+          <span className="cs-dp-var-val">{step?.two ?? 1}</span>
+          <span className="cs-dp-var-desc">Ways to reach previous step</span>
+        </div>
+
+        <div className="cs-dp-var-card temp">
+          <span className="cs-dp-var-name">temp</span>
+          <span className="cs-dp-var-val">{step?.temp === null ? 'null' : step?.temp ?? 'null'}</span>
+          <span className="cs-dp-var-desc">Temporary holder</span>
+        </div>
+
+        {step && step.phase !== 'init' && step.i !== null && (
+          <div className="cs-dp-equation">
+            <div className="cs-dp-eq-title">DP Transition:</div>
+            <div className="cs-dp-eq-body">
+              <span className="cs-dp-eq-var one">one</span>
+              <span className="cs-dp-eq-op">=</span>
+              <span className="cs-dp-eq-var temp">temp</span>
+              <span className="cs-dp-eq-op">+</span>
+              <span className="cs-dp-eq-var two">two</span>
             </div>
-
-            <div className="cs-dp-var-card two">
-              <span className="cs-dp-var-name">two</span>
-              <span className="cs-dp-var-val">{step?.two ?? 1}</span>
-              <span className="cs-dp-var-desc">Ways to reach previous step</span>
-            </div>
-
-            <div className="cs-dp-var-card temp">
-              <span className="cs-dp-var-name">temp</span>
-              <span className="cs-dp-var-val">{step?.temp === null ? 'null' : step?.temp ?? 'null'}</span>
-              <span className="cs-dp-var-desc">Temporary holder</span>
-            </div>
-
-            {step && step.phase !== 'init' && step.i !== null && (
-              <div className="cs-dp-equation">
-                <div className="cs-dp-eq-title">DP Transition:</div>
-                <div className="cs-dp-eq-body">
-                  <span className="cs-dp-eq-var one">one</span>
-                  <span className="cs-dp-eq-op">=</span>
-                  <span className="cs-dp-eq-var temp">temp</span>
-                  <span className="cs-dp-eq-op">+</span>
-                  <span className="cs-dp-eq-var two">two</span>
-                </div>
-                {step.phase === 'add' && (
-                  <div className="cs-dp-eq-body vals">
-                    <span className="cs-dp-eq-var one">{step.one}</span>
-                    <span className="cs-dp-eq-op">=</span>
-                    <span className="cs-dp-eq-var temp">{step.temp}</span>
-                    <span className="cs-dp-eq-op">+</span>
-                    <span className="cs-dp-eq-var two">{step.two}</span>
-                  </div>
-                )}
+            {step.phase === 'add' && (
+              <div className="cs-dp-eq-body vals">
+                <span className="cs-dp-eq-var one">{step.one}</span>
+                <span className="cs-dp-eq-op">=</span>
+                <span className="cs-dp-eq-var temp">{step.temp}</span>
+                <span className="cs-dp-eq-op">+</span>
+                <span className="cs-dp-eq-var two">{step.two}</span>
               </div>
             )}
-
           </div>
-        </div>
-      </div>
+        )}
 
-      <div className="cs-dp-middle">
+      </div>
+    </div>
+  )
+
+  const dockPanels = [
+    {
+      id: 'code',
+      title: 'Code',
+      content: (
         <CodeTracePanel
           step={step}
           codeLines={SOLUTION_CODE}
           highlightedLines={connectivity.highlightedLines}
           onLineSelect={connectivity.handleLineSelect}
           onActiveLineDomChange={setActiveLineDom}
+          autoScroll={autoScrollCode}
         />
-      </div>
+      ),
+    },
+    {
+      id: 'viz',
+      title: 'Visualization',
+      content: <VisualizationPanel />,
+    },
+    {
+      id: 'vars',
+      title: 'Variables',
+      content: <VariablesPanel />,
+    },
+  ]
 
-      <div className={`cs-dp-status \${step?.phase === 'done' ? 'success' : step?.phase === 'add' ? 'add' : ''}`}>
-        {step?.message ?? 'Press Play or Step to begin.'}
-      </div>
-
-      <div className="cs-dp-dock">
+  return (
+    <div className="problem-shell">
+      <DockableWorkspace
+        panels={dockPanels}
+        initialLayout={{ rows: [['code', 'viz'], ['vars']], minimized: [] }}
+      />
+      <FloatingPanel title="Playback Controls">
         <PlaybackControls
           isPlaying={isPlaying}
           isDone={isDone}
@@ -334,9 +359,11 @@ export default function ClimbingStairsVisualizer() {
           onShowPatternOverlayChange={setShowPatternOverlay}
           patternOverlayLabel="Show pattern overlay"
           showPatternOverlayToggle
+          autoScroll={autoScrollCode}
+          onAutoScrollChange={setAutoScrollCode}
+          showAutoScroll
         />
-      </div>
-
+      </FloatingPanel>
       {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
     </div>
   )

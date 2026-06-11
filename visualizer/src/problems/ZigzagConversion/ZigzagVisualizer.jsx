@@ -1,5 +1,7 @@
 import { useCallback, useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { motion } from 'framer-motion'
+import DockableWorkspace from '../../components/shared/DockableWorkspace'
+import FloatingPanel from '../../components/shared/FloatingPanel'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import PatternOverlay from '../../components/PatternOverlay'
@@ -192,13 +194,79 @@ function ZigzagGrid({ numRows, input, step }) {
   )
 }
 
+function ZigzagVisualizationPanel({ numRows, source, currentStep, previousStep, stepIndex, steps, isDone }) {
+  const rowSummary = getRowSummary(currentStep?.rowStrings ?? Array.from({ length: numRows }, () => ''), previousStep, currentStep, numRows)
+
+  return (
+    <div className="zv-main-column">
+      <div className="zv-card">
+        <div className="zv-card-head">
+          <div>
+            <div className="zv-section-label">Zigzag Grid</div>
+            <div className="zv-subtitle">Characters move down, then diagonally up, then repeat.</div>
+          </div>
+          <div className="zv-output-preview">
+            <span className="zv-output-label">Output</span>
+            <span className="mono zv-output-text">{currentStep?.output ?? ''}</span>
+          </div>
+        </div>
+
+        <ZigzagGrid numRows={numRows} input={source} step={currentStep} />
+      </div>
+
+      <div className="zv-row-grid">
+        {rowSummary.map((row) => (
+          <motion.div
+            key={row.rowIndex}
+            className={`zv-card zv-row-card ${row.active ? 'active' : ''} ${row.changed ? 'changed' : ''}`}
+            animate={{ y: row.active ? -2 : 0 }}
+            transition={{ type: 'spring', stiffness: 280, damping: 24 }}
+          >
+            <div className="zv-row-label">Row {row.rowIndex}</div>
+            <div className="zv-row-value mono">{row.value || '—'}</div>
+          </motion.div>
+        ))}
+      </div>
+
+      <div className="zv-card zv-state-card">
+        <div className="zv-section-label">Step Detail</div>
+        <div className="zv-state-grid">
+          <div className="zv-state-item">
+            <span className="zv-state-key">Current char</span>
+            <span className="zv-state-value mono">{currentStep?.char ?? '—'}</span>
+          </div>
+          <div className="zv-state-item">
+            <span className="zv-state-key">Index</span>
+            <span className="zv-state-value mono">{currentStep?.charIndex ?? '—'}</span>
+          </div>
+          <div className="zv-state-item">
+            <span className="zv-state-key">Current row</span>
+            <span className="zv-state-value mono">{currentStep?.row ?? '—'}</span>
+          </div>
+          <div className="zv-state-item">
+            <span className="zv-state-key">Next row</span>
+            <span className="zv-state-value mono">{currentStep?.nextRow ?? '—'}</span>
+          </div>
+          <div className="zv-state-item">
+            <span className="zv-state-key">Direction</span>
+            <span className="zv-state-value mono">{currentStep ? (currentStep.direction === 1 ? 'down' : currentStep.direction === -1 ? 'up' : 'flat') : '—'}</span>
+          </div>
+          <div className="zv-state-item wide">
+            <span className="zv-state-key">Explanation</span>
+            <span className="zv-state-value">{currentStep?.description ?? 'Start the walkthrough to see each character placement.'}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function ZigzagVisualizer() {
   const [inputValue, setInputValue] = useState(DEFAULT_INPUT)
   const [rowCountInput, setRowCountInput] = useState(String(DEFAULT_ROWS))
   const [source, setSource] = useState(DEFAULT_INPUT)
   const [numRows, setNumRows] = useState(DEFAULT_ROWS)
   const [steps, setSteps] = useState(() => generateZigzagSteps(DEFAULT_INPUT, DEFAULT_ROWS))
-  const [showCode, setShowCode] = useState(true)
   const [attemptedSubmit, setAttemptedSubmit] = useState(false)
 
   // Playback state hook
@@ -228,7 +296,6 @@ export default function ZigzagVisualizer() {
 
   const currentStep = stepIndex >= 0 ? steps[stepIndex] : null
   const previousStep = stepIndex > 0 ? steps[stepIndex - 1] : null
-  const rowSummary = getRowSummary(currentStep?.rowStrings ?? Array.from({ length: numRows }, () => ''), previousStep, currentStep, numRows)
   const progress = steps.length > 0 ? ((stepIndex + 1) / steps.length) * 100 : 0
 
   const handleVisualize = useCallback(() => {
@@ -253,6 +320,30 @@ export default function ZigzagVisualizer() {
     setStepIndex(-1)
     setIsPlaying(false)
   }, [setIsPlaying, setStepIndex])
+
+  // Dock panels configuration
+  const dockPanels = [
+    {
+      id: 'viz',
+      title: 'Visualization',
+      content: (
+        <ZigzagVisualizationPanel
+          numRows={numRows}
+          source={source}
+          currentStep={currentStep}
+          previousStep={previousStep}
+          stepIndex={stepIndex}
+          steps={steps}
+          isDone={isDone}
+        />
+      ),
+    },
+    {
+      id: 'code',
+      title: 'Code',
+      content: <CodeTracePanel step={currentStep} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />,
+    },
+  ]
 
   return (
     <div className="zv">
@@ -329,107 +420,36 @@ export default function ZigzagVisualizer() {
             : `Step ${stepIndex + 1} / ${steps.length}`}
       </div>
 
-      <div className="zv-toolbar">
-        <div className="zv-toggle-group">
-          <span className="zv-toggle-label">View</span>
-          <div className="zv-toggle-pill">
-            <button className={`zv-toggle-btn ${!showCode ? 'active' : ''}`} onClick={() => setShowCode(false)}>Visual only</button>
-            <button className={`zv-toggle-btn ${showCode ? 'active' : ''}`} onClick={() => setShowCode(true)}>Visual + code</button>
-          </div>
-        </div>
-      </div>
-
-      <div className={`zv-layout ${showCode ? 'with-code' : ''}`}>
-        <div className="zv-main-column">
-          <div className="zv-card">
-            <div className="zv-card-head">
-              <div>
-                <div className="zv-section-label">Zigzag Grid</div>
-                <div className="zv-subtitle">Characters move down, then diagonally up, then repeat.</div>
-              </div>
-              <div className="zv-output-preview">
-                <span className="zv-output-label">Output</span>
-                <span className="mono zv-output-text">{currentStep?.output ?? ''}</span>
-              </div>
-            </div>
-
-            <ZigzagGrid numRows={numRows} input={source} step={currentStep} />
-          </div>
-
-          <div className="zv-row-grid">
-            {rowSummary.map((row) => (
-              <motion.div
-                key={row.rowIndex}
-                className={`zv-card zv-row-card ${row.active ? 'active' : ''} ${row.changed ? 'changed' : ''}`}
-                animate={{ y: row.active ? -2 : 0 }}
-                transition={{ type: 'spring', stiffness: 280, damping: 24 }}
-              >
-                <div className="zv-row-label">Row {row.rowIndex}</div>
-                <div className="zv-row-value mono">{row.value || '—'}</div>
-              </motion.div>
-            ))}
-          </div>
-
-          <div className="zv-card zv-state-card">
-            <div className="zv-section-label">Step Detail</div>
-            <div className="zv-state-grid">
-              <div className="zv-state-item">
-                <span className="zv-state-key">Current char</span>
-                <span className="zv-state-value mono">{currentStep?.char ?? '—'}</span>
-              </div>
-              <div className="zv-state-item">
-                <span className="zv-state-key">Index</span>
-                <span className="zv-state-value mono">{currentStep?.charIndex ?? '—'}</span>
-              </div>
-              <div className="zv-state-item">
-                <span className="zv-state-key">Current row</span>
-                <span className="zv-state-value mono">{currentStep?.row ?? '—'}</span>
-              </div>
-              <div className="zv-state-item">
-                <span className="zv-state-key">Next row</span>
-                <span className="zv-state-value mono">{currentStep?.nextRow ?? '—'}</span>
-              </div>
-              <div className="zv-state-item">
-                <span className="zv-state-key">Direction</span>
-                <span className="zv-state-value mono">{currentStep ? (currentStep.direction === 1 ? 'down' : currentStep.direction === -1 ? 'up' : 'flat') : '—'}</span>
-              </div>
-              <div className="zv-state-item wide">
-                <span className="zv-state-key">Explanation</span>
-                <span className="zv-state-value">{currentStep?.description ?? 'Start the walkthrough to see each character placement.'}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <AnimatePresence>
-          {showCode && <CodeTracePanel step={currentStep} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />}
-        </AnimatePresence>
-      </div>
-
-      <PlaybackControls
-        className="zv-controls"
-        buttonClassName="zv-btn"
-        ghostButtonClassName="zv-btn-ghost"
-        playButtonClassName="zv-btn-play"
-        onReset={handleReset}
-        onPrev={stepBack}
-        onPlayToggle={togglePlay}
-        onNext={stepForward}
-        resetDisabled={stepIndex < 0}
-        prevDisabled={stepIndex < 0}
-        nextDisabled={isDone}
-        isPlaying={isPlaying}
-        isDone={isDone}
-        speedWrapClassName="zv-speed-wrap"
-        speedLabelClassName="zv-speed-label"
-        speed={speed}
-        speedRangeValue={1480 - speed}
-        onSpeedChange={(event) => setSpeed(1480 - Number(event.target.value))}
-        showPatternOverlay={showPatternOverlay}
-        onShowPatternOverlayChange={setShowPatternOverlay}
-        patternOverlayLabel="Show pattern overlay"
-        showPatternOverlayToggle
+      <DockableWorkspace
+        panels={dockPanels}
+        initialLayout={{ rows: [['viz', 'code']], minimized: [] }}
       />
+
+      <FloatingPanel title="Playback Controls">
+        <PlaybackControls
+          buttonClassName="zv-btn"
+          ghostButtonClassName="zv-btn-ghost"
+          playButtonClassName="zv-btn-play"
+          onReset={handleReset}
+          onPrev={stepBack}
+          onPlayToggle={togglePlay}
+          onNext={stepForward}
+          resetDisabled={stepIndex < 0}
+          prevDisabled={stepIndex < 0}
+          nextDisabled={isDone}
+          isPlaying={isPlaying}
+          isDone={isDone}
+          speedWrapClassName="zv-speed-wrap"
+          speedLabelClassName="zv-speed-label"
+          speed={speed}
+          speedRangeValue={1480 - speed}
+          onSpeedChange={(event) => setSpeed(1480 - Number(event.target.value))}
+          showPatternOverlay={showPatternOverlay}
+          onShowPatternOverlayChange={setShowPatternOverlay}
+          patternOverlayLabel="Show pattern overlay"
+          showPatternOverlayToggle
+        />
+      </FloatingPanel>
 
       {showPatternOverlay && currentStep && <PatternOverlay step={currentStep} activeLineDom={activeLineDom} />}
     </div>

@@ -3,7 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import PatternOverlay from '../../components/PatternOverlay'
+import DockableWorkspace from '../../components/shared/DockableWorkspace'
+import FloatingPanel from '../../components/shared/FloatingPanel'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { useAutoScroll } from '../../hooks/useAutoScroll'
 import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './NumberOfIslandsVisualizer.css'
 
@@ -187,6 +190,7 @@ export default function NumberOfIslandsVisualizer() {
     handleReset, isPlaying, speed, setSpeed, isDone,
   } = usePlaybackState(steps.length)
 
+  const [autoScrollCode, setAutoScrollCode] = useAutoScroll()
   const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
   const step = stepIndex >= 0 ? steps[stepIndex] : null
@@ -199,180 +203,208 @@ export default function NumberOfIslandsVisualizer() {
   const rows = grid.length
   const cols = grid[0]?.length || 0
 
-  return (
-    <div className="noi-shell">
-      <div className="noi-top">
-        <div className="noi-panel" style={{ flex: 1.5 }}>
-          <div className="noi-panel-head">
-            Grid View
-            {inputError && <span style={{ color: '#f87171', marginLeft: 8 }}>{inputError}</span>}
+  const dockPanels = [
+    {
+      id: 'grid',
+      title: 'Grid View & Input',
+      subtitle: inputError ? 'Fix the input to resume playback.' : 'Edit the grid input and see visualization.',
+      defaultZone: 'left',
+      content: (
+        <div className="noi-panel-body">
+          <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
+            {EXAMPLES.map((ex) => (
+              <button
+                key={ex.label}
+                onClick={() => applyExample(ex)}
+                className="noi-example-btn"
+              >
+                {ex.label}
+              </button>
+            ))}
           </div>
-          <div className="noi-panel-body">
-            <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
-              {EXAMPLES.map((ex) => (
-                <button
-                  key={ex.label}
-                  onClick={() => applyExample(ex)}
-                  className="noi-example-btn"
-                >
-                  {ex.label}
-                </button>
+
+          {inputError && <div style={{ color: '#f87171', marginBottom: 12, fontSize: 13 }}>{inputError}</div>}
+
+          <textarea
+            className="noi-input-textarea"
+            value={gridInput}
+            onChange={(e) => { setGridInput(e.target.value); handleReset() }}
+            rows={5}
+            spellCheck={false}
+          />
+
+          <div className="noi-grid-container">
+            <div
+              className="noi-grid"
+              style={{
+                gridTemplateColumns: `repeat(${cols}, minmax(30px, 1fr))`,
+                maxWidth: `${cols * 50}px`
+              }}
+            >
+              {grid.map((row, r) => (
+                row.map((cell, c) => {
+                  const isWater = cell === "0"
+                  const isVisited = step?.visited?.includes(`${r},${c}`)
+                  const isScan = step?.currScan?.[0] === r && step?.currScan?.[1] === c
+                  const isBfs = step?.currBfs?.[0] === r && step?.currBfs?.[1] === c
+                  const isNeighbor = step?.currNeighbor?.[0] === r && step?.currNeighbor?.[1] === c
+
+                  const islandId = step?.islandMap?.[`${r},${c}`]
+                  const islandColor = islandId !== undefined ? ISLAND_COLORS[islandId % ISLAND_COLORS.length] : undefined
+
+                  let cellClass = "noi-cell "
+                  if (isWater) cellClass += "water "
+                  else cellClass += "land "
+
+                  if (isVisited) cellClass += "visited "
+                  if (isScan && !isBfs) cellClass += "scan "
+                  if (isBfs) cellClass += "bfs "
+                  if (isNeighbor) cellClass += "neighbor "
+
+                  return (
+                    <div
+                      key={`${r}-${c}`}
+                      className={cellClass}
+                      style={{
+                        ...(isVisited && !isWater && islandColor ? { backgroundColor: islandColor, borderColor: islandColor } : {})
+                      }}
+                    >
+                      {cell}
+                      {isScan && !isBfs && <div className="noi-cell-indicator scan" />}
+                      {isBfs && <div className="noi-cell-indicator bfs" />}
+                      {isNeighbor && <div className="noi-cell-indicator neighbor" />}
+                    </div>
+                  )
+                })
               ))}
             </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'state',
+      title: 'State & Queue',
+      subtitle: step ? `Islands: ${step.islands ?? 0}` : 'Queue and algorithm state.',
+      defaultZone: 'right',
+      content: (
+        <div className="noi-panel-body">
+          <div className="noi-stats-container">
+            <div className="noi-stat-box">
+              <span className="noi-stat-label">Islands Found</span>
+              <span className="noi-stat-val">{step?.islands ?? 0}</span>
+            </div>
+          </div>
 
-            <textarea
-              className="noi-input-textarea"
-              value={gridInput}
-              onChange={(e) => { setGridInput(e.target.value); handleReset() }}
-              rows={5}
-              spellCheck={false}
-            />
-
-            <div className="noi-grid-container">
-              <div
-                className="noi-grid"
-                style={{
-                  gridTemplateColumns: `repeat(\${cols}, minmax(30px, 1fr))`,
-                  maxWidth: `\${cols * 50}px`
-                }}
-              >
-                {grid.map((row, r) => (
-                  row.map((cell, c) => {
-                    const isWater = cell === "0"
-                    const isVisited = step?.visited?.includes(`\${r},\${c}`)
-                    const isScan = step?.currScan?.[0] === r && step?.currScan?.[1] === c
-                    const isBfs = step?.currBfs?.[0] === r && step?.currBfs?.[1] === c
-                    const isNeighbor = step?.currNeighbor?.[0] === r && step?.currNeighbor?.[1] === c
-
-                    const islandId = step?.islandMap?.[`\${r},\${c}`]
-                    const islandColor = islandId !== undefined ? ISLAND_COLORS[islandId % ISLAND_COLORS.length] : undefined
-
-                    let cellClass = "noi-cell "
-                    if (isWater) cellClass += "water "
-                    else cellClass += "land "
-
-                    if (isVisited) cellClass += "visited "
-                    if (isScan && !isBfs) cellClass += "scan "
-                    if (isBfs) cellClass += "bfs "
-                    if (isNeighbor) cellClass += "neighbor "
-
-                    return (
-                      <div
-                        key={`\${r}-\${c}`}
-                        className={cellClass}
-                        style={{
-                          ...(isVisited && !isWater && islandColor ? { backgroundColor: islandColor, borderColor: islandColor } : {})
-                        }}
-                      >
-                        {cell}
-                        {isScan && !isBfs && <div className="noi-cell-indicator scan" />}
-                        {isBfs && <div className="noi-cell-indicator bfs" />}
-                        {isNeighbor && <div className="noi-cell-indicator neighbor" />}
-                      </div>
-                    )
-                  })
+          <div className="noi-section">
+            <span className="noi-section-title">BFS Queue</span>
+            <div className="noi-queue-box">
+              <AnimatePresence mode="popLayout">
+                {step?.queue?.map((item, idx) => (
+                  <motion.div
+                    key={`q-${item[0]}-${item[1]}-${idx}`}
+                    layout
+                    initial={{ opacity: 0, scale: 0.5, x: 20 }}
+                    animate={{ opacity: 1, scale: 1, x: 0 }}
+                    exit={{ opacity: 0, scale: 0.5, y: -20 }}
+                    className="noi-queue-item"
+                  >
+                    ({item[0]}, {item[1]})
+                  </motion.div>
                 ))}
-              </div>
+              </AnimatePresence>
+              {(!step || !step.queue || step.queue.length === 0) && (
+                <span style={{ color: '#475569', fontStyle: 'italic', fontSize: 13, padding: '4px 0' }}>Queue is empty</span>
+              )}
             </div>
           </div>
-        </div>
 
-        <div className="noi-panel" style={{ flex: 1 }}>
-          <div className="noi-panel-head">State & Queue</div>
-          <div className="noi-panel-body">
-
-            <div className="noi-stats-container">
-              <div className="noi-stat-box">
-                <span className="noi-stat-label">Islands Found</span>
-                <span className="noi-stat-val">{step?.islands ?? 0}</span>
+          <div className="noi-section" style={{ flex: 1 }}>
+            <span className="noi-section-title">Legend</span>
+            <div className="noi-legend">
+              <div className="noi-legend-item">
+                <div className="noi-legend-box land" /> Unvisited Land ("1")
               </div>
-            </div>
-
-            <div className="noi-section">
-              <span className="noi-section-title">BFS Queue</span>
-              <div className="noi-queue-box">
-                <AnimatePresence mode="popLayout">
-                  {step?.queue?.map((item, idx) => (
-                    <motion.div
-                      key={`q-\${item[0]}-\${item[1]}-\${idx}`}
-                      layout
-                      initial={{ opacity: 0, scale: 0.5, x: 20 }}
-                      animate={{ opacity: 1, scale: 1, x: 0 }}
-                      exit={{ opacity: 0, scale: 0.5, y: -20 }}
-                      className="noi-queue-item"
-                    >
-                      ({item[0]}, {item[1]})
-                    </motion.div>
+              <div className="noi-legend-item">
+                <div className="noi-legend-box water" /> Water ("0")
+              </div>
+              <div className="noi-legend-item">
+                <div className="noi-legend-box scan" /> Scanning pointer
+              </div>
+              <div className="noi-legend-item">
+                <div className="noi-legend-box bfs" /> Current BFS Node
+              </div>
+              <div className="noi-legend-item">
+                <div className="noi-legend-box neighbor" /> Neighbor being checked
+              </div>
+              <div className="noi-legend-item" style={{ marginTop: 8 }}>
+                <div className="noi-legend-row">
+                  {ISLAND_COLORS.slice(0, 4).map((c, i) => (
+                    <div key={i} className="noi-legend-color" style={{ backgroundColor: c }} />
                   ))}
-                </AnimatePresence>
-                {(!step || !step.queue || step.queue.length === 0) && (
-                  <span style={{ color: '#475569', fontStyle: 'italic', fontSize: 13, padding: '4px 0' }}>Queue is empty</span>
-                )}
+                </div>
+                <span style={{ fontSize: 12 }}>Colored by Island ID</span>
               </div>
             </div>
-
-            <div className="noi-section" style={{ flex: 1 }}>
-              <span className="noi-section-title">Legend</span>
-              <div className="noi-legend">
-                <div className="noi-legend-item">
-                  <div className="noi-legend-box land" /> Unvisited Land ("1")
-                </div>
-                <div className="noi-legend-item">
-                  <div className="noi-legend-box water" /> Water ("0")
-                </div>
-                <div className="noi-legend-item">
-                  <div className="noi-legend-box scan" /> Scanning pointer
-                </div>
-                <div className="noi-legend-item">
-                  <div className="noi-legend-box bfs" /> Current BFS Node
-                </div>
-                <div className="noi-legend-item">
-                  <div className="noi-legend-box neighbor" /> Neighbor being checked
-                </div>
-                <div className="noi-legend-item" style={{ marginTop: 8 }}>
-                  <div className="noi-legend-row">
-                    {ISLAND_COLORS.slice(0, 4).map((c, i) => (
-                      <div key={i} className="noi-legend-color" style={{ backgroundColor: c }} />
-                    ))}
-                  </div>
-                  <span style={{ fontSize: 12 }}>Colored by Island ID</span>
-                </div>
-              </div>
-            </div>
-
           </div>
         </div>
-      </div>
+      ),
+    },
+    {
+      id: 'code',
+      title: 'Code Trace',
+      subtitle: step ? `Active line ${step.activeLine}` : 'Line-by-line solution view.',
+      defaultZone: 'full',
+      content: (
+        <CodeTracePanel
+          step={step}
+          codeLines={SOLUTION_CODE}
+          onActiveLineDomChange={setActiveLineDom}
+          autoScroll={autoScrollCode}
+        />
+      ),
+    },
+  ]
 
-      <div className="noi-middle">
-        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
-      </div>
+  return (
+    <div className="problem-shell">
+      <DockableWorkspace
+        title="Number of Islands Visualizer"
+        panels={dockPanels}
+        initialLayout={{
+          rows: [['grid', 'state'], ['code']],
+          minimized: [],
+        }}
+      />
 
-      <div className={`noi-status \${step?.phase === 'found_new' ? 'found' : step?.phase === 'done' ? 'success' : ''}`}>
-        {step?.message ?? 'Press Play or Step to begin.'}
-      </div>
-
-      <div className="noi-dock">
+      <FloatingPanel title="Playback Controls">
         <PlaybackControls
+          onReset={handleReset}
+          onPrev={stepBack}
+          onPlayToggle={togglePlay}
+          onNext={stepForward}
+          resetDisabled={steps.length === 0}
+          prevDisabled={stepIndex < 0}
+          nextDisabled={steps.length === 0 || isDone}
           isPlaying={isPlaying}
           isDone={isDone}
           speed={speed}
-          onPlayToggle={togglePlay}
-          onPrev={stepBack}
-          onNext={stepForward}
-          onReset={handleReset}
-          prevDisabled={stepIndex < 0}
-          nextDisabled={isDone}
-          resetDisabled={stepIndex < 0}
           onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+          speedIndicator={`${speed}ms`}
+          autoScroll={autoScrollCode}
+          onAutoScrollChange={setAutoScrollCode}
+          autoScrollLabel="Auto-scroll code"
+          showAutoScroll
           showPatternOverlay={showPatternOverlay}
           onShowPatternOverlayChange={setShowPatternOverlay}
           patternOverlayLabel="Show pattern overlay"
           showPatternOverlayToggle
         />
-      </div>
+      </FloatingPanel>
 
-      {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
+      {showPatternOverlay && step && (
+        <PatternOverlay step={step} activeLineDom={activeLineDom} />
+      )}
     </div>
   )
 }

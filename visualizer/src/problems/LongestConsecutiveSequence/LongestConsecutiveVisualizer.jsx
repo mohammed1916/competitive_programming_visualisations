@@ -232,17 +232,8 @@ export default function LongestConsecutiveVisualizer() {
     // Define dock panels for DockableWorkspace
     const dockPanels = [
         {
-            id: 'viz',
-            title: 'Visualization',
-            subtitle: 'Hash set state and sequence tracking',
-            defaultZone: 'left',
-            content: <VisualizationContent />,
-        },
-        {
             id: 'code',
             title: 'Code Trace',
-            subtitle: step ? `Active line ${step.activeLine}` : 'Line-by-line solution view',
-            defaultZone: 'right',
             content: (
                 <CodeTracePanel
                     step={step}
@@ -252,20 +243,24 @@ export default function LongestConsecutiveVisualizer() {
                 />
             ),
         },
+        {
+            id: 'viz',
+            title: 'Visualization',
+            content: <VisualizationContent />,
+        },
     ]
 
     return (
-        <div className="lcs-shell">
+        <div className="problem-shell">
             <div className="lcs-header">
                 <span>Longest Consecutive Sequence · Hash Set</span>
                 {inputError && <span className="lcs-error">{inputError}</span>}
             </div>
 
             <DockableWorkspace
-                title="Longest Consecutive Sequence Workspace"
                 panels={dockPanels}
                 initialLayout={{
-                    rows: [['viz', 'code']],
+                    rows: [['code', 'viz']],
                     minimized: [],
                 }}
             />

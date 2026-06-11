@@ -214,115 +214,120 @@ export default function MatrixIterationBasicsVisualizer({ problem }) {
     return 'mib-cell'
   }
 
-  return (
-    <div className="mib-shell">
-      <div className="mib-grid">
-        <section className="mib-panel">
-          <header className="mib-panel-head">
-            <span>Pattern Controls</span>
-            <span className="mib-chip">{MODE_META[mode].badge}</span>
-          </header>
-          <div className="mib-panel-body">
-            <div className="mib-mode-row">
-              {Object.entries(MODE_META).map(([key, meta]) => (
-                <button
-                  key={key}
-                  className={`mib-mode-btn ${mode === key ? 'active' : ''}`}
-                  onClick={() => applyMode(key)}
-                >
-                  {meta.label}
-                </button>
-              ))}
-            </div>
+  // Build dockable panels for workspace
+  const dockPanels = [
+    {
+      id: 'controls',
+      title: 'Pattern Controls',
+      subtitle: MODE_META[mode].badge,
+      defaultZone: 'left',
+      content: (
+        <div className="mib-panel-body">
+          <div className="mib-mode-row">
+            {Object.entries(MODE_META).map(([key, meta]) => (
+              <button
+                key={key}
+                className={`mib-mode-btn ${mode === key ? 'active' : ''}`}
+                onClick={() => applyMode(key)}
+              >
+                {meta.label}
+              </button>
+            ))}
+          </div>
 
-            <div style={{ marginTop: 10 }}>
-              <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <input type="checkbox" checked={exprEnabled} onChange={(e) => { setExprEnabled(e.target.checked); handleReset() }} />
-                <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>Enable custom expression</span>
-              </label>
+          <div style={{ marginTop: 10 }}>
+            <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <input type="checkbox" checked={exprEnabled} onChange={(e) => { setExprEnabled(e.target.checked); handleReset() }} />
+              <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>Enable custom expression</span>
+            </label>
 
-              {exprEnabled && (
-                <div style={{ marginTop: 8, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                  <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                    <label style={{ color: 'var(--text-dim)' }}>i ×</label>
-                    <select value={coeffI} onChange={(e) => setCoeffI(Number(e.target.value))}>
-                      <option value={0}>0</option>
-                      <option value={1}>1</option>
-                      <option value={2}>2</option>
-                    </select>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                    <label style={{ color: 'var(--text-dim)' }}>j ×</label>
-                    <select value={coeffJ} onChange={(e) => setCoeffJ(Number(e.target.value))}>
-                      <option value={0}>0</option>
-                      <option value={1}>1</option>
-                      <option value={2}>2</option>
-                    </select>
-                  </div>
-
-                  <select value={op} onChange={(e) => setOp(e.target.value)}>
-                    <option value={'==='}>=</option>
-                    <option value={'>='}>&gt;=</option>
-                    <option value={'<='}>&lt;=</option>
-                    <option value={'>'}>&gt;</option>
-                    <option value={'<'}>&lt;</option>
+            {exprEnabled && (
+              <div style={{ marginTop: 8, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                  <label style={{ color: 'var(--text-dim)' }}>i ×</label>
+                  <select value={coeffI} onChange={(e) => setCoeffI(Number(e.target.value))}>
+                    <option value={0}>0</option>
+                    <option value={1}>1</option>
+                    <option value={2}>2</option>
                   </select>
-
-                  <input style={{ width: 68 }} value={constVal} onChange={(e) => setConstVal(Number(e.target.value))} />
                 </div>
-              )}
-            </div>
 
-            <div className="mib-size-row">
-              <span>n =</span>
-              <input
-                value={sizeInput}
-                onChange={(event) => {
-                  setSizeInput(event.target.value)
-                  handleReset()
-                }}
-                className="mib-size-input"
-              />
-              {EXAMPLES.map((n) => (
-                <button key={n} className="mib-size-preset" onClick={() => applySize(n)}>
-                  {n}x{n}
-                </button>
-              ))}
-            </div>
-
-            {error && <p className="mib-error">{error}</p>}
-
-            <div className="mib-stats-row">
-              <div><span>Scanned</span><strong>{scannedCount}</strong></div>
-              <div><span>Visited</span><strong>{visitedCount}</strong></div>
-              <div><span>Current</span><strong>{step && step.i !== null && step.j !== null ? `(${step.i}, ${step.j})` : 'None'}</strong></div>
-            </div>
-          </div>
-        </section>
-
-        <section className="mib-panel">
-          <header className="mib-panel-head">
-            <span>Matrix View</span>
-            <span className="mib-chip">{size} x {size}</span>
-          </header>
-          <div className="mib-panel-body">
-            <div className="mib-matrix" style={{ gridTemplateColumns: `repeat(${size}, minmax(48px, 1fr))` }}>
-              {matrix.map((row, i) => row.map((value, j) => (
-                <div className={getCellClassName(i, j)} key={`${i}-${j}`}>
-                  <span className="mib-idx">{i},{j}</span>
-                  <span className="mib-val">{value}</span>
-                  {mode === 'anti' && (
-                    <span className="mib-cond">{i} + {j} = {i + j} (target {size - 1})</span>
-                  )}
+                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                  <label style={{ color: 'var(--text-dim)' }}>j ×</label>
+                  <select value={coeffJ} onChange={(e) => setCoeffJ(Number(e.target.value))}>
+                    <option value={0}>0</option>
+                    <option value={1}>1</option>
+                    <option value={2}>2</option>
+                  </select>
                 </div>
-              )))}
-            </div>
-          </div>
-        </section>
-      </div>
 
-      <div className="mib-trace-grid">
+                <select value={op} onChange={(e) => setOp(e.target.value)}>
+                  <option value={'==='}>=</option>
+                  <option value={'>='}>&gt;=</option>
+                  <option value={'<='}>&lt;=</option>
+                  <option value={'>'}>&gt;</option>
+                  <option value={'<'}>&lt;</option>
+                </select>
+
+                <input style={{ width: 68 }} value={constVal} onChange={(e) => setConstVal(Number(e.target.value))} />
+              </div>
+            )}
+          </div>
+
+          <div className="mib-size-row">
+            <span>n =</span>
+            <input
+              value={sizeInput}
+              onChange={(event) => {
+                setSizeInput(event.target.value)
+                handleReset()
+              }}
+              className="mib-size-input"
+            />
+            {EXAMPLES.map((n) => (
+              <button key={n} className="mib-size-preset" onClick={() => applySize(n)}>
+                {n}x{n}
+              </button>
+            ))}
+          </div>
+
+          {error && <p className="mib-error">{error}</p>}
+
+          <div className="mib-stats-row">
+            <div><span>Scanned</span><strong>{scannedCount}</strong></div>
+            <div><span>Visited</span><strong>{visitedCount}</strong></div>
+            <div><span>Current</span><strong>{step && step.i !== null && step.j !== null ? `(${step.i}, ${step.j})` : 'None'}</strong></div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'matrix',
+      title: 'Matrix View',
+      subtitle: `${size} x ${size}`,
+      defaultZone: 'left',
+      content: (
+        <div className="mib-panel-body">
+          <div className="mib-matrix" style={{ gridTemplateColumns: `repeat(${size}, minmax(48px, 1fr))` }}>
+            {matrix.map((row, i) => row.map((value, j) => (
+              <div className={getCellClassName(i, j)} key={`${i}-${j}`}>
+                <span className="mib-idx">{i},{j}</span>
+                <span className="mib-val">{value}</span>
+                {mode === 'anti' && (
+                  <span className="mib-cond">{i} + {j} = {i + j} (target {size - 1})</span>
+                )}
+              </div>
+            )))}
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'code',
+      title: 'Code Trace',
+      subtitle: step ? `Active line ${step.activeLine}` : 'Line-by-line code view.',
+      defaultZone: 'right',
+      content: (
         <CodeTracePanel
           step={step}
           codeLines={codeLines}
@@ -331,25 +336,52 @@ export default function MatrixIterationBasicsVisualizer({ problem }) {
           activeLabelPrefix="Executing"
           activeLabelSuffix=""
           onActiveLineDomChange={setActiveLineDom}
+          autoScroll={autoScrollCode}
         />
+      ),
+    },
+    {
+      id: 'legend',
+      title: 'Legend',
+      defaultZone: 'right',
+      content: (
+        <div className="mib-panel-body mib-legend">
+          <p><span className="dot current-hit" /> Current + visited</p>
+          <p><span className="dot current-miss" /> Current + skipped</p>
+          <p><span className="dot visited" /> Visited cell</p>
+          <p><span className="dot scanned" /> Scanned but skipped</p>
+          <p><span className="dot idle" /> Not touched yet</p>
+        </div>
+      ),
+    },
+  ]
 
-        <section className="mib-panel">
-          <header className="mib-panel-head">
-            <span>Legend</span>
-          </header>
-          <div className="mib-panel-body mib-legend">
-            <p><span className="dot current-hit" /> Current + visited</p>
-            <p><span className="dot current-miss" /> Current + skipped</p>
-            <p><span className="dot visited" /> Visited cell</p>
-            <p><span className="dot scanned" /> Scanned but skipped</p>
-            <p><span className="dot idle" /> Not touched yet</p>
-          </div>
-        </section>
-      </div>
+  return (
+    <div className="mib-shell">
+      <section className="mib-hero">
+        <div className="mib-hero-copy">
+          <h2>Matrix Iteration Patterns</h2>
+          <p>
+            Explore different iteration patterns over a matrix. Learn how to efficiently traverse
+            upper triangular, lower triangular, diagonals, and other patterns using nested loops.
+          </p>
+        </div>
+        <div className="mib-status-display">{status}</div>
+      </section>
 
-      <div className={`mib-status ${isDone ? 'done' : ''}`}>{status}</div>
+      <DockableWorkspace
+        title="Matrix Iteration Workspace"
+        panels={dockPanels}
+        initialLayout={{
+          rows: [
+            ['controls', 'code'],
+            ['matrix', 'legend'],
+          ],
+          minimized: [],
+        }}
+      />
 
-      <div className="mib-dock">
+      <FloatingPanel title="Playback Controls">
         <PlaybackControls
           isPlaying={isPlaying}
           isDone={isDone}
@@ -362,12 +394,17 @@ export default function MatrixIterationBasicsVisualizer({ problem }) {
           nextDisabled={isDone}
           resetDisabled={stepIndex < 0}
           onSpeedChange={(event) => setSpeed(Number(event.target.value))}
+          speedIndicator={`${speed}ms`}
+          autoScroll={autoScrollCode}
+          onAutoScrollChange={setAutoScrollCode}
+          autoScrollLabel="Auto-scroll code"
+          showAutoScroll
           showPatternOverlay={showPatternOverlay}
           onShowPatternOverlayChange={setShowPatternOverlay}
           patternOverlayLabel="Show pattern overlay"
           showPatternOverlayToggle
         />
-      </div>
+      </FloatingPanel>
 
       {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
     </div>

@@ -3,8 +3,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
 import PatternOverlay from "../../components/PatternOverlay";
+import DockableWorkspace from "../../components/shared/DockableWorkspace";
+import FloatingPanel from "../../components/shared/FloatingPanel";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
 import { usePatternOverlay } from "../../hooks/usePatternOverlay";
+import { useAutoScroll } from "../../hooks/useAutoScroll";
 import "./NextPermutationVisualizer.css";
 
 const SOLUTION_CODE = [
@@ -76,6 +79,52 @@ function cellClass(idx, step) {
   return "";
 }
 
+// ArrayVisualizationPanel: renders the array with states
+function ArrayVisualizationPanel({ step, exampleNums }) {
+  return (
+    <div className="np-panel">
+      <div className="np-panel-label">Array</div>
+      <div className="np-array-row">
+        <AnimatePresence mode="popLayout">
+          {(step?.nums ?? exampleNums).map((val, idx) => (
+            <motion.div key={idx} layout className={`np-cell ${cellClass(idx, step)}`}
+              animate={{ y: 0 }} transition={{ type: "spring", stiffness: 350, damping: 22 }}>
+              {val}
+              <div className="np-idx">{idx}</div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+      <div className="np-legend">
+        <span className="np-leg pivot">■ pivot (i)</span>
+        <span className="np-leg swap">■ swap target (j)</span>
+        <span className="np-leg reversed">■ reversed suffix</span>
+      </div>
+    </div>
+  );
+}
+
+// ExamplesPanel: for selecting input examples
+function ExamplesPanel({ examples, currentExample, onExampleChange }) {
+  return (
+    <div className="np-examples-panel">
+      <div className="np-panel-label">Examples</div>
+      <div className="np-examples">
+        {examples.map((e) => (
+          <button key={e.label} className={`np-chip ${currentExample.label === e.label ? "active" : ""}`} onClick={() => onExampleChange(e)}>{e.label}</button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// StatusPanel: shows the current step message
+function StatusPanel({ step }) {
+  return (
+    <div className="np-status">{step?.message ?? "Press Play to begin."}</div>
+  );
+}
+
 export default function NextPermutationVisualizer() {
   const [ex, setEx] = useState(EXAMPLES[0]);
   const steps = useMemo(() => generateSteps(ex.nums), [ex]);
@@ -84,47 +133,69 @@ export default function NextPermutationVisualizer() {
   const step = stepIndex >= 0 ? steps[stepIndex] : null;
   const applyEx = useCallback((e) => { setEx(e); handleReset(); }, [handleReset]);
   const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay();
+  const [autoScrollCode, setAutoScrollCode] = useAutoScroll();
+
+  // Build dock panels for the workspace
+  const dockPanels = [
+    {
+      id: "examples",
+      title: "Examples",
+      content: <ExamplesPanel examples={EXAMPLES} currentExample={ex} onExampleChange={applyEx} />,
+    },
+    {
+      id: "array",
+      title: "Array Visualization",
+      content: <ArrayVisualizationPanel step={step} exampleNums={ex.nums} />,
+    },
+    {
+      id: "code",
+      title: "Code Trace",
+      content: <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} autoScroll={autoScrollCode} />,
+    },
+    {
+      id: "status",
+      title: "Status",
+      content: <StatusPanel step={step} />,
+    },
+  ];
 
   return (
-    <div className="np-shell">
-      <div className="np-examples">
-        {EXAMPLES.map((e) => (
-          <button key={e.label} className={`np-chip ${ex.label === e.label ? "active" : ""}`} onClick={() => applyEx(e)}>{e.label}</button>
-        ))}
-      </div>
-
-      <div className="np-panel">
-        <div className="np-panel-label">Array</div>
-        <div className="np-array-row">
-          <AnimatePresence mode="popLayout">
-            {(step?.nums ?? ex.nums).map((val, idx) => (
-              <motion.div key={idx} layout className={`np-cell ${cellClass(idx, step)}`}
-                animate={{ y: 0 }} transition={{ type: "spring", stiffness: 350, damping: 22 }}>
-                {val}
-                <div className="np-idx">{idx}</div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-        <div className="np-legend">
-          <span className="np-leg pivot">■ pivot (i)</span>
-          <span className="np-leg swap">■ swap target (j)</span>
-          <span className="np-leg reversed">■ reversed suffix</span>
-        </div>
-      </div>
-
-      <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
-      <div className="np-status">{step?.message ?? "Press Play to begin."}</div>
-      <PlaybackControls
-        isPlaying={isPlaying} isDone={isDone} speed={speed}
-        onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward} onReset={handleReset}
-        prevDisabled={stepIndex < 0} nextDisabled={isDone} resetDisabled={stepIndex < 0}
-        onSpeedChange={(e) => setSpeed(Number(e.target.value))}
-        showPatternOverlay={showPatternOverlay}
-        onShowPatternOverlayChange={setShowPatternOverlay}
-        patternOverlayLabel="Show pattern overlay"
-        showPatternOverlayToggle
+    <div className="problem-shell">
+      <DockableWorkspace
+        panels={dockPanels}
+        initialLayout={{
+          rows: [
+            ["examples", "array"],
+            ["code", "status"],
+          ],
+          minimized: [],
+        }}
       />
+
+      <FloatingPanel title="Playback Controls">
+        <PlaybackControls
+          isPlaying={isPlaying}
+          isDone={isDone}
+          speed={speed}
+          onPlayToggle={togglePlay}
+          onPrev={stepBack}
+          onNext={stepForward}
+          onReset={handleReset}
+          prevDisabled={stepIndex < 0}
+          nextDisabled={isDone}
+          resetDisabled={stepIndex < 0}
+          onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+          autoScroll={autoScrollCode}
+          onAutoScrollChange={setAutoScrollCode}
+          autoScrollLabel="Auto-scroll code"
+          showAutoScroll
+          showPatternOverlay={showPatternOverlay}
+          onShowPatternOverlayChange={setShowPatternOverlay}
+          patternOverlayLabel="Show pattern overlay"
+          showPatternOverlayToggle
+        />
+      </FloatingPanel>
+
       {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
     </div>
   );

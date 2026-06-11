@@ -3,7 +3,19 @@
     "allow": [
       "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\BBBS-AI-01\\\\d\\\\competitive_programming_visualisations\\\\visualizer\" -Recurse -Directory)",
       "Bash(Select-Object -ExpandProperty FullName)",
-      "Bash(Sort-Object)"
+      "Bash(Sort-Object)",
+      "Bash(node -c src/problems/CloneGraph/CloneGraphVisualizer.jsx)",
+      "Bash(git reset *)",
+      "Bash(node -e ' *)",
+      "Bash(node -c src/problems/LCABinaryTree/LCABinaryTreeVisualizer.jsx)",
+      "Bash(git -C \"C:\\\\Users\\\\BBBS-AI-01\\\\d\\\\cv\\\\visualizer\" diff \"src/problems/LongestIncreasingSubsequence/\")",
+      "Bash(npm exec *)",
+      "Bash(node -c src/problems/LongestRepeatingCharReplace/LongestRepeatingVisualizer.jsx)",
+      "Bash(node -c CloneGraphVisualizer.jsx)",
+      "Bash(git commit -m ' *)",
+      "Bash(npx vite *)",
+      "Bash(node -e \"const fs = require\\('fs'\\); const code = fs.readFileSync\\('src/problems/InsertInterval/InsertIntervalVisualizer.jsx', 'utf8'\\); console.log\\('File size:', code.length, 'bytes'\\); console.log\\('Contains DockableWorkspace:', code.includes\\('DockableWorkspace'\\)\\); console.log\\('Contains FloatingPanel:', code.includes\\('FloatingPanel'\\)\\); console.log\\('Contains useAutoScroll:', code.includes\\('useAutoScroll'\\)\\); console.log\\('Contains IntervalVisualization:', code.includes\\('IntervalVisualization'\\)\\);\")",
+      "PowerShell(npx vite build --logLevel error; $exitCode = $LASTEXITCODE; Write-Host \"Exit code: $exitCode\"; if \\($exitCode -eq 0\\) { Write-Host \"Build successful\" } else { Write-Host \"Build failed\" })"
     ]
   }
 }

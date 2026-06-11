@@ -2,8 +2,11 @@ import { useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
+import FloatingPanel from "../../components/shared/FloatingPanel";
 import PatternOverlay from "../../components/PatternOverlay";
+import DockableWorkspace from "../../components/shared/DockableWorkspace";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
+import { useAutoScroll } from "../../hooks/useAutoScroll";
 import { usePatternOverlay } from "../../hooks/usePatternOverlay";
 import "./MinStackVisualizer.css";
 import { Stack3D } from "../../components/viz3d";
@@ -206,6 +209,7 @@ export default function MinStackVisualizer() {
     isDone,
   } = usePlaybackState(steps.length);
 
+  const [autoScrollCode, setAutoScrollCode] = useAutoScroll();
   const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay();
 
   const step = stepIndex >= 0 ? steps[stepIndex] : null;
@@ -242,132 +246,187 @@ export default function MinStackVisualizer() {
   const currOp = step?.op;
   const phase = step?.phase;
 
-  return (
-    <div className="ms-shell">
-      <div className="ms-top">
-        {/* ── Main panel ── */}
-        <section className="ms-panel main">
-          <header className="ms-head">
-            <span>Min Stack · Design</span>
-          </header>
-          <div className="ms-body">
-            <div className="ms-examples">
-              {EXAMPLES.map((ex, i) => (
-                <button
-                  key={ex.label}
-                  className={`ms-chip${selectedExample === i ? " active" : ""}`}
-                  onClick={() => applyExample(i)}
+  const dockPanels = [
+    {
+      id: "input",
+      title: "Operation Builder",
+      subtitle: `${ops.length} operations loaded`,
+      defaultZone: "left",
+      content: (
+        <div className="ms-panel-body">
+          <div className="ms-examples">
+            {EXAMPLES.map((ex, i) => (
+              <button
+                key={ex.label}
+                className={`ms-chip${selectedExample === i ? " active" : ""}`}
+                onClick={() => applyExample(i)}
+              >
+                {ex.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Custom ops builder */}
+          <div className="ms-builder">
+            <div className="ms-push-row">
+              <input
+                className="ms-input"
+                value={pushVal}
+                onChange={(e) => setPushVal(e.target.value)}
+                placeholder="val"
+                onKeyDown={(e) => e.key === "Enter" && addOp("push")}
+                type="number"
+              />
+              <button
+                className="ms-op-btn push"
+                onClick={() => addOp("push")}
+              >
+                push(val)
+              </button>
+              <button className="ms-op-btn pop" onClick={() => addOp("pop")}>
+                pop()
+              </button>
+              <button className="ms-op-btn top" onClick={() => addOp("top")}>
+                top()
+              </button>
+              <button
+                className="ms-op-btn min"
+                onClick={() => addOp("getMin")}
+              >
+                getMin()
+              </button>
+              <button className="ms-op-btn reset" onClick={resetOps}>
+                Clear
+              </button>
+            </div>
+
+            {/* Operation sequence */}
+            <div className="ms-op-list">
+              {ops.map((op, idx) => (
+                <span
+                  key={idx}
+                  className={`ms-op-tag ${op.type}${step && steps[stepIndex]?.op === op.type ? "" : ""}`}
                 >
-                  {ex.label}
-                </button>
+                  {op.type === "push" ? `push(${op.val})` : `${op.type}()`}
+                </span>
               ))}
             </div>
-
-            {/* Custom ops builder */}
-            <div className="ms-builder">
-              <div className="ms-push-row">
-                <input
-                  className="ms-input"
-                  value={pushVal}
-                  onChange={(e) => setPushVal(e.target.value)}
-                  placeholder="val"
-                  onKeyDown={(e) => e.key === "Enter" && addOp("push")}
-                  type="number"
-                />
-                <button
-                  className="ms-op-btn push"
-                  onClick={() => addOp("push")}
-                >
-                  push(val)
-                </button>
-                <button className="ms-op-btn pop" onClick={() => addOp("pop")}>
-                  pop()
-                </button>
-                <button className="ms-op-btn top" onClick={() => addOp("top")}>
-                  top()
-                </button>
-                <button
-                  className="ms-op-btn min"
-                  onClick={() => addOp("getMin")}
-                >
-                  getMin()
-                </button>
-                <button className="ms-op-btn reset" onClick={resetOps}>
-                  Clear
-                </button>
-              </div>
-
-              {/* Operation sequence */}
-              <div className="ms-op-list">
-                {ops.map((op, idx) => (
-                  <span
-                    key={idx}
-                    className={`ms-op-tag ${op.type}${step && steps[stepIndex]?.op === op.type ? "" : ""}`}
-                  >
-                    {op.type === "push" ? `push(${op.val})` : `${op.type}()`}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Stack visualizations */}
-            <div className="ms-stacks">
-              <Stack3D
-                label="stack"
-                items={stack}
-                topBadge="top"
-                highlightIndex={stack.length - 1}
-              />
-              <Stack3D
-                label="min_stack"
-                items={minStack}
-                topBadge="min"
-                highlightIndex={minStack.length - 1}
-              />
-
-              {/* Result box */}
-              {result !== null && result !== undefined && (
-                <div className="ms-result-col">
-                  <div className="ms-stack-label">return</div>
-                  <motion.div
-                    className={`ms-result-box${phase === "getMin" ? " min-result" : " top-result"}`}
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                  >
-                    {result}
-                  </motion.div>
-                </div>
-              )}
-            </div>
           </div>
-        </section>
-      </div>
+        </div>
+      ),
+    },
+    {
+      id: "viz",
+      title: "Stack Visualization",
+      subtitle: step ? `Step ${stepIndex + 1} of ${steps.length}` : "Press play to start.",
+      defaultZone: "right",
+      content: (
+        <div className="ms-panel-body">
+          {/* Stack visualizations */}
+          <div className="ms-stacks">
+            <Stack3D
+              label="stack"
+              items={stack}
+              topBadge="top"
+              highlightIndex={stack.length - 1}
+            />
+            <Stack3D
+              label="min_stack"
+              items={minStack}
+              topBadge="min"
+              highlightIndex={minStack.length - 1}
+            />
 
-      <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
+            {/* Result box */}
+            {result !== null && result !== undefined && (
+              <div className="ms-result-col">
+                <div className="ms-stack-label">return</div>
+                <motion.div
+                  className={`ms-result-box${phase === "getMin" ? " min-result" : " top-result"}`}
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                >
+                  {result}
+                </motion.div>
+              </div>
+            )}
+          </div>
 
-      <div className="ms-status">
-        {step?.message ?? "Press Play or Step to begin."}
-      </div>
+          <div className="ms-status">
+            {step?.message ?? "Press Play or Step to begin."}
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "code",
+      title: "Code Trace",
+      subtitle: step ? `Active line ${step.activeLine}` : "Line-by-line solution view.",
+      defaultZone: "full",
+      content: (
+        <CodeTracePanel
+          step={step}
+          codeLines={SOLUTION_CODE}
+          autoScroll={autoScrollCode}
+          onActiveLineDomChange={setActiveLineDom}
+        />
+      ),
+    },
+  ];
 
-      <PlaybackControls
-        isPlaying={isPlaying}
-        isDone={isDone}
-        speed={speed}
-        onPlayToggle={togglePlay}
-        onPrev={stepBack}
-        onNext={stepForward}
-        onReset={handleReset}
-        prevDisabled={stepIndex < 0}
-        nextDisabled={isDone}
-        resetDisabled={stepIndex < 0}
-        onSpeedChange={(e) => setSpeed(Number(e.target.value))}
-        showPatternOverlay={showPatternOverlay}
-        onShowPatternOverlayChange={setShowPatternOverlay}
-        patternOverlayLabel="Show pattern overlay"
-        showPatternOverlayToggle
+  return (
+    <div className="ms-shell">
+      <section className="ms-hero">
+        <div className="ms-hero-copy">
+          <span className="ms-kicker">Min Stack · LeetCode 155</span>
+          <h2>Track the minimum value efficiently with two stacks.</h2>
+          <p>
+            This visualization shows how the Min Stack algorithm maintains a parallel
+            min_stack to answer getMin() in O(1) time while keeping push/pop O(1) as well.
+          </p>
+        </div>
+      </section>
+
+      <DockableWorkspace
+        title="Min Stack Workspace"
+        panels={dockPanels}
+        initialLayout={{
+          rows: [
+            ["input", "viz"],
+            ["code"],
+          ],
+          minimized: [],
+        }}
       />
 
-      {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
+      <FloatingPanel title="Playback Controls">
+        <PlaybackControls
+          onReset={handleReset}
+          onPrev={stepBack}
+          onPlayToggle={togglePlay}
+          onNext={stepForward}
+          resetDisabled={steps.length === 0}
+          prevDisabled={stepIndex <= 0}
+          nextDisabled={steps.length === 0 || isDone}
+          isPlaying={isPlaying}
+          isDone={isDone}
+          speed={speed}
+          onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+          speedIndicator={`${speed}ms`}
+          autoScroll={autoScrollCode}
+          onAutoScrollChange={setAutoScrollCode}
+          autoScrollLabel="Auto-scroll code"
+          showAutoScroll
+          showPatternOverlay={showPatternOverlay}
+          onShowPatternOverlayChange={setShowPatternOverlay}
+          patternOverlayLabel="Show pattern overlay"
+          showPatternOverlayToggle
+        />
+      </FloatingPanel>
+
+      {showPatternOverlay && step && (
+        <PatternOverlay step={step} activeLineDom={activeLineDom} />
+      )}
     </div>
   );
 }

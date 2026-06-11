@@ -1,10 +1,13 @@
 import { useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import DockableWorkspace from "../../components/shared/DockableWorkspace";
+import FloatingPanel from "../../components/shared/FloatingPanel";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
 import PatternOverlay from "../../components/PatternOverlay";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
 import { usePatternOverlay } from "../../hooks/usePatternOverlay";
+import { useAutoScroll } from "../../hooks/useAutoScroll";
 import "./SubarraySumKVisualizer.css";
 
 const SOLUTION_CODE = [
@@ -80,6 +83,7 @@ export default function SubarraySumKVisualizer() {
     const { stepIndex, stepForward, stepBack, togglePlay, handleReset, isPlaying, speed, setSpeed, isDone } =
         usePlaybackState(steps.length);
     const step = stepIndex >= 0 ? steps[stepIndex] : null;
+    const [autoScrollCode, setAutoScrollCode] = useAutoScroll();
     const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay();
 
     const applyExample = useCallback(
@@ -87,22 +91,9 @@ export default function SubarraySumKVisualizer() {
         [handleReset]
     );
 
-    return (
-        <div className="ssk-shell">
-            <div className="ssk-controls-row">
-                <div className="ssk-examples">
-                    {EXAMPLES.map((ex) => (
-                        <button key={ex.label} className="ssk-chip" onClick={() => applyExample(ex)}>{ex.label}</button>
-                    ))}
-                </div>
-                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                    <input className="ssk-input" value={numsInput} onChange={(e) => { setNumsInput(e.target.value); handleReset(); }} />
-                    <label className="ssk-k-label">k=<input className="ssk-k-input" type="number" value={kInput}
-                        onChange={(e) => { setKInput(e.target.value); handleReset(); }} /></label>
-                    {err && <span className="ssk-error">{err}</span>}
-                </div>
-            </div>
-
+    // Visualization panel component
+    const VizPanel = () => (
+        <div>
             {/* Array + prefix display */}
             <div className="ssk-panel">
                 <div className="ssk-panel-label">Array — current prefix sum = <strong>{step?.prefix ?? 0}</strong></div>
@@ -142,18 +133,55 @@ export default function SubarraySumKVisualizer() {
                 <div className="ssk-found-badge">+{step.found} subarrays found! (total = {step.count})</div>
             )}
 
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
             <div className="ssk-status">{step?.message ?? "Press Play to begin."}</div>
-            <PlaybackControls
-                isPlaying={isPlaying} isDone={isDone} speed={speed}
-                onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward} onReset={handleReset}
-                prevDisabled={stepIndex < 0} nextDisabled={isDone} resetDisabled={stepIndex < 0}
-                onSpeedChange={(e) => setSpeed(Number(e.target.value))}
-                showPatternOverlay={showPatternOverlay}
-                onShowPatternOverlayChange={setShowPatternOverlay}
-                patternOverlayLabel="Show pattern overlay"
-                showPatternOverlayToggle
-            />
+        </div>
+    );
+
+    const dockPanels = [
+        {
+            id: 'code',
+            title: 'Code',
+            content: <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} autoScroll={autoScrollCode} />,
+        },
+        {
+            id: 'viz',
+            title: 'Visualization',
+            content: <VizPanel />,
+        },
+    ];
+
+    return (
+        <div className="problem-shell">
+            <div className="ssk-controls-row">
+                <div className="ssk-examples">
+                    {EXAMPLES.map((ex) => (
+                        <button key={ex.label} className="ssk-chip" onClick={() => applyExample(ex)}>{ex.label}</button>
+                    ))}
+                </div>
+                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                    <input className="ssk-input" value={numsInput} onChange={(e) => { setNumsInput(e.target.value); handleReset(); }} />
+                    <label className="ssk-k-label">k=<input className="ssk-k-input" type="number" value={kInput}
+                        onChange={(e) => { setKInput(e.target.value); handleReset(); }} /></label>
+                    {err && <span className="ssk-error">{err}</span>}
+                </div>
+            </div>
+
+            <DockableWorkspace panels={dockPanels} initialLayout={{ rows: [['code', 'viz']], minimized: [] }} />
+            <FloatingPanel title="Playback Controls">
+                <PlaybackControls
+                    isPlaying={isPlaying} isDone={isDone} speed={speed}
+                    onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward} onReset={handleReset}
+                    prevDisabled={stepIndex < 0} nextDisabled={isDone} resetDisabled={stepIndex < 0}
+                    onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+                    showAutoScroll={autoScrollCode}
+                    onAutoScrollChange={setAutoScrollCode}
+                    showAutoScrollToggle
+                    showPatternOverlay={showPatternOverlay}
+                    onShowPatternOverlayChange={setShowPatternOverlay}
+                    patternOverlayLabel="Show pattern overlay"
+                    showPatternOverlayToggle
+                />
+            </FloatingPanel>
             {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     );

@@ -1,10 +1,13 @@
 import { useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import DockableWorkspace from '../../components/shared/DockableWorkspace'
+import FloatingPanel from '../../components/shared/FloatingPanel'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import { usePatternOverlay } from '../../hooks/usePatternOverlay'
+import { useAutoScroll } from '../../hooks/useAutoScroll'
 import './ReverseLinkedListVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -111,6 +114,127 @@ const EXAMPLES = [
     { label: 'Short', values: [3, 1, 4, 1, 5] },
 ]
 
+function ReverseLinkedListViz({ step, values, nodes, arrows, EXAMPLES, valInput, setValInput, handleReset, inputError }) {
+    return (
+        <section className="rll-panel main">
+            <header className="rll-head">
+                <span>Linked List · Pointer Reversal</span>
+                {inputError && <span className="rll-error">{inputError}</span>}
+            </header>
+            <div className="rll-body">
+                <div className="rll-examples">
+                    {EXAMPLES.map((ex) => (
+                        <button key={ex.label} className="rll-chip" onClick={() => {
+                            setValInput(JSON.stringify(ex.values))
+                            handleReset()
+                        }}>
+                            {ex.label}
+                        </button>
+                    ))}
+                </div>
+                <div className="rll-input-row">
+                    <input
+                        className="rll-input"
+                        value={valInput}
+                        onChange={(e) => { setValInput(e.target.value); handleReset() }}
+                        placeholder="[1,2,3,4,5]"
+                    />
+                </div>
+
+                {/* Node row */}
+                <div className="rll-canvas">
+                    <svg className="rll-arrows-svg" aria-hidden="true">
+                        {arrows.map((arrow, idx) => {
+                            const fromX = arrow.from * 90 + 32
+                            const toX = arrow.to * 90 + 32
+                            const y = 32
+                            const dir = arrow.reversed ? -1 : 1
+                            return (
+                                <g key={idx}>
+                                    <line
+                                        x1={fromX + (dir > 0 ? 20 : -20)}
+                                        y1={y}
+                                        x2={toX + (dir > 0 ? -22 : 22)}
+                                        y2={y}
+                                        className={`rll-arrow-line${arrow.active ? ' active' : ''}${arrow.reversed ? ' reversed' : ''}`}
+                                    />
+                                    {/* arrowhead */}
+                                    <polygon
+                                        points={`${toX + (dir > 0 ? -22 : 22)},${y - 5} ${toX + (dir > 0 ? -10 : 10)},${y} ${toX + (dir > 0 ? -22 : 22)},${y + 5}`}
+                                        className={`rll-arrow-head${arrow.reversed ? ' reversed' : ''}`}
+                                    />
+                                </g>
+                            )
+                        })}
+                    </svg>
+
+                    <div className="rll-nodes">
+                        {nodes.map((val, idx) => {
+                            const isCurr = step?.curr === idx
+                            const isPrev = step?.prev === idx
+                            const isNxt = step?.nxt === idx
+                            const isDone = step?.phase === 'done'
+                            return (
+                                <div key={idx} className="rll-node-wrap">
+                                    <motion.div
+                                        className={`rll-node${isCurr ? ' curr' : ''}${isPrev ? ' prev' : ''}${isNxt ? ' nxt' : ''}${isDone ? ' done' : ''}`}
+                                        animate={{ y: isCurr ? -10 : 0, scale: isCurr ? 1.15 : 1 }}
+                                        transition={{ type: 'spring', stiffness: 420, damping: 26 }}
+                                    >
+                                        {val}
+                                    </motion.div>
+                                    <div className="rll-ptrs">
+                                        {isPrev && <span className="rll-ptr rll-ptr-prev">prev</span>}
+                                        {isCurr && <span className="rll-ptr rll-ptr-curr">curr</span>}
+                                        {isNxt && <span className="rll-ptr rll-ptr-nxt">nxt</span>}
+                                    </div>
+                                </div>
+                            )
+                        })}
+                    </div>
+                </div>
+
+                {/* Legend */}
+                <div className="rll-legend">
+                    <span className="rll-legend-item prev">prev — last reversed node</span>
+                    <span className="rll-legend-item curr">curr — current node</span>
+                    <span className="rll-legend-item nxt">nxt — saved next</span>
+                </div>
+            </div>
+        </section>
+    )
+}
+
+function ReverseLinkedListPointerState({ step, nodes }) {
+    return (
+        <section className="rll-panel side">
+            <header className="rll-head"><span>Pointer State</span></header>
+            <div className="rll-body">
+                {[
+                    { label: 'prev', val: step?.prev != null && step.prev >= 0 ? `node(${nodes[step.prev]})` : 'None', cls: 'prev' },
+                    { label: 'curr', val: step?.curr != null && step.curr >= 0 ? `node(${nodes[step.curr]})` : 'None', cls: 'curr' },
+                    { label: 'nxt', val: step?.nxt != null && step.nxt >= 0 ? `node(${nodes[step.nxt]})` : 'None', cls: 'nxt' },
+                ].map(({ label, val, cls }) => (
+                    <div key={label} className="rll-state-row">
+                        <span className={`rll-state-label ${cls}`}>{label}</span>
+                        <span className="rll-state-val mono">{val}</span>
+                    </div>
+                ))}
+
+                {step?.phase === 'done' && (
+                    <motion.div
+                        className="rll-result"
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                    >
+                        New head = node({nodes[nodes.length - 1]})
+                    </motion.div>
+                )}
+            </div>
+        </section>
+    )
+}
+
 export default function ReverseLinkedListVisualizer() {
     const [valInput, setValInput] = useState('[1,2,3,4,5]')
 
@@ -133,156 +257,70 @@ export default function ReverseLinkedListVisualizer() {
     } = usePlaybackState(steps.length)
 
     const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
+    const [autoScrollCode, setAutoScrollCode] = useAutoScroll()
 
     const step = stepIndex >= 0 ? steps[stepIndex] : null
-
-    const applyExample = useCallback((ex) => {
-        setValInput(JSON.stringify(ex.values))
-        handleReset()
-    }, [handleReset])
 
     const nodes = step?.nodes ?? values
     const arrows = step?.arrows ?? []
 
+    const dockPanels = [
+        {
+            id: 'code',
+            title: 'Code',
+            content: <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} autoScroll={autoScrollCode} />,
+        },
+        {
+            id: 'viz',
+            title: 'Visualization',
+            content: (
+                <div className="rll-top">
+                    <ReverseLinkedListViz
+                        step={step}
+                        values={values}
+                        nodes={nodes}
+                        arrows={arrows}
+                        EXAMPLES={EXAMPLES}
+                        valInput={valInput}
+                        setValInput={setValInput}
+                        handleReset={handleReset}
+                        inputError={inputError}
+                    />
+                    <ReverseLinkedListPointerState step={step} nodes={nodes} />
+                </div>
+            ),
+        },
+    ]
+
     return (
-        <div className="rll-shell">
-            <div className="rll-top">
-                {/* ── Linked-list canvas ── */}
-                <section className="rll-panel main">
-                    <header className="rll-head">
-                        <span>Linked List · Pointer Reversal</span>
-                        {inputError && <span className="rll-error">{inputError}</span>}
-                    </header>
-                    <div className="rll-body">
-                        <div className="rll-examples">
-                            {EXAMPLES.map((ex) => (
-                                <button key={ex.label} className="rll-chip" onClick={() => applyExample(ex)}>
-                                    {ex.label}
-                                </button>
-                            ))}
-                        </div>
-                        <div className="rll-input-row">
-                            <input
-                                className="rll-input"
-                                value={valInput}
-                                onChange={(e) => { setValInput(e.target.value); handleReset() }}
-                                placeholder="[1,2,3,4,5]"
-                            />
-                        </div>
+        <div className="problem-shell">
+            <DockableWorkspace panels={dockPanels} initialLayout={{ rows: [['code', 'viz']], minimized: [] }} />
 
-                        {/* Node row */}
-                        <div className="rll-canvas">
-                            <svg className="rll-arrows-svg" aria-hidden="true">
-                                {arrows.map((arrow, idx) => {
-                                    const fromX = arrow.from * 90 + 32
-                                    const toX = arrow.to * 90 + 32
-                                    const y = 32
-                                    const dir = arrow.reversed ? -1 : 1
-                                    return (
-                                        <g key={idx}>
-                                            <line
-                                                x1={fromX + (dir > 0 ? 20 : -20)}
-                                                y1={y}
-                                                x2={toX + (dir > 0 ? -22 : 22)}
-                                                y2={y}
-                                                className={`rll-arrow-line${arrow.active ? ' active' : ''}${arrow.reversed ? ' reversed' : ''}`}
-                                            />
-                                            {/* arrowhead */}
-                                            <polygon
-                                                points={`${toX + (dir > 0 ? -22 : 22)},${y - 5} ${toX + (dir > 0 ? -10 : 10)},${y} ${toX + (dir > 0 ? -22 : 22)},${y + 5}`}
-                                                className={`rll-arrow-head${arrow.reversed ? ' reversed' : ''}`}
-                                            />
-                                        </g>
-                                    )
-                                })}
-                            </svg>
-
-                            <div className="rll-nodes">
-                                {nodes.map((val, idx) => {
-                                    const isCurr = step?.curr === idx
-                                    const isPrev = step?.prev === idx
-                                    const isNxt = step?.nxt === idx
-                                    const isDone = step?.phase === 'done'
-                                    return (
-                                        <div key={idx} className="rll-node-wrap">
-                                            <motion.div
-                                                className={`rll-node${isCurr ? ' curr' : ''}${isPrev ? ' prev' : ''}${isNxt ? ' nxt' : ''}${isDone ? ' done' : ''}`}
-                                                animate={{ y: isCurr ? -10 : 0, scale: isCurr ? 1.15 : 1 }}
-                                                transition={{ type: 'spring', stiffness: 420, damping: 26 }}
-                                            >
-                                                {val}
-                                            </motion.div>
-                                            <div className="rll-ptrs">
-                                                {isPrev && <span className="rll-ptr rll-ptr-prev">prev</span>}
-                                                {isCurr && <span className="rll-ptr rll-ptr-curr">curr</span>}
-                                                {isNxt && <span className="rll-ptr rll-ptr-nxt">nxt</span>}
-                                            </div>
-                                        </div>
-                                    )
-                                })}
-                            </div>
-                        </div>
-
-                        {/* Legend */}
-                        <div className="rll-legend">
-                            <span className="rll-legend-item prev">prev — last reversed node</span>
-                            <span className="rll-legend-item curr">curr — current node</span>
-                            <span className="rll-legend-item nxt">nxt — saved next</span>
-                        </div>
-                    </div>
-                </section>
-
-                {/* ── Right: pointer state ── */}
-                <section className="rll-panel side">
-                    <header className="rll-head"><span>Pointer State</span></header>
-                    <div className="rll-body">
-                        {[
-                            { label: 'prev', val: step?.prev != null && step.prev >= 0 ? `node(${nodes[step.prev]})` : 'None', cls: 'prev' },
-                            { label: 'curr', val: step?.curr != null && step.curr >= 0 ? `node(${nodes[step.curr]})` : 'None', cls: 'curr' },
-                            { label: 'nxt', val: step?.nxt != null && step.nxt >= 0 ? `node(${nodes[step.nxt]})` : 'None', cls: 'nxt' },
-                        ].map(({ label, val, cls }) => (
-                            <div key={label} className="rll-state-row">
-                                <span className={`rll-state-label ${cls}`}>{label}</span>
-                                <span className="rll-state-val mono">{val}</span>
-                            </div>
-                        ))}
-
-                        {step?.phase === 'done' && (
-                            <motion.div
-                                className="rll-result"
-                                initial={{ opacity: 0, y: 8 }}
-                                animate={{ opacity: 1, y: 0 }}
-                            >
-                                New head = node({nodes[nodes.length - 1]})
-                            </motion.div>
-                        )}
-                    </div>
-                </section>
-            </div>
-
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
-
-            <div className={`rll-status${step?.phase === 'done' ? ' done' : ''}`}>
-                {step?.message ?? 'Press Play or Step to begin.'}
-            </div>
-
-            <PlaybackControls
-                isPlaying={isPlaying}
-                isDone={isDone}
-                speed={speed}
-                onPlayToggle={togglePlay}
-                onPrev={stepBack}
-                onNext={stepForward}
-                onReset={handleReset}
-                prevDisabled={stepIndex < 0}
-                nextDisabled={isDone}
-                resetDisabled={stepIndex < 0}
-                onSpeedChange={(e) => setSpeed(Number(e.target.value))}
-                showPatternOverlay={showPatternOverlay}
-                onShowPatternOverlayChange={setShowPatternOverlay}
-                patternOverlayLabel="Show pattern overlay"
-                showPatternOverlayToggle
-            />
+            <FloatingPanel title="Playback Controls">
+                <div className="rll-status" style={{ marginBottom: '12px' }}>
+                    {step?.message ?? 'Press Play or Step to begin.'}
+                </div>
+                <PlaybackControls
+                    isPlaying={isPlaying}
+                    isDone={isDone}
+                    speed={speed}
+                    onPlayToggle={togglePlay}
+                    onPrev={stepBack}
+                    onNext={stepForward}
+                    onReset={handleReset}
+                    prevDisabled={stepIndex < 0}
+                    nextDisabled={isDone}
+                    resetDisabled={stepIndex < 0}
+                    onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+                    showAutoScroll={true}
+                    autoScroll={autoScrollCode}
+                    onAutoScrollChange={setAutoScrollCode}
+                    showPatternOverlay={showPatternOverlay}
+                    onShowPatternOverlayChange={setShowPatternOverlay}
+                    patternOverlayLabel="Show pattern overlay"
+                    showPatternOverlayToggle
+                />
+            </FloatingPanel>
 
             {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>

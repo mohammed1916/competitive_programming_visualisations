@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(netstat -ano)",
+      "Bash(git -C \"C:\\\\Users\\\\BBBS-AI-01\\\\d\\\\cv\\\\visualizer\" diff --stat)",
+      "Bash(rm -f .git/index.lock)",
+      "Bash(git commit -m 'Refactor DailyTemperaturesVisualizer to use DockableWorkspace + FloatingPanel *)",
+      "Bash(npx eslint *)"
+    ]
+  }
+}
