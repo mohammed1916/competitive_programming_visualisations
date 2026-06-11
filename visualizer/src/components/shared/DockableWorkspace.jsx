@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import "./DockableWorkspace.css";
 
 const ZONES = ["left", "right", "full"];
@@ -78,6 +78,29 @@ export default function DockableWorkspace({
     setHoveredLayoutZone(null);
   };
 
+  useEffect(() => {
+    if (!draggedId) return;
+
+    const handleDocumentDragOver = (e) => {
+      e.preventDefault();
+      const zone = getClosestLayoutZone(e.clientX, e.clientY);
+      setHoveredLayoutZone(zone);
+    };
+
+    const handleDocumentDragEnd = () => {
+      setDraggedId(null);
+      setHoveredLayoutZone(null);
+    };
+
+    document.addEventListener('dragover', handleDocumentDragOver);
+    document.addEventListener('dragend', handleDocumentDragEnd);
+
+    return () => {
+      document.removeEventListener('dragover', handleDocumentDragOver);
+      document.removeEventListener('dragend', handleDocumentDragEnd);
+    };
+  }, [draggedId]);
+
   const minimizePanel = (panelId) => {
     setLayout((current) => {
       const next = removeFromZones(current, panelId);
@@ -105,17 +128,6 @@ export default function DockableWorkspace({
         className="dock-panel"
         draggable
         onDragStart={() => setDraggedId(panel.id)}
-        onDragEnd={() => {
-          setDraggedId(null);
-          setHoverZone(null);
-          setHoveredLayoutZone(null);
-        }}
-        onDragOver={(e) => {
-          if (draggedId) {
-            const zone = getClosestLayoutZone(e.clientX, e.clientY);
-            setHoveredLayoutZone(zone);
-          }
-        }}
       >
         <header className="dock-panel-head">
           <div className="dock-panel-title-group">
