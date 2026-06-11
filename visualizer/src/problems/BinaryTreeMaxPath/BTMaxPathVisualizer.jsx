@@ -3,7 +3,10 @@ import { motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import PatternOverlay from '../../components/PatternOverlay'
+import DockableWorkspace from '../../components/shared/DockableWorkspace'
+import FloatingPanel from '../../components/shared/FloatingPanel'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { useAutoScroll } from '../../hooks/useAutoScroll'
 import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import { buildTree, computeLayout, collectNodes, buildEdges, parseTreeInput } from '../../components/treeUtils'
 import { TreeCanvas3D } from '../../components/viz3d'
@@ -68,6 +71,7 @@ const EXAMPLES = [
 
 export default function BTMaxPathVisualizer() {
     const [treeInput, setTreeInput] = useState('-10,9,20,null,null,15,7')
+    const [autoScrollCode, setAutoScrollCode] = useAutoScroll()
     const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
     const root = useMemo(() => parseTreeInput(treeInput), [treeInput])
@@ -83,17 +87,9 @@ export default function BTMaxPathVisualizer() {
     const edges = useMemo(() => root ? buildEdges(root) : [], [root])
     const totalH = nodes.length > 0 ? (Math.max(...nodes.map((n) => n.depth), 0) + 1) * LH + 20 : 80
 
-    return (
-        <div className="btmps-shell">
-            <div className="btmps-controls-row">
-                <div className="btmps-examples">
-                    {EXAMPLES.map((ex) => (
-                        <button key={ex.label} className="btmps-chip" onClick={() => applyExample(ex)}>{ex.label}</button>
-                    ))}
-                </div>
-                <input className="btmps-input" value={treeInput} onChange={(e) => { setTreeInput(e.target.value); handleReset() }} placeholder="e.g. -10,9,20,null,null,15,7" />
-            </div>
-
+    // Visualization component for tree and metrics
+    const TreeVisualizationComponent = useMemo(() => () => (
+        <div className="btmps-viz-container">
             <div className="btmps-max-badge">
                 max_sum = <span className="btmps-val">{isFinite(step?.maxSum ?? -Infinity) ? step?.maxSum ?? '−∞' : '−∞'}</span>
             </div>
@@ -130,18 +126,80 @@ export default function BTMaxPathVisualizer() {
                 </div>
             )}
 
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
             <div className="btmps-status">{step?.message || 'Press Play to begin.'}</div>
-            <PlaybackControls
-                isPlaying={isPlaying} isDone={isDone} speed={speed}
-                onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward} onReset={handleReset}
-                prevDisabled={stepIndex < 0} nextDisabled={isDone} resetDisabled={stepIndex < 0}
-                onSpeedChange={(e) => setSpeed(Number(e.target.value))}
-                showPatternOverlay={showPatternOverlay}
-                onShowPatternOverlayChange={setShowPatternOverlay}
-                patternOverlayLabel="Show pattern overlay"
-                showPatternOverlayToggle
+        </div>
+    ), [step, layout, edges, nodes, W, totalH])
+
+    const dockPanels = [
+        {
+            id: 'input',
+            title: 'Input & Settings',
+            content: (
+                <div className="btmps-input-panel">
+                    <div className="btmps-controls-row">
+                        <div className="btmps-examples">
+                            {EXAMPLES.map((ex) => (
+                                <button key={ex.label} className="btmps-chip" onClick={() => applyExample(ex)}>{ex.label}</button>
+                            ))}
+                        </div>
+                    </div>
+                    <input
+                        className="btmps-input"
+                        value={treeInput}
+                        onChange={(e) => { setTreeInput(e.target.value); handleReset() }}
+                        placeholder="e.g. -10,9,20,null,null,15,7"
+                    />
+                </div>
+            ),
+        },
+        {
+            id: 'viz',
+            title: 'Tree Visualization',
+            content: <TreeVisualizationComponent />,
+        },
+        {
+            id: 'code',
+            title: 'Code Trace',
+            content: <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} autoScroll={autoScrollCode} />,
+        },
+    ]
+
+    return (
+        <div className="btmps-shell">
+            <DockableWorkspace
+                title="Binary Tree Max Path Sum Visualizer"
+                panels={dockPanels}
+                initialLayout={{
+                    rows: [['input', 'viz'], ['code']],
+                    minimized: [],
+                }}
             />
+
+            <FloatingPanel title="Playback Controls">
+                <PlaybackControls
+                    onReset={handleReset}
+                    onPrev={stepBack}
+                    onPlayToggle={togglePlay}
+                    onNext={stepForward}
+                    resetDisabled={steps.length === 0}
+                    prevDisabled={stepIndex <= 0}
+                    nextDisabled={steps.length === 0 || isDone}
+                    isPlaying={isPlaying}
+                    isDone={isDone}
+                    speed={speed}
+                    onSpeedChange={(event) => setSpeed(Number(event.target.value))}
+                    speedIndicator={`${speed}ms`}
+                    autoScroll={autoScrollCode}
+                    onAutoScrollChange={setAutoScrollCode}
+                    autoScrollLabel="Auto-scroll code"
+                    showAutoScroll
+                    showPatternOverlay={showPatternOverlay}
+                    onShowPatternOverlayChange={setShowPatternOverlay}
+                    patternOverlayLabel="Show pattern overlay"
+                    showPatternOverlayToggle
+                />
+            </FloatingPanel>
+
             {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     )
