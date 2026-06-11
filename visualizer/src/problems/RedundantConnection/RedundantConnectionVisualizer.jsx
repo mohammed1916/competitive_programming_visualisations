@@ -2,7 +2,9 @@ import { useState, useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './RedundantConnectionVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -107,6 +109,7 @@ export default function RedundantConnectionVisualizer() {
   const steps = useMemo(() => generateSteps(edges), [edges])
   const { stepIndex, stepForward, stepBack, togglePlay, handleReset, isPlaying, speed, setSpeed, isDone } = usePlaybackState(steps.length)
   const step = stepIndex >= 0 ? steps[stepIndex] : null
+  const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
   const applyExample = useCallback((ex) => { setEdgesInput(JSON.stringify(ex.edges)); handleReset() }, [handleReset])
   const nodes = useMemo(() => Array.from(new Set(edges.flat())), [edges])
@@ -145,7 +148,7 @@ export default function RedundantConnectionVisualizer() {
           </div>
         </section>
       </div>
-      <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+      <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
       <div className={`rc-status ${step?.redundant ? 'bad' : ''}`}>{step?.message || 'Press Play.'}</div>
       <PlaybackControls
         isPlaying={isPlaying}
@@ -159,7 +162,12 @@ export default function RedundantConnectionVisualizer() {
         nextDisabled={isDone}
         resetDisabled={stepIndex < 0}
         onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+        showPatternOverlay={showPatternOverlay}
+        onShowPatternOverlayChange={setShowPatternOverlay}
+        patternOverlayLabel="Show pattern overlay"
+        showPatternOverlayToggle
       />
+      {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
     </div>
   )
 }

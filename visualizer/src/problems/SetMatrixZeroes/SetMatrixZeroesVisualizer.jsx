@@ -2,7 +2,9 @@ import { useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
+import PatternOverlay from "../../components/PatternOverlay";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
+import { usePatternOverlay } from "../../hooks/usePatternOverlay";
 import "./SetMatrixZeroesVisualizer.css";
 
 const SOLUTION_CODE = [
@@ -62,6 +64,7 @@ const EXAMPLES = [
 
 export default function SetMatrixZeroesVisualizer() {
     const [selected, setSelected] = useState(0);
+    const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay();
 
     const initial = EXAMPLES[selected].matrix;
     const steps = useMemo(() => generateSteps(initial), [initial]);
@@ -121,14 +124,19 @@ export default function SetMatrixZeroesVisualizer() {
                 </div>
             </div>
 
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
             <div className="smz-status">{step?.message ?? "Press Play to begin."}</div>
             <PlaybackControls
                 isPlaying={isPlaying} isDone={isDone} speed={speed}
                 onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward} onReset={handleReset}
                 prevDisabled={stepIndex <= 0} nextDisabled={isDone} resetDisabled={stepIndex <= 0}
                 onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+                showPatternOverlay={showPatternOverlay}
+                onShowPatternOverlayChange={setShowPatternOverlay}
+                patternOverlayLabel="Show pattern overlay"
+                showPatternOverlayToggle
             />
+            {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     );
 }

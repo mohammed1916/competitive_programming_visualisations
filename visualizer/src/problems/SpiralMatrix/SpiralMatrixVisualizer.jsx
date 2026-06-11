@@ -2,7 +2,9 @@ import { useState, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './SpiralMatrixVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -163,6 +165,8 @@ const EXAMPLES = [
 export default function SpiralMatrixVisualizer() {
   const [matrixInput, setMatrixInput] = useState('[[1,2,3],[4,5,6],[7,8,9]]')
 
+  const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
+
   const { matrix, inputError } = useMemo(() => {
     try {
       const parsed = JSON.parse(matrixInput)
@@ -276,7 +280,7 @@ export default function SpiralMatrixVisualizer() {
       </div>
 
       <div className="spiral-matrix-middle">
-        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
 
         <div className="sm-panel">
           <div className="sm-panel-head">Variables</div>
@@ -326,8 +330,14 @@ export default function SpiralMatrixVisualizer() {
           nextDisabled={isDone}
           resetDisabled={stepIndex < 0}
           onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+          showPatternOverlay={showPatternOverlay}
+          onShowPatternOverlayChange={setShowPatternOverlay}
+          patternOverlayLabel="Show pattern overlay"
+          showPatternOverlayToggle
         />
       </div>
+
+      {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
     </div>
   )
 }

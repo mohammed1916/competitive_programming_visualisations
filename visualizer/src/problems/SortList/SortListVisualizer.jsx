@@ -2,7 +2,9 @@ import { useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
+import PatternOverlay from "../../components/PatternOverlay";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
+import { usePatternOverlay } from "../../hooks/usePatternOverlay";
 import "./SortListVisualizer.css";
 
 const SOLUTION_CODE = [
@@ -88,6 +90,7 @@ export default function SortListVisualizer() {
     const { stepIndex, stepForward, stepBack, togglePlay, handleReset, isPlaying, speed, setSpeed, isDone } =
         usePlaybackState(steps.length);
     const step = stepIndex >= 0 ? steps[stepIndex] : steps[0];
+    const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay();
 
     const applyExample = useCallback((i) => { setSel(i); handleReset(); }, [handleReset]);
 
@@ -131,13 +134,18 @@ export default function SortListVisualizer() {
                 </div>
             )}
 
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
             <div className="sl-status">{step?.message ?? "Press Play to begin."}</div>
+            {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
             <PlaybackControls
                 isPlaying={isPlaying} isDone={isDone} speed={speed}
                 onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward} onReset={handleReset}
                 prevDisabled={stepIndex <= 0} nextDisabled={isDone} resetDisabled={stepIndex <= 0}
                 onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+                showPatternOverlay={showPatternOverlay}
+                onShowPatternOverlayChange={setShowPatternOverlay}
+                patternOverlayLabel="Show pattern overlay"
+                showPatternOverlayToggle
             />
         </div>
     );

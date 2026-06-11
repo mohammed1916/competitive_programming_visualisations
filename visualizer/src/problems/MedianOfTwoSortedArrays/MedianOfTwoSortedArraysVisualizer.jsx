@@ -2,7 +2,9 @@ import { useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
+import PatternOverlay from "../../components/PatternOverlay";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
+import { usePatternOverlay } from "../../hooks/usePatternOverlay";
 import "./MedianOfTwoSortedArraysVisualizer.css";
 
 const SOLUTION_CODE = [
@@ -551,6 +553,7 @@ function ArrayTape({
 export default function MedianOfTwoSortedArraysVisualizer() {
   const [nums1Input, setNums1Input] = useState("[1, 3]");
   const [nums2Input, setNums2Input] = useState("[2]");
+  const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay();
 
   const prepared = useMemo(() => {
     try {
@@ -918,7 +921,7 @@ export default function MedianOfTwoSortedArraysVisualizer() {
       </div>
 
       <div className="median-middle">
-        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
       </div>
 
       <div
@@ -940,8 +943,14 @@ export default function MedianOfTwoSortedArraysVisualizer() {
           nextDisabled={isDone}
           resetDisabled={stepIndex < 0}
           onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+          showPatternOverlay={showPatternOverlay}
+          onShowPatternOverlayChange={setShowPatternOverlay}
+          patternOverlayLabel="Show pattern overlay"
+          showPatternOverlayToggle
         />
       </div>
+
+      {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
     </div>
   );
 }

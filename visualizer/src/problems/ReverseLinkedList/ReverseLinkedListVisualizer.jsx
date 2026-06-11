@@ -2,7 +2,9 @@ import { useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './ReverseLinkedListVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -130,6 +132,8 @@ export default function ReverseLinkedListVisualizer() {
         handleReset, isPlaying, speed, setSpeed, isDone,
     } = usePlaybackState(steps.length)
 
+    const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
+
     const step = stepIndex >= 0 ? steps[stepIndex] : null
 
     const applyExample = useCallback((ex) => {
@@ -256,7 +260,7 @@ export default function ReverseLinkedListVisualizer() {
                 </section>
             </div>
 
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
 
             <div className={`rll-status${step?.phase === 'done' ? ' done' : ''}`}>
                 {step?.message ?? 'Press Play or Step to begin.'}
@@ -274,7 +278,13 @@ export default function ReverseLinkedListVisualizer() {
                 nextDisabled={isDone}
                 resetDisabled={stepIndex < 0}
                 onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+                showPatternOverlay={showPatternOverlay}
+                onShowPatternOverlayChange={setShowPatternOverlay}
+                patternOverlayLabel="Show pattern overlay"
+                showPatternOverlayToggle
             />
+
+            {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     )
 }

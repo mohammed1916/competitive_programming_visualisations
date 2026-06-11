@@ -2,8 +2,10 @@ import { useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
+import PatternOverlay from "../../components/PatternOverlay";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
 import { useCodeVisualConnectivity } from "../../hooks/useCodeVisualConnectivity";
+import { usePatternOverlay } from "../../hooks/usePatternOverlay";
 import "./ReverseStringVisualizer.css";
 
 const SOLUTION_CODE = [
@@ -56,6 +58,7 @@ export default function ReverseStringVisualizer() {
         stepIndex,
         onStepJump: setStepIndex,
     });
+    const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay();
 
     const arr = step?.arr ?? ex.s;
     const l = step?.l ?? 0;
@@ -120,13 +123,19 @@ export default function ReverseStringVisualizer() {
                 codeLines={SOLUTION_CODE}
                 highlightedLines={connectivity.highlightedLines}
                 onLineSelect={connectivity.handleLineSelect}
+                onActiveLineDomChange={setActiveLineDom}
             />
             <div className="rs-status">{step?.message ?? "Press Play to begin."}</div>
+            {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
             <PlaybackControls
                 isPlaying={isPlaying} isDone={isDone} speed={speed}
                 onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward} onReset={handleReset}
                 prevDisabled={stepIndex < 0} nextDisabled={isDone} resetDisabled={stepIndex < 0}
                 onSpeedChange={e => setSpeed(Number(e.target.value))}
+                showPatternOverlay={showPatternOverlay}
+                onShowPatternOverlayChange={setShowPatternOverlay}
+                patternOverlayLabel="Show pattern overlay"
+                showPatternOverlayToggle
             />
         </div>
     );

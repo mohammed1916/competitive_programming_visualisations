@@ -2,7 +2,9 @@ import { useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './RottingOrangesVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -184,6 +186,7 @@ const EXAMPLES = [
 
 export default function RottingOrangesVisualizer() {
   const [gridInput, setGridInput] = useState('[[2,1,1],[1,1,0],[0,1,1]]')
+  const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
   const { grid, inputError } = useMemo(() => {
     try {
@@ -273,7 +276,7 @@ export default function RottingOrangesVisualizer() {
         </section>
       </div>
 
-      <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+      <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
       <div className={`rot-status ${step?.phase === 'done' ? (step?.ok ? 'ok' : 'bad') : ''}`}>
         {step?.message || 'Press Play to begin.'}
       </div>
@@ -289,7 +292,12 @@ export default function RottingOrangesVisualizer() {
         nextDisabled={isDone}
         resetDisabled={stepIndex < 0}
         onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+        showPatternOverlay={showPatternOverlay}
+        onShowPatternOverlayChange={setShowPatternOverlay}
+        patternOverlayLabel="Show pattern overlay"
+        showPatternOverlayToggle
       />
+      {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
     </div>
   )
 }

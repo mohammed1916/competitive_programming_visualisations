@@ -2,7 +2,9 @@ import { useState, useCallback, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './TrappingRainWaterVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -119,6 +121,8 @@ const EXAMPLES = [
 export default function TrappingRainWaterVisualizer() {
   const [heightInput, setHeightInput] = useState('[0,1,0,2,1,0,1,3,2,1,2,1]')
 
+  const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
+
   const { height, inputError } = useMemo(() => {
     try {
       const h = JSON.parse(heightInput)
@@ -230,7 +234,7 @@ export default function TrappingRainWaterVisualizer() {
       </div>
 
       <div className="trapping-water-middle">
-        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
 
         <div className="tw-panel">
           <div className="tw-panel-head">Variables</div>
@@ -278,8 +282,14 @@ export default function TrappingRainWaterVisualizer() {
           nextDisabled={isDone}
           resetDisabled={stepIndex < 0}
           onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+          showPatternOverlay={showPatternOverlay}
+          onShowPatternOverlayChange={setShowPatternOverlay}
+          patternOverlayLabel="Show pattern overlay"
+          showPatternOverlayToggle
         />
       </div>
+
+      {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
     </div>
   )
 }

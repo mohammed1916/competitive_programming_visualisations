@@ -5,6 +5,8 @@ import PlaybackControls from "../../components/PlaybackControls";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
 import Selectable from "../../components/Selectable";
 import { useVisualizationContext } from "../../context/VisualizationContext";
+import PatternOverlay from "../../components/PatternOverlay";
+import usePatternOverlay from "../../hooks/usePatternOverlay";
 import "./MaximumGapVisualizer.css";
 
 const SOLUTION_CODE = [
@@ -74,6 +76,7 @@ export default function MaximumGapVisualizer() {
         usePlaybackState(steps.length);
     const step = stepIndex >= 0 ? steps[stepIndex] : null;
     const applyEx = useCallback((e) => { setEx(e); handleReset(); }, [handleReset]);
+    const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay();
 
     // Publish current step to the chatbot
     const {
@@ -205,14 +208,19 @@ export default function MaximumGapVisualizer() {
 
             {step?.done && <div className="mg-result">✓ Maximum gap = {res}</div>}
 
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
             <div className="mg-status">{step?.message ?? "Press Play to begin."}</div>
             <PlaybackControls
                 isPlaying={isPlaying} isDone={isDone} speed={speed}
                 onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward} onReset={handleReset}
                 prevDisabled={stepIndex < 0} nextDisabled={isDone} resetDisabled={stepIndex < 0}
                 onSpeedChange={e => setSpeed(Number(e.target.value))}
+                showPatternOverlay={showPatternOverlay}
+                onShowPatternOverlayChange={setShowPatternOverlay}
+                patternOverlayLabel="Show pattern overlay"
+                showPatternOverlayToggle
             />
+            {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     );
 }

@@ -2,7 +2,9 @@ import { useState, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
+import PatternOverlay from "../../components/PatternOverlay";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
+import { usePatternOverlay } from "../../hooks/usePatternOverlay";
 import "./MergeTwoSortedListsVisualizer.css";
 
 const SOLUTION_CODE = [
@@ -202,6 +204,7 @@ const EXAMPLES = [
 export default function MergeTwoSortedListsVisualizer() {
   const [l1Input, setL1Input] = useState("[1, 2, 4]");
   const [l2Input, setL2Input] = useState("[1, 3, 4]");
+  const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay();
 
   const { list1, list2, inputError } = useMemo(() => {
     try {
@@ -502,7 +505,7 @@ export default function MergeTwoSortedListsVisualizer() {
       </div>
 
       <div className="mtsl-middle">
-        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
       </div>
 
       <div
@@ -524,8 +527,13 @@ export default function MergeTwoSortedListsVisualizer() {
           nextDisabled={isDone}
           resetDisabled={stepIndex < 0}
           onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+          showPatternOverlay={showPatternOverlay}
+          onShowPatternOverlayChange={setShowPatternOverlay}
+          patternOverlayLabel="Show pattern overlay"
+          showPatternOverlayToggle
         />
       </div>
+      {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
     </div>
   );
 }

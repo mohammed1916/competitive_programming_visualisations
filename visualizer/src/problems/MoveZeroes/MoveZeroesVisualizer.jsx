@@ -2,10 +2,12 @@ import { useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
+import PatternOverlay from "../../components/PatternOverlay";
 import AnimatedIterationList from "../../components/shared/AnimatedIterationList";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
 import { useCodeVisualConnectivity } from "../../hooks/useCodeVisualConnectivity";
 import { useProblemCode } from "../../hooks/useProblemCode";
+import { usePatternOverlay } from "../../hooks/usePatternOverlay";
 import "./MoveZeroesVisualizer.css";
 
 const EXAMPLES = [
@@ -35,6 +37,7 @@ function generateSteps(numsIn) {
 export default function MoveZeroesVisualizer({ problem }) {
     const [ex, setEx] = useState(EXAMPLES[0]);
     const codeLines = useProblemCode(problem, "move-zeroes");
+    const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay();
     const steps = useMemo(
         () =>
             generateSteps(ex.nums).map((current) => ({
@@ -111,6 +114,7 @@ export default function MoveZeroesVisualizer({ problem }) {
                 codeLines={codeLines}
                 highlightedLines={connectivity.highlightedLines}
                 onLineSelect={connectivity.handleLineSelect}
+                onActiveLineDomChange={setActiveLineDom}
             />
             <div className="mz-status">{step?.message ?? "Press Play to begin."}</div>
             <PlaybackControls
@@ -118,7 +122,12 @@ export default function MoveZeroesVisualizer({ problem }) {
                 onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward} onReset={handleReset}
                 prevDisabled={stepIndex < 0} nextDisabled={isDone} resetDisabled={stepIndex < 0}
                 onSpeedChange={e => setSpeed(Number(e.target.value))}
+                showPatternOverlay={showPatternOverlay}
+                onShowPatternOverlayChange={setShowPatternOverlay}
+                patternOverlayLabel="Show pattern overlay"
+                showPatternOverlayToggle
             />
+            {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     );
 }

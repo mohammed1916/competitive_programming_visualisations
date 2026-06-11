@@ -2,8 +2,10 @@ import { useState, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import { useCodeVisualConnectivity } from '../../hooks/useCodeVisualConnectivity'
+import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './ReverseIntegerVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -111,6 +113,8 @@ const EXAMPLES = [
 
 export default function ReverseIntegerVisualizer() {
   const [xInput, setXInput] = useState('123')
+
+  const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
   const { initialX, inputError } = useMemo(() => {
     try {
@@ -270,6 +274,7 @@ export default function ReverseIntegerVisualizer() {
           codeLines={SOLUTION_CODE}
           highlightedLines={connectivity.highlightedLines}
           onLineSelect={connectivity.handleLineSelect}
+          onActiveLineDomChange={setActiveLineDom}
         />
       </div>
 
@@ -290,8 +295,14 @@ export default function ReverseIntegerVisualizer() {
           nextDisabled={isDone}
           resetDisabled={stepIndex < 0}
           onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+          showPatternOverlay={showPatternOverlay}
+          onShowPatternOverlayChange={setShowPatternOverlay}
+          patternOverlayLabel="Show pattern overlay"
+          showPatternOverlayToggle
         />
       </div>
+
+      {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
     </div>
   )
 }

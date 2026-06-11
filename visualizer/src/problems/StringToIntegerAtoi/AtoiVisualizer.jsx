@@ -2,7 +2,9 @@ import { useCallback, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './AtoiVisualizer.css'
 
 const INT_MIN = -(2 ** 31)
@@ -237,6 +239,9 @@ export default function AtoiVisualizer() {
   const [showCode, setShowCode] = useState(true)
   const [attemptedSubmit, setAttemptedSubmit] = useState(false)
 
+  // Pattern overlay hook
+  const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
+
   // Playback state hook
   const {
     stepIndex,
@@ -384,7 +389,7 @@ export default function AtoiVisualizer() {
         </div>
 
         <AnimatePresence>
-          {showCode && <CodeTracePanel step={currentStep} codeLines={SOLUTION_CODE} />}
+          {showCode && <CodeTracePanel step={currentStep} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />}
         </AnimatePresence>
       </div>
 
@@ -407,7 +412,13 @@ export default function AtoiVisualizer() {
         speed={speed}
         speedRangeValue={1480 - speed}
         onSpeedChange={(event) => setSpeed(1480 - Number(event.target.value))}
+        showPatternOverlay={showPatternOverlay}
+        onShowPatternOverlayChange={setShowPatternOverlay}
+        patternOverlayLabel="Show pattern overlay"
+        showPatternOverlayToggle
       />
+
+      {showPatternOverlay && currentStep && <PatternOverlay step={currentStep} activeLineDom={activeLineDom} />}
     </div>
   )
 }
