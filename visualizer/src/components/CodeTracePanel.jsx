@@ -16,6 +16,7 @@ export default function CodeTracePanel({
   idleLabel = "Press Play to start",
   activeLabelPrefix = "Line",
   activeLabelSuffix = "is active",
+  autoScroll = true,
 }) {
   const codeRef = useRef(null);
   const lastManualScrollTsRef = useRef(0);
@@ -34,7 +35,7 @@ export default function CodeTracePanel({
   const [isResizing, setIsResizing] = useState(false);
 
   useEffect(() => {
-    if (!step?.activeLine || !codeRef.current) return;
+    if (!autoScroll || !step?.activeLine || !codeRef.current) return;
     if (Date.now() - lastManualScrollTsRef.current < 600) return;
     const el = codeRef.current.querySelector(
       `[data-line="${step.activeLine}"]`,
@@ -48,7 +49,7 @@ export default function CodeTracePanel({
     if (elTop < ctTop || elBottom > ctBottom) {
       el.scrollIntoView({ block: "nearest", behavior: "auto" });
     }
-  }, [step]);
+  }, [step, autoScroll]);
 
   useEffect(() => {
     if (!copied) return;

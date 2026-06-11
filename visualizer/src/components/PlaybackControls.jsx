@@ -1,4 +1,4 @@
-import { Fragment, useRef, useState, useEffect } from 'react'
+import { Fragment } from 'react'
 import './PlaybackControls.css'
 
 export default function PlaybackControls({
@@ -42,6 +42,10 @@ export default function PlaybackControls({
   speedAriaLabel = 'Playback speed',
   speedIndicator = null,
   showSpeed = true,
+  autoScroll = true,
+  onAutoScrollChange,
+  autoScrollLabel = 'Auto-scroll code',
+  showAutoScroll = false,
 }) {
 
   const resolvedRootClass = className || 'pc'
@@ -88,6 +92,21 @@ export default function PlaybackControls({
             />
             {speedIndicator && <span className={resolvedSpeedIndicatorClass}>{speedIndicator}</span>}
           </div>
+        </div>
+      )}
+
+      {showAutoScroll && onAutoScrollChange && (
+        <div className="pc-autoscroll-group">
+          <label className="pc-autoscroll-label">
+            <input
+              type="checkbox"
+              className="pc-autoscroll-input"
+              checked={autoScroll}
+              onChange={(e) => onAutoScrollChange(e.target.checked)}
+              aria-label={autoScrollLabel}
+            />
+            <span className="pc-autoscroll-text">{autoScrollLabel}</span>
+          </label>
         </div>
       )}
     </div>

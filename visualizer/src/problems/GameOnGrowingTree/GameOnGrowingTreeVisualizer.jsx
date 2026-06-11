@@ -4,6 +4,7 @@ import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
 import FloatingPanel from "../../components/shared/FloatingPanel";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
+import { useAutoScroll } from "../../hooks/useAutoScroll";
 import "./GameOnGrowingTreeVisualizer.css";
 import { Stack3D } from "../../components/viz3d";
 import PartialAnswersPanel from "../../components/PartialAnswersPanel";
@@ -752,6 +753,7 @@ export default function GameOnGrowingTreeVisualizer() {
     setSpeed,
     isDone,
   } = usePlaybackState(steps.length, 650);
+  const [autoScrollCode, setAutoScrollCode] = useAutoScroll();
 
   const step = stepIndex >= 0 ? steps[stepIndex] : null;
 
@@ -1016,6 +1018,7 @@ export default function GameOnGrowingTreeVisualizer() {
               ? `Active line ${step.activeLine}: ${step.message}`
               : "Trace your simplified Codeforces solution line-by-line."
           }
+          autoScroll={autoScrollCode}
         />
       ),
     },
@@ -1084,6 +1087,10 @@ export default function GameOnGrowingTreeVisualizer() {
           speed={speed}
           onSpeedChange={(event) => setSpeed(Number(event.target.value))}
           speedIndicator={`${speed}ms`}
+          autoScroll={autoScrollCode}
+          onAutoScrollChange={setAutoScrollCode}
+          autoScrollLabel="Auto-scroll code"
+          showAutoScroll
         />
       </FloatingPanel>
     </div>

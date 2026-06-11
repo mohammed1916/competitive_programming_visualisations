@@ -84,3 +84,53 @@
   min-width: 60px;
   text-align: right;
 }
+
+.pc-autoscroll-group {
+  display: flex;
+  align-items: center;
+}
+
+.pc-autoscroll-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  background: #0b1220;
+  cursor: pointer;
+  user-select: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.pc-autoscroll-label:hover {
+  border-color: #475569;
+  background: #0f172a;
+}
+
+.pc-autoscroll-input {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid #64748b;
+  border-radius: 4px;
+  background: #0f172a;
+  cursor: pointer;
+  accent-color: #3b82f6;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.pc-autoscroll-input:checked {
+  background: #3b82f6;
+  border-color: #3b82f6;
+}
+
+.pc-autoscroll-input:hover {
+  border-color: #94a3b8;
+}
+
+.pc-autoscroll-text {
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 600;
+}
