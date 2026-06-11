@@ -3,8 +3,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
 import PatternOverlay from "../../components/PatternOverlay";
+import DockableWorkspace from "../../components/shared/DockableWorkspace";
+import FloatingPanel from "../../components/shared/FloatingPanel";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
 import { usePatternOverlay } from "../../hooks/usePatternOverlay";
+import { useAutoScroll } from "../../hooks/useAutoScroll";
 import "./PalindromePartitioningVisualizer.css";
 
 const SOLUTION_CODE = [
@@ -72,92 +75,143 @@ export default function PalindromePartitioningVisualizer() {
         usePlaybackState(steps.length);
     const step = stepIndex >= 0 ? steps[stepIndex] : null;
     const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay();
+    const [autoScrollCode, setAutoScrollCode] = useAutoScroll();
 
     const applyExample = useCallback((ex) => { setSInput(ex.s); handleReset(); }, [handleReset]);
 
     const i = step?.i ?? 0, j = step?.j ?? -1;
 
-    return (
-        <div className="pp-shell">
-            <div className="pp-controls-row">
-                <div className="pp-examples">
-                    {EXAMPLES.map((ex) => (
-                        <button key={ex.label} className="pp-chip" onClick={() => applyExample(ex)}>{ex.label}</button>
-                    ))}
-                </div>
-                <input className="pp-input" value={sInput}
-                    onChange={(e) => { setSInput(e.target.value); handleReset(); }} maxLength={7} placeholder="string" />
-            </div>
-
-            {/* String with highlight */}
-            <div className="pp-panel">
-                <div className="pp-panel-label">String — current window [{i}, {j}]</div>
-                <div className="pp-str-row">
-                    {s.split("").map((ch, idx) => {
-                        const inWindow = j >= 0 && idx >= i && idx <= j;
-                        return (
-                            <motion.div key={idx}
-                                className={`pp-ch ${inWindow ? (step?.valid ? "palin" : "not-palin") : ""} ${idx === i ? "start" : ""}`}
-                                animate={{ scale: inWindow ? 1.12 : 1 }}
-                                transition={{ type: "spring", stiffness: 380, damping: 20 }}>
-                                {ch}
-                            </motion.div>
-                        );
-                    })}
-                </div>
-                {step?.sub && (
-                    <div className={`pp-sub-tag ${step.valid ? "valid" : "invalid"}`}>
-                        "{step.sub}" {step.valid ? "✓ palindrome" : "✗ not palindrome"}
+    const dockPanels = [
+        {
+            id: "input",
+            title: "Input & Visualization",
+            subtitle: "Edit the string and watch the algorithm step through.",
+            defaultZone: "left",
+            content: (
+                <div className="pp-panel-body">
+                    <div className="pp-controls-row">
+                        <div className="pp-examples">
+                            {EXAMPLES.map((ex) => (
+                                <button key={ex.label} className="pp-chip" onClick={() => applyExample(ex)}>{ex.label}</button>
+                            ))}
+                        </div>
+                        <input className="pp-input" value={sInput}
+                            onChange={(e) => { setSInput(e.target.value); handleReset(); }} maxLength={7} placeholder="string" />
                     </div>
-                )}
-            </div>
 
-            {/* Current path */}
-            <div className="pp-panel">
-                <div className="pp-panel-label">Current path</div>
-                <div className="pp-path-row">
-                    {(step?.part ?? []).length === 0 && <span className="pp-empty">empty</span>}
-                    {(step?.part ?? []).map((seg, idx) => (
-                        <motion.div key={`${idx}-${seg}`} className="pp-seg"
-                            initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                            transition={{ type: "spring", stiffness: 380, damping: 22 }}>
-                            {seg}
-                        </motion.div>
-                    ))}
-                </div>
-            </div>
+                    {/* String with highlight */}
+                    <div className="pp-panel">
+                        <div className="pp-panel-label">String — current window [{i}, {j}]</div>
+                        <div className="pp-str-row">
+                            {s.split("").map((ch, idx) => {
+                                const inWindow = j >= 0 && idx >= i && idx <= j;
+                                return (
+                                    <motion.div key={idx}
+                                        className={`pp-ch ${inWindow ? (step?.valid ? "palin" : "not-palin") : ""} ${idx === i ? "start" : ""}`}
+                                        animate={{ scale: inWindow ? 1.12 : 1 }}
+                                        transition={{ type: "spring", stiffness: 380, damping: 20 }}>
+                                        {ch}
+                                    </motion.div>
+                                );
+                            })}
+                        </div>
+                        {step?.sub && (
+                            <div className={`pp-sub-tag ${step.valid ? "valid" : "invalid"}`}>
+                                "{step.sub}" {step.valid ? "✓ palindrome" : "✗ not palindrome"}
+                            </div>
+                        )}
+                    </div>
 
-            {/* Results */}
-            {(step?.res?.length ?? 0) > 0 && (
-                <div className="pp-panel">
-                    <div className="pp-panel-label">Results ({step.res.length})</div>
-                    <div className="pp-results">
-                        <AnimatePresence mode="popLayout">
-                            {step.res.map((r, i) => (
-                                <motion.div key={r.join("|")}
-                                    className={`pp-result-row ${i === step.res.length - 1 && step.activeLine === 5 ? "latest" : ""}`}
-                                    initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
-                                    transition={{ type: "spring", stiffness: 320, damping: 22 }}>
-                                    [{r.map((seg, si) => <span key={si} className="pp-res-seg">"{seg}"</span>)}]
+                    {/* Current path */}
+                    <div className="pp-panel">
+                        <div className="pp-panel-label">Current path</div>
+                        <div className="pp-path-row">
+                            {(step?.part ?? []).length === 0 && <span className="pp-empty">empty</span>}
+                            {(step?.part ?? []).map((seg, idx) => (
+                                <motion.div key={`${idx}-${seg}`} className="pp-seg"
+                                    initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                                    transition={{ type: "spring", stiffness: 380, damping: 22 }}>
+                                    {seg}
                                 </motion.div>
                             ))}
-                        </AnimatePresence>
+                        </div>
                     </div>
-                </div>
-            )}
 
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
-            <div className="pp-status">{step?.message ?? "Press Play to begin."}</div>
-            <PlaybackControls
-                isPlaying={isPlaying} isDone={isDone} speed={speed}
-                onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward} onReset={handleReset}
-                prevDisabled={stepIndex < 0} nextDisabled={isDone} resetDisabled={stepIndex < 0}
-                onSpeedChange={(e) => setSpeed(Number(e.target.value))}
-                showPatternOverlay={showPatternOverlay}
-                onShowPatternOverlayChange={setShowPatternOverlay}
-                patternOverlayLabel="Show pattern overlay"
-                showPatternOverlayToggle
+                    {/* Results */}
+                    {(step?.res?.length ?? 0) > 0 && (
+                        <div className="pp-panel">
+                            <div className="pp-panel-label">Results ({step.res.length})</div>
+                            <div className="pp-results">
+                                <AnimatePresence mode="popLayout">
+                                    {step.res.map((r, i) => (
+                                        <motion.div key={r.join("|")}
+                                            className={`pp-result-row ${i === step.res.length - 1 && step.activeLine === 5 ? "latest" : ""}`}
+                                            initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
+                                            transition={{ type: "spring", stiffness: 320, damping: 22 }}>
+                                            [{r.map((seg, si) => <span key={si} className="pp-res-seg">"{seg}"</span>)}]
+                                        </motion.div>
+                                    ))}
+                                </AnimatePresence>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="pp-status">{step?.message ?? "Press Play to begin."}</div>
+                </div>
+            ),
+        },
+        {
+            id: "code",
+            title: "Code Trace",
+            subtitle: step ? `Active line ${step.activeLine}` : "Line-by-line solution view.",
+            defaultZone: "right",
+            content: (
+                <CodeTracePanel
+                    step={step}
+                    codeLines={SOLUTION_CODE}
+                    onActiveLineDomChange={setActiveLineDom}
+                    autoScroll={autoScrollCode}
+                />
+            ),
+        },
+    ];
+
+    return (
+        <div className="pp-shell">
+            <DockableWorkspace
+                title="Palindrome Partitioning Workspace"
+                panels={dockPanels}
+                initialLayout={{
+                    rows: [["input", "code"]],
+                    minimized: [],
+                }}
             />
+
+            <FloatingPanel title="Playback Controls">
+                <PlaybackControls
+                    onReset={handleReset}
+                    onPrev={stepBack}
+                    onPlayToggle={togglePlay}
+                    onNext={stepForward}
+                    resetDisabled={steps.length === 0}
+                    prevDisabled={stepIndex <= 0}
+                    nextDisabled={steps.length === 0 || isDone}
+                    isPlaying={isPlaying}
+                    isDone={isDone}
+                    speed={speed}
+                    onSpeedChange={(event) => setSpeed(Number(event.target.value))}
+                    speedIndicator={`${speed}ms`}
+                    autoScroll={autoScrollCode}
+                    onAutoScrollChange={setAutoScrollCode}
+                    autoScrollLabel="Auto-scroll code"
+                    showAutoScroll
+                    showPatternOverlay={showPatternOverlay}
+                    onShowPatternOverlayChange={setShowPatternOverlay}
+                    patternOverlayLabel="Show pattern overlay"
+                    showPatternOverlayToggle
+                />
+            </FloatingPanel>
+
             {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     );
