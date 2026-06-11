@@ -252,7 +252,7 @@ export default function HouseRobberIIVisualizer() {
     ]
 
     return (
-        <div className="hr2-shell">
+        <div className="problem-shell">
             <section className="hr2-hero">
                 <div className="hr2-hero-copy">
                     <span className="hr2-kicker">Two-Pass Linear DP</span>
