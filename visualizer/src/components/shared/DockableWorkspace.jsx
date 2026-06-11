@@ -1,7 +1,5 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import "./DockableWorkspace.css";
-
-const ZONES = ["left", "right", "full"];
 
 const LAYOUT_ZONES = {
   topLeft: { name: 'Left Panel', label: 'LEFT', row: 0, col: 0, zone: 'left' },
@@ -38,9 +36,14 @@ export default function DockableWorkspace({
   );
   const [layout, setLayout] = useState(initialLayout);
   const [draggedId, setDraggedId] = useState(null);
-  const [hoverZone, setHoverZone] = useState(null);
   const [hoveredLayoutZone, setHoveredLayoutZone] = useState(null);
   const [maximizedId, setMaximizedId] = useState(null);
+  const [minimizeFlyer, setMinimizeFlyer] = useState(null);
+  const hoveredZoneRef = useRef(null);
+
+  useEffect(() => {
+    hoveredZoneRef.current = hoveredLayoutZone;
+  }, [hoveredLayoutZone]);
 
   const activeMaximizedPanel = maximizedId ? panelMap.get(maximizedId) : null;
 
@@ -74,7 +77,6 @@ export default function DockableWorkspace({
 
   const placePanel = (panelId, targetZone) => {
     setLayout((current) => movePanel(current, panelId, targetZone));
-    setHoverZone(null);
     setHoveredLayoutZone(null);
   };
 
@@ -83,8 +85,19 @@ export default function DockableWorkspace({
 
     const handleDocumentDragOver = (e) => {
       e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
       const zone = getClosestLayoutZone(e.clientX, e.clientY);
       setHoveredLayoutZone(zone);
+    };
+
+    const handleDocumentDrop = (e) => {
+      e.preventDefault();
+      const zoneKey =
+        hoveredZoneRef.current || getClosestLayoutZone(e.clientX, e.clientY);
+      if (zoneKey) {
+        placePanel(draggedId, LAYOUT_ZONES[zoneKey].zone);
+      }
+      setDraggedId(null);
     };
 
     const handleDocumentDragEnd = () => {
@@ -93,21 +106,50 @@ export default function DockableWorkspace({
     };
 
     document.addEventListener('dragover', handleDocumentDragOver);
+    document.addEventListener('drop', handleDocumentDrop);
     document.addEventListener('dragend', handleDocumentDragEnd);
 
     return () => {
       document.removeEventListener('dragover', handleDocumentDragOver);
+      document.removeEventListener('drop', handleDocumentDrop);
       document.removeEventListener('dragend', handleDocumentDragEnd);
     };
   }, [draggedId]);
 
-  const minimizePanel = (panelId) => {
+  const minimizePanel = (panelId, sourceEvent) => {
+    const card = sourceEvent?.currentTarget?.closest(".dock-panel, .dock-maximized");
+    if (card) {
+      const rect = card.getBoundingClientRect();
+      setMinimizeFlyer({
+        id: panelId,
+        top: rect.top,
+        left: rect.left,
+        width: rect.width,
+        height: rect.height,
+      });
+      window.setTimeout(() => setMinimizeFlyer(null), 500);
+    }
     setLayout((current) => {
       const next = removeFromZones(current, panelId);
       next.minimized = [...next.minimized, panelId];
       return next;
     });
     if (maximizedId === panelId) setMaximizedId(null);
+  };
+
+  const startFlyerAnimation = (node) => {
+    if (!node || node.dataset.flying) return;
+    node.dataset.flying = "true";
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        node.style.top = `${window.innerHeight - 64}px`;
+        node.style.left = `${window.innerWidth / 2 - 80}px`;
+        node.style.width = "160px";
+        node.style.height = "36px";
+        node.style.opacity = "0";
+        node.style.borderRadius = "999px";
+      });
+    });
   };
 
   const restorePanel = (panelId, preferredZone = "right") => {
@@ -122,14 +164,31 @@ export default function DockableWorkspace({
     const panel = panelMap.get(panelId);
     if (!panel) return null;
 
+    const handleDragStart = (e) => {
+      e.dataTransfer.setData("text/plain", panel.id);
+      e.dataTransfer.effectAllowed = "move";
+      const card = e.currentTarget.closest(".dock-panel");
+      if (card) {
+        e.dataTransfer.setDragImage(card, 24, 24);
+      }
+      // Defer the state update: mutating the DOM during dragstart
+      // (the preview overlay appearing) makes Chrome cancel the drag.
+      window.setTimeout(() => setDraggedId(panel.id), 0);
+    };
+
+    const handleDragEnd = () => {
+      setDraggedId(null);
+      setHoveredLayoutZone(null);
+    };
+
     return (
-      <article
-        key={panel.id}
-        className="dock-panel"
-        draggable
-        onDragStart={() => setDraggedId(panel.id)}
-      >
-        <header className="dock-panel-head">
+      <article key={panel.id} className="dock-panel">
+        <header
+          className="dock-panel-head"
+          draggable
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+        >
           <div className="dock-panel-title-group">
             <span className="dock-panel-grip" aria-hidden="true">
               :::
@@ -155,7 +214,7 @@ export default function DockableWorkspace({
             <button
               type="button"
               className="dock-panel-btn"
-              onClick={() => minimizePanel(panel.id)}
+              onClick={(e) => minimizePanel(panel.id, e)}
             >
               Minimize
             </button>
@@ -200,6 +259,7 @@ export default function DockableWorkspace({
                     }}
                     onDrop={(e) => {
                       e.preventDefault();
+                      e.stopPropagation();
                       placePanel(draggedId, zone.zone);
                       setDraggedId(null);
                     }}
@@ -258,9 +318,22 @@ export default function DockableWorkspace({
         </div>
       )}
 
+      {minimizeFlyer ? (
+        <div
+          className="dock-minimize-flyer"
+          ref={startFlyerAnimation}
+          style={{
+            top: minimizeFlyer.top,
+            left: minimizeFlyer.left,
+            width: minimizeFlyer.width,
+            height: minimizeFlyer.height,
+          }}
+        />
+      ) : null}
+
       {layout.minimized.length > 0 ? (
-        <div className="dock-minimized-row">
-          <span className="dock-minimized-label">Minimized panels</span>
+        <div className="dock-minimized-bar">
+          <span className="dock-minimized-label">Minimized</span>
           {layout.minimized.map((panelId) => {
             const panel = panelMap.get(panelId);
             if (!panel) return null;
@@ -270,6 +343,7 @@ export default function DockableWorkspace({
                 type="button"
                 className="dock-minimized-pill"
                 onClick={() => restorePanel(panelId, panel.defaultZone || "right")}
+                title={`Restore ${panel.title}`}
               >
                 {panel.title}
               </button>
