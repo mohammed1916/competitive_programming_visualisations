@@ -206,7 +206,7 @@ export default function ClimbingStairsVisualizer() {
                         fontSize="12"
                         fontWeight={isActive ? "bold" : "normal"}
                       >
-                        {idx === 0 ? "Ground" : `Stair \${idx}`}
+                        {idx === 0 ? "Ground" : `Stair ${idx}`}
                       </text>
                       {/* Draw a little character */}
                       {isActive && (
