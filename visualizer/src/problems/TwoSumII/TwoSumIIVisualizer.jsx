@@ -2,7 +2,9 @@ import { useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './TwoSumIIVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -91,6 +93,8 @@ const EXAMPLES = [
 export default function TwoSumIIVisualizer() {
     const [numsInput, setNumsInput] = useState('[2,7,11,15]')
     const [targetInput, setTargetInput] = useState('9')
+
+    const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
     const { numbers, target, inputError } = useMemo(() => {
         try {
@@ -208,7 +212,7 @@ export default function TwoSumIIVisualizer() {
                 </div>
             </section>
 
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
 
             <div className={`ts2-status${Array.isArray(result) && result.length === 2 ? ' ok' : ''}`}>
                 {step?.message ?? 'Press Play or Step to begin.'}
@@ -220,7 +224,13 @@ export default function TwoSumIIVisualizer() {
                 onReset={handleReset} prevDisabled={stepIndex < 0}
                 nextDisabled={isDone} resetDisabled={stepIndex < 0}
                 onSpeedChange={e => setSpeed(Number(e.target.value))}
+                showPatternOverlay={showPatternOverlay}
+                onShowPatternOverlayChange={setShowPatternOverlay}
+                patternOverlayLabel="Show pattern overlay"
+                showPatternOverlayToggle
             />
+
+            {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     )
 }

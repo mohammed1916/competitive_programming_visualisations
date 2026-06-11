@@ -46,6 +46,10 @@ export default function PlaybackControls({
   onAutoScrollChange,
   autoScrollLabel = 'Auto-scroll code',
   showAutoScroll = false,
+  showPatternOverlay = true,
+  onShowPatternOverlayChange,
+  patternOverlayLabel = 'Show pattern overlay',
+  showPatternOverlayToggle = false,
 }) {
 
   const resolvedRootClass = className || 'pc'
@@ -106,6 +110,21 @@ export default function PlaybackControls({
               aria-label={autoScrollLabel}
             />
             <span className="pc-autoscroll-text">{autoScrollLabel}</span>
+          </label>
+        </div>
+      )}
+
+      {showPatternOverlayToggle && onShowPatternOverlayChange && (
+        <div className="pc-pattern-group">
+          <label className="pc-pattern-label">
+            <input
+              type="checkbox"
+              className="pc-pattern-input"
+              checked={showPatternOverlay}
+              onChange={(e) => onShowPatternOverlayChange(e.target.checked)}
+              aria-label={patternOverlayLabel}
+            />
+            <span className="pc-pattern-text">{patternOverlayLabel}</span>
           </label>
         </div>
       )}

@@ -2,7 +2,9 @@ import { useState, useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './SameTreeVisualizer.css'
 
 const CANVAS_W = 340
@@ -245,6 +247,7 @@ export default function SameTreeVisualizer() {
     const [pInput, setPInput] = useState(JSON.stringify(EXAMPLES[0].p))
     const [qInput, setQInput] = useState(JSON.stringify(EXAMPLES[0].q))
     const [inputError, setInputError] = useState('')
+    const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
     function parseArr(str) {
         const parsed = JSON.parse(str)
@@ -424,7 +427,7 @@ export default function SameTreeVisualizer() {
                 </section>
             </div>
 
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
 
             <div className={`st-status ${hasFinal ? (finalResult ? 'ok' : 'bad') : ''}`}>
                 {step?.message || 'Press Play or Step to begin.'}
@@ -442,7 +445,13 @@ export default function SameTreeVisualizer() {
                 nextDisabled={isDone}
                 resetDisabled={stepIndex < 0}
                 onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+                showPatternOverlay={showPatternOverlay}
+                onShowPatternOverlayChange={setShowPatternOverlay}
+                patternOverlayLabel="Show pattern overlay"
+                showPatternOverlayToggle
             />
+
+            {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     )
 }

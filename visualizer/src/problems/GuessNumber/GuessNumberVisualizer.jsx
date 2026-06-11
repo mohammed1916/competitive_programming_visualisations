@@ -2,7 +2,9 @@ import { useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './GuessNumberVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -109,6 +111,7 @@ function generateSteps(n, pick) {
 export default function GuessNumberVisualizer() {
     const [nInput, setNInput]       = useState('10')
     const [pickInput, setPickInput] = useState('6')
+    const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
     const { n, pick, inputError } = useMemo(() => {
         try {
@@ -338,7 +341,7 @@ export default function GuessNumberVisualizer() {
                 </div>
             </section>
 
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
 
             <div className={`gn-status${found ? ' ok' : ''}`}>
                 {step?.message ?? 'Press Play or Step to begin the binary search.'}
@@ -350,7 +353,12 @@ export default function GuessNumberVisualizer() {
                 onReset={handleReset} prevDisabled={stepIndex < 0}
                 nextDisabled={isDone} resetDisabled={stepIndex < 0}
                 onSpeedChange={e => setSpeed(Number(e.target.value))}
+                showPatternOverlay={showPatternOverlay}
+                onShowPatternOverlayChange={setShowPatternOverlay}
+                patternOverlayLabel="Show pattern overlay"
+                showPatternOverlayToggle
             />
+            {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     )
 }

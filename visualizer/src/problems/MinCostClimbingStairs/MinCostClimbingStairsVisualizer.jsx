@@ -2,7 +2,9 @@ import { useState, useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './MinCostClimbingStairsVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -108,6 +110,7 @@ export default function MinCostClimbingStairsVisualizer() {
     const [input, setInput] = useState([10, 15, 20])
     const steps = useMemo(() => generateSteps(input), [input])
     const { currentStep, isPlaying, setCurrentStep, setIsPlaying } = usePlaybackState(steps.length)
+    const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
     const handleExample = useCallback((ex) => {
         setInput(ex.input)
@@ -191,14 +194,26 @@ export default function MinCostClimbingStairsVisualizer() {
                 </div>
             </div>
 
-            <CodeTracePanel code={SOLUTION_CODE} activeLine={step.activeLine} />
+            <CodeTracePanel code={SOLUTION_CODE} activeLine={step.activeLine} onActiveLineDomChange={setActiveLineDom} />
 
             <div className="mcs-panel">
                 <div className="mcs-head">Status</div>
                 <div className="mcs-status">{step.message}</div>
             </div>
 
-            <PlaybackControls currentStep={currentStep} totalSteps={steps.length} onStepChange={setCurrentStep} isPlaying={isPlaying} onPlayingChange={setIsPlaying} />
+            <PlaybackControls
+                currentStep={currentStep}
+                totalSteps={steps.length}
+                onStepChange={setCurrentStep}
+                isPlaying={isPlaying}
+                onPlayingChange={setIsPlaying}
+                showPatternOverlay={showPatternOverlay}
+                onShowPatternOverlayChange={setShowPatternOverlay}
+                patternOverlayLabel="Show pattern overlay"
+                showPatternOverlayToggle
+            />
+
+            {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     )
 }

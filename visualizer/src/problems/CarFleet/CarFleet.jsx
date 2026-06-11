@@ -2,7 +2,9 @@ import { useState, useCallback, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
+import PatternOverlay from "../../components/PatternOverlay";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
+import { usePatternOverlay } from "../../hooks/usePatternOverlay";
 import "./CarFleet.css";
 
 const SOLUTION_CODE = [
@@ -235,6 +237,8 @@ export default function CarFleetVisualizer() {
   const { currentStep, isPlaying, setCurrentStep, setIsPlaying } =
     usePlaybackState(steps);
 
+  const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay();
+
   const currentStepData = steps[currentStep] || {};
 
   const handleLoadExample = useCallback(
@@ -396,7 +400,12 @@ export default function CarFleetVisualizer() {
         onStepChange={setCurrentStep}
         onPlayPause={setIsPlaying}
         speed={1}
+        showPatternOverlay={showPatternOverlay}
+        onShowPatternOverlayChange={setShowPatternOverlay}
+        patternOverlayLabel="Show pattern overlay"
+        showPatternOverlayToggle
       />
+      {showPatternOverlay && currentStepData && <PatternOverlay step={currentStepData} activeLineDom={activeLineDom} />}
     </div>
   );
 }

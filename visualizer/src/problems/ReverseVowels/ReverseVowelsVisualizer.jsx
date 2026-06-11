@@ -2,7 +2,9 @@ import { useState, useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './ReverseVowelsVisualizer.css'
 
 const CANVAS_W = 500
@@ -139,6 +141,7 @@ export default function ReverseVowelsVisualizer() {
     const [inputError, setInputError] = useState('')
     const steps = useMemo(() => generateSteps(input), [input])
     const { currentStep, isPlaying, setCurrentStep, setIsPlaying } = usePlaybackState(steps.length)
+    const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
     const handleInputChange = (e) => {
         const val = e.target.value
@@ -316,14 +319,15 @@ export default function ReverseVowelsVisualizer() {
                 </div>
             </div>
 
-            <CodeTracePanel code={SOLUTION_CODE} activeLine={step.activeLine} />
+            <CodeTracePanel code={SOLUTION_CODE} activeLine={step.activeLine} onActiveLineDomChange={setActiveLineDom} />
 
             <div className="rv-panel">
                 <div className="rv-head">Status</div>
                 <div className="rv-status">{step.message}</div>
             </div>
 
-            <PlaybackControls currentStep={currentStep} totalSteps={steps.length} onStepChange={setCurrentStep} isPlaying={isPlaying} onPlayingChange={setIsPlaying} />
+            <PlaybackControls currentStep={currentStep} totalSteps={steps.length} onStepChange={setCurrentStep} isPlaying={isPlaying} onPlayingChange={setIsPlaying} showPatternOverlay={showPatternOverlay} onShowPatternOverlayChange={setShowPatternOverlay} patternOverlayLabel="Show pattern overlay" showPatternOverlayToggle />
+            {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     )
 }

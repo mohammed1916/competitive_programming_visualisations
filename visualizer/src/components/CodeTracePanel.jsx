@@ -17,6 +17,7 @@ export default function CodeTracePanel({
   activeLabelPrefix = "Line",
   activeLabelSuffix = "is active",
   autoScroll = true,
+  onActiveLineDomChange,
 }) {
   const codeRef = useRef(null);
   const lastManualScrollTsRef = useRef(0);
@@ -35,12 +36,25 @@ export default function CodeTracePanel({
   const [isResizing, setIsResizing] = useState(false);
 
   useEffect(() => {
-    if (!autoScroll || !step?.activeLine || !codeRef.current) return;
-    if (Date.now() - lastManualScrollTsRef.current < 600) return;
+    if (!step?.activeLine || !codeRef.current) return;
+
     const el = codeRef.current.querySelector(
       `[data-line="${step.activeLine}"]`,
     );
-    if (!el) return;
+
+    if (!el) {
+      if (onActiveLineDomChange) onActiveLineDomChange(null);
+      return;
+    }
+
+    // Notify parent of active line DOM element
+    if (onActiveLineDomChange) {
+      onActiveLineDomChange(el);
+    }
+
+    // Auto-scroll if enabled
+    if (!autoScroll || Date.now() - lastManualScrollTsRef.current < 600) return;
+
     const container = codeRef.current;
     const elTop = el.offsetTop;
     const elBottom = elTop + el.offsetHeight;
@@ -49,7 +63,7 @@ export default function CodeTracePanel({
     if (elTop < ctTop || elBottom > ctBottom) {
       el.scrollIntoView({ block: "nearest", behavior: "auto" });
     }
-  }, [step, autoScroll]);
+  }, [step, autoScroll, onActiveLineDomChange]);
 
   useEffect(() => {
     if (!copied) return;

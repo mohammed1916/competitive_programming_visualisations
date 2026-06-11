@@ -134,3 +134,53 @@
   font-size: 12px;
   font-weight: 600;
 }
+
+.pc-pattern-group {
+  display: flex;
+  align-items: center;
+}
+
+.pc-pattern-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  background: #0b1220;
+  cursor: pointer;
+  user-select: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.pc-pattern-label:hover {
+  border-color: #475569;
+  background: #0f172a;
+}
+
+.pc-pattern-input {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid #64748b;
+  border-radius: 4px;
+  background: #0f172a;
+  cursor: pointer;
+  accent-color: #3b82f6;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.pc-pattern-input:checked {
+  background: #3b82f6;
+  border-color: #3b82f6;
+}
+
+.pc-pattern-input:hover {
+  border-color: #94a3b8;
+}
+
+.pc-pattern-text {
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 600;
+}

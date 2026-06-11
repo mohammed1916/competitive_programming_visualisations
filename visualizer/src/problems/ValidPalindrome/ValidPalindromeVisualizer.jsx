@@ -2,8 +2,10 @@ import { useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
+import PatternOverlay from "../../components/PatternOverlay";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
 import { useCodeVisualConnectivity } from "../../hooks/useCodeVisualConnectivity";
+import { usePatternOverlay } from "../../hooks/usePatternOverlay";
 import "./ValidPalindromeVisualizer.css";
 
 const SOLUTION_CODE = [
@@ -87,6 +89,7 @@ const EXAMPLES = [
 
 export default function ValidPalindromeVisualizer() {
     const [input, setInput] = useState("A man, a plan, a canal: Panama");
+    const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay();
 
     const steps = useMemo(
         () =>
@@ -189,6 +192,7 @@ export default function ValidPalindromeVisualizer() {
                 codeLines={SOLUTION_CODE}
                 highlightedLines={connectivity.highlightedLines}
                 onLineSelect={connectivity.handleLineSelect}
+                onActiveLineDomChange={setActiveLineDom}
             />
             <div className="vp-status">{step?.message ?? "Press Play to begin."}</div>
             <PlaybackControls
@@ -203,7 +207,12 @@ export default function ValidPalindromeVisualizer() {
                 nextDisabled={isDone}
                 resetDisabled={stepIndex < 0}
                 onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+                showPatternOverlay={showPatternOverlay}
+                onShowPatternOverlayChange={setShowPatternOverlay}
+                patternOverlayLabel="Show pattern overlay"
+                showPatternOverlayToggle
             />
+            {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     );
 }

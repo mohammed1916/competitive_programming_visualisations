@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
 import FloatingPanel from "../../components/shared/FloatingPanel";
+import PatternOverlay from "../../components/PatternOverlay";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
 import { useAutoScroll } from "../../hooks/useAutoScroll";
 import { createPositionStep, createTreeDPStep, createDACStep, createContextualStepBuilder } from "../../utils/stepBuilder";
@@ -770,6 +771,8 @@ export default function GameOnGrowingTreeVisualizer() {
     isDone,
   } = usePlaybackState(steps.length, 650);
   const [autoScrollCode, setAutoScrollCode] = useAutoScroll();
+  const [showPatternOverlay, setShowPatternOverlay] = useState(true);
+  const [activeLineDom, setActiveLineDom] = useState(null);
 
   const step = stepIndex >= 0 ? steps[stepIndex] : null;
 
@@ -1035,6 +1038,7 @@ export default function GameOnGrowingTreeVisualizer() {
               : "Trace your simplified Codeforces solution line-by-line."
           }
           autoScroll={autoScrollCode}
+          onActiveLineDomChange={setActiveLineDom}
         />
       ),
     },
@@ -1107,8 +1111,16 @@ export default function GameOnGrowingTreeVisualizer() {
           onAutoScrollChange={setAutoScrollCode}
           autoScrollLabel="Auto-scroll code"
           showAutoScroll
+          showPatternOverlay={showPatternOverlay}
+          onShowPatternOverlayChange={setShowPatternOverlay}
+          patternOverlayLabel="Show pattern overlay"
+          showPatternOverlayToggle
         />
       </FloatingPanel>
+
+      {showPatternOverlay && step && (
+        <PatternOverlay step={step} activeLineDom={activeLineDom} />
+      )}
     </div>
   );
 }

@@ -2,7 +2,9 @@ import { useState, useCallback, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
+import PatternOverlay from "../../components/PatternOverlay";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
+import { usePatternOverlay } from "../../hooks/usePatternOverlay";
 import "./MultiplyStrings.css";
 
 const SOLUTION_CODE = [
@@ -154,6 +156,7 @@ const EXAMPLES = [
 export default function MultiplyStringsVisualizer() {
   const [num1Input, setNum1Input] = useState("123");
   const [num2Input, setNum2Input] = useState("456");
+  const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay();
 
   const { num1, num2, inputError } = useMemo(() => {
     try {
@@ -342,7 +345,12 @@ export default function MultiplyStringsVisualizer() {
         onStepChange={setCurrentStep}
         onPlayPause={setIsPlaying}
         speed={1}
+        showPatternOverlay={showPatternOverlay}
+        onShowPatternOverlayChange={setShowPatternOverlay}
+        patternOverlayLabel="Show pattern overlay"
+        showPatternOverlayToggle
       />
+      {showPatternOverlay && currentStepData && <PatternOverlay step={currentStepData} activeLineDom={activeLineDom} />}
     </div>
   );
 }

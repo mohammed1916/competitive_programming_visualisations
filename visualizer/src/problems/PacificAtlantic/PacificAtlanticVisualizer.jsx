@@ -2,8 +2,10 @@ import { useState, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import { useCodeVisualConnectivity } from '../../hooks/useCodeVisualConnectivity'
+import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './PacificAtlanticVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -220,6 +222,7 @@ function PacificAtlanticVisualizer() {
     usePlaybackState(steps)
 
   const { highlightLines } = useCodeVisualConnectivity(activeStepIndex, steps)
+  const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
   const activeStep = steps[activeStepIndex]
 
@@ -263,6 +266,7 @@ function PacificAtlanticVisualizer() {
             lines={SOLUTION_CODE}
             highlightLines={highlightLines}
             title="Solution Code"
+            onActiveLineDomChange={setActiveLineDom}
           />
         </div>
 
@@ -368,8 +372,14 @@ function PacificAtlanticVisualizer() {
           isPlaying={isPlaying}
           onTogglePlayback={togglePlayback}
           onStepChange={setActiveStepIndex}
+          showPatternOverlay={showPatternOverlay}
+          onShowPatternOverlayChange={setShowPatternOverlay}
+          patternOverlayLabel="Show pattern overlay"
+          showPatternOverlayToggle
         />
       </div>
+
+      {showPatternOverlay && activeStep && <PatternOverlay step={activeStep} activeLineDom={activeLineDom} />}
     </div>
   )
 }

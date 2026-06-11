@@ -2,8 +2,10 @@ import { useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import { useCodeVisualConnectivity } from '../../hooks/useCodeVisualConnectivity'
+import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './KthSmallestMatrixVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -180,6 +182,7 @@ function KthSmallestMatrixVisualizer() {
     const [matrixStr, setMatrixStr] = useState('[[1,5,9],[10,11,13],[12,13,15]]')
     const [k, setK] = useState(8)
     const [error, setError] = useState('')
+    const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
     let matrix = []
     try {
@@ -386,7 +389,7 @@ function KthSmallestMatrixVisualizer() {
                 </div>
             </div>
 
-            <CodeTracePanel code={SOLUTION_CODE} lineConnections={lineConnections} />
+            <CodeTracePanel code={SOLUTION_CODE} lineConnections={lineConnections} onActiveLineDomChange={setActiveLineDom} />
 
             <PlaybackControls
                 currentStep={currentStep}
@@ -397,7 +400,13 @@ function KthSmallestMatrixVisualizer() {
                 onStepForward={() => setCurrentStep(Math.min(currentStep + 1, steps.length - 1))}
                 onStepBackward={() => setCurrentStep(Math.max(currentStep - 1, 0))}
                 onReset={() => setCurrentStep(0)}
+                showPatternOverlay={showPatternOverlay}
+                onShowPatternOverlayChange={setShowPatternOverlay}
+                patternOverlayLabel="Show pattern overlay"
+                showPatternOverlayToggle
             />
+
+            {showPatternOverlay && currentStepData && <PatternOverlay step={currentStepData} activeLineDom={activeLineDom} />}
         </div>
     )
 }

@@ -2,8 +2,10 @@ import { useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import { useCodeVisualConnectivity } from '../../hooks/useCodeVisualConnectivity'
+import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './AddSearchWordsVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -221,6 +223,8 @@ function AddSearchWordsVisualizer() {
     const [searchWord, setSearchWord] = useState('pad')
     const [mode, setMode] = useState('add')
 
+    const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
+
     const trie = useMemo(() => buildTrie(words), [words])
 
     const steps = useMemo(() => {
@@ -365,7 +369,7 @@ function AddSearchWordsVisualizer() {
                 </div>
             </div>
 
-            <CodeTracePanel code={SOLUTION_CODE} lineConnections={lineConnections} />
+            <CodeTracePanel code={SOLUTION_CODE} lineConnections={lineConnections} onActiveLineDomChange={setActiveLineDom} />
 
             <PlaybackControls
                 currentStep={currentStep}
@@ -376,7 +380,13 @@ function AddSearchWordsVisualizer() {
                 onStepForward={() => setCurrentStep(Math.min(currentStep + 1, steps.length - 1))}
                 onStepBackward={() => setCurrentStep(Math.max(currentStep - 1, 0))}
                 onReset={() => setCurrentStep(0)}
+                showPatternOverlay={showPatternOverlay}
+                onShowPatternOverlayChange={setShowPatternOverlay}
+                patternOverlayLabel="Show pattern overlay"
+                showPatternOverlayToggle
             />
+
+            {showPatternOverlay && currentStepData && <PatternOverlay step={currentStepData} activeLineDom={activeLineDom} />}
         </div>
     )
 }

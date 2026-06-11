@@ -2,7 +2,9 @@ import { useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './ValidAnagramVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -98,6 +100,8 @@ const EXAMPLES = [
 export default function ValidAnagramVisualizer() {
     const [sInput, setSInput] = useState('anagram')
     const [tInput, setTInput] = useState('nagaram')
+
+    const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
     const { s, t, inputError } = useMemo(() => {
         const sv = sInput.trim()
@@ -232,7 +236,7 @@ export default function ValidAnagramVisualizer() {
                 </section>
             </div>
 
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} />
+            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
 
             <div className={`va-status${step?.result === true ? ' ok' : step?.result === false ? ' fail' : ''}`}>
                 {step?.message ?? 'Press Play or Step to begin.'}
@@ -244,7 +248,12 @@ export default function ValidAnagramVisualizer() {
                 onReset={handleReset} prevDisabled={stepIndex < 0}
                 nextDisabled={isDone} resetDisabled={stepIndex < 0}
                 onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+                showPatternOverlay={showPatternOverlay}
+                onShowPatternOverlayChange={setShowPatternOverlay}
+                patternOverlayLabel="Show pattern overlay"
+                showPatternOverlayToggle
             />
+            {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     )
 }

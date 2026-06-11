@@ -2,7 +2,9 @@ import { useCallback, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
+import PatternOverlay from '../../components/PatternOverlay'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './ZigzagVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -214,6 +216,9 @@ export default function ZigzagVisualizer() {
     isDone,
   } = usePlaybackState(steps.length, 520)
 
+  // Pattern overlay hook
+  const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
+
   const sanitizedInput = inputValue.slice(0, 28)
   const parsedRows = Number(rowCountInput)
   const rowsAreValid = Number.isInteger(parsedRows) && parsedRows >= 1 && parsedRows <= 1000
@@ -397,7 +402,7 @@ export default function ZigzagVisualizer() {
         </div>
 
         <AnimatePresence>
-          {showCode && <CodeTracePanel step={currentStep} codeLines={SOLUTION_CODE} />}
+          {showCode && <CodeTracePanel step={currentStep} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />}
         </AnimatePresence>
       </div>
 
@@ -420,7 +425,13 @@ export default function ZigzagVisualizer() {
         speed={speed}
         speedRangeValue={1480 - speed}
         onSpeedChange={(event) => setSpeed(1480 - Number(event.target.value))}
+        showPatternOverlay={showPatternOverlay}
+        onShowPatternOverlayChange={setShowPatternOverlay}
+        patternOverlayLabel="Show pattern overlay"
+        showPatternOverlayToggle
       />
+
+      {showPatternOverlay && currentStep && <PatternOverlay step={currentStep} activeLineDom={activeLineDom} />}
     </div>
   )
 }
