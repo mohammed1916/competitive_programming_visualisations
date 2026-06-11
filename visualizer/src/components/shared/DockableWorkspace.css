@@ -68,19 +68,14 @@
 
 .dock-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
 }
 
-.dock-column,
-.dock-full-lane {
+.dock-grid-row {
   display: grid;
+  grid-auto-flow: column;
   gap: 14px;
   align-content: start;
-}
-
-.dock-full-lane {
-  grid-column: 1 / -1;
 }
 
 .dock-empty {
@@ -343,65 +338,100 @@
   padding-top: 20px;
 }
 
-.dock-zone {
+.dock-birdseye-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.dock-birdseye-row {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+  height: 120px;
+}
+
+.dock-cell {
+  flex: 1;
   position: relative;
+  display: flex;
   border: 2px dashed rgba(148, 163, 184, 0.4);
   border-radius: 8px;
   background: rgba(30, 41, 59, 0.5);
   transition: all 0.2s ease;
   overflow: hidden;
-  cursor: grab;
 }
 
-.dock-zone::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(59, 130, 246, 0);
-  transition: background 0.2s ease;
+.dock-cell.dock-cell-gap,
+.dock-cell.dock-cell-new-row {
+  flex: 0 1 120px;
+  border-style: dotted;
+  border-color: rgba(107, 114, 128, 0.4);
+  background: rgba(20, 25, 40, 0.6);
 }
 
-.dock-zone-inner {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  height: 100%;
+.dock-cell-left,
+.dock-cell-right {
+  flex: 1;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 16px;
-  text-align: center;
+  position: relative;
+  cursor: grab;
+  transition: background 0.15s ease;
 }
 
-.dock-zone-label {
-  font-size: 11px;
-  font-weight: 700;
-  color: #3b82f6;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  opacity: 0.7;
+.dock-cell-left {
+  border-right: 1px solid rgba(148, 163, 184, 0.2);
 }
 
-.dock-zone-name {
-  font-size: 13px;
+.dock-cell-right {
+  border-left: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.dock-cell-left:hover,
+.dock-cell-right:hover {
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.dock-cell-label {
+  font-size: 12px;
   font-weight: 600;
   color: #cbd5e1;
-  line-height: 1.4;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 8px;
 }
 
-.dock-zone.hovered {
+.dock-cell.hovered {
   border-color: #3b82f6;
   background: rgba(59, 130, 246, 0.15);
   box-shadow: inset 0 0 20px rgba(59, 130, 246, 0.2), 0 0 15px rgba(59, 130, 246, 0.3);
 }
 
-.dock-zone.hovered .dock-zone-label {
-  color: #60a5fa;
-  opacity: 1;
+.dock-cell.hovered .dock-cell-left,
+.dock-cell.hovered .dock-cell-right,
+.dock-cell.dock-cell-gap.hovered,
+.dock-cell.dock-cell-new-row.hovered {
+  background: rgba(59, 130, 246, 0.2);
 }
 
-.dock-zone.hovered .dock-zone-name {
+.dock-cell.hovered .dock-cell-label,
+.dock-cell.dock-cell-gap.hovered .dock-cell-label,
+.dock-cell.dock-cell-new-row.hovered .dock-cell-label {
   color: #dbeafe;
+  font-weight: 700;
+}
+
+.dock-cell.dock-cell-gap,
+.dock-cell.dock-cell-new-row {
+  flex-direction: column;
+}
+
+.dock-cell.dock-cell-new-row {
+  flex: 1;
+  flex-basis: auto;
 }

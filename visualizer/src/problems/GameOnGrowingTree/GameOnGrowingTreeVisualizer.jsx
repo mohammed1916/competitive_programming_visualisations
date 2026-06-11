@@ -1062,9 +1062,10 @@ export default function GameOnGrowingTreeVisualizer() {
         title="Game On Growing Tree Workspace"
         panels={dockPanels}
         initialLayout={{
-          left: ["input"],
-          right: ["storyboard"],
-          full: ["tree", "code"],
+          rows: [
+            ["input", "storyboard"],
+            ["tree", "code"],
+          ],
           minimized: [],
         }}
       />

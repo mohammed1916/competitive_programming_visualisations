@@ -1,28 +1,41 @@
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect } from "react";
 import "./DockableWorkspace.css";
 
-const LAYOUT_ZONES = {
-  topLeft: { name: 'Left Panel', label: 'LEFT', row: 0, col: 0, zone: 'left' },
-  topCenter: { name: 'Visualization', label: 'VIZ', row: 0, col: 1, zone: 'full' },
-  topRight: { name: 'Right Panel', label: 'RIGHT', row: 0, col: 2, zone: 'right' },
-  bottomLeft: { name: 'Left Panel', label: 'LEFT', row: 1, col: 0, zone: 'left' },
-  bottomCenter: { name: 'Full Width', label: 'FULL', row: 1, col: 1, zone: 'full' },
-  bottomRight: { name: 'Right Panel', label: 'RIGHT', row: 1, col: 2, zone: 'right' },
-};
+function getGridLayout(layout) {
+  const rows = [];
+  for (const rowPanels of layout.rows || []) {
+    rows.push(Array.isArray(rowPanels) ? rowPanels : [rowPanels]);
+  }
+  return rows;
+}
 
-function removeFromZones(layout, panelId) {
+function removePanelFromLayout(layout, panelId) {
+  const rows = getGridLayout(layout).map((row) =>
+    row.filter((id) => id !== panelId)
+  );
   return {
-    left: layout.left.filter((id) => id !== panelId),
-    right: layout.right.filter((id) => id !== panelId),
-    full: layout.full.filter((id) => id !== panelId),
+    rows: rows.filter((row) => row.length > 0),
     minimized: layout.minimized.filter((id) => id !== panelId),
   };
 }
 
-function movePanel(layout, panelId, targetZone) {
-  const next = removeFromZones(layout, panelId);
-  next[targetZone] = [...next[targetZone], panelId];
-  return next;
+function placePanelInZone(layout, panelId, targetRow, targetCol, side) {
+  const next = removePanelFromLayout(layout, panelId);
+  const rows = getGridLayout(next);
+
+  if (!rows[targetRow]) {
+    rows[targetRow] = [];
+  }
+
+  if (side === "left" || side === "split-left") {
+    rows[targetRow].splice(targetCol, 0, panelId);
+  } else if (side === "right" || side === "split-right") {
+    rows[targetRow].splice(targetCol + 1, 0, panelId);
+  } else if (side === "full" || side === "new-row") {
+    rows[targetRow] = [panelId];
+  }
+
+  return { rows, minimized: next.minimized };
 }
 
 export default function DockableWorkspace({
@@ -36,48 +49,40 @@ export default function DockableWorkspace({
   );
   const [layout, setLayout] = useState(initialLayout);
   const [draggedId, setDraggedId] = useState(null);
-  const [hoveredLayoutZone, setHoveredLayoutZone] = useState(null);
+  const [hoveredZone, setHoveredZone] = useState(null);
   const [maximizedId, setMaximizedId] = useState(null);
   const [minimizeFlyer, setMinimizeFlyer] = useState(null);
-  const hoveredZoneRef = useRef(null);
-
-  useEffect(() => {
-    hoveredZoneRef.current = hoveredLayoutZone;
-  }, [hoveredLayoutZone]);
 
   const activeMaximizedPanel = maximizedId ? panelMap.get(maximizedId) : null;
 
-  const getClosestLayoutZone = (mouseX, mouseY) => {
-    const centerX = window.innerWidth / 2;
-    const centerY = window.innerHeight / 2;
-    const previewWidth = 600;
-    const previewHeight = 400;
-    const startX = centerX - previewWidth / 2;
-    const startY = centerY - previewHeight / 2;
+  const getZoneAtMouse = (mouseX, mouseY) => {
+    const preview = document.querySelector(".dock-layout-preview");
+    if (!preview) return null;
 
-    const cellWidth = previewWidth / 3;
-    const cellHeight = previewHeight / 2;
+    const rect = preview.getBoundingClientRect();
+    const grid = document.querySelector(".dock-birdseye-grid");
+    if (!grid) return null;
 
+    const cells = grid.querySelectorAll(".dock-cell");
     let closest = null;
     let minDistance = Infinity;
 
-    Object.entries(LAYOUT_ZONES).forEach(([key, zone]) => {
-      const zoneX = startX + zone.col * cellWidth + cellWidth / 2;
-      const zoneY = startY + zone.row * cellHeight + cellHeight / 2;
-      const distance = Math.sqrt(Math.pow(mouseX - zoneX, 2) + Math.pow(mouseY - zoneY, 2));
+    cells.forEach((cell) => {
+      const cellRect = cell.getBoundingClientRect();
+      const cellCenterX = cellRect.left - rect.left + cellRect.width / 2;
+      const cellCenterY = cellRect.top - rect.top + cellRect.height / 2;
+      const distance = Math.sqrt(
+        Math.pow(mouseX - (rect.left + cellCenterX), 2) +
+          Math.pow(mouseY - (rect.top + cellCenterY), 2)
+      );
 
       if (distance < minDistance) {
         minDistance = distance;
-        closest = key;
+        closest = cell.dataset.zone;
       }
     });
 
     return closest;
-  };
-
-  const placePanel = (panelId, targetZone) => {
-    setLayout((current) => movePanel(current, panelId, targetZone));
-    setHoveredLayoutZone(null);
   };
 
   useEffect(() => {
@@ -86,38 +91,43 @@ export default function DockableWorkspace({
     const handleDocumentDragOver = (e) => {
       e.preventDefault();
       e.dataTransfer.dropEffect = "move";
-      const zone = getClosestLayoutZone(e.clientX, e.clientY);
-      setHoveredLayoutZone(zone);
+      const zone = getZoneAtMouse(e.clientX, e.clientY);
+      setHoveredZone(zone);
     };
 
     const handleDocumentDrop = (e) => {
       e.preventDefault();
-      const zoneKey =
-        hoveredZoneRef.current || getClosestLayoutZone(e.clientX, e.clientY);
-      if (zoneKey) {
-        placePanel(draggedId, LAYOUT_ZONES[zoneKey].zone);
+      const zone = getZoneAtMouse(e.clientX, e.clientY);
+      if (zone) {
+        const [row, col, side] = zone.split("-").map((v, i) => (i < 2 ? Number(v) : v));
+        setLayout((current) =>
+          placePanelInZone(current, draggedId, row, col, side)
+        );
       }
       setDraggedId(null);
+      setHoveredZone(null);
     };
 
     const handleDocumentDragEnd = () => {
       setDraggedId(null);
-      setHoveredLayoutZone(null);
+      setHoveredZone(null);
     };
 
-    document.addEventListener('dragover', handleDocumentDragOver);
-    document.addEventListener('drop', handleDocumentDrop);
-    document.addEventListener('dragend', handleDocumentDragEnd);
+    document.addEventListener("dragover", handleDocumentDragOver);
+    document.addEventListener("drop", handleDocumentDrop);
+    document.addEventListener("dragend", handleDocumentDragEnd);
 
     return () => {
-      document.removeEventListener('dragover', handleDocumentDragOver);
-      document.removeEventListener('drop', handleDocumentDrop);
-      document.removeEventListener('dragend', handleDocumentDragEnd);
+      document.removeEventListener("dragover", handleDocumentDragOver);
+      document.removeEventListener("drop", handleDocumentDrop);
+      document.removeEventListener("dragend", handleDocumentDragEnd);
     };
   }, [draggedId]);
 
   const minimizePanel = (panelId, sourceEvent) => {
-    const card = sourceEvent?.currentTarget?.closest(".dock-panel, .dock-maximized");
+    const card = sourceEvent?.currentTarget?.closest(
+      ".dock-panel, .dock-maximized"
+    );
     if (card) {
       const rect = card.getBoundingClientRect();
       setMinimizeFlyer({
@@ -129,12 +139,18 @@ export default function DockableWorkspace({
       });
       window.setTimeout(() => setMinimizeFlyer(null), 500);
     }
-    setLayout((current) => {
-      const next = removeFromZones(current, panelId);
-      next.minimized = [...next.minimized, panelId];
-      return next;
-    });
+    setLayout((current) => removePanelFromLayout(current, panelId));
     if (maximizedId === panelId) setMaximizedId(null);
+  };
+
+  const restorePanel = (panelId) => {
+    setLayout((current) => {
+      const next = removePanelFromLayout(current, panelId);
+      const rows = getGridLayout(next);
+      if (!rows.length) rows.push([]);
+      rows[0] = [panelId, ...rows[0]];
+      return { rows, minimized: next.minimized };
+    });
   };
 
   const startFlyerAnimation = (node) => {
@@ -152,33 +168,23 @@ export default function DockableWorkspace({
     });
   };
 
-  const restorePanel = (panelId, preferredZone = "right") => {
-    setLayout((current) => {
-      const next = removeFromZones(current, panelId);
-      next[preferredZone] = [...next[preferredZone], panelId];
-      return next;
-    });
-  };
-
   const renderPanelCard = (panelId) => {
     const panel = panelMap.get(panelId);
     if (!panel) return null;
 
     const handleDragStart = (e) => {
-      e.dataTransfer.setData("text/plain", panel.id);
+      e.dataTransfer.setData("text/plain", panelId);
       e.dataTransfer.effectAllowed = "move";
       const card = e.currentTarget.closest(".dock-panel");
       if (card) {
         e.dataTransfer.setDragImage(card, 24, 24);
       }
-      // Defer the state update: mutating the DOM during dragstart
-      // (the preview overlay appearing) makes Chrome cancel the drag.
-      window.setTimeout(() => setDraggedId(panel.id), 0);
+      window.setTimeout(() => setDraggedId(panelId), 0);
     };
 
     const handleDragEnd = () => {
       setDraggedId(null);
-      setHoveredLayoutZone(null);
+      setHoveredZone(null);
     };
 
     return (
@@ -205,7 +211,7 @@ export default function DockableWorkspace({
               className="dock-panel-btn"
               onClick={() =>
                 setMaximizedId((current) =>
-                  current === panel.id ? null : panel.id,
+                  current === panel.id ? null : panel.id
                 )
               }
             >
@@ -226,6 +232,8 @@ export default function DockableWorkspace({
     );
   };
 
+  const gridLayout = getGridLayout(layout);
+
   return (
     <section className="dock-workspace">
       <header className="dock-workspace-head">
@@ -234,45 +242,60 @@ export default function DockableWorkspace({
           <h3>{title}</h3>
         </div>
         <p>
-          Drag panels into the left half, right half, or full-width lane. Use
-          maximize for focus mode and minimize to collapse a panel back into a tab.
+          Drag panels to arrange them like a puzzle. Drop on a panel to split
+          it, or drop in gaps to fill them.
         </p>
       </header>
 
       {draggedId && (
         <div className="dock-layout-preview-wrapper">
           <div className="dock-layout-preview">
-            <div className="dock-layout-grid">
-              {Object.entries(LAYOUT_ZONES).map(([key, zone]) => {
-                const isHovered = key === hoveredLayoutZone;
-                return (
+            <div className="dock-birdseye-grid">
+              {gridLayout.map((row, rowIdx) => (
+                <div key={`row-${rowIdx}`} className="dock-birdseye-row">
+                  {row.map((panelId, colIdx) => {
+                    const panel = panelMap.get(panelId);
+                    const zoneId = `${rowIdx}-${colIdx}`;
+                    const isHovered = hoveredZone?.startsWith(zoneId);
+                    return (
+                      <div
+                        key={`cell-${panelId}`}
+                        className={`dock-cell ${isHovered ? "hovered" : ""}`}
+                      >
+                        <div className="dock-cell-left" data-zone={`${zoneId}-left`}>
+                          <span className="dock-cell-label">
+                            {panel?.title || "Panel"}
+                          </span>
+                        </div>
+                        <div className="dock-cell-right" data-zone={`${zoneId}-right`}>
+                          <span className="dock-cell-label">→</span>
+                        </div>
+                      </div>
+                    );
+                  })}
                   <div
-                    key={key}
-                    className={`dock-zone ${isHovered ? 'hovered' : ''}`}
-                    style={{
-                      gridRow: zone.row + 1,
-                      gridColumn: zone.col + 1,
-                    }}
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      setHoveredLayoutZone(key);
-                    }}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      placePanel(draggedId, zone.zone);
-                      setDraggedId(null);
-                    }}
+                    key={`gap-${rowIdx}`}
+                    className={`dock-cell dock-cell-gap ${
+                      hoveredZone === `${rowIdx}-gap` ? "hovered" : ""
+                    }`}
+                    data-zone={`${rowIdx}-gap`}
                   >
-                    <div className="dock-zone-inner">
-                      <div className="dock-zone-label">{zone.label}</div>
-                      <div className="dock-zone-name">{zone.name}</div>
-                    </div>
+                    <span className="dock-cell-label">+ Fill gap</span>
                   </div>
-                );
-              })}
+                </div>
+              ))}
+              <div className="dock-birdseye-row">
+                <div
+                  className={`dock-cell dock-cell-new-row ${
+                    hoveredZone === "new-row" ? "hovered" : ""
+                  }`}
+                  data-zone="new-row"
+                >
+                  <span className="dock-cell-label">+ New row</span>
+                </div>
+              </div>
             </div>
-            <div className="dock-preview-title">Drop Panel Here</div>
+            <div className="dock-preview-title">Release to place</div>
           </div>
           <div className="dock-preview-backdrop" />
         </div>
@@ -290,31 +313,20 @@ export default function DockableWorkspace({
               Back to layout
             </button>
           </div>
-          <div className="dock-maximized-body">{activeMaximizedPanel.content}</div>
+          <div className="dock-maximized-body">
+            {activeMaximizedPanel.content}
+          </div>
         </div>
       ) : (
         <div className="dock-grid">
-          <div className="dock-column">
-            {layout.left.length > 0 ? (
-              layout.left.map(renderPanelCard)
-            ) : (
-              <div className="dock-empty">Drop a panel into the left half.</div>
-            )}
-          </div>
-          <div className="dock-column">
-            {layout.right.length > 0 ? (
-              layout.right.map(renderPanelCard)
-            ) : (
-              <div className="dock-empty">Drop a panel into the right half.</div>
-            )}
-          </div>
-          <div className="dock-full-lane">
-            {layout.full.length > 0 ? (
-              layout.full.map(renderPanelCard)
-            ) : (
-              <div className="dock-empty">Full-width panels appear here.</div>
-            )}
-          </div>
+          {gridLayout.map((row, rowIdx) => (
+            <div key={`grid-row-${rowIdx}`} className="dock-grid-row">
+              {row.map((panelId) => renderPanelCard(panelId))}
+            </div>
+          ))}
+          {gridLayout.length === 0 && (
+            <div className="dock-empty">Drag panels here to build your layout.</div>
+          )}
         </div>
       )}
 
@@ -342,7 +354,7 @@ export default function DockableWorkspace({
                 key={panelId}
                 type="button"
                 className="dock-minimized-pill"
-                onClick={() => restorePanel(panelId, panel.defaultZone || "right")}
+                onClick={() => restorePanel(panelId)}
                 title={`Restore ${panel.title}`}
               >
                 {panel.title}
