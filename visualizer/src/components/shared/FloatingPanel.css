@@ -1,0 +1,83 @@
+.floating-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1900;
+  min-width: 280px;
+  max-width: min(92vw, 520px);
+  border-radius: 16px;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  background: rgba(2, 6, 23, 0.94);
+  box-shadow: 0 16px 40px rgba(2, 6, 23, 0.65);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+  animation: floating-panel-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes floating-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.floating-panel-handle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(15, 23, 42, 0.85);
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+
+.floating-panel-handle:active {
+  cursor: grabbing;
+}
+
+.floating-panel.collapsed .floating-panel-handle {
+  border-bottom: none;
+}
+
+.floating-panel-grip {
+  color: var(--text-dim);
+  letter-spacing: 0.12em;
+  font-size: 0.86rem;
+}
+
+.floating-panel-title {
+  flex: 1;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.floating-panel-collapse {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(30, 41, 59, 0.8);
+  color: var(--text-muted);
+  padding: 0.2rem 0.55rem;
+  font-size: 0.66rem;
+  cursor: pointer;
+}
+
+.floating-panel-collapse:hover {
+  color: var(--text);
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+.floating-panel-body {
+  padding: 10px;
+}

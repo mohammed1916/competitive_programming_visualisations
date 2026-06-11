@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
+import FloatingPanel from "../../components/shared/FloatingPanel";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
 import "./GameOnGrowingTreeVisualizer.css";
 import { Stack3D } from "../../components/viz3d";
@@ -955,21 +956,6 @@ export default function GameOnGrowingTreeVisualizer() {
             </div>
           </div>
 
-          <PlaybackControls
-            onReset={handleReset}
-            onPrev={stepBack}
-            onPlayToggle={togglePlay}
-            onNext={stepForward}
-            resetDisabled={steps.length === 0}
-            prevDisabled={stepIndex <= 0}
-            nextDisabled={steps.length === 0 || isDone}
-            isPlaying={isPlaying}
-            isDone={isDone}
-            speed={speed}
-            onSpeedChange={(event) => setSpeed(Number(event.target.value))}
-            speedIndicator={`${speed}ms`}
-          />
-
           <div className="gogt-metrics">
             <div className="gogt-metric-card">
               <span>Interval</span>
@@ -1082,6 +1068,23 @@ export default function GameOnGrowingTreeVisualizer() {
           minimized: [],
         }}
       />
+
+      <FloatingPanel title="Playback Controls">
+        <PlaybackControls
+          onReset={handleReset}
+          onPrev={stepBack}
+          onPlayToggle={togglePlay}
+          onNext={stepForward}
+          resetDisabled={steps.length === 0}
+          prevDisabled={stepIndex <= 0}
+          nextDisabled={steps.length === 0 || isDone}
+          isPlaying={isPlaying}
+          isDone={isDone}
+          speed={speed}
+          onSpeedChange={(event) => setSpeed(Number(event.target.value))}
+          speedIndicator={`${speed}ms`}
+        />
+      </FloatingPanel>
     </div>
   );
 }
