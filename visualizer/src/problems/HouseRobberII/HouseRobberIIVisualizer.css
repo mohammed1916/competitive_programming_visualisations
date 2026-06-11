@@ -1,9 +1,183 @@
 .hr2-shell {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
     padding: 16px;
     font-family: inherit;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.hr2-hero {
+    flex-shrink: 0;
+    padding: 24px;
+    background: linear-gradient(135deg, #1e1e2e 0%, #181825 100%);
+    border: 1px solid #313244;
+    border-radius: 12px;
+}
+
+.hr2-hero-copy {
+    margin-bottom: 20px;
+}
+
+.hr2-kicker {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    color: #89b4fa;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+}
+
+.hr2-hero-copy h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #cdd6f4;
+    margin: 8px 0;
+}
+
+.hr2-hero-copy p {
+    font-size: 13px;
+    color: #a6adc8;
+    line-height: 1.5;
+    margin: 8px 0 0 0;
+}
+
+.hr2-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+}
+
+.hr2-summary-card {
+    background: #11111b;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.hr2-summary-card span {
+    font-size: 11px;
+    color: #6c7086;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+}
+
+.hr2-summary-card strong {
+    font-size: 20px;
+    color: #cdd6f4;
+    font-weight: 700;
+}
+
+.hr2-panel-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    overflow-y: auto;
+    height: 100%;
+}
+
+.hr2-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.hr2-field span {
+    font-size: 12px;
+    font-weight: 600;
+    color: #cdd6f4;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.hr2-output-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.hr2-output-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #6c7086;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.hr2-output {
+    padding: 8px 12px;
+    background: #11111b;
+    border: 1px solid #313244;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #89b4fa;
+    font-family: 'Fira Code', monospace;
+    overflow-x: auto;
+}
+
+.hr2-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 8px;
+}
+
+.hr2-metric-card {
+    background: #11111b;
+    border: 1px solid #313244;
+    border-radius: 6px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-align: center;
+}
+
+.hr2-metric-card span {
+    font-size: 10px;
+    color: #6c7086;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+}
+
+.hr2-metric-card strong {
+    font-size: 16px;
+    color: #cdd6f4;
+    font-weight: 700;
+}
+
+.hr2-metric-card strong.accent {
+    color: #fab387;
+}
+
+.hr2-message-box {
+    padding: 12px;
+    background: #11111b;
+    border: 1px solid #313244;
+    border-radius: 6px;
+}
+
+.hr2-message-box strong {
+    display: block;
+    font-size: 11px;
+    color: #6c7086;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+}
+
+.hr2-message-box p {
+    font-size: 12px;
+    color: #cdd6f4;
+    line-height: 1.4;
+    margin: 0;
 }
 
 .hr2-top {
@@ -192,4 +366,8 @@
     font-size: 13px;
     color: #a6adc8;
     min-height: 36px;
+}
+
+.mono {
+    font-family: 'Fira Code', 'Courier New', monospace;
 }

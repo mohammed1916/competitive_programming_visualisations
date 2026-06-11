@@ -3,8 +3,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
 import PatternOverlay from "../../components/PatternOverlay";
+import DockableWorkspace from "../../components/shared/DockableWorkspace";
+import FloatingPanel from "../../components/shared/FloatingPanel";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
 import { usePatternOverlay } from "../../hooks/usePatternOverlay";
+import { useAutoScroll } from "../../hooks/useAutoScroll";
 import { GraphCanvas3D } from "../../components/viz3d";
 import "./CloneGraphVisualizer.css";
 
@@ -69,7 +72,7 @@ function generateSteps(adj, start = 1) {
 const NODE_R = 22;
 const SVG_W = 220, SVG_H = 170;
 
-function GraphPanel({ adj, positions, step, label, isClone }) {
+function VisualizationPanel({ adj, positions, step }) {
     const nodes = useMemo(() => {
         return Object.keys(positions).map((id) => {
             const numId = Number(id);
@@ -94,20 +97,51 @@ function GraphPanel({ adj, positions, step, label, isClone }) {
     const cloneEdgeSet = useMemo(() => new Set(Object.keys(step?.cloneEdges || {})), [step?.cloneEdges]);
 
     return (
-        <div className="cg-panel">
-            <div className="cg-panel-label">{label}</div>
-            <GraphCanvas3D
-                nodes={nodes}
-                edges={edges}
-                visitedSet={isClone ? visitedSet : new Set()}
-                activeNode={step?.curNode ?? null}
-                activeNeighbor={step?.curNbr ?? null}
-                cloneEdgeSet={cloneEdgeSet}
-                width={SVG_W}
-                height={SVG_H}
-                isClone={isClone}
-                nodeRadius={NODE_R}
-            />
+        <div className="cg-viz-container">
+            <div className="cg-graphs-row">
+                <div className="cg-panel">
+                    <div className="cg-panel-label">Original Graph</div>
+                    <GraphCanvas3D
+                        nodes={nodes}
+                        edges={edges}
+                        visitedSet={new Set()}
+                        activeNode={step?.curNode ?? null}
+                        activeNeighbor={step?.curNbr ?? null}
+                        cloneEdgeSet={new Set()}
+                        width={SVG_W}
+                        height={SVG_H}
+                        isClone={false}
+                        nodeRadius={NODE_R}
+                    />
+                </div>
+                <div className="cg-arrow">→</div>
+                <div className="cg-panel">
+                    <div className="cg-panel-label">Clone (Building)</div>
+                    <GraphCanvas3D
+                        nodes={nodes}
+                        edges={edges}
+                        visitedSet={visitedSet}
+                        activeNode={step?.curNode ?? null}
+                        activeNeighbor={step?.curNbr ?? null}
+                        cloneEdgeSet={cloneEdgeSet}
+                        width={SVG_W}
+                        height={SVG_H}
+                        isClone={true}
+                        nodeRadius={NODE_R}
+                    />
+                </div>
+            </div>
+
+            <div className="cg-panel">
+                <div className="cg-panel-label">Visited / Cloned Nodes</div>
+                <div className="cg-visited-row">
+                    {Object.keys(adj).map(Number).map((n) => (
+                        <div key={n} className={`cg-vis-badge ${step?.visited?.[n] ? "done" : "pending"}`}>{n}</div>
+                    ))}
+                </div>
+            </div>
+
+            <div className="cg-status">{step?.message ?? "Press Play to begin."}</div>
         </div>
     );
 }
@@ -120,57 +154,101 @@ export default function CloneGraphVisualizer() {
         usePlaybackState(steps.length);
     const step = stepIndex >= 0 ? steps[stepIndex] : null;
     const applyEx = useCallback((k) => { setExKey(k); handleReset(); }, [handleReset]);
+    const [autoScrollCode, setAutoScrollCode] = useAutoScroll();
     const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay();
+
+    const dockPanels = [
+        {
+            id: 'code',
+            title: 'Code Trace',
+            subtitle: step ? `Active line ${step.activeLine}` : 'Line-by-line solution view.',
+            defaultZone: 'left',
+            content: (
+                <CodeTracePanel
+                    step={step}
+                    codeLines={SOLUTION_CODE}
+                    onActiveLineDomChange={setActiveLineDom}
+                    autoScroll={autoScrollCode}
+                />
+            ),
+        },
+        {
+            id: 'viz',
+            title: 'Graph Visualization',
+            subtitle: step ? `Step ${stepIndex + 1} of ${steps.length}` : 'Original and clone graphs.',
+            defaultZone: 'right',
+            content: (
+                <VisualizationPanel
+                    adj={ex.adj}
+                    positions={ex.positions}
+                    step={step}
+                />
+            ),
+        },
+    ];
 
     return (
         <div className="cg-shell">
-            <div className="cg-examples">
-                {Object.entries(EXAMPLES).map(([k, e]) => (
-                    <button key={k} className={`cg-chip ${exKey === k ? "active" : ""}`} onClick={() => applyEx(k)}>{e.label}</button>
-                ))}
-            </div>
+            <section className="cg-hero">
+                <div className="cg-hero-copy">
+                    <span className="cg-kicker">Graph Traversal • BFS Clone</span>
+                    <h2>Visualize how graphs are cloned with BFS.</h2>
+                    <p>
+                        Watch the original graph alongside the cloned graph as the algorithm
+                        processes nodes and builds edges in the copy.
+                    </p>
+                </div>
 
-            <div className="cg-graphs-row">
-                <GraphPanel
-                    adj={ex.adj}
-                    positions={ex.positions}
-                    step={step}
-                    label="Original"
-                    isClone={false}
-                />
-                <div className="cg-arrow">→</div>
-                <GraphPanel
-                    adj={ex.adj}
-                    positions={ex.positions}
-                    step={step}
-                    label="Clone (building)"
-                    isClone={true}
-                />
-            </div>
-
-            {/* visited map */}
-            <div className="cg-panel">
-                <div className="cg-panel-label">Visited / cloned nodes</div>
-                <div className="cg-visited-row">
-                    {Object.keys(ex.adj).map(Number).map((n) => (
-                        <div key={n} className={`cg-vis-badge ${step?.visited?.[n] ? "done" : "pending"}`}>{n}</div>
+                <div className="cg-examples">
+                    {Object.entries(EXAMPLES).map(([k, e]) => (
+                        <button
+                            key={k}
+                            className={`cg-chip ${exKey === k ? "active" : ""}`}
+                            onClick={() => applyEx(k)}
+                        >
+                            {e.label}
+                        </button>
                     ))}
                 </div>
-            </div>
+            </section>
 
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
-            <div className="cg-status">{step?.message ?? "Press Play to begin."}</div>
-            <PlaybackControls
-                isPlaying={isPlaying} isDone={isDone} speed={speed}
-                onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward} onReset={handleReset}
-                prevDisabled={stepIndex < 0} nextDisabled={isDone} resetDisabled={stepIndex < 0}
-                onSpeedChange={(e) => setSpeed(Number(e.target.value))}
-                showPatternOverlay={showPatternOverlay}
-                onShowPatternOverlayChange={setShowPatternOverlay}
-                patternOverlayLabel="Show pattern overlay"
-                showPatternOverlayToggle
+            <DockableWorkspace
+                title="Clone Graph Workspace"
+                panels={dockPanels}
+                initialLayout={{
+                    rows: [['code', 'viz']],
+                    minimized: [],
+                }}
             />
-            {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
+
+            <FloatingPanel title="Playback Controls">
+                <PlaybackControls
+                    onReset={handleReset}
+                    onPrev={stepBack}
+                    onPlayToggle={togglePlay}
+                    onNext={stepForward}
+                    resetDisabled={steps.length === 0}
+                    prevDisabled={stepIndex < 0}
+                    nextDisabled={isDone}
+                    isPlaying={isPlaying}
+                    isDone={isDone}
+                    speed={speed}
+                    onSpeedChange={(event) => setSpeed(Number(event.target.value))}
+                    speedIndicator={`${speed}ms`}
+                    autoScroll={autoScrollCode}
+                    onAutoScrollChange={setAutoScrollCode}
+                    autoScrollLabel="Auto-scroll code"
+                    showAutoScroll
+                    showPatternOverlay={showPatternOverlay}
+                    onShowPatternOverlayChange={setShowPatternOverlay}
+                    patternOverlayLabel="Show pattern overlay"
+                    showPatternOverlayToggle
+                />
+            </FloatingPanel>
+
+            {showPatternOverlay && step && (
+                <PatternOverlay step={step} activeLineDom={activeLineDom} />
+            )}
         </div>
     );
 }

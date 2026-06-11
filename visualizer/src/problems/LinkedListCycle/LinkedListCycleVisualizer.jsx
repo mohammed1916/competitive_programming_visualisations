@@ -3,7 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import PatternOverlay from '../../components/PatternOverlay'
+import FloatingPanel from '../../components/shared/FloatingPanel'
+import DockableWorkspace from '../../components/shared/DockableWorkspace'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { useAutoScroll } from '../../hooks/useAutoScroll'
 import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './LinkedListCycleVisualizer.css'
 
@@ -127,6 +130,7 @@ export default function LinkedListCycleVisualizer() {
         handleReset, isPlaying, speed, setSpeed, isDone,
     } = usePlaybackState(steps.length)
 
+    const [autoScrollCode, setAutoScrollCode] = useAutoScroll()
     const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
     const step = stepIndex >= 0 ? steps[stepIndex] : null
@@ -147,137 +151,201 @@ export default function LinkedListCycleVisualizer() {
     const hasCycle = tailTo >= 0
     const nodes = Array.from({ length: nodeCount }, (_, i) => i)
 
+    // Configuration panel content
+    const configContent = (
+        <div className="llc-body">
+            <div className="llc-examples">
+                {EXAMPLES.map((ex) => (
+                    <button key={ex.label} className={`llc-chip${tailDesc === ex.label ? ' active' : ''}`} onClick={() => applyExample(ex)}>
+                        {ex.label}
+                    </button>
+                ))}
+            </div>
+
+            <div className="llc-config">
+                <label className="llc-cfg-label">
+                    Nodes:
+                    <select
+                        className="llc-select"
+                        value={nodeCount}
+                        onChange={(e) => { setNodeCount(Number(e.target.value)); handleReset() }}
+                    >
+                        {[2, 3, 4, 5, 6, 7, 8].map(n => <option key={n} value={n}>{n}</option>)}
+                    </select>
+                </label>
+                <label className="llc-cfg-label">
+                    Tail connects to:
+                    <select
+                        className="llc-select"
+                        value={tailTo}
+                        onChange={(e) => { setTailTo(Number(e.target.value)); setTailDesc('custom'); handleReset() }}
+                    >
+                        <option value={-1}>None (no cycle)</option>
+                        {nodes.map(n => <option key={n} value={n}>Node {n}</option>)}
+                    </select>
+                </label>
+            </div>
+        </div>
+    )
+
+    // Visualization panel content
+    const vizContent = (
+        <div className="llc-body">
+            {/* Node track */}
+            <div className="llc-track-wrap">
+                <div className="llc-track">
+                    {nodes.map((i) => {
+                        const isSlow = slow === i
+                        const isFast = fast === i
+                        const isBoth = isSlow && isFast
+                        const isCycleEntry = hasCycle && tailTo === i
+                        const isTail = i === nodeCount - 1
+
+                        return (
+                            <div key={i} className="llc-node-wrap">
+                                <motion.div
+                                    className={`llc-node${detected && isSlow ? ' meet' : ''}${isSlow && !isFast ? ' slow' : ''}${isFast && !isSlow ? ' fast' : ''}${isBoth ? ' both' : ''}${isCycleEntry ? ' cycle-entry' : ''}${noMore && isFast ? ' null-fast' : ''}`}
+                                    animate={{ y: isBoth ? -12 : isSlow ? -8 : isFast ? -6 : 0, scale: isBoth || isSlow || isFast ? 1.1 : 1 }}
+                                    transition={{ type: 'spring', stiffness: 380, damping: 24 }}
+                                >
+                                    {EXAMPLE_LABELS[i]}
+                                </motion.div>
+                                <span className="llc-node-idx">{i}</span>
+                                {/* Pointer badges */}
+                                <div className="llc-ptr-row">
+                                    {isSlow && !isBoth && <span className="llc-ptr slow-ptr">slow🐢</span>}
+                                    {isFast && !isBoth && <span className="llc-ptr fast-ptr">fast🐇</span>}
+                                    {isBoth && <span className="llc-ptr both-ptr">🐢🐇</span>}
+                                </div>
+                                {/* Arrow to next node */}
+                                {i < nodeCount - 1 && (
+                                    <div className="llc-arrow">→</div>
+                                )}
+                                {isTail && hasCycle && (
+                                    <div className="llc-cycle-label">↩ {tailTo}</div>
+                                )}
+                                {isTail && !hasCycle && (
+                                    <div className="llc-null-label">→ null</div>
+                                )}
+                            </div>
+                        )
+                    })}
+                </div>
+
+                {/* Cycle arc indicator */}
+                {hasCycle && (
+                    <div className="llc-cycle-arc">
+                        <span className="llc-cycle-badge">⟳ Cycle: tail node {nodeCount - 1} → node {tailTo}</span>
+                    </div>
+                )}
+            </div>
+
+            {/* Result */}
+            <AnimatePresence>
+                {detected && (
+                    <motion.div
+                        className="llc-result cycle"
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                    >
+                        🐢🐇 Meeting at node {slow} — Cycle Detected! Return True
+                    </motion.div>
+                )}
+                {noMore && (
+                    <motion.div
+                        className="llc-result no-cycle"
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                    >
+                        fast reached null — No Cycle. Return False
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Status message */}
+            <div className={`llc-status${detected ? ' cycle' : noMore ? ' no-cycle' : ''}`}>
+                {step?.message ?? 'Press Play or Step to begin.'}
+            </div>
+        </div>
+    )
+
+    // Define dock panels
+    const dockPanels = [
+        {
+            id: 'config',
+            title: 'Configuration',
+            subtitle: `${nodeCount} nodes, tail→${tailTo >= 0 ? `node ${tailTo}` : 'null'}`,
+            defaultZone: 'left',
+            content: configContent,
+        },
+        {
+            id: 'viz',
+            title: 'Linked List Visualization',
+            subtitle: hasCycle ? 'Cycle detected' : 'No cycle',
+            defaultZone: 'left',
+            content: vizContent,
+        },
+        {
+            id: 'code',
+            title: 'Code Trace',
+            subtitle: step ? `Line ${step.activeLine}` : 'Ready',
+            defaultZone: 'right',
+            content: (
+                <CodeTracePanel
+                    step={step}
+                    codeLines={SOLUTION_CODE}
+                    onActiveLineDomChange={setActiveLineDom}
+                    autoScroll={autoScrollCode}
+                />
+            ),
+        },
+    ]
+
     return (
         <div className="llc-shell">
             <section className="llc-panel">
                 <header className="llc-head">
                     <span>Linked List Cycle · Floyd's Tortoise &amp; Hare</span>
                 </header>
-                <div className="llc-body">
-                    <div className="llc-examples">
-                        {EXAMPLES.map((ex) => (
-                            <button key={ex.label} className={`llc-chip${tailDesc === ex.label ? ' active' : ''}`} onClick={() => applyExample(ex)}>
-                                {ex.label}
-                            </button>
-                        ))}
-                    </div>
-
-                    <div className="llc-config">
-                        <label className="llc-cfg-label">
-                            Nodes:
-                            <select
-                                className="llc-select"
-                                value={nodeCount}
-                                onChange={(e) => { setNodeCount(Number(e.target.value)); handleReset() }}
-                            >
-                                {[2, 3, 4, 5, 6, 7, 8].map(n => <option key={n} value={n}>{n}</option>)}
-                            </select>
-                        </label>
-                        <label className="llc-cfg-label">
-                            Tail connects to:
-                            <select
-                                className="llc-select"
-                                value={tailTo}
-                                onChange={(e) => { setTailTo(Number(e.target.value)); setTailDesc('custom'); handleReset() }}
-                            >
-                                <option value={-1}>None (no cycle)</option>
-                                {nodes.map(n => <option key={n} value={n}>Node {n}</option>)}
-                            </select>
-                        </label>
-                    </div>
-
-                    {/* Node track */}
-                    <div className="llc-track-wrap">
-                        <div className="llc-track">
-                            {nodes.map((i) => {
-                                const isSlow = slow === i
-                                const isFast = fast === i
-                                const isBoth = isSlow && isFast
-                                const isCycleEntry = hasCycle && tailTo === i
-                                const isTail = i === nodeCount - 1
-
-                                return (
-                                    <div key={i} className="llc-node-wrap">
-                                        <motion.div
-                                            className={`llc-node${detected && isSlow ? ' meet' : ''}${isSlow && !isFast ? ' slow' : ''}${isFast && !isSlow ? ' fast' : ''}${isBoth ? ' both' : ''}${isCycleEntry ? ' cycle-entry' : ''}${noMore && isFast ? ' null-fast' : ''}`}
-                                            animate={{ y: isBoth ? -12 : isSlow ? -8 : isFast ? -6 : 0, scale: isBoth || isSlow || isFast ? 1.1 : 1 }}
-                                            transition={{ type: 'spring', stiffness: 380, damping: 24 }}
-                                        >
-                                            {EXAMPLE_LABELS[i]}
-                                        </motion.div>
-                                        <span className="llc-node-idx">{i}</span>
-                                        {/* Pointer badges */}
-                                        <div className="llc-ptr-row">
-                                            {isSlow && !isBoth && <span className="llc-ptr slow-ptr">slow🐢</span>}
-                                            {isFast && !isBoth && <span className="llc-ptr fast-ptr">fast🐇</span>}
-                                            {isBoth && <span className="llc-ptr both-ptr">🐢🐇</span>}
-                                        </div>
-                                        {/* Arrow to next node */}
-                                        {i < nodeCount - 1 && (
-                                            <div className="llc-arrow">→</div>
-                                        )}
-                                        {isTail && hasCycle && (
-                                            <div className="llc-cycle-label">↩ {tailTo}</div>
-                                        )}
-                                        {isTail && !hasCycle && (
-                                            <div className="llc-null-label">→ null</div>
-                                        )}
-                                    </div>
-                                )
-                            })}
-                        </div>
-
-                        {/* Cycle arc indicator */}
-                        {hasCycle && (
-                            <div className="llc-cycle-arc">
-                                <span className="llc-cycle-badge">⟳ Cycle: tail node {nodeCount - 1} → node {tailTo}</span>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Result */}
-                    <AnimatePresence>
-                        {detected && (
-                            <motion.div
-                                className="llc-result cycle"
-                                initial={{ opacity: 0, y: 8 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0 }}
-                            >
-                                🐢🐇 Meeting at node {slow} — Cycle Detected! Return True
-                            </motion.div>
-                        )}
-                        {noMore && (
-                            <motion.div
-                                className="llc-result no-cycle"
-                                initial={{ opacity: 0, y: 8 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0 }}
-                            >
-                                fast reached null — No Cycle. Return False
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </div>
+                <DockableWorkspace
+                    title="Linked List Cycle Workspace"
+                    panels={dockPanels}
+                    initialLayout={{
+                        rows: [
+                            ['config', 'code'],
+                            ['viz', 'code'],
+                        ],
+                        minimized: [],
+                    }}
+                />
             </section>
 
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
-
-            <div className={`llc-status${detected ? ' cycle' : noMore ? ' no-cycle' : ''}`}>
-                {step?.message ?? 'Press Play or Step to begin.'}
-            </div>
-
-            <PlaybackControls
-                isPlaying={isPlaying} isDone={isDone} speed={speed}
-                onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward}
-                onReset={handleReset} prevDisabled={stepIndex < 0}
-                nextDisabled={isDone} resetDisabled={stepIndex < 0}
-                onSpeedChange={(e) => setSpeed(Number(e.target.value))}
-                showPatternOverlay={showPatternOverlay}
-                onShowPatternOverlayChange={setShowPatternOverlay}
-                patternOverlayLabel="Show pattern overlay"
-                showPatternOverlayToggle
-            />
+            <FloatingPanel title="Playback Controls">
+                <PlaybackControls
+                    isPlaying={isPlaying}
+                    isDone={isDone}
+                    speed={speed}
+                    onPlayToggle={togglePlay}
+                    onPrev={stepBack}
+                    onNext={stepForward}
+                    onReset={handleReset}
+                    prevDisabled={stepIndex < 0}
+                    nextDisabled={isDone}
+                    resetDisabled={stepIndex < 0}
+                    onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+                    speedIndicator={`${speed}ms`}
+                    autoScroll={autoScrollCode}
+                    onAutoScrollChange={setAutoScrollCode}
+                    autoScrollLabel="Auto-scroll code"
+                    showAutoScroll
+                    showPatternOverlay={showPatternOverlay}
+                    onShowPatternOverlayChange={setShowPatternOverlay}
+                    patternOverlayLabel="Show pattern overlay"
+                    showPatternOverlayToggle
+                />
+            </FloatingPanel>
 
             {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>

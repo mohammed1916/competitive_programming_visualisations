@@ -3,7 +3,10 @@ import { motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import PatternOverlay from '../../components/PatternOverlay'
+import DockableWorkspace from '../../components/shared/DockableWorkspace'
+import FloatingPanel from '../../components/shared/FloatingPanel'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { useAutoScroll } from '../../hooks/useAutoScroll'
 import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './ConstructBTVisualizer.css'
 
@@ -128,6 +131,7 @@ export default function ConstructBTVisualizer() {
 
     const { stepIndex, stepForward, stepBack, togglePlay, handleReset, isPlaying, speed, setSpeed, isDone } = usePlaybackState(steps.length)
     const step = stepIndex >= 0 ? steps[stepIndex] : null
+    const [autoScrollCode, setAutoScrollCode] = useAutoScroll()
     const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
     const applyExample = useCallback((ex) => {
@@ -141,45 +145,75 @@ export default function ConstructBTVisualizer() {
     const builtSet = new Set((step?.builtNodes ?? []).map((n) => n.id))
     const activeId = step?.phase === 'create' ? step?.id : null
 
-    return (
-        <div className="ctpi-shell">
-            <div className="ctpi-controls-row">
-                <div className="ctpi-examples">
-                    {EXAMPLES.map((ex) => (
-                        <button key={ex.label} className="ctpi-chip" onClick={() => applyExample(ex)}>{ex.label}</button>
-                    ))}
-                </div>
-                <div className="ctpi-inputs">
-                    <label>Preorder: <input className="ctpi-input" value={preInput} onChange={(e) => { setPreInput(e.target.value); handleReset() }} /></label>
-                    <label>Inorder: <input className="ctpi-input" value={inoInput} onChange={(e) => { setInoInput(e.target.value); handleReset() }} /></label>
-                </div>
-                {(preErr || inoErr) && <span className="ctpi-error">{preErr || inoErr}</span>}
-            </div>
-
-            {/* Array slices */}
-            <div className="ctpi-arrays-row">
-                <div className="ctpi-arr-panel">
-                    <div className="ctpi-arr-label">Current preorder slice</div>
-                    <div className="ctpi-arr-cells">
-                        {(step?.preSlice ?? []).map((v, i) => (
-                            <div key={i} className={`ctpi-cell ${i === 0 && step?.phase !== 'init' ? 'root' : ''}`}>{v}</div>
+    const dockPanels = [
+        {
+            id: 'input',
+            title: 'Input Playground',
+            subtitle: preErr || inoErr ? 'Fix the input to resume playback.' : 'Edit arrays and replay the solver.',
+            defaultZone: 'left',
+            content: (
+                <div className="ctpi-panel-body">
+                    <div className="ctpi-examples">
+                        {EXAMPLES.map((ex) => (
+                            <button key={ex.label} className="ctpi-chip" onClick={() => applyExample(ex)}>{ex.label}</button>
                         ))}
                     </div>
+                    <label className="ctpi-field">
+                        <span>Preorder</span>
+                        <input
+                            className="ctpi-input"
+                            value={preInput}
+                            onChange={(e) => { setPreInput(e.target.value); handleReset() }}
+                        />
+                    </label>
+                    <label className="ctpi-field">
+                        <span>Inorder</span>
+                        <input
+                            className="ctpi-input"
+                            value={inoInput}
+                            onChange={(e) => { setInoInput(e.target.value); handleReset() }}
+                        />
+                    </label>
+                    {(preErr || inoErr) && <div className="ctpi-error">{preErr || inoErr}</div>}
                 </div>
-                <div className="ctpi-arr-panel">
-                    <div className="ctpi-arr-label">Current inorder slice</div>
-                    <div className="ctpi-arr-cells">
-                        {(step?.inoSlice ?? []).map((v, i) => (
-                            <div key={i} className={`ctpi-cell ${i === step?.mid ? 'mid' : i < (step?.mid ?? -1) ? 'left-part' : 'right-part'}`}>{v}</div>
-                        ))}
+            ),
+        },
+        {
+            id: 'arrays',
+            title: 'Array Slices',
+            subtitle: step ? `Step ${steps.findIndex(s => s === step) + 1} of ${steps.length}` : 'Current preorder and inorder slices.',
+            defaultZone: 'left',
+            content: (
+                <div className="ctpi-panel-body">
+                    <div className="ctpi-arrays-row">
+                        <div className="ctpi-arr-panel">
+                            <div className="ctpi-arr-label">Current preorder slice</div>
+                            <div className="ctpi-arr-cells">
+                                {(step?.preSlice ?? []).map((v, i) => (
+                                    <div key={i} className={`ctpi-cell ${i === 0 && step?.phase !== 'init' ? 'root' : ''}`}>{v}</div>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="ctpi-arr-panel">
+                            <div className="ctpi-arr-label">Current inorder slice</div>
+                            <div className="ctpi-arr-cells">
+                                {(step?.inoSlice ?? []).map((v, i) => (
+                                    <div key={i} className={`ctpi-cell ${i === step?.mid ? 'mid' : i < (step?.mid ?? -1) ? 'left-part' : 'right-part'}`}>{v}</div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
+                    <div className="ctpi-status">{step?.message || 'Press Play to begin.'}</div>
                 </div>
-            </div>
-
-            {/* Tree visualization */}
-            {finalTree && (
+            ),
+        },
+        {
+            id: 'tree',
+            title: 'Tree Visualization',
+            subtitle: finalTree ? 'Binary tree being constructed.' : 'Tree preview will appear after playback starts.',
+            defaultZone: 'right',
+            content: finalTree ? (
                 <div className="ctpi-tree-panel">
-                    <div className="ctpi-arr-label">Tree being built</div>
                     <div className="ctpi-tree-canvas" style={{ position: 'relative', width: 400, height: 320 }}>
                         <svg style={{ position: 'absolute', inset: 0, overflow: 'visible' }} width={400} height={320}>
                             {allEdges.map((e) => {
@@ -202,20 +236,67 @@ export default function ConstructBTVisualizer() {
                         })}
                     </div>
                 </div>
-            )}
+            ) : (
+                <div style={{ padding: '16px', textAlign: 'center', color: '#a6adc8' }}>
+                    Tree visualization will appear when you start playback.
+                </div>
+            ),
+        },
+        {
+            id: 'code',
+            title: 'Code Trace',
+            subtitle: step ? `Active line ${step.activeLine}` : 'Line-by-line solution view.',
+            defaultZone: 'full',
+            content: (
+                <CodeTracePanel
+                    step={step}
+                    codeLines={SOLUTION_CODE}
+                    onActiveLineDomChange={setActiveLineDom}
+                    autoScroll={autoScrollCode}
+                />
+            ),
+        },
+    ]
 
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
-            <div className="ctpi-status">{step?.message || 'Press Play to begin.'}</div>
-            <PlaybackControls
-                isPlaying={isPlaying} isDone={isDone} speed={speed}
-                onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward} onReset={handleReset}
-                prevDisabled={stepIndex < 0} nextDisabled={isDone} resetDisabled={stepIndex < 0}
-                onSpeedChange={(e) => setSpeed(Number(e.target.value))}
-                showPatternOverlay={showPatternOverlay}
-                onShowPatternOverlayChange={setShowPatternOverlay}
-                patternOverlayLabel="Show pattern overlay"
-                showPatternOverlayToggle
+    return (
+        <div className="ctpi-shell">
+            <DockableWorkspace
+                title="Construct Binary Tree Workspace"
+                panels={dockPanels}
+                initialLayout={{
+                    rows: [
+                        ['input', 'tree'],
+                        ['arrays', 'code'],
+                    ],
+                    minimized: [],
+                }}
             />
+
+            <FloatingPanel title="Playback Controls">
+                <PlaybackControls
+                    onReset={handleReset}
+                    onPrev={stepBack}
+                    onPlayToggle={togglePlay}
+                    onNext={stepForward}
+                    resetDisabled={steps.length === 0}
+                    prevDisabled={stepIndex <= 0}
+                    nextDisabled={steps.length === 0 || isDone}
+                    isPlaying={isPlaying}
+                    isDone={isDone}
+                    speed={speed}
+                    onSpeedChange={(event) => setSpeed(Number(event.target.value))}
+                    speedIndicator={`${speed}ms`}
+                    autoScroll={autoScrollCode}
+                    onAutoScrollChange={setAutoScrollCode}
+                    autoScrollLabel="Auto-scroll code"
+                    showAutoScroll
+                    showPatternOverlay={showPatternOverlay}
+                    onShowPatternOverlayChange={setShowPatternOverlay}
+                    patternOverlayLabel="Show pattern overlay"
+                    showPatternOverlayToggle
+                />
+            </FloatingPanel>
+
             {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     )

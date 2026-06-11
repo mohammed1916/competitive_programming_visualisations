@@ -1,9 +1,51 @@
 .lr-shell {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    padding: 16px;
+    gap: 0;
+    padding: 0;
     font-family: inherit;
+    height: 100vh;
+    background: #0f0f1e;
+}
+
+.lr-hero {
+    background: linear-gradient(135deg, #1e1e2e 0%, #312e81 100%);
+    padding: 32px;
+    border-bottom: 1px solid #45475a;
+}
+
+.lr-hero-copy {
+    margin-bottom: 12px;
+}
+
+.lr-kicker {
+    font-size: 11px;
+    font-weight: 700;
+    color: #89b4fa;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+}
+
+.lr-hero h2 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #cdd6f4;
+    margin: 8px 0;
+}
+
+.lr-hero p {
+    font-size: 14px;
+    color: #a6adc8;
+    margin: 8px 0 0 0;
+    max-width: 600px;
+}
+
+.lr-panel-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+    overflow-y: auto;
 }
 
 .lr-controls-row {

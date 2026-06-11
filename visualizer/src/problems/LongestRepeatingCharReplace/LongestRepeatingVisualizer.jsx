@@ -3,8 +3,11 @@ import { motion } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
 import PatternOverlay from "../../components/PatternOverlay";
+import FloatingPanel from "../../components/shared/FloatingPanel";
+import DockableWorkspace from "../../components/shared/DockableWorkspace";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
 import { usePatternOverlay } from "../../hooks/usePatternOverlay";
+import { useAutoScroll } from "../../hooks/useAutoScroll";
 import "./LongestRepeatingVisualizer.css";
 
 const SOLUTION_CODE = [
@@ -76,6 +79,7 @@ export default function LongestRepeatingVisualizer() {
         usePlaybackState(steps.length);
     const step = stepIndex >= 0 ? steps[stepIndex] : null;
     const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay();
+    const [autoScrollCode, setAutoScrollCode] = useAutoScroll();
 
     const applyExample = useCallback(
         (ex) => { setSInput(ex.s); setKInput(String(ex.k)); handleReset(); },
@@ -86,75 +90,168 @@ export default function LongestRepeatingVisualizer() {
     const l = step?.l ?? 0;
     const r = step?.r ?? -1;
 
+    // SlidingWindowVisualization component
+    const SlidingWindowVisualization = () => (
+        <div className="lr-panel">
+            <div className="lr-panel-label">Sliding window</div>
+            <div className="lr-chars-row">
+                {str.split("").map((c, i) => {
+                    const inWindow = i >= l && i <= r;
+                    const isL = i === l;
+                    const isR = i === r;
+                    return (
+                        <motion.div key={i} className={`lr-char ${inWindow ? "in-window" : ""} ${isL ? "ptr-l" : ""} ${isR ? "ptr-r" : ""}`}
+                            animate={{ scale: inWindow ? 1.08 : 1 }}
+                            transition={{ type: "spring", stiffness: 380, damping: 22 }}>
+                            {c}
+                            {isL && <span className="lr-ptr-label">L</span>}
+                            {isR && <span className="lr-ptr-label">R</span>}
+                        </motion.div>
+                    );
+                })}
+            </div>
+
+            <div className="lr-info-row">
+                <span>window: <strong>{r >= 0 ? `"${str.slice(l, r + 1)}"` : "—"}</strong></span>
+                <span>size: <strong>{r >= l ? r - l + 1 : 0}</strong></span>
+                <span>maxCount: <strong>{step?.maxCount ?? 0}</strong></span>
+                <span>k: <strong>{k}</strong></span>
+                <span className="lr-res">res = <strong>{step?.res ?? 0}</strong></span>
+            </div>
+        </div>
+    );
+
+    // CharacterCountsVisualization component
+    const CharacterCountsVisualization = () => (
+        <div className="lr-panel">
+            <div className="lr-panel-label">Character counts</div>
+            <div className="lr-count-row">
+                {Object.entries(step?.count ?? {}).filter(([, v]) => v > 0).map(([c, v]) => (
+                    <div key={c} className={`lr-count-cell ${v === step?.maxCount ? "max" : ""}`}>
+                        <span className="lr-count-char">{c}</span>
+                        <span className="lr-count-val">{v}</span>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+
+    const dockPanels = [
+        {
+            id: "input",
+            title: "Input Playground",
+            subtitle: `String: "${str}" | k=${k}`,
+            defaultZone: "left",
+            content: (
+                <div className="lr-panel-body">
+                    <div className="lr-examples">
+                        {EXAMPLES.map((ex) => (
+                            <button key={ex.label} className="lr-chip" onClick={() => applyExample(ex)}>
+                                {ex.label}
+                            </button>
+                        ))}
+                    </div>
+
+                    <div style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 12 }}>
+                        <input
+                            className="lr-input"
+                            value={sInput}
+                            onChange={(e) => { setSInput(e.target.value); handleReset(); }}
+                            placeholder="String"
+                        />
+                        <label className="lr-k-label">
+                            k=
+                            <input
+                                className="lr-k-input"
+                                type="number"
+                                min={0}
+                                value={kInput}
+                                onChange={(e) => { setKInput(e.target.value); handleReset(); }}
+                            />
+                        </label>
+                    </div>
+                </div>
+            ),
+        },
+        {
+            id: "viz",
+            title: "Visualization",
+            subtitle: step ? `Step ${stepIndex + 1} of ${steps.length}` : "Press play to start.",
+            defaultZone: "right",
+            content: (
+                <div className="lr-panel-body">
+                    <SlidingWindowVisualization />
+                    <CharacterCountsVisualization />
+                    <div className="lr-status">{step?.message ?? "Press Play to begin."}</div>
+                </div>
+            ),
+        },
+        {
+            id: "code",
+            title: "Code Trace",
+            subtitle: step ? `Active line ${step.activeLine}` : "Line-by-line solution view.",
+            defaultZone: "full",
+            content: (
+                <CodeTracePanel
+                    step={step}
+                    codeLines={SOLUTION_CODE}
+                    onActiveLineDomChange={setActiveLineDom}
+                    autoScroll={autoScrollCode}
+                />
+            ),
+        },
+    ];
+
     return (
         <div className="lr-shell">
-            <div className="lr-controls-row">
-                <div className="lr-examples">
-                    {EXAMPLES.map((ex) => (
-                        <button key={ex.label} className="lr-chip" onClick={() => applyExample(ex)}>{ex.label}</button>
-                    ))}
+            <section className="lr-hero">
+                <div className="lr-hero-copy">
+                    <span className="lr-kicker">Longest Repeating Character Replacement</span>
+                    <h2>Sliding window with dynamic character replacement.</h2>
+                    <p>
+                        Track how the window expands and shrinks, character counts update, and the maximum
+                        length grows as we find optimal replacements at each step.
+                    </p>
                 </div>
-                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                    <input className="lr-input" value={sInput} onChange={(e) => { setSInput(e.target.value); handleReset(); }} placeholder="String" />
-                    <label className="lr-k-label">k=<input className="lr-k-input" type="number" min={0} value={kInput}
-                        onChange={(e) => { setKInput(e.target.value); handleReset(); }} /></label>
-                </div>
-            </div>
+            </section>
 
-            {/* String visualization */}
-            <div className="lr-panel">
-                <div className="lr-panel-label">Sliding window</div>
-                <div className="lr-chars-row">
-                    {str.split("").map((c, i) => {
-                        const inWindow = i >= l && i <= r;
-                        const isL = i === l;
-                        const isR = i === r;
-                        return (
-                            <motion.div key={i} className={`lr-char ${inWindow ? "in-window" : ""} ${isL ? "ptr-l" : ""} ${isR ? "ptr-r" : ""}`}
-                                animate={{ scale: inWindow ? 1.08 : 1 }}
-                                transition={{ type: "spring", stiffness: 380, damping: 22 }}>
-                                {c}
-                                {isL && <span className="lr-ptr-label">L</span>}
-                                {isR && <span className="lr-ptr-label">R</span>}
-                            </motion.div>
-                        );
-                    })}
-                </div>
-
-                <div className="lr-info-row">
-                    <span>window: <strong>{r >= 0 ? `"${str.slice(l, r + 1)}"` : "—"}</strong></span>
-                    <span>size: <strong>{r >= l ? r - l + 1 : 0}</strong></span>
-                    <span>maxCount: <strong>{step?.maxCount ?? 0}</strong></span>
-                    <span>k: <strong>{k}</strong></span>
-                    <span className="lr-res">res = <strong>{step?.res ?? 0}</strong></span>
-                </div>
-            </div>
-
-            {/* Count map */}
-            <div className="lr-panel">
-                <div className="lr-panel-label">Character counts</div>
-                <div className="lr-count-row">
-                    {Object.entries(step?.count ?? {}).filter(([, v]) => v > 0).map(([c, v]) => (
-                        <div key={c} className={`lr-count-cell ${v === step?.maxCount ? "max" : ""}`}>
-                            <span className="lr-count-char">{c}</span>
-                            <span className="lr-count-val">{v}</span>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
-            <div className="lr-status">{step?.message ?? "Press Play to begin."}</div>
-            <PlaybackControls
-                isPlaying={isPlaying} isDone={isDone} speed={speed}
-                onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward} onReset={handleReset}
-                prevDisabled={stepIndex < 0} nextDisabled={isDone} resetDisabled={stepIndex < 0}
-                onSpeedChange={(e) => setSpeed(Number(e.target.value))}
-                showPatternOverlay={showPatternOverlay}
-                onShowPatternOverlayChange={setShowPatternOverlay}
-                patternOverlayLabel="Show pattern overlay"
-                showPatternOverlayToggle
+            <DockableWorkspace
+                title="Longest Repeating Character Replacement Workspace"
+                panels={dockPanels}
+                initialLayout={{
+                    rows: [
+                        ["input", "viz"],
+                        ["code"],
+                    ],
+                    minimized: [],
+                }}
             />
+
+            <FloatingPanel title="Playback Controls">
+                <PlaybackControls
+                    onReset={handleReset}
+                    onPrev={stepBack}
+                    onPlayToggle={togglePlay}
+                    onNext={stepForward}
+                    resetDisabled={steps.length === 0}
+                    prevDisabled={stepIndex <= 0}
+                    nextDisabled={steps.length === 0 || isDone}
+                    isPlaying={isPlaying}
+                    isDone={isDone}
+                    speed={speed}
+                    onSpeedChange={(event) => setSpeed(Number(event.target.value))}
+                    speedIndicator={`${speed}ms`}
+                    autoScroll={autoScrollCode}
+                    onAutoScrollChange={setAutoScrollCode}
+                    autoScrollLabel="Auto-scroll code"
+                    showAutoScroll
+                    showPatternOverlay={showPatternOverlay}
+                    onShowPatternOverlayChange={setShowPatternOverlay}
+                    patternOverlayLabel="Show pattern overlay"
+                    showPatternOverlayToggle
+                />
+            </FloatingPanel>
+
             {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     );

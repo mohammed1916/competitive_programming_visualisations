@@ -4,18 +4,54 @@
     gap: 12px;
     padding: 16px;
     font-family: inherit;
+    height: 100vh;
 }
 
-.gp-controls-row {
+.gp-hero {
+    padding: 20px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 12px;
+}
+
+.gp-hero-copy {
+    margin-bottom: 16px;
+}
+
+.gp-kicker {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6c7086;
+}
+
+.gp-hero-copy h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #cdd6f4;
+    margin: 8px 0;
+}
+
+.gp-hero-copy p {
+    font-size: 14px;
+    color: #a6adc8;
+    line-height: 1.5;
+}
+
+.gp-panel-body {
     display: flex;
+    flex-direction: column;
     gap: 12px;
-    align-items: center;
-    flex-wrap: wrap;
+    padding: 12px;
+    overflow-y: auto;
+    height: 100%;
 }
 
 .gp-examples {
     display: flex;
     gap: 8px;
+    flex-wrap: wrap;
 }
 
 .gp-chip {
@@ -130,4 +166,5 @@
     font-size: 13px;
     color: #a6adc8;
     min-height: 36px;
+    margin-top: 8px;
 }

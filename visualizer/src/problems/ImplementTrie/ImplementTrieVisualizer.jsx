@@ -3,8 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import PatternOverlay from '../../components/PatternOverlay'
+import DockableWorkspace from '../../components/shared/DockableWorkspace'
+import FloatingPanel from '../../components/shared/FloatingPanel'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import { usePatternOverlay } from '../../hooks/usePatternOverlay'
+import { useAutoScroll } from '../../hooks/useAutoScroll'
 import './ImplementTrieVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -92,57 +95,150 @@ export default function ImplementTrieVisualizer() {
   const nodes = useMemo(() => renderTrie(step?.trie || { end: false, children: {} }), [step])
   const applyExample = useCallback((ex) => { setOpsInput(JSON.stringify(ex.ops)); handleReset() }, [handleReset])
   const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
+  const [autoScrollCode, setAutoScrollCode] = useAutoScroll()
+
+  const dockPanels = [
+    {
+      id: 'input',
+      title: 'Operations',
+      subtitle: inputError ? 'Fix the input to resume playback.' : 'Enter JSON array of operations.',
+      defaultZone: 'left',
+      content: (
+        <div className="trie-panel-body">
+          <div className="trie-examples">
+            {EXAMPLES.map((ex) => (
+              <button
+                key={ex.label}
+                className="trie-chip"
+                onClick={() => applyExample(ex)}
+              >
+                {ex.label}
+              </button>
+            ))}
+          </div>
+          <input
+            className="trie-input"
+            value={opsInput}
+            onChange={(e) => {
+              setOpsInput(e.target.value)
+              handleReset()
+            }}
+            placeholder='[["insert","word"],["search","word"]]'
+          />
+          {inputError && <div className="trie-error">{inputError}</div>}
+          <div className="trie-op">{step?.op ? `${step.op[0]}("${step.op[1]}")` : 'Press Play'}</div>
+        </div>
+      ),
+    },
+    {
+      id: 'viz',
+      title: 'Trie Visualization',
+      subtitle: step ? `Result: ${step.result === null ? 'Pending' : String(step.result)}` : 'Waiting for playback.',
+      defaultZone: 'right',
+      content: (
+        <div className="trie-panel-body">
+          <div className="trie-nodes">
+            <AnimatePresence>
+              {nodes.map((n) => (
+                <motion.div
+                  key={`${n.word}-${n.depth}`}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`trie-node ${n.end ? 'end' : ''}`}
+                  style={{ marginLeft: `${n.depth * 16}px` }}
+                >
+                  <span>{n.word}</span>
+                  {n.end && <strong>end</strong>}
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+          <div
+            className={`trie-result ${
+              step?.result === false ? 'bad' : step?.result === true ? 'ok' : ''
+            }`}
+          >
+            {step?.result === null || step?.result === undefined
+              ? 'Pending'
+              : `Result: ${String(step.result)}`}
+          </div>
+          <div
+            className={`trie-status ${
+              step?.result === false ? 'bad' : step?.result === true ? 'ok' : ''
+            }`}
+          >
+            {step?.message || 'Press Play.'}
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'code',
+      title: 'Code Trace',
+      subtitle: step ? `Line ${step.activeLine}` : 'Line-by-line code view.',
+      defaultZone: 'full',
+      content: (
+        <CodeTracePanel
+          step={step}
+          codeLines={SOLUTION_CODE}
+          onActiveLineDomChange={setActiveLineDom}
+          autoScroll={autoScrollCode}
+        />
+      ),
+    },
+  ]
 
   return (
     <div className="trie-shell">
-      <div className="trie-top">
-        <section className="trie-panel">
-          <header className="trie-head"><span>Operations</span>{inputError && <span className="trie-error">{inputError}</span>}</header>
-          <div className="trie-body">
-            <div className="trie-examples">{EXAMPLES.map((ex) => <button key={ex.label} className="trie-chip" onClick={() => applyExample(ex)}>{ex.label}</button>)}</div>
-            <input className="trie-input" value={opsInput} onChange={(e) => { setOpsInput(e.target.value); handleReset() }} />
-            <div className="trie-op">{step?.op ? `${step.op[0]}("${step.op[1]}")` : 'Press Play'}</div>
-          </div>
-        </section>
-        <section className="trie-panel side">
-          <header className="trie-head"><span>Trie Nodes</span></header>
-          <div className="trie-body">
-            <div className="trie-nodes">
-              <AnimatePresence>
-                {nodes.map((n) => (
-                  <motion.div key={`${n.word}-${n.depth}`} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className={`trie-node ${n.end ? 'end' : ''}`} style={{ marginLeft: `${n.depth * 16}px` }}>
-                    <span>{n.word}</span>
-                    {n.end && <strong>end</strong>}
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
-            <div className={`trie-result ${step?.result === false ? 'bad' : step?.result === true ? 'ok' : ''}`}>
-              {step?.result === null || step?.result === undefined ? 'Pending' : `Result: ${String(step.result)}`}
-            </div>
-          </div>
-        </section>
-      </div>
-      <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
-      <div className={`trie-status ${step?.result === false ? 'bad' : step?.result === true ? 'ok' : ''}`}>{step?.message || 'Press Play.'}</div>
-      <PlaybackControls
-        isPlaying={isPlaying}
-        isDone={isDone}
-        speed={speed}
-        onPlayToggle={togglePlay}
-        onPrev={stepBack}
-        onNext={stepForward}
-        onReset={handleReset}
-        prevDisabled={stepIndex < 0}
-        nextDisabled={isDone}
-        resetDisabled={stepIndex < 0}
-        onSpeedChange={(e) => setSpeed(Number(e.target.value))}
-        showPatternOverlay={showPatternOverlay}
-        onShowPatternOverlayChange={setShowPatternOverlay}
-        patternOverlayLabel="Show pattern overlay"
-        showPatternOverlayToggle
+      <section className="trie-hero">
+        <div className="trie-hero-copy">
+          <span className="trie-kicker">Data Structures • Binary Search Tree</span>
+          <h2>Implement a Trie (Prefix Tree)</h2>
+          <p>
+            Visualize step-by-step insertion and search operations on a Trie data
+            structure. Watch each character get added to the tree and trace how
+            search and prefix matching work.
+          </p>
+        </div>
+      </section>
+
+      <DockableWorkspace
+        title="Trie Workspace"
+        panels={dockPanels}
+        initialLayout={{
+          rows: [['input', 'viz'], ['code']],
+          minimized: [],
+        }}
       />
-      {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
+
+      <FloatingPanel title="Playback Controls">
+        <PlaybackControls
+          onReset={handleReset}
+          onPrev={stepBack}
+          onPlayToggle={togglePlay}
+          onNext={stepForward}
+          resetDisabled={steps.length === 0}
+          prevDisabled={stepIndex < 0}
+          nextDisabled={isDone}
+          isPlaying={isPlaying}
+          isDone={isDone}
+          speed={speed}
+          onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+          speedIndicator={`${speed}ms`}
+          autoScroll={autoScrollCode}
+          onAutoScrollChange={setAutoScrollCode}
+          autoScrollLabel="Auto-scroll code"
+          showAutoScroll
+          showPatternOverlay={showPatternOverlay}
+          onShowPatternOverlayChange={setShowPatternOverlay}
+          patternOverlayLabel="Show pattern overlay"
+          showPatternOverlayToggle
+        />
+      </FloatingPanel>
+
+      {showPatternOverlay && step && (
+        <PatternOverlay step={step} activeLineDom={activeLineDom} />
+      )}
     </div>
   )
 }

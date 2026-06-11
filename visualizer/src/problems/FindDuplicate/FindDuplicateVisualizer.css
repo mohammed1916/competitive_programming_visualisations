@@ -6,46 +6,74 @@
     font-family: inherit;
 }
 
-.fd-top {
+.fd-hero {
+    margin-bottom: 12px;
+}
+
+.fd-hero-copy {
     display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 8px;
 }
 
-.fd-panel {
-    background: #1e1e2e;
-    border: 1px solid #313244;
-    border-radius: 10px;
-    overflow: hidden;
-    flex: 1;
-    min-width: 260px;
-}
-
-.fd-panel.main {
-    flex: 3;
-}
-
-.fd-head {
-    padding: 10px 14px;
-    background: #181825;
-    font-size: 13px;
+.fd-kicker {
+    font-size: 12px;
     font-weight: 600;
+    color: #a6e3a1;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.fd-hero-copy h2 {
+    font-size: 28px;
+    margin: 0;
     color: #cdd6f4;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
 }
 
-.fd-error {
-    color: #f38ba8;
-    font-size: 11px;
+.fd-hero-copy p {
+    font-size: 14px;
+    color: #a6adc8;
+    line-height: 1.6;
+    margin: 0;
 }
 
-.fd-body {
+.fd-input-panel {
     padding: 14px;
     display: flex;
     flex-direction: column;
     gap: 12px;
+}
+
+.fd-input-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 12px;
+    color: #a6adc8;
+    font-weight: 500;
+}
+
+.fd-error-box {
+    padding: 10px 12px;
+    background: #3a1d2a;
+    border: 1px solid #f38ba8;
+    border-radius: 6px;
+    color: #f38ba8;
+    font-size: 13px;
+}
+
+.fd-array-container {
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.fd-metrics-container {
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .fd-examples {
@@ -223,4 +251,5 @@
     font-size: 13px;
     color: #a6adc8;
     min-height: 36px;
+    text-align: center;
 }

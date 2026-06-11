@@ -3,8 +3,11 @@ import { motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import PatternOverlay from '../../components/PatternOverlay'
+import DockableWorkspace from '../../components/shared/DockableWorkspace'
+import FloatingPanel from '../../components/shared/FloatingPanel'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import { usePatternOverlay } from '../../hooks/usePatternOverlay'
+import { useAutoScroll } from '../../hooks/useAutoScroll'
 import { parseTreeInput } from '../../components/treeUtils'
 import './InvertBinaryTreeVisualizer.css'
 
@@ -127,6 +130,7 @@ const EXAMPLES = [
 export default function InvertBinaryTreeVisualizer() {
     const [arrInput, setArrInput] = useState('[4,2,7,1,3,6,9]')
     const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
+    const [autoScrollCode, setAutoScrollCode] = useAutoScroll()
 
     const { arr, inputError } = useMemo(() => {
         try {
@@ -149,97 +153,160 @@ export default function InvertBinaryTreeVisualizer() {
     const edges = step?.edges ?? []
     const nodes = step?.nodes ?? []
 
+    // Visualization component
+    const TreeVisualization = () => (
+        <div className="ibt-canvas" style={{ width: CANVAS_W, height: CANVAS_H }}>
+            <svg style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }} width={CANVAS_W} height={CANVAS_H}>
+                {edges.map(({ fromId, toId }) => {
+                    const from = positions.get(fromId)
+                    const to = positions.get(toId)
+                    if (!from || !to) return null
+                    return (
+                        <line key={`${fromId}-${toId}`} x1={from.x} y1={from.y} x2={to.x} y2={to.y}
+                            stroke="#45475a" strokeWidth={1.5} />
+                    )
+                })}
+            </svg>
+            {nodes.map((node) => {
+                const pos = positions.get(node.id)
+                if (!pos) return null
+                const isActive = step?.activeId === node.id
+                const isSwapped = step?.swappedIds?.has(node.id)
+                return (
+                    <motion.div
+                        key={node.id}
+                        className={`ibt-node ${isActive ? 'active' : ''} ${isSwapped ? 'swapped' : ''}`}
+                        animate={{ left: pos.x - NODE_R, top: pos.y - NODE_R, scale: isActive ? 1.2 : 1 }}
+                        transition={{ type: 'spring', stiffness: 220, damping: 22 }}
+                        style={{ left: pos.x - NODE_R, top: pos.y - NODE_R }}
+                    >
+                        {node.val}
+                        {isSwapped && !isActive && <span className="ibt-check">✓</span>}
+                    </motion.div>
+                )
+            })}
+        </div>
+    )
+
+    // Progress panel component
+    const ProgressPanel = () => (
+        <div className="ibt-body">
+            <div className="ibt-legend">
+                <div className="ibt-legend-item"><div className="ibt-dot active" />Active node</div>
+                <div className="ibt-legend-item"><div className="ibt-dot swapped" />Swapped children</div>
+            </div>
+            <div className="ibt-swapped-list">
+                <span className="ibt-label">Inverted nodes</span>
+                {step?.swappedIds?.size > 0
+                    ? [...(step.swappedIds)].map((id) => {
+                        const node = step.nodes?.find((n) => n.id === id)
+                        return <span key={id} className="ibt-tag">{node?.val ?? id}</span>
+                    })
+                    : <span className="ibt-empty">none yet</span>}
+            </div>
+            <div className={`ibt-result ${step?.phase === 'done' ? 'ok' : ''}`}>
+                {step?.phase === 'done' ? 'Done!' : `Phase: ${step?.phase ?? '—'}`}
+            </div>
+        </div>
+    )
+
+    // Input panel component
+    const InputPanel = () => (
+        <div className="ibt-body">
+            <div className="ibt-examples">
+                {EXAMPLES.map((ex) => (
+                    <button key={ex.label} className="ibt-chip" onClick={() => applyExample(ex)}>{ex.label}</button>
+                ))}
+            </div>
+            <input className="ibt-input" value={arrInput} onChange={(e) => { setArrInput(e.target.value); handleReset() }} />
+            {inputError && <span className="ibt-error">{inputError}</span>}
+        </div>
+    )
+
+    const dockPanels = [
+        {
+            id: 'input',
+            title: 'Input',
+            subtitle: inputError ? 'Fix the input to resume playback.' : 'Edit the tree array and replay.',
+            defaultZone: 'left',
+            content: <InputPanel />
+        },
+        {
+            id: 'viz',
+            title: 'Tree Visualization',
+            subtitle: `Step ${stepIndex + 1} of ${steps.length}`,
+            defaultZone: 'left',
+            content: (
+                <div style={{ padding: '14px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <TreeVisualization />
+                    <div style={{ fontSize: '13px', color: '#a6adc8', padding: '8px 12px', background: '#1e1e2e', borderRadius: '8px' }}>
+                        {step?.message || 'Press Play to begin.'}
+                    </div>
+                </div>
+            )
+        },
+        {
+            id: 'progress',
+            title: 'Progress',
+            subtitle: step?.phase ? `Phase: ${step.phase}` : 'Waiting to start...',
+            defaultZone: 'right',
+            content: <ProgressPanel />
+        },
+        {
+            id: 'code',
+            title: 'Code Trace',
+            subtitle: step ? `Active line ${step.activeLine}` : 'Line-by-line trace',
+            defaultZone: 'full',
+            content: (
+                <CodeTracePanel
+                    step={step}
+                    codeLines={SOLUTION_CODE}
+                    autoScroll={autoScrollCode}
+                    onActiveLineDomChange={setActiveLineDom}
+                />
+            )
+        }
+    ]
+
     return (
         <div className="ibt-shell">
-            <div className="ibt-top">
-                <section className="ibt-panel main">
-                    <header className="ibt-head">
-                        <span>Post-order DFS Swap</span>
-                        {inputError && <span className="ibt-error">{inputError}</span>}
-                    </header>
-                    <div className="ibt-body">
-                        <div className="ibt-examples">
-                            {EXAMPLES.map((ex) => (
-                                <button key={ex.label} className="ibt-chip" onClick={() => applyExample(ex)}>{ex.label}</button>
-                            ))}
-                        </div>
-                        <input className="ibt-input" value={arrInput} onChange={(e) => { setArrInput(e.target.value); handleReset() }} />
-                        <div className="ibt-canvas" style={{ width: CANVAS_W, height: CANVAS_H }}>
-                            <svg style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }} width={CANVAS_W} height={CANVAS_H}>
-                                {edges.map(({ fromId, toId }) => {
-                                    const from = positions.get(fromId)
-                                    const to = positions.get(toId)
-                                    if (!from || !to) return null
-                                    return (
-                                        <line key={`${fromId}-${toId}`} x1={from.x} y1={from.y} x2={to.x} y2={to.y}
-                                            stroke="#45475a" strokeWidth={1.5} />
-                                    )
-                                })}
-                            </svg>
-                            {nodes.map((node) => {
-                                const pos = positions.get(node.id)
-                                if (!pos) return null
-                                const isActive = step?.activeId === node.id
-                                const isSwapped = step?.swappedIds?.has(node.id)
-                                return (
-                                    <motion.div
-                                        key={node.id}
-                                        className={`ibt-node ${isActive ? 'active' : ''} ${isSwapped ? 'swapped' : ''}`}
-                                        animate={{ left: pos.x - NODE_R, top: pos.y - NODE_R, scale: isActive ? 1.2 : 1 }}
-                                        transition={{ type: 'spring', stiffness: 220, damping: 22 }}
-                                        style={{ left: pos.x - NODE_R, top: pos.y - NODE_R }}
-                                    >
-                                        {node.val}
-                                        {isSwapped && !isActive && <span className="ibt-check">✓</span>}
-                                    </motion.div>
-                                )
-                            })}
-                        </div>
-                    </div>
-                </section>
-
-                <section className="ibt-panel side">
-                    <header className="ibt-head"><span>Progress</span></header>
-                    <div className="ibt-body">
-                        <div className="ibt-legend">
-                            <div className="ibt-legend-item"><div className="ibt-dot active" />Active node</div>
-                            <div className="ibt-legend-item"><div className="ibt-dot swapped" />Swapped children</div>
-                        </div>
-                        <div className="ibt-swapped-list">
-                            <span className="ibt-label">Inverted nodes</span>
-                            {step?.swappedIds?.size > 0
-                                ? [...(step.swappedIds)].map((id) => {
-                                    const node = step.nodes?.find((n) => n.id === id)
-                                    return <span key={id} className="ibt-tag">{node?.val ?? id}</span>
-                                })
-                                : <span className="ibt-empty">none yet</span>}
-                        </div>
-                        <div className={`ibt-result ${step?.phase === 'done' ? 'ok' : ''}`}>
-                            {step?.phase === 'done' ? 'Done!' : `Phase: ${step?.phase ?? '—'}`}
-                        </div>
-                    </div>
-                </section>
-            </div>
-
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
-            <div className={`ibt-status ${step?.phase === 'done' ? 'ok' : ''}`}>{step?.message || 'Press Play to begin.'}</div>
-            <PlaybackControls
-                isPlaying={isPlaying}
-                isDone={isDone}
-                speed={speed}
-                onPlayToggle={togglePlay}
-                onPrev={stepBack}
-                onNext={stepForward}
-                onReset={handleReset}
-                prevDisabled={stepIndex < 0}
-                nextDisabled={isDone}
-                resetDisabled={stepIndex < 0}
-                onSpeedChange={(e) => setSpeed(Number(e.target.value))}
-                showPatternOverlay={showPatternOverlay}
-                onShowPatternOverlayChange={setShowPatternOverlay}
-                patternOverlayLabel="Show pattern overlay"
-                showPatternOverlayToggle
+            <DockableWorkspace
+                title="Invert Binary Tree Workspace"
+                panels={dockPanels}
+                initialLayout={{
+                    rows: [
+                        ['input', 'progress'],
+                        ['viz'],
+                        ['code'],
+                    ],
+                    minimized: [],
+                }}
             />
+
+            <FloatingPanel title="Playback Controls">
+                <PlaybackControls
+                    isPlaying={isPlaying}
+                    isDone={isDone}
+                    speed={speed}
+                    onPlayToggle={togglePlay}
+                    onPrev={stepBack}
+                    onNext={stepForward}
+                    onReset={handleReset}
+                    prevDisabled={stepIndex < 0}
+                    nextDisabled={isDone}
+                    resetDisabled={stepIndex < 0}
+                    onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+                    showPatternOverlay={showPatternOverlay}
+                    onShowPatternOverlayChange={setShowPatternOverlay}
+                    patternOverlayLabel="Show pattern overlay"
+                    showPatternOverlayToggle
+                    autoScroll={autoScrollCode}
+                    onAutoScrollChange={setAutoScrollCode}
+                    autoScrollLabel="Auto-scroll code"
+                    showAutoScroll
+                />
+            </FloatingPanel>
+
             {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     )

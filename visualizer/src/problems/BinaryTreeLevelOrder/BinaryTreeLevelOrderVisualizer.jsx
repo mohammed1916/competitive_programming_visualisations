@@ -3,7 +3,10 @@ import { motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import PatternOverlay from '../../components/PatternOverlay'
+import DockableWorkspace from '../../components/shared/DockableWorkspace'
+import FloatingPanel from '../../components/shared/FloatingPanel'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { useAutoScroll } from '../../hooks/useAutoScroll'
 import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import { buildTree, computeLayout, collectNodes, buildEdges, parseTreeInput } from '../../components/treeUtils'
 import { TreeCanvas3D } from '../../components/viz3d'
@@ -116,6 +119,7 @@ const EXAMPLES = [
 
 export default function BinaryTreeLevelOrderVisualizer() {
     const [arrInput, setArrInput] = useState('[3,9,20,null,null,15,7]')
+    const [autoScrollCode, setAutoScrollCode] = useAutoScroll()
     const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
     const { arr, inputError } = useMemo(() => {
@@ -142,69 +146,119 @@ export default function BinaryTreeLevelOrderVisualizer() {
     // Color level bands
     const LEVEL_COLORS = ['#89b4fa', '#a6e3a1', '#f9e2af', '#cba6f7', '#f38ba8', '#89dceb']
 
+    // Visualization Panel Component
+    const VisualizationPanel = () => (
+        <div className="btlo-viz-panel">
+            <div className="btlo-examples">
+                {EXAMPLES.map((ex) => (
+                    <button key={ex.label} className="btlo-chip" onClick={() => applyExample(ex)}>{ex.label}</button>
+                ))}
+            </div>
+            <input className="btlo-input" value={arrInput} onChange={(e) => { setArrInput(e.target.value); handleReset() }} />
+            <div className="btlo-canvas" style={{ width: CANVAS_W, height: CANVAS_H }}>
+                <TreeCanvas3D
+                    positions={positions}
+                    edges={edges}
+                    allNodes={allNodes}
+                    activeIds={step?.activeIds ?? new Set()}
+                    visitedIds={step?.visitedIds ?? new Set()}
+                    queueIds={step?.queueIds ?? new Set()}
+                    canvasWidth={CANVAS_W}
+                    canvasHeight={CANVAS_H}
+                    nodeRadius={NODE_R}
+                />
+            </div>
+        </div>
+    )
+
+    // Result Panel Component
+    const ResultPanel = () => (
+        <div className="btlo-result-panel">
+            <div className="btlo-queue-label">Queue: [{[...(step?.queueIds ?? [])].join(', ')}]</div>
+            <div className="btlo-levels">
+                {(step?.levels ?? []).map((level, i) => (
+                    <div key={i} className="btlo-level-row" style={{ borderLeftColor: LEVEL_COLORS[i % LEVEL_COLORS.length] }}>
+                        <span className="btlo-level-idx">L{i}</span>
+                        <span className="btlo-level-vals">[{level.join(', ')}]</span>
+                    </div>
+                ))}
+                {(step?.levels?.length === 0) && <div className="btlo-empty">No levels yet</div>}
+            </div>
+            <div className={`btlo-result ${step?.phase === 'done' ? 'ok' : ''}`}>
+                {step?.phase === 'done' ? `${step.levels.length} levels` : 'Running BFS…'}
+            </div>
+            {inputError && <div className="btlo-error-box">{inputError}</div>}
+        </div>
+    )
+
+    // Create dock panels
+    const dockPanels = [
+        {
+            id: 'viz',
+            title: 'Tree Visualization',
+            subtitle: inputError ? 'Fix the input to resume playback.' : 'Visualize the BFS traversal.',
+            defaultZone: 'left',
+            content: <VisualizationPanel />,
+        },
+        {
+            id: 'result',
+            title: 'Level Results',
+            subtitle: step ? `Phase: ${step.phase}` : 'Levels discovered by BFS.',
+            defaultZone: 'left',
+            content: <ResultPanel />,
+        },
+        {
+            id: 'code',
+            title: 'Code Trace',
+            subtitle: step ? `Active line ${step.activeLine}` : 'Step-by-step code execution.',
+            defaultZone: 'full',
+            content: <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} autoScroll={autoScrollCode} />,
+        },
+    ]
+
     return (
         <div className="btlo-shell">
-            <div className="btlo-top">
-                <section className="btlo-panel main">
-                    <header className="btlo-head">
-                        <span>BFS Level-by-Level</span>
-                        {inputError && <span className="btlo-error">{inputError}</span>}
-                    </header>
-                    <div className="btlo-body">
-                        <div className="btlo-examples">
-                            {EXAMPLES.map((ex) => (
-                                <button key={ex.label} className="btlo-chip" onClick={() => applyExample(ex)}>{ex.label}</button>
-                            ))}
-                        </div>
-                        <input className="btlo-input" value={arrInput} onChange={(e) => { setArrInput(e.target.value); handleReset() }} />
-                        <div className="btlo-canvas" style={{ width: CANVAS_W, height: CANVAS_H }}>
-                            <TreeCanvas3D
-                                positions={positions}
-                                edges={edges}
-                                allNodes={allNodes}
-                                activeIds={step?.activeIds ?? new Set()}
-                                visitedIds={step?.visitedIds ?? new Set()}
-                                queueIds={step?.queueIds ?? new Set()}
-                                canvasWidth={CANVAS_W}
-                                canvasHeight={CANVAS_H}
-                                nodeRadius={NODE_R}
-                            />
-                        </div>
-                    </div>
-                </section>
-
-                <section className="btlo-panel side">
-                    <header className="btlo-head"><span>Result</span></header>
-                    <div className="btlo-body">
-                        <div className="btlo-queue-label">Queue: [{[...(step?.queueIds ?? [])].join(', ')}]</div>
-                        <div className="btlo-levels">
-                            {(step?.levels ?? []).map((level, i) => (
-                                <div key={i} className="btlo-level-row" style={{ borderLeftColor: LEVEL_COLORS[i % LEVEL_COLORS.length] }}>
-                                    <span className="btlo-level-idx">L{i}</span>
-                                    <span className="btlo-level-vals">[{level.join(', ')}]</span>
-                                </div>
-                            ))}
-                            {(step?.levels?.length === 0) && <div className="btlo-empty">No levels yet</div>}
-                        </div>
-                        <div className={`btlo-result ${step?.phase === 'done' ? 'ok' : ''}`}>
-                            {step?.phase === 'done' ? `${step.levels.length} levels` : 'Running BFS…'}
-                        </div>
-                    </div>
-                </section>
+            <div className="btlo-header">
+                <h2>Binary Tree Level Order Traversal</h2>
+                <p className={`btlo-message ${step?.phase === 'done' ? 'ok' : ''}`}>
+                    {step?.message || 'Press Play to begin.'}
+                </p>
             </div>
 
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
-            <div className={`btlo-status ${step?.phase === 'done' ? 'ok' : ''}`}>{step?.message || 'Press Play to begin.'}</div>
-            <PlaybackControls
-                isPlaying={isPlaying} isDone={isDone} speed={speed}
-                onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward} onReset={handleReset}
-                prevDisabled={stepIndex < 0} nextDisabled={isDone} resetDisabled={stepIndex < 0}
-                onSpeedChange={(e) => setSpeed(Number(e.target.value))}
-                showPatternOverlay={showPatternOverlay}
-                onShowPatternOverlayChange={setShowPatternOverlay}
-                patternOverlayLabel="Show pattern overlay"
-                showPatternOverlayToggle
+            <DockableWorkspace
+                title="BFS Level Order Workspace"
+                panels={dockPanels}
+                initialLayout={{
+                    rows: [['viz', 'result'], ['code']],
+                    minimized: [],
+                }}
             />
+
+            <FloatingPanel title="Playback Controls">
+                <PlaybackControls
+                    onReset={handleReset}
+                    onPrev={stepBack}
+                    onPlayToggle={togglePlay}
+                    onNext={stepForward}
+                    resetDisabled={steps.length === 0}
+                    prevDisabled={stepIndex <= 0}
+                    nextDisabled={steps.length === 0 || isDone}
+                    isPlaying={isPlaying}
+                    isDone={isDone}
+                    speed={speed}
+                    onSpeedChange={(event) => setSpeed(Number(event.target.value))}
+                    speedIndicator={`${speed}ms`}
+                    autoScroll={autoScrollCode}
+                    onAutoScrollChange={setAutoScrollCode}
+                    autoScrollLabel="Auto-scroll code"
+                    showAutoScroll
+                    showPatternOverlay={showPatternOverlay}
+                    onShowPatternOverlayChange={setShowPatternOverlay}
+                    patternOverlayLabel="Show pattern overlay"
+                    showPatternOverlayToggle
+                />
+            </FloatingPanel>
+
             {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     )

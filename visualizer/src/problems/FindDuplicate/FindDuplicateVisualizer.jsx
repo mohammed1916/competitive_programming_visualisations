@@ -3,8 +3,11 @@ import { motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import PatternOverlay from '../../components/PatternOverlay'
+import DockableWorkspace from '../../components/shared/DockableWorkspace'
+import FloatingPanel from '../../components/shared/FloatingPanel'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import { usePatternOverlay } from '../../hooks/usePatternOverlay'
+import { useAutoScroll } from '../../hooks/useAutoScroll'
 import './FindDuplicateVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -93,6 +96,7 @@ const EXAMPLES = [
 export default function FindDuplicateVisualizer() {
     const [numsInput, setNumsInput] = useState('[1,3,4,2,2]')
     const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
+    const [autoScrollCode, setAutoScrollCode] = useAutoScroll()
 
     const { nums, inputError } = useMemo(() => {
         try {
@@ -113,89 +117,173 @@ export default function FindDuplicateVisualizer() {
         handleReset()
     }, [handleReset])
 
-    return (
-        <div className="fd-shell">
-            <div className="fd-top">
-                <section className="fd-panel main">
-                    <header className="fd-head">
-                        <span>Floyd's Cycle Detection</span>
-                        {inputError && <span className="fd-error">{inputError}</span>}
-                    </header>
-                    <div className="fd-body">
-                        <div className="fd-examples">
-                            {EXAMPLES.map((ex) => (
-                                <button key={ex.label} className="fd-chip" onClick={() => applyExample(ex)}>{ex.label}</button>
-                            ))}
-                        </div>
-                        <input className="fd-input" value={numsInput} onChange={(e) => { setNumsInput(e.target.value); handleReset() }} />
-
-                        {/* Array visual */}
-                        <div className="fd-array-wrap">
-                            <div className="fd-indices">
-                                {nums.map((_, i) => <span key={i} className="fd-idx">{i}</span>)}
+    // Visualization component for array and pointers
+    const ArrayVisualizationPanel = () => (
+        <div className="fd-array-container">
+            <div className="fd-array-wrap">
+                <div className="fd-indices">
+                    {nums.map((_, i) => <span key={i} className="fd-idx">{i}</span>)}
+                </div>
+                <div className="fd-cells">
+                    {nums.map((v, i) => {
+                        const isSlow = step?.slow === i
+                        const isFast = step?.fast === i
+                        const isDup = step?.result === v && v === i
+                        return (
+                            <motion.div
+                                key={i}
+                                className={`fd-cell ${isSlow ? 'slow' : ''} ${isFast ? 'fast' : ''} ${isSlow && isFast ? 'both' : ''}`}
+                                animate={isSlow || isFast ? { scale: 1.15 } : { scale: 1 }}
+                                transition={{ type: 'spring', stiffness: 350, damping: 22 }}
+                            >
+                                {v}
+                            </motion.div>
+                        )
+                    })}
+                </div>
+                {/* Pointer badges below array */}
+                <div className="fd-pointers">
+                    {nums.map((_, i) => {
+                        const isSlow = step?.slow === i
+                        const isFast = step?.fast === i
+                        return (
+                            <div key={i} className="fd-ptr-slot">
+                                {isSlow && <span className="fd-ptr slow-ptr">S</span>}
+                                {isFast && <span className="fd-ptr fast-ptr">F</span>}
                             </div>
-                            <div className="fd-cells">
-                                {nums.map((v, i) => {
-                                    const isSlow = step?.slow === i
-                                    const isFast = step?.fast === i
-                                    const isDup = step?.result === v && v === i
-                                    return (
-                                        <motion.div
-                                            key={i}
-                                            className={`fd-cell ${isSlow ? 'slow' : ''} ${isFast ? 'fast' : ''} ${isSlow && isFast ? 'both' : ''}`}
-                                            animate={isSlow || isFast ? { scale: 1.15 } : { scale: 1 }}
-                                            transition={{ type: 'spring', stiffness: 350, damping: 22 }}
-                                        >
-                                            {v}
-                                        </motion.div>
-                                    )
-                                })}
-                            </div>
-                            {/* Pointer badges below array */}
-                            <div className="fd-pointers">
-                                {nums.map((_, i) => {
-                                    const isSlow = step?.slow === i
-                                    const isFast = step?.fast === i
-                                    return (
-                                        <div key={i} className="fd-ptr-slot">
-                                            {isSlow && <span className="fd-ptr slow-ptr">S</span>}
-                                            {isFast && <span className="fd-ptr fast-ptr">F</span>}
-                                        </div>
-                                    )
-                                })}
-                            </div>
-                        </div>
-
-                        <div className="fd-phase-badge">
-                            {!step?.phase1Done ? 'Phase 1: Find cycle' : 'Phase 2: Find entrance'}
-                        </div>
-                    </div>
-                </section>
-
-                <section className="fd-panel side">
-                    <header className="fd-head"><span>Pointers</span></header>
-                    <div className="fd-body">
-                        <div className="fd-metric"><span className="fd-label">slow</span><strong className="fd-val slow-color">{step?.slow ?? '—'}</strong></div>
-                        <div className="fd-metric"><span className="fd-label">fast</span><strong className="fd-val fast-color">{step?.fast ?? '—'}</strong></div>
-                        <div className={`fd-result ${step?.phase === 'done' ? 'done' : ''}`}>
-                            {step?.phase === 'done' ? `Duplicate: ${step.result}` : 'Searching…'}
-                        </div>
-                    </div>
-                </section>
+                        )
+                    })}
+                </div>
             </div>
 
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
+            <div className="fd-phase-badge">
+                {!step?.phase1Done ? 'Phase 1: Find cycle' : 'Phase 2: Find entrance'}
+            </div>
+        </div>
+    )
+
+    // Metrics panel component
+    const MetricsPanel = () => (
+        <div className="fd-metrics-container">
+            <div className="fd-metric"><span className="fd-label">slow</span><strong className="fd-val slow-color">{step?.slow ?? '—'}</strong></div>
+            <div className="fd-metric"><span className="fd-label">fast</span><strong className="fd-val fast-color">{step?.fast ?? '—'}</strong></div>
+            <div className={`fd-result ${step?.phase === 'done' ? 'done' : ''}`}>
+                {step?.phase === 'done' ? `Duplicate: ${step.result}` : 'Searching…'}
+            </div>
             <div className="fd-status">{step?.message || 'Press Play to begin.'}</div>
-            <PlaybackControls
-                isPlaying={isPlaying} isDone={isDone} speed={speed}
-                onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward} onReset={handleReset}
-                prevDisabled={stepIndex < 0} nextDisabled={isDone} resetDisabled={stepIndex < 0}
-                onSpeedChange={(e) => setSpeed(Number(e.target.value))}
-                showPatternOverlay={showPatternOverlay}
-                onShowPatternOverlayChange={setShowPatternOverlay}
-                patternOverlayLabel="Show pattern overlay"
-                showPatternOverlayToggle
+        </div>
+    )
+
+    // Dock panels configuration
+    const dockPanels = [
+        {
+            id: 'input',
+            title: 'Input Setup',
+            subtitle: inputError ? 'Fix the input to resume playback.' : 'Choose an example or enter your own array.',
+            defaultZone: 'left',
+            content: (
+                <div className="fd-input-panel">
+                    <div className="fd-examples">
+                        {EXAMPLES.map((ex) => (
+                            <button key={ex.label} className="fd-chip" onClick={() => applyExample(ex)}>{ex.label}</button>
+                        ))}
+                    </div>
+                    <label className="fd-input-field">
+                        <span>Array input (JSON format)</span>
+                        <input
+                            className="fd-input"
+                            value={numsInput}
+                            onChange={(e) => {
+                                setNumsInput(e.target.value)
+                                handleReset()
+                            }}
+                        />
+                    </label>
+                    {inputError && <div className="fd-error-box">{inputError}</div>}
+                </div>
+            ),
+        },
+        {
+            id: 'viz',
+            title: 'Array Visualization',
+            subtitle: `Array length: ${nums.length}`,
+            defaultZone: 'right',
+            content: <ArrayVisualizationPanel />,
+        },
+        {
+            id: 'metrics',
+            title: 'Pointer State',
+            subtitle: step ? `Phase: ${!step.phase1Done ? 'Find cycle' : 'Find entrance'}` : 'Waiting...',
+            defaultZone: 'right',
+            content: <MetricsPanel />,
+        },
+        {
+            id: 'code',
+            title: 'Code Trace',
+            subtitle: step ? `Active line ${step.activeLine}` : 'Line-by-line solution view.',
+            defaultZone: 'full',
+            content: (
+                <CodeTracePanel
+                    step={step}
+                    codeLines={SOLUTION_CODE}
+                    onActiveLineDomChange={setActiveLineDom}
+                    autoScroll={autoScrollCode}
+                />
+            ),
+        },
+    ]
+
+    return (
+        <div className="fd-shell">
+            <section className="fd-hero">
+                <div className="fd-hero-copy">
+                    <span className="fd-kicker">LeetCode 287</span>
+                    <h2>Find the Duplicate Number</h2>
+                    <p>
+                        Discover how Floyd's cycle detection algorithm finds a duplicate in an array
+                        where each number points to another array index. Two pointers move at different speeds
+                        until they collide inside a cycle, revealing the duplicate.
+                    </p>
+                </div>
+            </section>
+
+            <DockableWorkspace
+                title="Floyd's Cycle Detection Workspace"
+                panels={dockPanels}
+                initialLayout={{
+                    rows: [
+                        ['input', 'viz'],
+                        ['metrics', 'code'],
+                    ],
+                    minimized: [],
+                }}
             />
+
+            <FloatingPanel title="Playback Controls">
+                <PlaybackControls
+                    onReset={handleReset}
+                    onPrev={stepBack}
+                    onPlayToggle={togglePlay}
+                    onNext={stepForward}
+                    resetDisabled={steps.length === 0}
+                    prevDisabled={stepIndex <= 0}
+                    nextDisabled={steps.length === 0 || isDone}
+                    isPlaying={isPlaying}
+                    isDone={isDone}
+                    speed={speed}
+                    onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+                    speedIndicator={`${speed}ms`}
+                    autoScroll={autoScrollCode}
+                    onAutoScrollChange={setAutoScrollCode}
+                    autoScrollLabel="Auto-scroll code"
+                    showAutoScroll
+                    showPatternOverlay={showPatternOverlay}
+                    onShowPatternOverlayChange={setShowPatternOverlay}
+                    patternOverlayLabel="Show pattern overlay"
+                    showPatternOverlayToggle
+                />
+            </FloatingPanel>
+
             {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     )

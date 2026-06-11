@@ -1,10 +1,13 @@
 import { useState, useMemo, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
 import PatternOverlay from "../../components/PatternOverlay";
+import DockableWorkspace from "../../components/shared/DockableWorkspace";
+import FloatingPanel from "../../components/shared/FloatingPanel";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
 import { usePatternOverlay } from "../../hooks/usePatternOverlay";
+import { useAutoScroll } from "../../hooks/useAutoScroll";
 import "./NQueensVisualizer.css";
 
 const SOLUTION_CODE = [
@@ -118,6 +121,7 @@ export default function NQueensVisualizer() {
   const step = stepIndex >= 0 ? steps[stepIndex] : null;
   const applyEx = useCallback((e) => { setEx(e); handleReset(); }, [handleReset]);
   const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay();
+  const [autoScrollCode, setAutoScrollCode] = useAutoScroll();
 
   const n = ex.n;
   const board = step?.board ?? Array.from({ length: n }, () => Array(n).fill("."));
@@ -126,8 +130,9 @@ export default function NQueensVisualizer() {
   const phase = step?.phase ?? "init";
   const attacked = useMemo(() => getAttacked(board, n), [board, n]);
 
-  return (
-    <div className="nq-shell">
+  // Board visualization panel component
+  const BoardPanel = () => (
+    <div className="nq-panel-content">
       <div className="nq-examples">
         {EXAMPLES.map(e => (
           <button key={e.label} className={`nq-chip ${ex.label === e.label ? "active" : ""}`} onClick={() => applyEx(e)}>
@@ -184,19 +189,63 @@ export default function NQueensVisualizer() {
         <div className="nq-result">✓ {step.solutions} solution(s) for {n}-Queens</div>
       )}
 
-      <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
       <div className="nq-status">{step?.message ?? "Press Play to begin."}</div>
-      <PlaybackControls
-        isPlaying={isPlaying} isDone={isDone} speed={speed}
-        onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward} onReset={handleReset}
-        prevDisabled={stepIndex < 0} nextDisabled={isDone} resetDisabled={stepIndex < 0}
-        onSpeedChange={e => setSpeed(Number(e.target.value))}
-        showPatternOverlay={showPatternOverlay}
-        onShowPatternOverlayChange={setShowPatternOverlay}
-        patternOverlayLabel="Show pattern overlay"
-        showPatternOverlayToggle
+    </div>
+  );
+
+  // Dock panels configuration
+  const dockPanels = [
+    {
+      id: "board",
+      title: "Board Visualization",
+      content: <BoardPanel />,
+    },
+    {
+      id: "code",
+      title: "Code Trace",
+      content: <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} autoScroll={autoScrollCode} />,
+    },
+  ];
+
+  return (
+    <div className="nq-shell">
+      <DockableWorkspace
+        title="N-Queens Backtracking"
+        panels={dockPanels}
+        initialLayout={{
+          rows: [["board", "code"]],
+          minimized: [],
+        }}
       />
-      {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
+
+      <FloatingPanel title="Playback Controls">
+        <PlaybackControls
+          onReset={handleReset}
+          onPrev={stepBack}
+          onPlayToggle={togglePlay}
+          onNext={stepForward}
+          resetDisabled={steps.length === 0}
+          prevDisabled={stepIndex <= 0}
+          nextDisabled={steps.length === 0 || isDone}
+          isPlaying={isPlaying}
+          isDone={isDone}
+          speed={speed}
+          onSpeedChange={(event) => setSpeed(Number(event.target.value))}
+          speedIndicator={`${speed}ms`}
+          autoScroll={autoScrollCode}
+          onAutoScrollChange={setAutoScrollCode}
+          autoScrollLabel="Auto-scroll code"
+          showAutoScroll
+          showPatternOverlay={showPatternOverlay}
+          onShowPatternOverlayChange={setShowPatternOverlay}
+          patternOverlayLabel="Show pattern overlay"
+          showPatternOverlayToggle
+        />
+      </FloatingPanel>
+
+      {showPatternOverlay && step && (
+        <PatternOverlay step={step} activeLineDom={activeLineDom} />
+      )}
     </div>
   );
 }

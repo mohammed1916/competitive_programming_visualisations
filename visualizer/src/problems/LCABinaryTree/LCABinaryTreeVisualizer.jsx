@@ -3,8 +3,11 @@ import { motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import PatternOverlay from '../../components/PatternOverlay'
+import DockableWorkspace from '../../components/shared/DockableWorkspace'
+import FloatingPanel from '../../components/shared/FloatingPanel'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import { usePatternOverlay } from '../../hooks/usePatternOverlay'
+import { useAutoScroll } from '../../hooks/useAutoScroll'
 import { buildTree, computeLayout, collectNodes, buildEdges, parseTreeInput } from '../../components/treeUtils'
 import './LCABinaryTreeVisualizer.css'
 
@@ -112,6 +115,7 @@ export default function LCABinaryTreeVisualizer() {
     const [qInput, setQInput] = useState('1')
 
     const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
+    const [autoScrollCode, setAutoScrollCode] = useAutoScroll()
 
     const { arr, pVal, qVal } = useMemo(() => {
         try {
@@ -136,89 +140,137 @@ export default function LCABinaryTreeVisualizer() {
     const edges = step?.edges ?? []
     const allNodes = step?.allNodes ?? []
 
+    // Create dockable panels
+    const dockPanels = [
+        {
+            id: 'input',
+            title: 'Input & Tree',
+            subtitle: 'Configure the tree and target nodes.',
+            defaultZone: 'left',
+            content: (
+                <div className="lcabt-panel-body">
+                    <div className="lcabt-examples">
+                        {EXAMPLES.map((ex) => (
+                            <button key={ex.label} className="lcabt-chip" onClick={() => applyExample(ex)}>{ex.label}</button>
+                        ))}
+                    </div>
+                    <div className="lcabt-inputs">
+                        <label>Tree <input className="lcabt-input wide" value={arrInput} onChange={(e) => { setArrInput(e.target.value); handleReset() }} /></label>
+                        <label>p <input className="lcabt-input narrow" value={pInput} onChange={(e) => { setPInput(e.target.value); handleReset() }} /></label>
+                        <label>q <input className="lcabt-input narrow" value={qInput} onChange={(e) => { setQInput(e.target.value); handleReset() }} /></label>
+                    </div>
+                    <div className="lcabt-canvas" style={{ width: CANVAS_W, height: CANVAS_H }}>
+                        <svg style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }} width={CANVAS_W} height={CANVAS_H}>
+                            {edges.map(({ fromId, toId }) => {
+                                const from = positions.get(fromId)
+                                const to = positions.get(toId)
+                                if (!from || !to) return null
+                                return <line key={`${fromId}-${toId}`} x1={from.x} y1={from.y} x2={to.x} y2={to.y} stroke="#45475a" strokeWidth={1.5} />
+                            })}
+                        </svg>
+                        {allNodes.map((node) => {
+                            const pos = positions.get(node.id)
+                            if (!pos) return null
+                            const isActive = step?.activeId === node.id
+                            const isP = step?.pId === node.id
+                            const isQ = step?.qId === node.id
+                            const isLCA = step?.lcaId === node.id
+                            return (
+                                <motion.div key={node.id} style={{ position: 'absolute', left: pos.x - NODE_R, top: pos.y - NODE_R }}>
+                                    <motion.div
+                                        className={`lcabt-node ${isActive ? 'active' : ''} ${isLCA ? 'lca' : ''} ${(isP || isQ) && !isLCA ? 'target' : ''}`}
+                                        animate={isActive ? { scale: 1.2 } : { scale: 1 }}
+                                        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                                    >
+                                        {node.val}
+                                    </motion.div>
+                                    {isP && <div className="lcabt-badge p-badge">p</div>}
+                                    {isQ && <div className="lcabt-badge q-badge">q</div>}
+                                    {isLCA && <div className="lcabt-badge lca-badge">LCA</div>}
+                                </motion.div>
+                            )
+                        })}
+                    </div>
+                </div>
+            ),
+        },
+        {
+            id: 'state',
+            title: 'Search State',
+            subtitle: step ? `Phase: ${step?.phase}` : 'Ready to start.',
+            defaultZone: 'left',
+            content: (
+                <div className="lcabt-panel-body">
+                    <div className="lcabt-metric"><span className="lcabt-label">p</span><strong className="lcabt-val p-color">{pVal}</strong></div>
+                    <div className="lcabt-metric"><span className="lcabt-label">q</span><strong className="lcabt-val q-color">{qVal}</strong></div>
+                    <div className="lcabt-legend">
+                        <div className="lcabt-legend-item"><div className="lcabt-dot active" />Processing</div>
+                        <div className="lcabt-legend-item"><div className="lcabt-dot target" />p or q</div>
+                        <div className="lcabt-legend-item"><div className="lcabt-dot lca" />LCA</div>
+                    </div>
+                    <div className={`lcabt-result ${step?.phase === 'done' && step.lcaId !== -1 ? 'done' : ''}`}>
+                        {step?.phase === 'done' && step.lcaId !== -1
+                            ? `LCA = ${allNodes.find((n) => n.id === step.lcaId)?.val}`
+                            : 'Searching…'}
+                    </div>
+                </div>
+            ),
+        },
+        {
+            id: 'code',
+            title: 'Code Trace',
+            subtitle: step ? `Line ${step.activeLine}` : 'Solution walkthrough.',
+            defaultZone: 'right',
+            content: (
+                <CodeTracePanel
+                    step={step}
+                    codeLines={SOLUTION_CODE}
+                    onActiveLineDomChange={setActiveLineDom}
+                    autoScroll={autoScrollCode}
+                />
+            ),
+        },
+    ]
+
     return (
         <div className="lcabt-shell">
-            <div className="lcabt-top">
-                <section className="lcabt-panel main">
-                    <header className="lcabt-head"><span>Post-order DFS — find split point</span></header>
-                    <div className="lcabt-body">
-                        <div className="lcabt-examples">
-                            {EXAMPLES.map((ex) => (
-                                <button key={ex.label} className="lcabt-chip" onClick={() => applyExample(ex)}>{ex.label}</button>
-                            ))}
-                        </div>
-                        <div className="lcabt-inputs">
-                            <label>Tree <input className="lcabt-input wide" value={arrInput} onChange={(e) => { setArrInput(e.target.value); handleReset() }} /></label>
-                            <label>p <input className="lcabt-input narrow" value={pInput} onChange={(e) => { setPInput(e.target.value); handleReset() }} /></label>
-                            <label>q <input className="lcabt-input narrow" value={qInput} onChange={(e) => { setQInput(e.target.value); handleReset() }} /></label>
-                        </div>
-                        <div className="lcabt-canvas" style={{ width: CANVAS_W, height: CANVAS_H }}>
-                            <svg style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }} width={CANVAS_W} height={CANVAS_H}>
-                                {edges.map(({ fromId, toId }) => {
-                                    const from = positions.get(fromId)
-                                    const to = positions.get(toId)
-                                    if (!from || !to) return null
-                                    return <line key={`${fromId}-${toId}`} x1={from.x} y1={from.y} x2={to.x} y2={to.y} stroke="#45475a" strokeWidth={1.5} />
-                                })}
-                            </svg>
-                            {allNodes.map((node) => {
-                                const pos = positions.get(node.id)
-                                if (!pos) return null
-                                const isActive = step?.activeId === node.id
-                                const isP = step?.pId === node.id
-                                const isQ = step?.qId === node.id
-                                const isLCA = step?.lcaId === node.id
-                                return (
-                                    <motion.div key={node.id} style={{ position: 'absolute', left: pos.x - NODE_R, top: pos.y - NODE_R }}>
-                                        <motion.div
-                                            className={`lcabt-node ${isActive ? 'active' : ''} ${isLCA ? 'lca' : ''} ${(isP || isQ) && !isLCA ? 'target' : ''}`}
-                                            animate={isActive ? { scale: 1.2 } : { scale: 1 }}
-                                            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                                        >
-                                            {node.val}
-                                        </motion.div>
-                                        {isP && <div className="lcabt-badge p-badge">p</div>}
-                                        {isQ && <div className="lcabt-badge q-badge">q</div>}
-                                        {isLCA && <div className="lcabt-badge lca-badge">LCA</div>}
-                                    </motion.div>
-                                )
-                            })}
-                        </div>
-                    </div>
-                </section>
-
-                <section className="lcabt-panel side">
-                    <header className="lcabt-head"><span>Search State</span></header>
-                    <div className="lcabt-body">
-                        <div className="lcabt-metric"><span className="lcabt-label">p</span><strong className="lcabt-val p-color">{pVal}</strong></div>
-                        <div className="lcabt-metric"><span className="lcabt-label">q</span><strong className="lcabt-val q-color">{qVal}</strong></div>
-                        <div className="lcabt-legend">
-                            <div className="lcabt-legend-item"><div className="lcabt-dot active" />Processing</div>
-                            <div className="lcabt-legend-item"><div className="lcabt-dot target" />p or q</div>
-                            <div className="lcabt-legend-item"><div className="lcabt-dot lca" />LCA</div>
-                        </div>
-                        <div className={`lcabt-result ${step?.phase === 'done' && step.lcaId !== -1 ? 'done' : ''}`}>
-                            {step?.phase === 'done' && step.lcaId !== -1
-                                ? `LCA = ${allNodes.find((n) => n.id === step.lcaId)?.val}`
-                                : 'Searching…'}
-                        </div>
-                    </div>
-                </section>
-            </div>
-
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
-            <div className="lcabt-status">{step?.message || 'Press Play to begin.'}</div>
-            <PlaybackControls
-                isPlaying={isPlaying} isDone={isDone} speed={speed}
-                onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward} onReset={handleReset}
-                prevDisabled={stepIndex < 0} nextDisabled={isDone} resetDisabled={stepIndex < 0}
-                onSpeedChange={(e) => setSpeed(Number(e.target.value))}
-                showPatternOverlay={showPatternOverlay}
-                onShowPatternOverlayChange={setShowPatternOverlay}
-                patternOverlayLabel="Show pattern overlay"
-                showPatternOverlayToggle
+            <DockableWorkspace
+                title="LCA in Binary Tree Visualizer"
+                panels={dockPanels}
+                initialLayout={{
+                    rows: [['input', 'code'], ['state']],
+                    minimized: [],
+                }}
             />
-            {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
+
+            <FloatingPanel title="Playback Controls">
+                <PlaybackControls
+                    onReset={handleReset}
+                    onPrev={stepBack}
+                    onPlayToggle={togglePlay}
+                    onNext={stepForward}
+                    resetDisabled={steps.length === 0}
+                    prevDisabled={stepIndex <= 0}
+                    nextDisabled={steps.length === 0 || isDone}
+                    isPlaying={isPlaying}
+                    isDone={isDone}
+                    speed={speed}
+                    onSpeedChange={(event) => setSpeed(Number(event.target.value))}
+                    speedIndicator={`${speed}ms`}
+                    autoScroll={autoScrollCode}
+                    onAutoScrollChange={setAutoScrollCode}
+                    autoScrollLabel="Auto-scroll code"
+                    showAutoScroll
+                    showPatternOverlay={showPatternOverlay}
+                    onShowPatternOverlayChange={setShowPatternOverlay}
+                    patternOverlayLabel="Show pattern overlay"
+                    showPatternOverlayToggle
+                />
+            </FloatingPanel>
+
+            {showPatternOverlay && step && (
+                <PatternOverlay step={step} activeLineDom={activeLineDom} />
+            )}
         </div>
     )
 }

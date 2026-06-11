@@ -5,24 +5,14 @@
     height: 100%;
 }
 
-.lcs-panel {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    flex: 1;
-    min-height: 0;
-}
-
-.lcs-head {
+.lcs-header {
     padding: 10px 14px;
     border-bottom: 1px solid var(--border);
     font-size: 13px;
     font-weight: 700;
     color: var(--text);
     background: var(--surface3);
+    border-radius: 8px;
     flex-shrink: 0;
     display: flex;
     justify-content: space-between;
@@ -42,6 +32,7 @@
     display: flex;
     flex-direction: column;
     gap: 14px;
+    background: var(--surface2);
 }
 
 .lcs-top-row {
@@ -238,6 +229,9 @@
     font-size: 13px;
     color: var(--text-muted);
     flex-shrink: 0;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
 }
 
 .lcs-status.ok {

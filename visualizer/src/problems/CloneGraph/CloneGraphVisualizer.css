@@ -1,15 +1,48 @@
 .cg-shell {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
     padding: 16px;
     font-family: inherit;
+}
+
+.cg-hero {
+    background: linear-gradient(135deg, #1e1e2e 0%, #313244 100%);
+    border: 1px solid #45475a;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 12px;
+}
+
+.cg-hero-copy {
+    margin-bottom: 16px;
+}
+
+.cg-kicker {
+    font-size: 12px;
+    font-weight: 700;
+    color: #a6e3a1;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.cg-hero h2 {
+    margin: 8px 0 12px;
+    font-size: 24px;
+    color: #cdd6f4;
+}
+
+.cg-hero p {
+    font-size: 14px;
+    color: #a6adc8;
+    line-height: 1.6;
 }
 
 .cg-examples {
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
+    margin-top: 12px;
 }
 
 .cg-chip {
@@ -89,6 +122,12 @@
     background: #1e1e2e;
     border-color: #313244;
     color: #45475a;
+}
+
+.cg-viz-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .cg-status {

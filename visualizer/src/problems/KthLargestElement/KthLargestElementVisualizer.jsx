@@ -3,8 +3,11 @@ import { motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import PatternOverlay from '../../components/PatternOverlay'
+import DockableWorkspace from '../../components/shared/DockableWorkspace'
+import FloatingPanel from '../../components/shared/FloatingPanel'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import { usePatternOverlay } from '../../hooks/usePatternOverlay'
+import { useAutoScroll } from '../../hooks/useAutoScroll'
 import './KthLargestElementVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -51,6 +54,7 @@ const EXAMPLES = [
 export default function KthLargestElementVisualizer() {
   const [numsInput, setNumsInput] = useState('[3,2,1,5,6,4]')
   const [kInput, setKInput] = useState('2')
+  const [autoScrollCode, setAutoScrollCode] = useAutoScroll()
   const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
   const { nums, k, inputError } = useMemo(() => {
@@ -74,49 +78,105 @@ export default function KthLargestElementVisualizer() {
     handleReset()
   }, [handleReset])
 
+  const dockPanels = [
+    {
+      id: 'input',
+      title: 'Input & Heap Evolution',
+      subtitle: inputError ? 'Fix the input to resume playback.' : 'Edit array and k value.',
+      defaultZone: 'left',
+      content: (
+        <div className="kl-body">
+          <div className="kl-examples">{EXAMPLES.map((ex) => <button key={ex.label} className="kl-chip" onClick={() => applyExample(ex)}>{ex.label}</button>)}</div>
+          <div className="kl-inputs">
+            <input className="kl-input" value={numsInput} onChange={(e) => { setNumsInput(e.target.value); handleReset() }} placeholder="e.g., [3,2,1,5,6,4]" />
+            <input className="kl-input small" value={kInput} onChange={(e) => { setKInput(e.target.value); handleReset() }} placeholder="k" />
+          </div>
+          {inputError && <div className="kl-error">{inputError}</div>}
+          <div className="kl-stream">
+            {nums.map((v, i) => <motion.div key={`${v}-${i}`} className={`kl-num ${step?.i === i ? 'active' : ''}`} animate={step?.i === i ? { y: -5 } : { y: 0 }}>{v}</motion.div>)}
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'heap',
+      title: 'Min-Heap State',
+      subtitle: step ? `Step ${stepIndex + 1} of ${steps.length}` : 'Heap visualization.',
+      defaultZone: 'right',
+      content: (
+        <div className="kl-body">
+          <div className="kl-heap">{(step?.heap || []).map((v, i) => <div key={`${v}-${i}`} className={`kl-node ${i === 0 ? 'root' : ''}`}>{v}</div>)}</div>
+          <div className={`kl-result ${step?.phase === 'done' ? 'ok' : ''}`}>{step?.phase === 'done' ? `Return ${step.heap[0]}` : `Current kth candidate: ${step?.heap?.[0] ?? '—'}`}</div>
+          <div className="kl-status">{step?.message || 'Press Play.'}</div>
+        </div>
+      ),
+    },
+    {
+      id: 'code',
+      title: 'Code Trace',
+      subtitle: step ? `Active line ${step.activeLine}` : 'Line-by-line solution view.',
+      defaultZone: 'full',
+      content: (
+        <CodeTracePanel
+          step={step}
+          codeLines={SOLUTION_CODE}
+          onActiveLineDomChange={setActiveLineDom}
+          autoScroll={autoScrollCode}
+        />
+      ),
+    },
+  ]
+
   return (
     <div className="kl-shell">
-      <div className="kl-top">
-        <section className="kl-panel">
-          <header className="kl-head"><span>Heap Evolution</span>{inputError && <span className="kl-error">{inputError}</span>}</header>
-          <div className="kl-body">
-            <div className="kl-examples">{EXAMPLES.map((ex) => <button key={ex.label} className="kl-chip" onClick={() => applyExample(ex)}>{ex.label}</button>)}</div>
-            <div className="kl-inputs">
-              <input className="kl-input" value={numsInput} onChange={(e) => { setNumsInput(e.target.value); handleReset() }} />
-              <input className="kl-input small" value={kInput} onChange={(e) => { setKInput(e.target.value); handleReset() }} />
-            </div>
-            <div className="kl-stream">
-              {nums.map((v, i) => <motion.div key={`${v}-${i}`} className={`kl-num ${step?.i === i ? 'active' : ''}`} animate={step?.i === i ? { y: -5 } : { y: 0 }}>{v}</motion.div>)}
-            </div>
-          </div>
-        </section>
-        <section className="kl-panel side">
-          <header className="kl-head"><span>Min-Heap (size k)</span></header>
-          <div className="kl-body">
-            <div className="kl-heap">{(step?.heap || []).map((v, i) => <div key={`${v}-${i}`} className={`kl-node ${i === 0 ? 'root' : ''}`}>{v}</div>)}</div>
-            <div className={`kl-result ${step?.phase === 'done' ? 'ok' : ''}`}>{step?.phase === 'done' ? `Return ${step.heap[0]}` : `Current kth candidate: ${step?.heap?.[0] ?? '—'}`}</div>
-            <div className="kl-status">{step?.message || 'Press Play.'}</div>
-          </div>
-        </section>
-      </div>
-      <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
-      <PlaybackControls
-        isPlaying={isPlaying}
-        isDone={isDone}
-        speed={speed}
-        onPlayToggle={togglePlay}
-        onPrev={stepBack}
-        onNext={stepForward}
-        onReset={handleReset}
-        prevDisabled={stepIndex < 0}
-        nextDisabled={isDone}
-        resetDisabled={stepIndex < 0}
-        onSpeedChange={(e) => setSpeed(Number(e.target.value))}
-        showPatternOverlay={showPatternOverlay}
-        onShowPatternOverlayChange={setShowPatternOverlay}
-        patternOverlayLabel="Show pattern overlay"
-        showPatternOverlayToggle
+      <section className="kl-hero">
+        <div className="kl-hero-copy">
+          <span className="kl-kicker">LeetCode 215 • Binary Heap</span>
+          <h2>Find the Kth Largest Element using a min-heap.</h2>
+          <p>
+            This walkthrough shows how maintaining a min-heap of size k lets us efficiently find
+            the kth largest element in a single pass.
+          </p>
+        </div>
+      </section>
+
+      <DockableWorkspace
+        title="Kth Largest Element Workspace"
+        panels={dockPanels}
+        initialLayout={{
+          rows: [
+            ['input', 'heap'],
+            ['code'],
+          ],
+          minimized: [],
+        }}
       />
+
+      <FloatingPanel title="Playback Controls">
+        <PlaybackControls
+          onReset={handleReset}
+          onPrev={stepBack}
+          onPlayToggle={togglePlay}
+          onNext={stepForward}
+          resetDisabled={steps.length === 0}
+          prevDisabled={stepIndex <= 0}
+          nextDisabled={steps.length === 0 || isDone}
+          isPlaying={isPlaying}
+          isDone={isDone}
+          speed={speed}
+          onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+          speedIndicator={`${speed}ms`}
+          autoScroll={autoScrollCode}
+          onAutoScrollChange={setAutoScrollCode}
+          autoScrollLabel="Auto-scroll code"
+          showAutoScroll
+          showPatternOverlay={showPatternOverlay}
+          onShowPatternOverlayChange={setShowPatternOverlay}
+          patternOverlayLabel="Show pattern overlay"
+          showPatternOverlayToggle
+        />
+      </FloatingPanel>
+
       {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
     </div>
   )

@@ -4,33 +4,8 @@
     gap: 12px;
     padding: 16px;
     font-family: inherit;
-}
-
-.lcs-top {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-.lcs-panel {
-    background: #1e1e2e;
-    border: 1px solid #313244;
-    border-radius: 10px;
-    overflow: hidden;
-    flex: 1;
-    min-width: 260px;
-}
-
-.lcs-panel.main {
-    flex: 3;
-}
-
-.lcs-head {
-    padding: 10px 14px;
-    background: #181825;
-    font-size: 13px;
-    font-weight: 600;
-    color: #cdd6f4;
+    height: 100%;
+    min-height: 100vh;
 }
 
 .lcs-body {
@@ -193,12 +168,3 @@
     font-size: 18px;
 }
 
-.lcs-status {
-    padding: 8px 12px;
-    background: #1e1e2e;
-    border: 1px solid #313244;
-    border-radius: 8px;
-    font-size: 13px;
-    color: #a6adc8;
-    min-height: 36px;
-}

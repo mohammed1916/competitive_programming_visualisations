@@ -2,7 +2,10 @@ import { useCallback, useMemo, useState } from 'react'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import PatternOverlay from '../../components/PatternOverlay'
+import DockableWorkspace from '../../components/shared/DockableWorkspace'
+import FloatingPanel from '../../components/shared/FloatingPanel'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { useAutoScroll } from '../../hooks/useAutoScroll'
 import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './MatrixIterationBasicsVisualizer.css'
 
@@ -182,6 +185,7 @@ export default function MatrixIterationBasicsVisualizer({ problem }) {
     isDone,
   } = usePlaybackState(steps.length)
 
+  const [autoScrollCode, setAutoScrollCode] = useAutoScroll()
   const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
   const step = stepIndex >= 0 ? steps[stepIndex] : null

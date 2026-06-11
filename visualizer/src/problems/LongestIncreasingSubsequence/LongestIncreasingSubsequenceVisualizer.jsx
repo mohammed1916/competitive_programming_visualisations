@@ -3,7 +3,10 @@ import { motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import PatternOverlay from '../../components/PatternOverlay'
+import DockableWorkspace from '../../components/shared/DockableWorkspace'
+import FloatingPanel from '../../components/shared/FloatingPanel'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { useAutoScroll } from '../../hooks/useAutoScroll'
 import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './LongestIncreasingSubsequenceVisualizer.css'
 
@@ -87,6 +90,7 @@ const EXAMPLES = [
 
 export default function LongestIncreasingSubsequenceVisualizer() {
     const [numsInput, setNumsInput] = useState('[10,9,2,5,3,7,101,18]')
+    const [autoScrollCode, setAutoScrollCode] = useAutoScroll()
     const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
     const { nums, inputError } = useMemo(() => {
@@ -119,123 +123,158 @@ export default function LongestIncreasingSubsequenceVisualizer() {
     const currI = step?.i ?? -1
     const currJ = step?.j ?? -1
 
-    return (
-        <div className="lis-shell">
-            <section className="lis-panel">
-                <header className="lis-head">
-                    <span>Longest Increasing Subsequence · O(n²) DP</span>
-                    {inputError && <span className="lis-error">{inputError}</span>}
-                </header>
-                <div className="lis-body">
-                    <div className="lis-top-row">
-                        <div className="lis-examples">
-                            {EXAMPLES.map((ex) => (
-                                <button key={ex.label} className="lis-chip" onClick={() => applyExample(ex)}>
-                                    {ex.label}
-                                </button>
-                            ))}
-                        </div>
-                        <input
-                            className="lis-input"
-                            value={numsInput}
-                            onChange={(e) => { setNumsInput(e.target.value); handleReset() }}
-                            placeholder="[10,9,2,5,3,7,101,18]"
-                        />
-                    </div>
-
-                    {/* Array + dp rows */}
-                    <div className="lis-arrays">
-                        {/* nums row */}
-                        <div className="lis-row-label">nums</div>
-                        <div className="lis-array-row">
-                            {nums.map((val, idx) => {
-                                const isI = currI === idx
-                                const isJ = currJ === idx
-                                const isDone = step?.phase === 'done'
-                                const isMax = isDone && dp[idx] === maxDp
-                                return (
-                                    <div key={idx} className="lis-col">
-                                        <motion.div
-                                            className={`lis-cell nums-cell${isI ? ' curr-i' : ''}${isJ ? ' curr-j' : ''}${isMax ? ' max-cell' : ''}`}
-                                            animate={{ y: isI ? -8 : isJ ? -4 : 0, scale: isI ? 1.12 : 1 }}
-                                            transition={{ type: 'spring', stiffness: 420, damping: 26 }}
-                                        >
-                                            {val}
-                                        </motion.div>
-                                        <span className="lis-idx">{idx}</span>
-                                        <div className="lis-ptrs">
-                                            {isI && <span className="lis-ptr ptr-i">i</span>}
-                                            {isJ && <span className="lis-ptr ptr-j">j</span>}
-                                        </div>
-                                    </div>
-                                )
-                            })}
-                        </div>
-
-                        {/* dp row */}
-                        <div className="lis-row-label">dp</div>
-                        <div className="lis-array-row">
-                            {dp.map((val, idx) => {
-                                const isI = currI === idx
-                                const isDone = step?.phase === 'done'
-                                const isMax = isDone && val === maxDp
-                                return (
-                                    <div key={idx} className="lis-col">
-                                        <motion.div
-                                            className={`lis-cell dp-cell${isI ? ' curr-i' : ''}${isMax ? ' max-dp' : ''}`}
-                                            animate={{ scale: isI ? 1.12 : 1 }}
-                                            transition={{ type: 'spring', stiffness: 380, damping: 26 }}
-                                        >
-                                            {val}
-                                        </motion.div>
-                                    </div>
-                                )
-                            })}
-                        </div>
-                    </div>
-
-                    {/* Comparison box */}
-                    {currJ >= 0 && currI >= 0 && (
-                        <div className={`lis-cmp-box${nums[currJ] < nums[currI] ? ' match' : ' no-match'}`}>
-                            <span>
-                                nums[j]={nums[currJ]} {nums[currJ] < nums[currI] ? '<' : '≥'} nums[i]={nums[currI]}
-                                {nums[currJ] < nums[currI]
-                                    ? <strong> → dp[{currI}] = max(dp[{currI}], dp[{currJ}]+1) = max({dp[currI]}, {dp[currJ]}+1) = {Math.max(dp[currI], dp[currJ] + 1)}</strong>
-                                    : ' → skip'}
-                            </span>
-                        </div>
-                    )}
-
-                    {/* Result */}
-                    {step?.phase === 'done' && (
-                        <motion.div
-                            className="lis-result"
-                            initial={{ opacity: 0, y: 8 }}
-                            animate={{ opacity: 1, y: 0 }}
-                        >
-                            LIS length = {step.result}
-                        </motion.div>
-                    )}
+    // Visualization component
+    const VisualizationContent = () => (
+        <div className="lis-body">
+            <div className="lis-top-row">
+                <div className="lis-examples">
+                    {EXAMPLES.map((ex) => (
+                        <button key={ex.label} className="lis-chip" onClick={() => applyExample(ex)}>
+                            {ex.label}
+                        </button>
+                    ))}
                 </div>
-            </section>
+                <input
+                    className="lis-input"
+                    value={numsInput}
+                    onChange={(e) => { setNumsInput(e.target.value); handleReset() }}
+                    placeholder="[10,9,2,5,3,7,101,18]"
+                />
+            </div>
 
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
+            {/* Array + dp rows */}
+            <div className="lis-arrays">
+                {/* nums row */}
+                <div className="lis-row-label">nums</div>
+                <div className="lis-array-row">
+                    {nums.map((val, idx) => {
+                        const isI = currI === idx
+                        const isJ = currJ === idx
+                        const isDone = step?.phase === 'done'
+                        const isMax = isDone && dp[idx] === maxDp
+                        return (
+                            <div key={idx} className="lis-col">
+                                <motion.div
+                                    className={`lis-cell nums-cell${isI ? ' curr-i' : ''}${isJ ? ' curr-j' : ''}${isMax ? ' max-cell' : ''}`}
+                                    animate={{ y: isI ? -8 : isJ ? -4 : 0, scale: isI ? 1.12 : 1 }}
+                                    transition={{ type: 'spring', stiffness: 420, damping: 26 }}
+                                >
+                                    {val}
+                                </motion.div>
+                                <span className="lis-idx">{idx}</span>
+                                <div className="lis-ptrs">
+                                    {isI && <span className="lis-ptr ptr-i">i</span>}
+                                    {isJ && <span className="lis-ptr ptr-j">j</span>}
+                                </div>
+                            </div>
+                        )
+                    })}
+                </div>
 
+                {/* dp row */}
+                <div className="lis-row-label">dp</div>
+                <div className="lis-array-row">
+                    {dp.map((val, idx) => {
+                        const isI = currI === idx
+                        const isDone = step?.phase === 'done'
+                        const isMax = isDone && val === maxDp
+                        return (
+                            <div key={idx} className="lis-col">
+                                <motion.div
+                                    className={`lis-cell dp-cell${isI ? ' curr-i' : ''}${isMax ? ' max-dp' : ''}`}
+                                    animate={{ scale: isI ? 1.12 : 1 }}
+                                    transition={{ type: 'spring', stiffness: 380, damping: 26 }}
+                                >
+                                    {val}
+                                </motion.div>
+                            </div>
+                        )
+                    })}
+                </div>
+            </div>
+
+            {/* Comparison box */}
+            {currJ >= 0 && currI >= 0 && (
+                <div className={`lis-cmp-box${nums[currJ] < nums[currI] ? ' match' : ' no-match'}`}>
+                    <span>
+                        nums[j]={nums[currJ]} {nums[currJ] < nums[currI] ? '<' : '≥'} nums[i]={nums[currI]}
+                        {nums[currJ] < nums[currI]
+                            ? <strong> → dp[{currI}] = max(dp[{currI}], dp[{currJ}]+1) = max({dp[currI]}, {dp[currJ]}+1) = {Math.max(dp[currI], dp[currJ] + 1)}</strong>
+                            : ' → skip'}
+                    </span>
+                </div>
+            )}
+
+            {/* Result */}
+            {step?.phase === 'done' && (
+                <motion.div
+                    className="lis-result"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                >
+                    LIS length = {step.result}
+                </motion.div>
+            )}
+
+            {/* Status message */}
             <div className={`lis-status${step?.phase === 'done' ? ' done' : ''}`}>
                 {step?.message ?? 'Press Play or Step to begin.'}
             </div>
+        </div>
+    )
 
-            <PlaybackControls
-                isPlaying={isPlaying} isDone={isDone} speed={speed}
-                onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward}
-                onReset={handleReset} prevDisabled={stepIndex < 0}
-                nextDisabled={isDone} resetDisabled={stepIndex < 0}
-                onSpeedChange={(e) => setSpeed(Number(e.target.value))}
-                showPatternOverlay={showPatternOverlay}
-                onShowPatternOverlayChange={setShowPatternOverlay}
-                patternOverlayLabel="Show pattern overlay"
-                showPatternOverlayToggle
+    const dockPanels = [
+        {
+            id: 'viz',
+            title: 'Array Visualization',
+            subtitle: inputError ? 'Fix input to resume' : 'nums and dp arrays with live tracing',
+            defaultZone: 'left',
+            content: <VisualizationContent />,
+        },
+        {
+            id: 'code',
+            title: 'Code Trace',
+            subtitle: step ? `Line ${step.activeLine}` : 'Solution code visualization',
+            defaultZone: 'right',
+            content: <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} autoScroll={autoScrollCode} />,
+        },
+    ]
+
+    return (
+        <div className="lis-shell">
+            <DockableWorkspace
+                title="Longest Increasing Subsequence"
+                panels={dockPanels}
+                initialLayout={{
+                    rows: [['viz', 'code']],
+                    minimized: [],
+                }}
             />
+
+            <FloatingPanel title="Playback Controls">
+                <PlaybackControls
+                    onReset={handleReset}
+                    onPrev={stepBack}
+                    onPlayToggle={togglePlay}
+                    onNext={stepForward}
+                    resetDisabled={steps.length === 0}
+                    prevDisabled={stepIndex <= 0}
+                    nextDisabled={steps.length === 0 || isDone}
+                    isPlaying={isPlaying}
+                    isDone={isDone}
+                    speed={speed}
+                    onSpeedChange={(event) => setSpeed(Number(event.target.value))}
+                    speedIndicator={`${speed}ms`}
+                    autoScroll={autoScrollCode}
+                    onAutoScrollChange={setAutoScrollCode}
+                    autoScrollLabel="Auto-scroll code"
+                    showAutoScroll
+                    showPatternOverlay={showPatternOverlay}
+                    onShowPatternOverlayChange={setShowPatternOverlay}
+                    patternOverlayLabel="Show pattern overlay"
+                    showPatternOverlayToggle
+                />
+            </FloatingPanel>
 
             {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>

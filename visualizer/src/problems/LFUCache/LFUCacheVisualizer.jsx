@@ -3,7 +3,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
 import PatternOverlay from "../../components/PatternOverlay";
+import DockableWorkspace from "../../components/shared/DockableWorkspace";
+import FloatingPanel from "../../components/shared/FloatingPanel";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
+import { useAutoScroll } from "../../hooks/useAutoScroll";
 import { usePatternOverlay } from "../../hooks/usePatternOverlay";
 import "./LFUCacheVisualizer.css";
 
@@ -127,6 +130,7 @@ export default function LFUCacheVisualizer() {
         usePlaybackState(steps.length);
     const step = stepIndex >= 0 ? steps[stepIndex] : null;
     const applyEx = useCallback((e) => { setEx(e); handleReset(); }, [handleReset]);
+    const [autoScrollCode, setAutoScrollCode] = useAutoScroll();
     const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay();
 
     const cache = step?.cache ?? [];
@@ -137,76 +141,121 @@ export default function LFUCacheVisualizer() {
     const evicted = step?.evicted ?? null;
     const opStr = step?.op ?? "—";
 
+    const dockPanels = [
+        {
+            id: "viz",
+            title: "Cache Visualization",
+            subtitle: `Capacity ${ex.capacity}`,
+            defaultZone: "left",
+            content: (
+                <div className="lfu-panel-body">
+                    <div className="lfu-examples">
+                        {EXAMPLES.map(e => (
+                            <button key={e.label} className={`lfu-chip ${ex.label === e.label ? "active" : ""}`} onClick={() => applyEx(e)}>
+                                {e.label}
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className="lfu-row">
+                        <div className="lfu-panel lfu-info">
+                            <div className="lfu-panel-label">Operation</div>
+                            <div className="lfu-op">{opStr}</div>
+                        </div>
+                        <div className="lfu-panel lfu-info">
+                            <div className="lfu-panel-label">Result</div>
+                            <div className={`lfu-result-val ${result === -1 ? "miss" : result !== null ? "hit" : ""}`}>{result !== null ? String(result) : "—"}</div>
+                        </div>
+                        <div className="lfu-panel lfu-info">
+                            <div className="lfu-panel-label">min_freq</div>
+                            <div className="lfu-mf">{minFreq}</div>
+                        </div>
+                        <div className="lfu-panel lfu-info">
+                            <div className="lfu-panel-label">Phase</div>
+                            <div className={`lfu-phase ${phase}`}>{phase}</div>
+                        </div>
+                    </div>
+
+                    <div className="lfu-panel">
+                        <div className="lfu-panel-label">Cache state</div>
+                        <AnimatePresence>
+                            {cache.length === 0 && <div className="lfu-empty">empty</div>}
+                            {cache.map(item => (
+                                <motion.div key={item.key}
+                                    className={`lfu-entry ${item.key === activeKey ? `active-${phase}` : ""} ${item.key === evicted ? "evicted" : ""}`}
+                                    layout
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: 20 }}
+                                    transition={{ type: "spring", stiffness: 300, damping: 24 }}>
+                                    <span className="lfu-key">key={item.key}</span>
+                                    <span className="lfu-val">val={item.val}</span>
+                                    <span className="lfu-freq">freq={item.freq}</span>
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
+                    </div>
+
+                    <div className="lfu-panel">
+                        <div className="lfu-panel-label">Operations log</div>
+                        <div className="lfu-log">
+                            {steps.slice(0, stepIndex + 1).filter(s => s.op !== "init" && s.op !== "—").map((s, i) => (
+                                <span key={i} className={`lfu-log-entry ${s.phase}`}>{s.op} → {s.result !== null ? String(s.result) : s.phase}</span>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="lfu-status">{step?.message ?? "Press Play to begin."}</div>
+                </div>
+            ),
+        },
+        {
+            id: "code",
+            title: "Code Trace",
+            subtitle: step ? `Line ${step.activeLine}` : "Code visualization",
+            defaultZone: "right",
+            content: (
+                <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} autoScroll={autoScrollCode} />
+            ),
+        },
+    ];
+
     return (
         <div className="lfu-shell">
-            <div className="lfu-examples">
-                {EXAMPLES.map(e => (
-                    <button key={e.label} className={`lfu-chip ${ex.label === e.label ? "active" : ""}`} onClick={() => applyEx(e)}>
-                        {e.label}
-                    </button>
-                ))}
-            </div>
-
-            <div className="lfu-row">
-                <div className="lfu-panel lfu-info">
-                    <div className="lfu-panel-label">Operation</div>
-                    <div className="lfu-op">{opStr}</div>
-                </div>
-                <div className="lfu-panel lfu-info">
-                    <div className="lfu-panel-label">Result</div>
-                    <div className={`lfu-result-val ${result === -1 ? "miss" : result !== null ? "hit" : ""}`}>{result !== null ? String(result) : "—"}</div>
-                </div>
-                <div className="lfu-panel lfu-info">
-                    <div className="lfu-panel-label">min_freq</div>
-                    <div className="lfu-mf">{minFreq}</div>
-                </div>
-                <div className="lfu-panel lfu-info">
-                    <div className="lfu-panel-label">Phase</div>
-                    <div className={`lfu-phase ${phase}`}>{phase}</div>
-                </div>
-            </div>
-
-            <div className="lfu-panel">
-                <div className="lfu-panel-label">Cache state — capacity {ex.capacity}</div>
-                <AnimatePresence>
-                    {cache.length === 0 && <div className="lfu-empty">empty</div>}
-                    {cache.map(item => (
-                        <motion.div key={item.key}
-                            className={`lfu-entry ${item.key === activeKey ? `active-${phase}` : ""} ${item.key === evicted ? "evicted" : ""}`}
-                            layout
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: 20 }}
-                            transition={{ type: "spring", stiffness: 300, damping: 24 }}>
-                            <span className="lfu-key">key={item.key}</span>
-                            <span className="lfu-val">val={item.val}</span>
-                            <span className="lfu-freq">freq={item.freq}</span>
-                        </motion.div>
-                    ))}
-                </AnimatePresence>
-            </div>
-
-            <div className="lfu-panel">
-                <div className="lfu-panel-label">Operations log</div>
-                <div className="lfu-log">
-                    {steps.slice(0, stepIndex + 1).filter(s => s.op !== "init" && s.op !== "—").map((s, i) => (
-                        <span key={i} className={`lfu-log-entry ${s.phase}`}>{s.op} → {s.result !== null ? String(s.result) : s.phase}</span>
-                    ))}
-                </div>
-            </div>
-
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
-            <div className="lfu-status">{step?.message ?? "Press Play to begin."}</div>
-            <PlaybackControls
-                isPlaying={isPlaying} isDone={isDone} speed={speed}
-                onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward} onReset={handleReset}
-                prevDisabled={stepIndex < 0} nextDisabled={isDone} resetDisabled={stepIndex < 0}
-                onSpeedChange={e => setSpeed(Number(e.target.value))}
-                showPatternOverlay={showPatternOverlay}
-                onShowPatternOverlayChange={setShowPatternOverlay}
-                patternOverlayLabel="Show pattern overlay"
-                showPatternOverlayToggle
+            <DockableWorkspace
+                title="LFU Cache Workspace"
+                panels={dockPanels}
+                initialLayout={{
+                    rows: [["viz", "code"]],
+                    minimized: [],
+                }}
             />
+
+            <FloatingPanel title="Playback Controls">
+                <PlaybackControls
+                    onReset={handleReset}
+                    onPrev={stepBack}
+                    onPlayToggle={togglePlay}
+                    onNext={stepForward}
+                    resetDisabled={steps.length === 0}
+                    prevDisabled={stepIndex < 0}
+                    nextDisabled={steps.length === 0 || isDone}
+                    isPlaying={isPlaying}
+                    isDone={isDone}
+                    speed={speed}
+                    onSpeedChange={(event) => setSpeed(Number(event.target.value))}
+                    speedIndicator={`${speed}ms`}
+                    autoScroll={autoScrollCode}
+                    onAutoScrollChange={setAutoScrollCode}
+                    autoScrollLabel="Auto-scroll code"
+                    showAutoScroll
+                    showPatternOverlay={showPatternOverlay}
+                    onShowPatternOverlayChange={setShowPatternOverlay}
+                    patternOverlayLabel="Show pattern overlay"
+                    showPatternOverlayToggle
+                />
+            </FloatingPanel>
+
             {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     );

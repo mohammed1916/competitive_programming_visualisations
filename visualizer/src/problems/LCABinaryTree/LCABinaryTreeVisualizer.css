@@ -6,38 +6,13 @@
     font-family: inherit;
 }
 
-.lcabt-top {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-.lcabt-panel {
-    background: #1e1e2e;
-    border: 1px solid #313244;
-    border-radius: 10px;
-    overflow: hidden;
-    flex: 1;
-    min-width: 260px;
-}
-
-.lcabt-panel.main {
-    flex: 2;
-}
-
-.lcabt-head {
-    padding: 10px 14px;
-    background: #181825;
-    font-size: 13px;
-    font-weight: 600;
-    color: #cdd6f4;
-}
-
-.lcabt-body {
+.lcabt-panel-body {
     padding: 14px;
     display: flex;
     flex-direction: column;
     gap: 12px;
+    height: 100%;
+    overflow-y: auto;
 }
 
 .lcabt-examples {
@@ -238,14 +213,4 @@
     color: #cba6f7;
     font-weight: 700;
     font-size: 18px;
-}
-
-.lcabt-status {
-    padding: 8px 12px;
-    background: #1e1e2e;
-    border: 1px solid #313244;
-    border-radius: 8px;
-    font-size: 13px;
-    color: #a6adc8;
-    min-height: 36px;
 }

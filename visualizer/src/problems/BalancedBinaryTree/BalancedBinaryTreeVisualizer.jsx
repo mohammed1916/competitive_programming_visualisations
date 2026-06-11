@@ -3,8 +3,11 @@ import { motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import PatternOverlay from '../../components/PatternOverlay'
+import DockableWorkspace from '../../components/shared/DockableWorkspace'
+import FloatingPanel from '../../components/shared/FloatingPanel'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import { usePatternOverlay } from '../../hooks/usePatternOverlay'
+import { useAutoScroll } from '../../hooks/useAutoScroll'
 import { buildTree, computeLayout, collectNodes, buildEdges, parseTreeInput } from '../../components/treeUtils'
 import './BalancedBinaryTreeVisualizer.css'
 
@@ -105,6 +108,95 @@ const EXAMPLES = [
     { label: 'Full', arr: [1, 2, 3, 4, 5, 6, 7] },
 ]
 
+// TreeVisualizationPanel: renders the tree canvas with states
+function TreeVisualizationPanel({ step, positions, edges, allNodes }) {
+    return (
+        <div className="bbt-viz-panel">
+            <div className="bbt-canvas" style={{ width: CANVAS_W, height: CANVAS_H }}>
+                <svg style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }} width={CANVAS_W} height={CANVAS_H}>
+                    {edges.map(({ fromId, toId }) => {
+                        const from = positions.get(fromId)
+                        const to = positions.get(toId)
+                        if (!from || !to) return null
+                        return <line key={`${fromId}-${toId}`} x1={from.x} y1={from.y} x2={to.x} y2={to.y} stroke="#45475a" strokeWidth={1.5} />
+                    })}
+                </svg>
+                {allNodes.map((node) => {
+                    const pos = positions.get(node.id)
+                    if (!pos) return null
+                    const isActive = step?.activeId === node.id
+                    const isUnbal = step?.unbalancedIds?.has(node.id)
+                    const h = step?.heights?.get(node.id)
+                    return (
+                        <motion.div key={node.id} style={{ position: 'absolute', left: pos.x - NODE_R, top: pos.y - NODE_R }}>
+                            <motion.div
+                                className={`bbt-node ${isActive ? 'active' : ''} ${isUnbal ? 'unbalanced' : h != null ? 'balanced' : ''}`}
+                                animate={isActive ? { scale: 1.2 } : { scale: 1 }}
+                                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                            >
+                                {node.val}
+                            </motion.div>
+                            {h != null && (
+                                <div className="bbt-height-badge">{h}</div>
+                            )}
+                            {isUnbal && (
+                                <div className="bbt-height-badge unbal">!</div>
+                            )}
+                        </motion.div>
+                    )
+                })}
+            </div>
+            <div className="bbt-status">{step?.message || 'Press Play to begin.'}</div>
+        </div>
+    )
+}
+
+// StatePanel: shows active node and final result
+function StatePanel({ step, allNodes }) {
+    return (
+        <div className="bbt-state-panel">
+            <div className="bbt-metric">
+                <span className="bbt-label">Active node</span>
+                <strong className="bbt-val">
+                    {step?.activeId != null && step.activeId !== -1
+                        ? allNodes.find((n) => n.id === step.activeId)?.val ?? '—'
+                        : '—'}
+                </strong>
+            </div>
+            <div className="bbt-legend">
+                <div className="bbt-legend-item"><div className="bbt-dot active" />Processing</div>
+                <div className="bbt-legend-item"><div className="bbt-dot balanced" />Balanced subtree</div>
+                <div className="bbt-legend-item"><div className="bbt-dot unbalanced" />Unbalanced</div>
+            </div>
+            <div className={`bbt-result ${step?.phase === 'done' ? (step.result ? 'ok' : 'fail') : ''}`}>
+                {step?.phase === 'done'
+                    ? (step.result ? '✓ Balanced' : '✗ Not Balanced')
+                    : 'Checking…'}
+            </div>
+        </div>
+    )
+}
+
+// InputPanel: for adjusting tree input
+function InputPanel({ arrInput, setArrInput, applyExample, inputError }) {
+    return (
+        <div className="bbt-input-panel">
+            <div className="bbt-examples">
+                {EXAMPLES.map((ex) => (
+                    <button key={ex.label} className="bbt-chip" onClick={() => applyExample(ex)}>{ex.label}</button>
+                ))}
+            </div>
+            <input
+                className="bbt-input"
+                value={arrInput}
+                onChange={(e) => setArrInput(e.target.value)}
+                placeholder="[3,9,20,null,null,15,7]"
+            />
+            {inputError && <span className="bbt-error">{inputError}</span>}
+        </div>
+    )
+}
+
 export default function BalancedBinaryTreeVisualizer() {
     const [arrInput, setArrInput] = useState('[3,9,20,null,null,15,7]')
 
@@ -120,6 +212,7 @@ export default function BalancedBinaryTreeVisualizer() {
     const { stepIndex, stepForward, stepBack, togglePlay, handleReset, isPlaying, speed, setSpeed, isDone } = usePlaybackState(steps.length)
     const step = stepIndex >= 0 ? steps[stepIndex] : null
     const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
+    const [autoScrollCode, setAutoScrollCode] = useAutoScroll()
 
     const applyExample = useCallback((ex) => {
         setArrInput(JSON.stringify(ex.arr))
@@ -130,95 +223,74 @@ export default function BalancedBinaryTreeVisualizer() {
     const edges = step?.edges ?? []
     const allNodes = step?.allNodes ?? []
 
+    // Build dock panels for the workspace
+    const dockPanels = [
+        {
+            id: 'input',
+            title: 'Input',
+            content: <InputPanel arrInput={arrInput} setArrInput={setArrInput} applyExample={applyExample} inputError={inputError} />,
+        },
+        {
+            id: 'tree',
+            title: 'Tree Visualization',
+            content: <TreeVisualizationPanel step={step} positions={positions} edges={edges} allNodes={allNodes} />,
+        },
+        {
+            id: 'state',
+            title: 'State',
+            content: <StatePanel step={step} allNodes={allNodes} />,
+        },
+        {
+            id: 'code',
+            title: 'Code Trace',
+            content: <CodeTracePanel
+                step={step}
+                codeLines={SOLUTION_CODE}
+                onActiveLineDomChange={setActiveLineDom}
+                autoScroll={autoScrollCode}
+            />,
+        },
+    ]
+
     return (
-        <div className="bbt-shell">
-            <div className="bbt-top">
-                <section className="bbt-panel main">
-                    <header className="bbt-head">
-                        <span>Post-order DFS with height tracking</span>
-                        {inputError && <span className="bbt-error">{inputError}</span>}
-                    </header>
-                    <div className="bbt-body">
-                        <div className="bbt-examples">
-                            {EXAMPLES.map((ex) => (
-                                <button key={ex.label} className="bbt-chip" onClick={() => applyExample(ex)}>{ex.label}</button>
-                            ))}
-                        </div>
-                        <input className="bbt-input" value={arrInput} onChange={(e) => { setArrInput(e.target.value); handleReset() }} />
-                        <div className="bbt-canvas" style={{ width: CANVAS_W, height: CANVAS_H }}>
-                            <svg style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }} width={CANVAS_W} height={CANVAS_H}>
-                                {edges.map(({ fromId, toId }) => {
-                                    const from = positions.get(fromId)
-                                    const to = positions.get(toId)
-                                    if (!from || !to) return null
-                                    return <line key={`${fromId}-${toId}`} x1={from.x} y1={from.y} x2={to.x} y2={to.y} stroke="#45475a" strokeWidth={1.5} />
-                                })}
-                            </svg>
-                            {allNodes.map((node) => {
-                                const pos = positions.get(node.id)
-                                if (!pos) return null
-                                const isActive = step?.activeId === node.id
-                                const isUnbal = step?.unbalancedIds?.has(node.id)
-                                const h = step?.heights?.get(node.id)
-                                return (
-                                    <motion.div key={node.id} style={{ position: 'absolute', left: pos.x - NODE_R, top: pos.y - NODE_R }}>
-                                        <motion.div
-                                            className={`bbt-node ${isActive ? 'active' : ''} ${isUnbal ? 'unbalanced' : h != null ? 'balanced' : ''}`}
-                                            animate={isActive ? { scale: 1.2 } : { scale: 1 }}
-                                            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                                        >
-                                            {node.val}
-                                        </motion.div>
-                                        {h != null && (
-                                            <div className="bbt-height-badge">{h}</div>
-                                        )}
-                                        {isUnbal && (
-                                            <div className="bbt-height-badge unbal">!</div>
-                                        )}
-                                    </motion.div>
-                                )
-                            })}
-                        </div>
-                    </div>
-                </section>
-
-                <section className="bbt-panel side">
-                    <header className="bbt-head"><span>State</span></header>
-                    <div className="bbt-body">
-                        <div className="bbt-metric">
-                            <span className="bbt-label">Active node</span>
-                            <strong className="bbt-val">
-                                {step?.activeId != null && step.activeId !== -1
-                                    ? allNodes.find((n) => n.id === step.activeId)?.val ?? '—'
-                                    : '—'}
-                            </strong>
-                        </div>
-                        <div className="bbt-legend">
-                            <div className="bbt-legend-item"><div className="bbt-dot active" />Processing</div>
-                            <div className="bbt-legend-item"><div className="bbt-dot balanced" />Balanced subtree</div>
-                            <div className="bbt-legend-item"><div className="bbt-dot unbalanced" />Unbalanced</div>
-                        </div>
-                        <div className={`bbt-result ${step?.phase === 'done' ? (step.result ? 'ok' : 'fail') : ''}`}>
-                            {step?.phase === 'done'
-                                ? (step.result ? '✓ Balanced' : '✗ Not Balanced')
-                                : 'Checking…'}
-                        </div>
-                    </div>
-                </section>
-            </div>
-
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
-            <div className="bbt-status">{step?.message || 'Press Play to begin.'}</div>
-            <PlaybackControls
-                isPlaying={isPlaying} isDone={isDone} speed={speed}
-                onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward} onReset={handleReset}
-                prevDisabled={stepIndex < 0} nextDisabled={isDone} resetDisabled={stepIndex < 0}
-                onSpeedChange={(e) => setSpeed(Number(e.target.value))}
-                showPatternOverlay={showPatternOverlay}
-                onShowPatternOverlayChange={setShowPatternOverlay}
-                patternOverlayLabel="Show pattern overlay"
-                showPatternOverlayToggle
+        <div className="problem-shell">
+            <DockableWorkspace
+                title="Balanced Binary Tree Visualizer"
+                panels={dockPanels}
+                initialLayout={{
+                    rows: [
+                        ['input', 'state'],
+                        ['tree', 'code'],
+                    ],
+                    minimized: [],
+                }}
             />
+
+            <FloatingPanel title="Playback Controls">
+                <PlaybackControls
+                    onReset={handleReset}
+                    onPrev={stepBack}
+                    onPlayToggle={togglePlay}
+                    onNext={stepForward}
+                    resetDisabled={steps.length === 0}
+                    prevDisabled={stepIndex < 0}
+                    nextDisabled={isDone}
+                    isPlaying={isPlaying}
+                    isDone={isDone}
+                    speed={speed}
+                    onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+                    speedIndicator={`${speed}ms`}
+                    autoScroll={autoScrollCode}
+                    onAutoScrollChange={setAutoScrollCode}
+                    autoScrollLabel="Auto-scroll code"
+                    showAutoScroll
+                    showPatternOverlay={showPatternOverlay}
+                    onShowPatternOverlayChange={setShowPatternOverlay}
+                    patternOverlayLabel="Show pattern overlay"
+                    showPatternOverlayToggle
+                />
+            </FloatingPanel>
+
             {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     )

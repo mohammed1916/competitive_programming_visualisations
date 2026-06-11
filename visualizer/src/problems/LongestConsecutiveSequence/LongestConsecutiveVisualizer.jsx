@@ -3,7 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import PatternOverlay from '../../components/PatternOverlay'
+import DockableWorkspace from '../../components/shared/DockableWorkspace'
+import FloatingPanel from '../../components/shared/FloatingPanel'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { useAutoScroll } from '../../hooks/useAutoScroll'
 import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './LongestConsecutiveVisualizer.css'
 
@@ -118,6 +121,7 @@ const EXAMPLES = [
 
 export default function LongestConsecutiveVisualizer() {
     const [input, setInput] = useState('[100,4,200,1,3,2]')
+    const [autoScrollCode, setAutoScrollCode] = useAutoScroll()
     const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
     const { nums, inputError } = useMemo(() => {
@@ -150,103 +154,150 @@ export default function LongestConsecutiveVisualizer() {
     const best = step?.best ?? 0
     const prevExists = step?.prevExists ?? null
 
+    // Create visualization panel content
+    const VisualizationContent = () => (
+        <div className="lcs-body">
+            <div className="lcs-top-row">
+                <div className="lcs-examples">
+                    {EXAMPLES.map(ex => (
+                        <button key={ex.label} className="lcs-chip" onClick={() => applyExample(ex)}>{ex.label}</button>
+                    ))}
+                </div>
+                <div className="lcs-input-group">
+                    <label className="lcs-label">nums (JSON array)</label>
+                    <input className="lcs-input" value={input}
+                        onChange={e => { setInput(e.target.value); handleReset() }} />
+                </div>
+            </div>
+
+            {/* Sorted set grid */}
+            <div className="lcs-section-title">Sorted Unique Values (Hash Set)</div>
+            <div className="lcs-set-row">
+                {sortedUnique.map((val) => {
+                    const isActive = activeSequence.includes(val)
+                    const isBest = bestSequence.includes(val) && !isActive
+                    const isCurrent = val === currentNum
+                    const isStart = isCurrent && prevExists === false
+                    const isSkip = isCurrent && prevExists === true
+                    return (
+                        <motion.div
+                            key={val}
+                            className={['lcs-cell',
+                                isActive ? 'active' : '',
+                                isBest ? 'best' : '',
+                                isStart ? 'start' : '',
+                                isSkip ? 'skip' : '',
+                                isCurrent && !isStart && !isSkip ? 'current' : '',
+                            ].filter(Boolean).join(' ')}
+                            animate={{ y: isActive ? -8 : 0, scale: isActive ? 1.1 : (isCurrent ? 1.05 : 1) }}
+                            transition={{ type: 'spring', stiffness: 400, damping: 26 }}
+                        >
+                            {val}
+                        </motion.div>
+                    )
+                })}
+            </div>
+
+            {/* Active sequence */}
+            <AnimatePresence>
+                {activeSequence.length > 0 && (
+                    <motion.div className="lcs-seq-box active"
+                        initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+                        <span className="lcs-seq-label">Current run</span>
+                        <div className="lcs-seq-vals">
+                            {activeSequence.map((v, i) => (
+                                <span key={i} className="lcs-seq-val active-val">{v}</span>
+                            ))}
+                            <span className="lcs-seq-len">length = {activeSequence.length}</span>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Best so far */}
+            {best > 0 && (
+                <div className="lcs-seq-box best">
+                    <span className="lcs-seq-label">Best so far</span>
+                    <div className="lcs-seq-vals">
+                        {bestSequence.map((v, i) => (
+                            <span key={i} className="lcs-seq-val best-val">{v}</span>
+                        ))}
+                        <span className="lcs-seq-len best-len">length = {best}</span>
+                    </div>
+                </div>
+            )}
+        </div>
+    )
+
+    // Define dock panels for DockableWorkspace
+    const dockPanels = [
+        {
+            id: 'viz',
+            title: 'Visualization',
+            subtitle: 'Hash set state and sequence tracking',
+            defaultZone: 'left',
+            content: <VisualizationContent />,
+        },
+        {
+            id: 'code',
+            title: 'Code Trace',
+            subtitle: step ? `Active line ${step.activeLine}` : 'Line-by-line solution view',
+            defaultZone: 'right',
+            content: (
+                <CodeTracePanel
+                    step={step}
+                    codeLines={SOLUTION_CODE}
+                    onActiveLineDomChange={setActiveLineDom}
+                    autoScroll={autoScrollCode}
+                />
+            ),
+        },
+    ]
+
     return (
         <div className="lcs-shell">
-            <section className="lcs-panel">
-                <header className="lcs-head">
-                    <span>Longest Consecutive Sequence · Hash Set</span>
-                    {inputError && <span className="lcs-error">{inputError}</span>}
-                </header>
-                <div className="lcs-body">
-                    <div className="lcs-top-row">
-                        <div className="lcs-examples">
-                            {EXAMPLES.map(ex => (
-                                <button key={ex.label} className="lcs-chip" onClick={() => applyExample(ex)}>{ex.label}</button>
-                            ))}
-                        </div>
-                        <div className="lcs-input-group">
-                            <label className="lcs-label">nums (JSON array)</label>
-                            <input className="lcs-input" value={input}
-                                onChange={e => { setInput(e.target.value); handleReset() }} />
-                        </div>
-                    </div>
+            <div className="lcs-header">
+                <span>Longest Consecutive Sequence · Hash Set</span>
+                {inputError && <span className="lcs-error">{inputError}</span>}
+            </div>
 
-                    {/* Sorted set grid */}
-                    <div className="lcs-section-title">Sorted Unique Values (Hash Set)</div>
-                    <div className="lcs-set-row">
-                        {sortedUnique.map((val) => {
-                            const isActive = activeSequence.includes(val)
-                            const isBest = bestSequence.includes(val) && !isActive
-                            const isCurrent = val === currentNum
-                            const isStart = isCurrent && prevExists === false
-                            const isSkip = isCurrent && prevExists === true
-                            return (
-                                <motion.div
-                                    key={val}
-                                    className={['lcs-cell',
-                                        isActive ? 'active' : '',
-                                        isBest ? 'best' : '',
-                                        isStart ? 'start' : '',
-                                        isSkip ? 'skip' : '',
-                                        isCurrent && !isStart && !isSkip ? 'current' : '',
-                                    ].filter(Boolean).join(' ')}
-                                    animate={{ y: isActive ? -8 : 0, scale: isActive ? 1.1 : (isCurrent ? 1.05 : 1) }}
-                                    transition={{ type: 'spring', stiffness: 400, damping: 26 }}
-                                >
-                                    {val}
-                                </motion.div>
-                            )
-                        })}
-                    </div>
-
-                    {/* Active sequence */}
-                    <AnimatePresence>
-                        {activeSequence.length > 0 && (
-                            <motion.div className="lcs-seq-box active"
-                                initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-                                <span className="lcs-seq-label">Current run</span>
-                                <div className="lcs-seq-vals">
-                                    {activeSequence.map((v, i) => (
-                                        <span key={i} className="lcs-seq-val active-val">{v}</span>
-                                    ))}
-                                    <span className="lcs-seq-len">length = {activeSequence.length}</span>
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-
-                    {/* Best so far */}
-                    {best > 0 && (
-                        <div className="lcs-seq-box best">
-                            <span className="lcs-seq-label">Best so far</span>
-                            <div className="lcs-seq-vals">
-                                {bestSequence.map((v, i) => (
-                                    <span key={i} className="lcs-seq-val best-val">{v}</span>
-                                ))}
-                                <span className="lcs-seq-len best-len">length = {best}</span>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </section>
-
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
+            <DockableWorkspace
+                title="Longest Consecutive Sequence Workspace"
+                panels={dockPanels}
+                initialLayout={{
+                    rows: [['viz', 'code']],
+                    minimized: [],
+                }}
+            />
 
             <div className={`lcs-status${step?.phase === 'done' ? ' ok' : ''}`}>
                 {step?.message ?? 'Press Play or Step to begin.'}
             </div>
 
-            <PlaybackControls
-                isPlaying={isPlaying} isDone={isDone} speed={speed}
-                onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward}
-                onReset={handleReset} prevDisabled={stepIndex < 0}
-                nextDisabled={isDone} resetDisabled={stepIndex < 0}
-                onSpeedChange={e => setSpeed(Number(e.target.value))}
-                showPatternOverlay={showPatternOverlay}
-                onShowPatternOverlayChange={setShowPatternOverlay}
-                patternOverlayLabel="Show pattern overlay"
-                showPatternOverlayToggle
-            />
+            <FloatingPanel title="Playback Controls">
+                <PlaybackControls
+                    onReset={handleReset}
+                    onPrev={stepBack}
+                    onPlayToggle={togglePlay}
+                    onNext={stepForward}
+                    resetDisabled={steps.length === 0}
+                    prevDisabled={stepIndex <= 0}
+                    nextDisabled={steps.length === 0 || isDone}
+                    isPlaying={isPlaying}
+                    isDone={isDone}
+                    speed={speed}
+                    onSpeedChange={(event) => setSpeed(Number(event.target.value))}
+                    speedIndicator={`${speed}ms`}
+                    autoScroll={autoScrollCode}
+                    onAutoScrollChange={setAutoScrollCode}
+                    autoScrollLabel="Auto-scroll code"
+                    showAutoScroll
+                    showPatternOverlay={showPatternOverlay}
+                    onShowPatternOverlayChange={setShowPatternOverlay}
+                    patternOverlayLabel="Show pattern overlay"
+                    showPatternOverlayToggle
+                />
+            </FloatingPanel>
 
             {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>

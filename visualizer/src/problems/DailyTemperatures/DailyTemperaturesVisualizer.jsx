@@ -3,8 +3,11 @@ import { motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import PatternOverlay from '../../components/PatternOverlay'
+import DockableWorkspace from '../../components/shared/DockableWorkspace'
+import FloatingPanel from '../../components/shared/FloatingPanel'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import { usePatternOverlay } from '../../hooks/usePatternOverlay'
+import { useAutoScroll } from '../../hooks/useAutoScroll'
 import './DailyTemperaturesVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -60,6 +63,63 @@ const EXAMPLES = [
   { label: 'Decreasing', temps: [90, 80, 70, 60] },
 ]
 
+function VisualizationPanel({ step, temps, inputError, applyExample }) {
+  return (
+    <div className="dt-panel-body">
+      <div className="dt-section">
+        <h3 className="dt-section-title">Temperature Sequence</h3>
+        <div className="dt-examples">
+          {EXAMPLES.map((ex) => (
+            <button key={ex.label} className="dt-chip" onClick={() => applyExample(ex)}>
+              {ex.label}
+            </button>
+          ))}
+        </div>
+        {inputError && <span className="dt-error">{inputError}</span>}
+        <div className="dt-row">
+          {temps.map((t, i) => (
+            <motion.div
+              key={`${t}-${i}`}
+              className={`dt-cell ${step?.i === i ? 'active' : ''} ${step?.j === i ? 'resolved' : ''}`}
+              animate={step?.i === i ? { y: -5 } : { y: 0 }}
+            >
+              <span>{t}</span>
+              <small>{i}</small>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
+      <div className="dt-section">
+        <h3 className="dt-section-title">Days Until Warmer</h3>
+        <div className="dt-row result">
+          {(step?.res || Array(temps.length).fill(0)).map((v, i) => (
+            <div key={`r-${i}`} className="dt-result-cell">
+              {v}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function StackStatePanel({ step }) {
+  return (
+    <div className="dt-panel-body">
+      <div className="dt-section">
+        <h3 className="dt-section-title">Monotonic Stack</h3>
+        <div className="dt-stack">{(step?.stack || []).map((idx) => <span key={idx}>{idx}</span>)}</div>
+      </div>
+
+      <div className="dt-section">
+        <h3 className="dt-section-title">Current Step</h3>
+        <div className="dt-status">{step?.message || 'Press Play to start.'}</div>
+      </div>
+    </div>
+  )
+}
+
 export default function DailyTemperaturesVisualizer() {
   const [input, setInput] = useState('[73,74,75,71,69,72,76,73]')
   const { temps, inputError } = useMemo(() => {
@@ -73,55 +133,128 @@ export default function DailyTemperaturesVisualizer() {
   const { stepIndex, stepForward, stepBack, togglePlay, handleReset, isPlaying, speed, setSpeed, isDone } = usePlaybackState(steps.length)
   const step = stepIndex >= 0 ? steps[stepIndex] : null
   const applyExample = useCallback((ex) => { setInput(JSON.stringify(ex.temps)); handleReset() }, [handleReset])
+  const [autoScrollCode, setAutoScrollCode] = useAutoScroll()
   const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
+
+  const dockPanels = [
+    {
+      id: 'input',
+      title: 'Input & Visualization',
+      subtitle: temps.length ? `${temps.length} temperatures` : 'Enter temperatures to begin',
+      defaultZone: 'left',
+      content: (
+        <VisualizationPanel
+          step={step}
+          temps={temps}
+          inputError={inputError}
+          applyExample={applyExample}
+        />
+      ),
+    },
+    {
+      id: 'stack',
+      title: 'Stack State',
+      subtitle: step ? `Step ${stepIndex + 1} of ${steps.length}` : 'Press play to start',
+      defaultZone: 'left',
+      content: <StackStatePanel step={step} />,
+    },
+    {
+      id: 'code',
+      title: 'Code Trace',
+      subtitle: step ? `Active line ${step.activeLine}` : 'Line-by-line solution view',
+      defaultZone: 'full',
+      content: (
+        <CodeTracePanel
+          step={step}
+          codeLines={SOLUTION_CODE}
+          onActiveLineDomChange={setActiveLineDom}
+          autoScroll={autoScrollCode}
+        />
+      ),
+    },
+  ]
+
+  const summaryCards = [
+    { label: 'Algorithm', value: 'Monotonic Stack' },
+    { label: 'Time Complexity', value: 'O(n)' },
+    { label: 'Space Complexity', value: 'O(n)' },
+    { label: 'Temperatures', value: temps.length || '—' },
+  ]
 
   return (
     <div className="dt-shell">
-      <div className="dt-top">
-        <section className="dt-panel">
-          <header className="dt-head"><span>Monotonic Stack Flow</span>{inputError && <span className="dt-error">{inputError}</span>}</header>
-          <div className="dt-body">
-            <div className="dt-examples">{EXAMPLES.map((ex) => <button key={ex.label} className="dt-chip" onClick={() => applyExample(ex)}>{ex.label}</button>)}</div>
-            <input className="dt-input" value={input} onChange={(e) => { setInput(e.target.value); handleReset() }} />
-            <div className="dt-row">
-              {temps.map((t, i) => (
-                <motion.div key={`${t}-${i}`} className={`dt-cell ${step?.i === i ? 'active' : ''} ${step?.j === i ? 'resolved' : ''}`} animate={step?.i === i ? { y: -5 } : { y: 0 }}>
-                  <span>{t}</span><small>{i}</small>
-                </motion.div>
-              ))}
+      <section className="dt-hero">
+        <div className="dt-hero-copy">
+          <span className="dt-kicker">Daily Temperatures • Monotonic Stack</span>
+          <h2>Find Warmer Days Ahead</h2>
+          <p>
+            Trace through the monotonic stack algorithm to find how many days until a warmer temperature
+            for each day in the input sequence. Visualize the stack operations and result computation step-by-step.
+          </p>
+        </div>
+
+        <div className="dt-summary-grid">
+          {summaryCards.map((card) => (
+            <div key={card.label} className="dt-summary-card">
+              <span>{card.label}</span>
+              <strong>{card.value}</strong>
             </div>
-            <div className="dt-row result">
-              {(step?.res || Array(temps.length).fill(0)).map((v, i) => <div key={`r-${i}`} className="dt-result-cell">{v}</div>)}
-            </div>
-          </div>
-        </section>
-        <section className="dt-panel side">
-          <header className="dt-head"><span>Stack State</span></header>
-          <div className="dt-body">
-            <div className="dt-stack">{(step?.stack || []).map((idx) => <span key={idx}>{idx}</span>)}</div>
-            <div className="dt-status">{step?.message || 'Press Play.'}</div>
-          </div>
-        </section>
-      </div>
-      <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
-      <PlaybackControls
-        isPlaying={isPlaying}
-        isDone={isDone}
-        speed={speed}
-        onPlayToggle={togglePlay}
-        onPrev={stepBack}
-        onNext={stepForward}
-        onReset={handleReset}
-        prevDisabled={stepIndex < 0}
-        nextDisabled={isDone}
-        resetDisabled={stepIndex < 0}
-        onSpeedChange={(e) => setSpeed(Number(e.target.value))}
-        showPatternOverlay={showPatternOverlay}
-        onShowPatternOverlayChange={setShowPatternOverlay}
-        patternOverlayLabel="Show pattern overlay"
-        showPatternOverlayToggle
+          ))}
+        </div>
+
+        <div className="dt-input-section">
+          <label style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <span style={{ fontSize: '13px', fontWeight: '600', color: '#e2e8f0' }}>Input Temperatures</span>
+            <input
+              className="dt-input"
+              value={input}
+              onChange={(e) => {
+                setInput(e.target.value)
+                handleReset()
+              }}
+              placeholder="[73,74,75,71,69,72,76,73]"
+            />
+          </label>
+        </div>
+      </section>
+
+      <DockableWorkspace
+        title="Daily Temperatures Workspace"
+        panels={dockPanels}
+        initialLayout={{
+          rows: [['input', 'stack'], ['code']],
+          minimized: [],
+        }}
       />
-      {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
+
+      <FloatingPanel title="Playback Controls">
+        <PlaybackControls
+          isPlaying={isPlaying}
+          isDone={isDone}
+          speed={speed}
+          onPlayToggle={togglePlay}
+          onPrev={stepBack}
+          onNext={stepForward}
+          onReset={handleReset}
+          prevDisabled={stepIndex < 0}
+          nextDisabled={isDone}
+          resetDisabled={stepIndex < 0}
+          onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+          speedIndicator={`${speed}ms`}
+          autoScroll={autoScrollCode}
+          onAutoScrollChange={setAutoScrollCode}
+          autoScrollLabel="Auto-scroll code"
+          showAutoScroll
+          showPatternOverlay={showPatternOverlay}
+          onShowPatternOverlayChange={setShowPatternOverlay}
+          patternOverlayLabel="Show pattern overlay"
+          showPatternOverlayToggle
+        />
+      </FloatingPanel>
+
+      {showPatternOverlay && step && (
+        <PatternOverlay step={step} activeLineDom={activeLineDom} />
+      )}
     </div>
   )
 }

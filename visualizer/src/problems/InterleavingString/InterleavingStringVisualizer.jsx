@@ -3,8 +3,11 @@ import { motion } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
 import PatternOverlay from "../../components/PatternOverlay";
+import DockableWorkspace from "../../components/shared/DockableWorkspace";
+import FloatingPanel from "../../components/shared/FloatingPanel";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
 import { usePatternOverlay } from "../../hooks/usePatternOverlay";
+import { useAutoScroll } from "../../hooks/useAutoScroll";
 import "./InterleavingStringVisualizer.css";
 
 const SOLUTION_CODE = [
@@ -76,27 +79,31 @@ export default function InterleavingStringVisualizer() {
     const step = stepIndex >= 0 ? steps[stepIndex] : null;
     const applyEx = useCallback((e) => { setEx(e); handleReset(); }, [handleReset]);
     const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay();
+    const [autoScrollCode, setAutoScrollCode] = useAutoScroll();
 
     const m = ex.s1.length, n = ex.s2.length;
 
-    return (
-        <div className="is-shell">
+    // Panel content components
+    const InputPanelContent = () => (
+        <div className="is-panel-body">
             <div className="is-examples">
                 {EXAMPLES.map((e) => (
                     <button key={e.label} className={`is-chip ${ex.label === e.label ? "active" : ""}`} onClick={() => applyEx(e)}>{e.label}</button>
                 ))}
             </div>
 
-            {/* String labels */}
             <div className="is-strings">
                 <span className="is-str-lbl s1">s1: </span><span className="is-str-val">{ex.s1}</span>
                 <span className="is-str-lbl s2">s2: </span><span className="is-str-val">{ex.s2}</span>
                 <span className="is-str-lbl s3">s3: </span><span className="is-str-val">{ex.s3}</span>
             </div>
+        </div>
+    );
 
-            {/* DP Table */}
-            {step && (
-                <div className="is-panel">
+    const DPTablePanelContent = () => (
+        <div className="is-panel-body">
+            {step ? (
+                <>
                     <div className="is-panel-label">DP Table — dp[i][j] = can interleave s1[0..i-1] and s2[0..j-1] into s3[0..i+j-1]</div>
                     <div className="is-table-wrap">
                         <table className="is-table">
@@ -129,27 +136,101 @@ export default function InterleavingStringVisualizer() {
                             </tbody>
                         </table>
                     </div>
-                </div>
+                </>
+            ) : (
+                <div className="is-panel-label">Press play to begin.</div>
             )}
+        </div>
+    );
 
+    const ResultPanelContent = () => (
+        <div className="is-panel-body">
             {step?.result != null && (
                 <div className={`is-result ${step.result ? "true" : "false"}`}>
                     {step.result ? "✓ Is Interleaving" : "✗ Not Interleaving"}
                 </div>
             )}
-
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
             <div className="is-status">{step?.message ?? "Press Play to begin."}</div>
-            <PlaybackControls
-                isPlaying={isPlaying} isDone={isDone} speed={speed}
-                onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward} onReset={handleReset}
-                prevDisabled={stepIndex < 0} nextDisabled={isDone} resetDisabled={stepIndex < 0}
-                onSpeedChange={(e) => setSpeed(Number(e.target.value))}
-                showPatternOverlay={showPatternOverlay}
-                onShowPatternOverlayChange={setShowPatternOverlay}
-                patternOverlayLabel="Show pattern overlay"
-                showPatternOverlayToggle
+        </div>
+    );
+
+    const dockPanels = [
+        {
+            id: 'input',
+            title: 'Input Examples',
+            subtitle: `s1="${ex.s1}" s2="${ex.s2}" s3="${ex.s3}"`,
+            defaultZone: 'left',
+            content: <InputPanelContent />,
+        },
+        {
+            id: 'dp',
+            title: 'DP Table Visualization',
+            subtitle: step ? `Step ${stepIndex + 1} of ${steps.length}` : 'Waiting for playback...',
+            defaultZone: 'right',
+            content: <DPTablePanelContent />,
+        },
+        {
+            id: 'code',
+            title: 'Code Trace',
+            subtitle: step ? `Active line ${step.activeLine}` : 'Line-by-line solution view.',
+            defaultZone: 'full',
+            content: (
+                <CodeTracePanel
+                    step={step}
+                    codeLines={SOLUTION_CODE}
+                    onActiveLineDomChange={setActiveLineDom}
+                    autoScroll={autoScrollCode}
+                />
+            ),
+        },
+        {
+            id: 'result',
+            title: 'Result',
+            subtitle: step?.result != null ? (step.result ? 'Valid interleaving' : 'Invalid interleaving') : 'Awaiting result...',
+            defaultZone: 'full',
+            content: <ResultPanelContent />,
+        },
+    ];
+
+    return (
+        <div className="is-shell">
+            <DockableWorkspace
+                title="Interleaving String Solver"
+                panels={dockPanels}
+                initialLayout={{
+                    rows: [
+                        ['input', 'dp'],
+                        ['code', 'result'],
+                    ],
+                    minimized: [],
+                }}
             />
+
+            <FloatingPanel title="Playback Controls">
+                <PlaybackControls
+                    onReset={handleReset}
+                    onPrev={stepBack}
+                    onPlayToggle={togglePlay}
+                    onNext={stepForward}
+                    resetDisabled={steps.length === 0}
+                    prevDisabled={stepIndex <= 0}
+                    nextDisabled={steps.length === 0 || isDone}
+                    isPlaying={isPlaying}
+                    isDone={isDone}
+                    speed={speed}
+                    onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+                    speedIndicator={`${speed}ms`}
+                    autoScroll={autoScrollCode}
+                    onAutoScrollChange={setAutoScrollCode}
+                    autoScrollLabel="Auto-scroll code"
+                    showAutoScroll
+                    showPatternOverlay={showPatternOverlay}
+                    onShowPatternOverlayChange={setShowPatternOverlay}
+                    patternOverlayLabel="Show pattern overlay"
+                    showPatternOverlayToggle
+                />
+            </FloatingPanel>
+
             {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     );

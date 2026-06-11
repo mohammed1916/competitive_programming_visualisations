@@ -3,8 +3,11 @@ import { motion } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
 import PatternOverlay from "../../components/PatternOverlay";
+import FloatingPanel from "../../components/shared/FloatingPanel";
+import DockableWorkspace from "../../components/shared/DockableWorkspace";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
 import { usePatternOverlay } from "../../hooks/usePatternOverlay";
+import { useAutoScroll } from "../../hooks/useAutoScroll";
 import "./EditDistanceVisualizer.css";
 
 const SOLUTION_CODE = [
@@ -61,12 +64,55 @@ export default function EditDistanceVisualizer() {
     usePlaybackState(steps.length);
   const step = stepIndex >= 0 ? steps[stepIndex] : null;
   const applyEx = useCallback((e) => { setEx(e); handleReset(); }, [handleReset]);
+  const [autoScrollCode, setAutoScrollCode] = useAutoScroll();
   const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay();
 
   const maxVal = step ? Math.max(...step.dp.flat()) : 1;
 
-  return (
-    <div className="ed-shell">
+  // DP Table visualization panel component
+  const DPTablePanel = () => (
+    step && (
+      <div className="ed-panel">
+        <div className="ed-panel-label">DP Table</div>
+        <div className="ed-table-wrap">
+          <table className="ed-table">
+            <thead>
+              <tr>
+                <th className="ed-th corner"></th>
+                <th className="ed-th">ε</th>
+                {ex.w2.split("").map((c, j) => <th key={j} className="ed-th w2ch">{c}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {step.dp.map((row, i) => (
+                <tr key={i}>
+                  <th className="ed-th w1ch">{i === 0 ? "ε" : ex.w1[i - 1]}</th>
+                  {row.map((val, j) => {
+                    const isCur = step.curI === i && step.curJ === j;
+                    const intensity = maxVal > 0 ? val / maxVal : 0;
+                    return (
+                      <motion.td key={j}
+                        className={`ed-td ${isCur ? "cur" : val === 0 ? "zero" : ""}`}
+                        animate={{ scale: isCur ? 1.25 : 1 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 22 }}
+                        style={{ background: isCur ? undefined : `rgba(137,180,250,${intensity * 0.35})` }}
+                      >
+                        {val}
+                      </motion.td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    )
+  );
+
+  // Input/Config panel component
+  const InputPanel = () => (
+    <div className="ed-input-panel">
       <div className="ed-examples">
         {EXAMPLES.map((e) => (
           <button key={e.label} className={`ed-chip ${ex.label === e.label ? "active" : ""}`} onClick={() => applyEx(e)}>{e.label}</button>
@@ -78,57 +124,78 @@ export default function EditDistanceVisualizer() {
         <span className="ed-lbl w2">word2:</span><span className="ed-val">{ex.w2 || '""'}</span>
       </div>
 
-      {step && (
-        <div className="ed-panel">
-          <div className="ed-panel-label">DP Table</div>
-          <div className="ed-table-wrap">
-            <table className="ed-table">
-              <thead>
-                <tr>
-                  <th className="ed-th corner"></th>
-                  <th className="ed-th">ε</th>
-                  {ex.w2.split("").map((c, j) => <th key={j} className="ed-th w2ch">{c}</th>)}
-                </tr>
-              </thead>
-              <tbody>
-                {step.dp.map((row, i) => (
-                  <tr key={i}>
-                    <th className="ed-th w1ch">{i === 0 ? "ε" : ex.w1[i - 1]}</th>
-                    {row.map((val, j) => {
-                      const isCur = step.curI === i && step.curJ === j;
-                      const intensity = maxVal > 0 ? val / maxVal : 0;
-                      return (
-                        <motion.td key={j}
-                          className={`ed-td ${isCur ? "cur" : val === 0 ? "zero" : ""}`}
-                          animate={{ scale: isCur ? 1.25 : 1 }}
-                          transition={{ type: "spring", stiffness: 400, damping: 22 }}
-                          style={{ background: isCur ? undefined : `rgba(137,180,250,${intensity * 0.35})` }}
-                        >
-                          {val}
-                        </motion.td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
       <div className="ed-status">{step?.message ?? "Press Play to begin."}</div>
-      <PlaybackControls
-        isPlaying={isPlaying} isDone={isDone} speed={speed}
-        onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward} onReset={handleReset}
-        prevDisabled={stepIndex < 0} nextDisabled={isDone} resetDisabled={stepIndex < 0}
-        onSpeedChange={(e) => setSpeed(Number(e.target.value))}
-        showPatternOverlay={showPatternOverlay}
-        onShowPatternOverlayChange={setShowPatternOverlay}
-        patternOverlayLabel="Show pattern overlay"
-        showPatternOverlayToggle
+    </div>
+  );
+
+  // Create dock panels
+  const dockPanels = [
+    {
+      id: 'input',
+      title: 'Input',
+      subtitle: `word1: "${ex.w1}" → word2: "${ex.w2}"`,
+      content: <InputPanel />,
+    },
+    {
+      id: 'table',
+      title: 'DP Table',
+      subtitle: step ? `Step ${stepIndex + 1}/${steps.length}` : 'Edit Distance Table',
+      content: <DPTablePanel />,
+    },
+    {
+      id: 'code',
+      title: 'Code Trace',
+      subtitle: step ? `Line ${step.activeLine}` : 'Solution code',
+      content: (
+        <CodeTracePanel
+          step={step}
+          codeLines={SOLUTION_CODE}
+          onActiveLineDomChange={setActiveLineDom}
+          autoScroll={autoScrollCode}
+        />
+      ),
+    },
+  ];
+
+  return (
+    <div className="ed-shell">
+      <DockableWorkspace
+        title="Edit Distance Visualizer"
+        panels={dockPanels}
+        initialLayout={{
+          rows: [['input', 'table'], ['code']],
+          minimized: [],
+        }}
       />
-      {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
+
+      <FloatingPanel title="Playback Controls">
+        <PlaybackControls
+          onReset={handleReset}
+          onPrev={stepBack}
+          onPlayToggle={togglePlay}
+          onNext={stepForward}
+          resetDisabled={steps.length === 0}
+          prevDisabled={stepIndex <= 0}
+          nextDisabled={steps.length === 0 || isDone}
+          isPlaying={isPlaying}
+          isDone={isDone}
+          speed={speed}
+          onSpeedChange={(event) => setSpeed(Number(event.target.value))}
+          speedIndicator={`${speed}ms`}
+          autoScroll={autoScrollCode}
+          onAutoScrollChange={setAutoScrollCode}
+          autoScrollLabel="Auto-scroll code"
+          showAutoScroll
+          showPatternOverlay={showPatternOverlay}
+          onShowPatternOverlayChange={setShowPatternOverlay}
+          patternOverlayLabel="Show pattern overlay"
+          showPatternOverlayToggle
+        />
+      </FloatingPanel>
+
+      {showPatternOverlay && step && (
+        <PatternOverlay step={step} activeLineDom={activeLineDom} />
+      )}
     </div>
   );
 }

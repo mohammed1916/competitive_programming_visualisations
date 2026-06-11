@@ -3,7 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import PatternOverlay from '../../components/PatternOverlay'
+import DockableWorkspace from '../../components/shared/DockableWorkspace'
+import FloatingPanel from '../../components/shared/FloatingPanel'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
+import { useAutoScroll } from '../../hooks/useAutoScroll'
 import { usePatternOverlay } from '../../hooks/usePatternOverlay'
 import './LRUCacheVisualizer.css'
 
@@ -200,6 +203,7 @@ const EXAMPLES = [
 export default function LRUCacheVisualizer() {
   const [commandsInput, setCommandsInput] = useState('["LRUCache", "put", "put", "get", "put", "get", "put", "get", "get", "get"]')
   const [argsInput, setArgsInput] = useState('[[2], [1, 1], [2, 2], [1], [3, 3], [2], [4, 4], [1], [3], [4]]')
+  const [autoScrollCode, setAutoScrollCode] = useAutoScroll()
   const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
   const { commands, argsList, inputError } = useMemo(() => {
@@ -234,179 +238,211 @@ export default function LRUCacheVisualizer() {
     handleReset()
   }, [handleReset])
 
+  const CommandsInputPanel = (
+    <div className="lru-panel-body">
+      <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
+        {EXAMPLES.map((ex) => (
+          <button
+            key={ex.label}
+            onClick={() => applyExample(ex)}
+            className="lru-example-btn"
+          >
+            {ex.label}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <span style={{ fontSize: 11, color: '#94a3b8' }}>commands</span>
+          <input
+            value={commandsInput}
+            onChange={(e) => { setCommandsInput(e.target.value); handleReset() }}
+            className="lru-input"
+          />
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <span style={{ fontSize: 11, color: '#94a3b8' }}>args</span>
+          <input
+            value={argsInput}
+            onChange={(e) => { setArgsInput(e.target.value); handleReset() }}
+            className="lru-input"
+          />
+        </div>
+      </div>
+
+      {inputError && <span style={{ color: '#f87171', marginBottom: 12 }}>{inputError}</span>}
+
+      <div className="lru-commands-list">
+        {commands.map((cmd, i) => {
+          const isActive = step?.cmdIndex === i
+          const isPassed = step?.cmdIndex > i || step?.phase === 'done'
+          const output = step?.outputs?.[i]
+
+          return (
+            <div key={i} className={`lru-cmd-item ${isActive ? 'active' : ''} ${isPassed ? 'passed' : ''}`}>
+              <span className="lru-cmd-idx">{i}</span>
+              <span className="lru-cmd-name">{cmd}</span>
+              <span className="lru-cmd-args">({argsList[i].join(', ')})</span>
+              <span className="lru-cmd-output">
+                {output !== undefined ? `→ ${output === null ? 'null' : output}` : ''}
+              </span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+
+  const VisualizationPanel = (
+    <div className="lru-panel-body lru-visuals">
+      {/* Linked List visualization */}
+      <div className="lru-list-container">
+        <span className="lru-section-title">
+          Doubly Linked List (Left=LRU, Right=MRU)
+        </span>
+        <div className="lru-list-track">
+          <div className="lru-dummy-node">LEFT</div>
+
+          <AnimatePresence mode="popLayout">
+            {step?.list?.map((key, index) => {
+              const node = step.cache[key]
+              if (!node) return null
+              const isNew = step.phase === `cmd_${step.cmdIndex}_create` || step.phase === `cmd_${step.cmdIndex}_insert`
+              const isActive = step.currArgs?.[0] === key
+
+              return (
+                <motion.div
+                  key={key}
+                  layout
+                  initial={{ opacity: 0, scale: 0.5, y: -20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.5, y: 20 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                  className={`lru-node ${isActive ? 'active' : ''}`}
+                >
+                  <div className="lru-node-key">{node.key}</div>
+                  <div className="lru-node-val">{node.val}</div>
+                  {/* Connector to next */}
+                  <div className="lru-node-connector" />
+                </motion.div>
+              )
+            })}
+          </AnimatePresence>
+
+          <div className="lru-dummy-node right">RIGHT</div>
+        </div>
+      </div>
+
+      {/* Hash Map visualization */}
+      <div className="lru-map-container">
+        <div className="lru-map-header">
+          <span className="lru-section-title">Hash Map (self.cache)</span>
+          <span className="lru-capacity-badge">
+            Size: {Object.keys(step?.cache || {}).length} / {step?.capacity || 0}
+          </span>
+        </div>
+        <div className="lru-map-grid">
+          <AnimatePresence>
+            {step && Object.entries(step.cache).map(([keyStr, node]) => {
+              const key = Number(keyStr)
+              const isActive = step.currArgs?.[0] === key
+              const isDeleting = step.phase.includes('remove') && step.currArgs?.[0] === key
+
+              return (
+                <motion.div
+                  key={`map-${key}`}
+                  layout
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8, backgroundColor: '#ef4444' }}
+                  className={`lru-map-entry ${isActive ? 'active' : ''}`}
+                >
+                  <span className="lru-map-key">{key}</span>
+                  <span className="lru-map-arrow">→</span>
+                  <span className="lru-map-ptr">Node({node.key}, {node.val})</span>
+                </motion.div>
+              )
+            })}
+          </AnimatePresence>
+          {(!step || Object.keys(step.cache).length === 0) && (
+            <span style={{ color: '#475569', fontStyle: 'italic', fontSize: 13, padding: 8 }}>Cache is empty</span>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+
+  const dockPanels = [
+    {
+      id: 'input',
+      title: 'Sequence Commands',
+      subtitle: inputError ? 'Fix the input to resume playback.' : 'Edit commands and arguments.',
+      content: CommandsInputPanel,
+    },
+    {
+      id: 'viz',
+      title: 'Doubly Linked List & Hash Map',
+      subtitle: step ? `Cache: ${Object.keys(step?.cache || {}).length} / ${step?.capacity || 0}` : 'Data structure visualization.',
+      content: VisualizationPanel,
+    },
+    {
+      id: 'code',
+      title: 'Code Trace',
+      subtitle: step ? `Active line ${step.activeLine}` : 'Line-by-line solution view.',
+      content: (
+        <CodeTracePanel
+          step={step}
+          codeLines={SOLUTION_CODE}
+          onActiveLineDomChange={setActiveLineDom}
+          autoScroll={autoScrollCode}
+        />
+      ),
+    },
+  ]
+
   return (
     <div className="lru-shell">
-      <div className="lru-top">
-        <div className="lru-panel" style={{ flex: 1 }}>
-          <div className="lru-panel-head">
-            Sequence Commands
-            {inputError && <span style={{ color: '#f87171', marginLeft: 8 }}>{inputError}</span>}
-          </div>
-          <div className="lru-panel-body">
-            <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
-              {EXAMPLES.map((ex) => (
-                <button
-                  key={ex.label}
-                  onClick={() => applyExample(ex)}
-                  className="lru-example-btn"
-                >
-                  {ex.label}
-                </button>
-              ))}
-            </div>
+      <DockableWorkspace
+        title="LRU Cache Visualizer"
+        panels={dockPanels}
+        initialLayout={{
+          rows: [
+            ['input', 'viz'],
+            ['code'],
+          ],
+          minimized: [],
+        }}
+      />
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <span style={{ fontSize: 11, color: '#94a3b8' }}>commands</span>
-                <input
-                  value={commandsInput}
-                  onChange={(e) => { setCommandsInput(e.target.value); handleReset() }}
-                  className="lru-input"
-                />
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <span style={{ fontSize: 11, color: '#94a3b8' }}>args</span>
-                <input
-                  value={argsInput}
-                  onChange={(e) => { setArgsInput(e.target.value); handleReset() }}
-                  className="lru-input"
-                />
-              </div>
-            </div>
-
-            <div className="lru-commands-list">
-              {commands.map((cmd, i) => {
-                const isActive = step?.cmdIndex === i
-                const isPassed = step?.cmdIndex > i || step?.phase === 'done'
-                const output = step?.outputs?.[i]
-
-                return (
-                  <div key={i} className={`lru-cmd-item \${isActive ? 'active' : ''} \${isPassed ? 'passed' : ''}`}>
-                    <span className="lru-cmd-idx">{i}</span>
-                    <span className="lru-cmd-name">{cmd}</span>
-                    <span className="lru-cmd-args">({argsList[i].join(', ')})</span>
-                    <span className="lru-cmd-output">
-                      {output !== undefined ? `→ \${output === null ? 'null' : output}` : ''}
-                    </span>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        </div>
-
-        <div className="lru-panel" style={{ flex: 1.5 }}>
-          <div className="lru-panel-head">Doubly Linked List & Hash Map</div>
-          <div className="lru-panel-body lru-visuals">
-
-            {/* Linked List visualization */}
-            <div className="lru-list-container">
-              <span className="lru-section-title">
-                Doubly Linked List (Left=LRU, Right=MRU)
-              </span>
-              <div className="lru-list-track">
-                <div className="lru-dummy-node">LEFT</div>
-
-                <AnimatePresence mode="popLayout">
-                  {step?.list?.map((key, index) => {
-                    const node = step.cache[key]
-                    if (!node) return null
-                    const isNew = step.phase === `cmd_\${step.cmdIndex}_create` || step.phase === `cmd_\${step.cmdIndex}_insert`
-                    const isActive = step.currArgs?.[0] === key
-
-                    return (
-                      <motion.div
-                        key={key}
-                        layout
-                        initial={{ opacity: 0, scale: 0.5, y: -20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.5, y: 20 }}
-                        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                        className={`lru-node \${isActive ? 'active' : ''}`}
-                      >
-                        <div className="lru-node-key">{node.key}</div>
-                        <div className="lru-node-val">{node.val}</div>
-                        {/* Connector to next */}
-                        <div className="lru-node-connector" />
-                      </motion.div>
-                    )
-                  })}
-                </AnimatePresence>
-
-                <div className="lru-dummy-node right">RIGHT</div>
-              </div>
-            </div>
-
-            {/* Hash Map visualization */}
-            <div className="lru-map-container">
-              <div className="lru-map-header">
-                <span className="lru-section-title">Hash Map (self.cache)</span>
-                <span className="lru-capacity-badge">
-                  Size: {Object.keys(step?.cache || {}).length} / {step?.capacity || 0}
-                </span>
-              </div>
-              <div className="lru-map-grid">
-                <AnimatePresence>
-                  {step && Object.entries(step.cache).map(([keyStr, node]) => {
-                    const key = Number(keyStr)
-                    const isActive = step.currArgs?.[0] === key
-                    const isDeleting = step.phase.includes('remove') && step.currArgs?.[0] === key
-
-                    return (
-                      <motion.div
-                        key={`map-\${key}`}
-                        layout
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.8, backgroundColor: '#ef4444' }}
-                        className={`lru-map-entry \${isActive ? 'active' : ''}`}
-                      >
-                        <span className="lru-map-key">{key}</span>
-                        <span className="lru-map-arrow">→</span>
-                        <span className="lru-map-ptr">Node({node.key}, {node.val})</span>
-                      </motion.div>
-                    )
-                  })}
-                </AnimatePresence>
-                {(!step || Object.keys(step.cache).length === 0) && (
-                  <span style={{ color: '#475569', fontStyle: 'italic', fontSize: 13, padding: 8 }}>Cache is empty</span>
-                )}
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </div>
-
-      <div className="lru-middle">
-        <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
-      </div>
-
-      <div className={`lru-status \${step?.phase?.includes('return') ? 'success' : step?.phase?.includes('notfound') || step?.phase?.includes('lru') ? 'fail' : ''}`}>
-        {step?.message ?? 'Press Play or Step to begin.'}
-      </div>
-
-      <div className="lru-dock">
+      <FloatingPanel title="Playback Controls">
         <PlaybackControls
+          onReset={handleReset}
+          onPrev={stepBack}
+          onPlayToggle={togglePlay}
+          onNext={stepForward}
+          resetDisabled={steps.length === 0}
+          prevDisabled={stepIndex < 0}
+          nextDisabled={steps.length === 0 || isDone}
           isPlaying={isPlaying}
           isDone={isDone}
           speed={speed}
-          onPlayToggle={togglePlay}
-          onPrev={stepBack}
-          onNext={stepForward}
-          onReset={handleReset}
-          prevDisabled={stepIndex < 0}
-          nextDisabled={isDone}
-          resetDisabled={stepIndex < 0}
           onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+          speedIndicator={`${speed}ms`}
+          autoScroll={autoScrollCode}
+          onAutoScrollChange={setAutoScrollCode}
+          autoScrollLabel="Auto-scroll code"
+          showAutoScroll
           showPatternOverlay={showPatternOverlay}
           onShowPatternOverlayChange={setShowPatternOverlay}
           patternOverlayLabel="Show pattern overlay"
           showPatternOverlayToggle
         />
-      </div>
+      </FloatingPanel>
 
-      {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
+      {showPatternOverlay && step && (
+        <PatternOverlay step={step} activeLineDom={activeLineDom} />
+      )}
     </div>
   )
 }

@@ -3,8 +3,11 @@ import { motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import PatternOverlay from '../../components/PatternOverlay'
+import DockableWorkspace from '../../components/shared/DockableWorkspace'
+import FloatingPanel from '../../components/shared/FloatingPanel'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import { usePatternOverlay } from '../../hooks/usePatternOverlay'
+import { useAutoScroll } from '../../hooks/useAutoScroll'
 import './LCSVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -86,6 +89,7 @@ export default function LCSVisualizer() {
     const { stepIndex, stepForward, stepBack, togglePlay, handleReset, isPlaying, speed, setSpeed, isDone } = usePlaybackState(steps.length)
     const step = stepIndex >= 0 ? steps[stepIndex] : null
     const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
+    const [autoScrollCode, setAutoScrollCode] = useAutoScroll()
 
     const applyExample = useCallback((ex) => {
         setText1(ex.t1)
@@ -97,101 +101,154 @@ export default function LCSVisualizer() {
 
     const CELL = Math.min(44, Math.floor(380 / (t2.length + 2)))
 
+    // 2-D DP Table Panel Component
+    const DPTablePanel = () => (
+        <div className="lcs-body">
+            <div className="lcs-examples">
+                {EXAMPLES.map((ex) => (
+                    <button key={ex.label} className="lcs-chip" onClick={() => applyExample(ex)}>{ex.label}</button>
+                ))}
+            </div>
+            <div className="lcs-inputs">
+                <label>text1 <input className="lcs-input" value={text1} onChange={(e) => { setText1(e.target.value.slice(0, MAX_LEN)); handleReset() }} /></label>
+                <label>text2 <input className="lcs-input" value={text2} onChange={(e) => { setText2(e.target.value.slice(0, MAX_LEN)); handleReset() }} /></label>
+            </div>
+            <div className="lcs-table-wrap">
+                <table className="lcs-table" style={{ '--cell': CELL + 'px' }}>
+                    <thead>
+                        <tr>
+                            <th />
+                            <th className="lcs-th-label">ε</th>
+                            {t2.split('').map((c, j) => (
+                                <th key={j} className={`lcs-th-label ${step?.activeJ === j + 1 ? 'active-col' : ''}`}>{c}</th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {dp.map((row, i) => (
+                            <tr key={i}>
+                                <td className={`lcs-th-label ${step?.activeI === i ? 'active-row' : ''}`}>
+                                    {i === 0 ? 'ε' : t1[i - 1]}
+                                </td>
+                                {row.map((val, j) => {
+                                    const isActive = step?.activeI === i && step?.activeJ === j
+                                    const isMatch = isActive && step?.match
+                                    const isNoMatch = isActive && step?.match === false
+                                    return (
+                                        <motion.td
+                                            key={j}
+                                            className={`lcs-cell ${isActive ? 'active' : ''} ${isMatch ? 'match' : ''} ${isNoMatch ? 'no-match' : ''}`}
+                                            animate={isActive ? { scale: 1.15 } : { scale: 1 }}
+                                            transition={{ type: 'spring', stiffness: 350, damping: 22 }}
+                                        >
+                                            {val}
+                                        </motion.td>
+                                    )
+                                })}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    )
+
+    // Current Cell Info Panel Component
+    const CurrentCellPanel = () => (
+        <div className="lcs-body">
+            <div className="lcs-info-row"><span className="lcs-label">i</span><strong className="lcs-val">{step?.activeI ?? '—'}</strong></div>
+            <div className="lcs-info-row"><span className="lcs-label">j</span><strong className="lcs-val">{step?.activeJ ?? '—'}</strong></div>
+            <div className="lcs-info-row">
+                <span className="lcs-label">chars</span>
+                <strong className={`lcs-val ${step?.match === true ? 'match-ok' : step?.match === false ? 'match-fail' : ''}`}>
+                    {step && step.activeI > 0 && step.activeJ > 0
+                        ? `'${t1[step.activeI - 1]}' vs '${t2[step.activeJ - 1]}'`
+                        : '—'}
+                </strong>
+            </div>
+            <div className="lcs-info-row">
+                <span className="lcs-label">dp[i][j]</span>
+                <strong className="lcs-val accent">
+                    {step && step.activeI >= 0 && step.activeJ >= 0
+                        ? dp[step.activeI]?.[step.activeJ] ?? '—'
+                        : '—'}
+                </strong>
+            </div>
+            <div className={`lcs-result ${step?.phase === 'done' ? 'done' : ''}`}>
+                {step?.phase === 'done' ? `LCS = ${dp[t1.length][t2.length]}` : 'Computing…'}
+            </div>
+        </div>
+    )
+
+    const dockPanels = [
+        {
+            id: 'table',
+            title: '2-D DP Table',
+            subtitle: `text1="${t1}", text2="${t2}"`,
+            defaultZone: 'left',
+            content: <DPTablePanel />,
+        },
+        {
+            id: 'cell-info',
+            title: 'Current Cell',
+            subtitle: step ? `Step ${stepIndex + 1} of ${steps.length}` : 'Ready',
+            defaultZone: 'right',
+            content: <CurrentCellPanel />,
+        },
+        {
+            id: 'code',
+            title: 'Code Trace',
+            subtitle: step ? `Line ${step.activeLine}` : 'Solution code',
+            defaultZone: 'full',
+            content: (
+                <CodeTracePanel
+                    step={step}
+                    codeLines={SOLUTION_CODE}
+                    onActiveLineDomChange={setActiveLineDom}
+                    autoScroll={autoScrollCode}
+                />
+            ),
+        },
+    ]
+
     return (
         <div className="lcs-shell">
-            <div className="lcs-top">
-                <section className="lcs-panel main">
-                    <header className="lcs-head"><span>2-D DP Table</span></header>
-                    <div className="lcs-body">
-                        <div className="lcs-examples">
-                            {EXAMPLES.map((ex) => (
-                                <button key={ex.label} className="lcs-chip" onClick={() => applyExample(ex)}>{ex.label}</button>
-                            ))}
-                        </div>
-                        <div className="lcs-inputs">
-                            <label>text1 <input className="lcs-input" value={text1} onChange={(e) => { setText1(e.target.value.slice(0, MAX_LEN)); handleReset() }} /></label>
-                            <label>text2 <input className="lcs-input" value={text2} onChange={(e) => { setText2(e.target.value.slice(0, MAX_LEN)); handleReset() }} /></label>
-                        </div>
-                        <div className="lcs-table-wrap">
-                            <table className="lcs-table" style={{ '--cell': CELL + 'px' }}>
-                                <thead>
-                                    <tr>
-                                        <th />
-                                        <th className="lcs-th-label">ε</th>
-                                        {t2.split('').map((c, j) => (
-                                            <th key={j} className={`lcs-th-label ${step?.activeJ === j + 1 ? 'active-col' : ''}`}>{c}</th>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {dp.map((row, i) => (
-                                        <tr key={i}>
-                                            <td className={`lcs-th-label ${step?.activeI === i ? 'active-row' : ''}`}>
-                                                {i === 0 ? 'ε' : t1[i - 1]}
-                                            </td>
-                                            {row.map((val, j) => {
-                                                const isActive = step?.activeI === i && step?.activeJ === j
-                                                const isMatch = isActive && step?.match
-                                                const isNoMatch = isActive && step?.match === false
-                                                return (
-                                                    <motion.td
-                                                        key={j}
-                                                        className={`lcs-cell ${isActive ? 'active' : ''} ${isMatch ? 'match' : ''} ${isNoMatch ? 'no-match' : ''}`}
-                                                        animate={isActive ? { scale: 1.15 } : { scale: 1 }}
-                                                        transition={{ type: 'spring', stiffness: 350, damping: 22 }}
-                                                    >
-                                                        {val}
-                                                    </motion.td>
-                                                )
-                                            })}
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
-                <section className="lcs-panel side">
-                    <header className="lcs-head"><span>Current Cell</span></header>
-                    <div className="lcs-body">
-                        <div className="lcs-info-row"><span className="lcs-label">i</span><strong className="lcs-val">{step?.activeI ?? '—'}</strong></div>
-                        <div className="lcs-info-row"><span className="lcs-label">j</span><strong className="lcs-val">{step?.activeJ ?? '—'}</strong></div>
-                        <div className="lcs-info-row">
-                            <span className="lcs-label">chars</span>
-                            <strong className={`lcs-val ${step?.match === true ? 'match-ok' : step?.match === false ? 'match-fail' : ''}`}>
-                                {step && step.activeI > 0 && step.activeJ > 0
-                                    ? `'${t1[step.activeI - 1]}' vs '${t2[step.activeJ - 1]}'`
-                                    : '—'}
-                            </strong>
-                        </div>
-                        <div className="lcs-info-row">
-                            <span className="lcs-label">dp[i][j]</span>
-                            <strong className="lcs-val accent">
-                                {step && step.activeI >= 0 && step.activeJ >= 0
-                                    ? dp[step.activeI]?.[step.activeJ] ?? '—'
-                                    : '—'}
-                            </strong>
-                        </div>
-                        <div className={`lcs-result ${step?.phase === 'done' ? 'done' : ''}`}>
-                            {step?.phase === 'done' ? `LCS = ${dp[t1.length][t2.length]}` : 'Computing…'}
-                        </div>
-                    </div>
-                </section>
-            </div>
-
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
-            <div className="lcs-status">{step?.message || 'Press Play to begin.'}</div>
-            <PlaybackControls
-                isPlaying={isPlaying} isDone={isDone} speed={speed}
-                onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward} onReset={handleReset}
-                prevDisabled={stepIndex < 0} nextDisabled={isDone} resetDisabled={stepIndex < 0}
-                onSpeedChange={(e) => setSpeed(Number(e.target.value))}
-                showPatternOverlay={showPatternOverlay}
-                onShowPatternOverlayChange={setShowPatternOverlay}
-                patternOverlayLabel="Show pattern overlay"
-                showPatternOverlayToggle
+            <DockableWorkspace
+                title="Longest Common Subsequence Workspace"
+                panels={dockPanels}
+                initialLayout={{
+                    rows: [
+                        ['table', 'cell-info'],
+                        ['code'],
+                    ],
+                    minimized: [],
+                }}
             />
+
+            <FloatingPanel title="Playback Controls">
+                <PlaybackControls
+                    isPlaying={isPlaying}
+                    isDone={isDone}
+                    speed={speed}
+                    onPlayToggle={togglePlay}
+                    onPrev={stepBack}
+                    onNext={stepForward}
+                    onReset={handleReset}
+                    prevDisabled={stepIndex < 0}
+                    nextDisabled={isDone}
+                    resetDisabled={stepIndex < 0}
+                    onSpeedChange={(e) => setSpeed(Number(e.target.value))}
+                    showPatternOverlay={showPatternOverlay}
+                    onShowPatternOverlayChange={setShowPatternOverlay}
+                    patternOverlayLabel="Show pattern overlay"
+                    showPatternOverlayToggle
+                    autoScroll={autoScrollCode}
+                    onAutoScrollChange={setAutoScrollCode}
+                    autoScrollLabel="Auto-scroll code"
+                    showAutoScroll
+                />
+            </FloatingPanel>
+
             {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     )

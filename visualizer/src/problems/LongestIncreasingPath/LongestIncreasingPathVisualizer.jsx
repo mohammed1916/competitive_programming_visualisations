@@ -3,7 +3,10 @@ import { motion } from "framer-motion";
 import CodeTracePanel from "../../components/CodeTracePanel";
 import PlaybackControls from "../../components/PlaybackControls";
 import PatternOverlay from "../../components/PatternOverlay";
+import DockableWorkspace from "../../components/shared/DockableWorkspace";
+import FloatingPanel from "../../components/shared/FloatingPanel";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
+import { useAutoScroll } from "../../hooks/useAutoScroll";
 import { usePatternOverlay } from "../../hooks/usePatternOverlay";
 import "./LongestIncreasingPathVisualizer.css";
 
@@ -113,6 +116,7 @@ export default function LongestIncreasingPathVisualizer() {
         usePlaybackState(steps.length);
     const step = stepIndex >= 0 ? steps[stepIndex] : null;
     const applyEx = useCallback((e) => { setEx(e); handleReset(); }, [handleReset]);
+    const [autoScrollCode, setAutoScrollCode] = useAutoScroll();
     const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay();
 
     const matrix = ex.matrix;
@@ -125,8 +129,8 @@ export default function LongestIncreasingPathVisualizer() {
 
     const maxDP = Math.max(...dpGrid.flat(), 1);
 
-    return (
-        <div className="lip-shell">
+    const VisualizationPanel = () => (
+        <div className="lip-viz-container">
             <div className="lip-examples">
                 {EXAMPLES.map(e => (
                     <button key={e.label} className={`lip-chip ${ex.label === e.label ? "active" : ""}`} onClick={() => applyEx(e)}>
@@ -199,18 +203,59 @@ export default function LongestIncreasingPathVisualizer() {
 
             {step?.done && <div className="lip-result">✓ Longest Increasing Path = {globalBest}</div>}
 
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
             <div className="lip-status">{step?.message ?? "Press Play to begin."}</div>
-            <PlaybackControls
-                isPlaying={isPlaying} isDone={isDone} speed={speed}
-                onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward} onReset={handleReset}
-                prevDisabled={stepIndex < 0} nextDisabled={isDone} resetDisabled={stepIndex < 0}
-                onSpeedChange={e => setSpeed(Number(e.target.value))}
-                showPatternOverlay={showPatternOverlay}
-                onShowPatternOverlayChange={setShowPatternOverlay}
-                patternOverlayLabel="Show pattern overlay"
-                showPatternOverlayToggle
+        </div>
+    );
+
+    const dockPanels = [
+        {
+            id: 'viz',
+            title: 'Visualization',
+            content: <VisualizationPanel />,
+        },
+        {
+            id: 'code',
+            title: 'Code Trace',
+            content: <CodeTracePanel step={step} codeLines={SOLUTION_CODE} autoScroll={autoScrollCode} onActiveLineDomChange={setActiveLineDom} />,
+        },
+    ];
+
+    return (
+        <div className="problem-shell">
+            <DockableWorkspace
+                title="Longest Increasing Path Workspace"
+                panels={dockPanels}
+                initialLayout={{
+                    rows: [['viz', 'code']],
+                    minimized: [],
+                }}
             />
+
+            <FloatingPanel title="Playback Controls">
+                <PlaybackControls
+                    onReset={handleReset}
+                    onPrev={stepBack}
+                    onPlayToggle={togglePlay}
+                    onNext={stepForward}
+                    resetDisabled={steps.length === 0}
+                    prevDisabled={stepIndex <= 0}
+                    nextDisabled={steps.length === 0 || isDone}
+                    isPlaying={isPlaying}
+                    isDone={isDone}
+                    speed={speed}
+                    onSpeedChange={(event) => setSpeed(Number(event.target.value))}
+                    speedIndicator={`${speed}ms`}
+                    autoScroll={autoScrollCode}
+                    onAutoScrollChange={setAutoScrollCode}
+                    autoScrollLabel="Auto-scroll code"
+                    showAutoScroll
+                    showPatternOverlay={showPatternOverlay}
+                    onShowPatternOverlayChange={setShowPatternOverlay}
+                    patternOverlayLabel="Show pattern overlay"
+                    showPatternOverlayToggle
+                />
+            </FloatingPanel>
+
             {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
     );

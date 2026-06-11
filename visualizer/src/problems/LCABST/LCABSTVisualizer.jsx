@@ -3,8 +3,11 @@ import { motion } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import PatternOverlay from '../../components/PatternOverlay'
+import DockableWorkspace from '../../components/shared/DockableWorkspace'
+import FloatingPanel from '../../components/shared/FloatingPanel'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import { usePatternOverlay } from '../../hooks/usePatternOverlay'
+import { useAutoScroll } from '../../hooks/useAutoScroll'
 import { buildTree, computeLayout, collectNodes, buildEdges, parseTreeInput } from '../../components/treeUtils'
 import './LCABSTVisualizer.css'
 
@@ -104,6 +107,7 @@ export default function LCABSTVisualizer() {
     const [arrInput, setArrInput] = useState('[6,2,8,0,4,7,9,null,null,3,5]')
     const [pInput, setPInput] = useState('2')
     const [qInput, setQInput] = useState('8')
+    const [autoScrollCode, setAutoScrollCode] = useAutoScroll()
     const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
 
     const { arr, p, q, inputError } = useMemo(() => {
@@ -130,103 +134,144 @@ export default function LCABSTVisualizer() {
     const edges = step?.edges ?? []
     const allNodes = step?.allNodes ?? []
 
-    return (
-        <div className="lca-shell">
-            <div className="lca-top">
-                <section className="lca-panel main">
-                    <header className="lca-head">
-                        <span>BST LCA — Walk Toward Split</span>
-                        {inputError && <span className="lca-error">{inputError}</span>}
-                    </header>
-                    <div className="lca-body">
-                        <div className="lca-examples">
-                            {EXAMPLES.map((ex) => (
-                                <button key={ex.label} className="lca-chip" onClick={() => applyExample(ex)}>{ex.label}</button>
-                            ))}
-                        </div>
-                        <div className="lca-inputs">
-                            <input className="lca-input wide" value={arrInput} onChange={(e) => { setArrInput(e.target.value); handleReset() }} placeholder="tree array" />
-                            <div className="lca-pq">
-                                <label>p=<input className="lca-input small" value={pInput} onChange={(e) => { setPInput(e.target.value); handleReset() }} /></label>
-                                <label>q=<input className="lca-input small" value={qInput} onChange={(e) => { setQInput(e.target.value); handleReset() }} /></label>
-                            </div>
-                        </div>
-                        <div className="lca-canvas" style={{ width: CANVAS_W, height: CANVAS_H }}>
-                            <svg style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }} width={CANVAS_W} height={CANVAS_H}>
-                                {edges.map(({ fromId, toId }) => {
-                                    const from = positions.get(fromId)
-                                    const to = positions.get(toId)
-                                    if (!from || !to) return null
-                                    return <line key={`${fromId}-${toId}`} x1={from.x} y1={from.y} x2={to.x} y2={to.y} stroke="#45475a" strokeWidth={1.5} />
-                                })}
-                            </svg>
-                            {allNodes.map((node) => {
-                                const pos = positions.get(node.id)
-                                if (!pos) return null
-                                const isActive = step?.activeId === node.id
-                                const isVisited = step?.visitedIds?.has(node.id)
-                                const isLCA = step?.lcaId === node.id && step?.lcaId !== -1
-                                const isP = node.val === step?.pVal
-                                const isQ = node.val === step?.qVal
-                                return (
-                                    <motion.div
-                                        key={node.id}
-                                        className={`lca-node ${isActive ? 'active' : ''} ${isVisited && !isActive ? 'visited' : ''} ${isLCA ? 'lca' : ''} ${isP ? 'p-node' : ''} ${isQ ? 'q-node' : ''}`}
-                                        style={{ left: pos.x - NODE_R, top: pos.y - NODE_R }}
-                                        animate={isActive ? { scale: 1.2 } : { scale: 1 }}
-                                        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                                    >
-                                        {node.val}
-                                        {isP && <span className="lca-tag p-tag">p</span>}
-                                        {isQ && <span className="lca-tag q-tag">q</span>}
-                                        {isLCA && <span className="lca-tag lca-tag-badge">LCA</span>}
-                                    </motion.div>
-                                )
-                            })}
-                        </div>
-                    </div>
-                </section>
-
-                <section className="lca-panel side">
-                    <header className="lca-head"><span>Search State</span></header>
-                    <div className="lca-body">
-                        <div className="lca-targets">
-                            <div className="lca-target p">
-                                <span className="lca-label">p</span>
-                                <strong>{step?.pVal ?? p}</strong>
-                            </div>
-                            <div className="lca-target q">
-                                <span className="lca-label">q</span>
-                                <strong>{step?.qVal ?? q}</strong>
-                            </div>
-                        </div>
-                        <div className="lca-phase">
-                            {step?.phase === 'go-left' && <span className="lca-dir">← going left</span>}
-                            {step?.phase === 'go-right' && <span className="lca-dir">going right →</span>}
-                            {step?.phase === 'found' && <span className="lca-found">Split found!</span>}
-                        </div>
-                        <div className={`lca-result ${step?.phase === 'done' ? 'ok' : ''}`}>
-                            {step?.phase === 'done' && step?.lcaId !== -1
-                                ? `LCA = ${allNodes.find((n) => n.id === step.lcaId)?.val}`
-                                : 'Searching…'}
-                        </div>
-                    </div>
-                </section>
+    // Create visualization panel for the tree/search state
+    const TreeVisualizationPanel = () => (
+        <div className="lca-viz-container">
+            <div className="lca-viz-main">
+                <div className="lca-canvas" style={{ width: CANVAS_W, height: CANVAS_H }}>
+                    <svg style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }} width={CANVAS_W} height={CANVAS_H}>
+                        {edges.map(({ fromId, toId }) => {
+                            const from = positions.get(fromId)
+                            const to = positions.get(toId)
+                            if (!from || !to) return null
+                            return <line key={`${fromId}-${toId}`} x1={from.x} y1={from.y} x2={to.x} y2={to.y} stroke="#45475a" strokeWidth={1.5} />
+                        })}
+                    </svg>
+                    {allNodes.map((node) => {
+                        const pos = positions.get(node.id)
+                        if (!pos) return null
+                        const isActive = step?.activeId === node.id
+                        const isVisited = step?.visitedIds?.has(node.id)
+                        const isLCA = step?.lcaId === node.id && step?.lcaId !== -1
+                        const isP = node.val === step?.pVal
+                        const isQ = node.val === step?.qVal
+                        return (
+                            <motion.div
+                                key={node.id}
+                                className={`lca-node ${isActive ? 'active' : ''} ${isVisited && !isActive ? 'visited' : ''} ${isLCA ? 'lca' : ''} ${isP ? 'p-node' : ''} ${isQ ? 'q-node' : ''}`}
+                                style={{ left: pos.x - NODE_R, top: pos.y - NODE_R }}
+                                animate={isActive ? { scale: 1.2 } : { scale: 1 }}
+                                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                            >
+                                {node.val}
+                                {isP && <span className="lca-tag p-tag">p</span>}
+                                {isQ && <span className="lca-tag q-tag">q</span>}
+                                {isLCA && <span className="lca-tag lca-tag-badge">LCA</span>}
+                            </motion.div>
+                        )
+                    })}
+                </div>
             </div>
 
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
-            <div className={`lca-status ${step?.phase === 'done' ? 'ok' : ''}`}>{step?.message || 'Press Play to begin.'}</div>
-            <PlaybackControls
-                isPlaying={isPlaying} isDone={isDone} speed={speed}
-                onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward} onReset={handleReset}
-                prevDisabled={stepIndex < 0} nextDisabled={isDone} resetDisabled={stepIndex < 0}
-                onSpeedChange={(e) => setSpeed(Number(e.target.value))}
-                showPatternOverlay={showPatternOverlay}
-                onShowPatternOverlayChange={setShowPatternOverlay}
-                patternOverlayLabel="Show pattern overlay"
-                showPatternOverlayToggle
+            <div className="lca-viz-side">
+                <div className="lca-targets">
+                    <div className="lca-target p">
+                        <span className="lca-label">p</span>
+                        <strong>{step?.pVal ?? p}</strong>
+                    </div>
+                    <div className="lca-target q">
+                        <span className="lca-label">q</span>
+                        <strong>{step?.qVal ?? q}</strong>
+                    </div>
+                </div>
+                <div className="lca-phase">
+                    {step?.phase === 'go-left' && <span className="lca-dir">← going left</span>}
+                    {step?.phase === 'go-right' && <span className="lca-dir">going right →</span>}
+                    {step?.phase === 'found' && <span className="lca-found">Split found!</span>}
+                </div>
+                <div className={`lca-result ${step?.phase === 'done' ? 'ok' : ''}`}>
+                    {step?.phase === 'done' && step?.lcaId !== -1
+                        ? `LCA = ${allNodes.find((n) => n.id === step.lcaId)?.val}`
+                        : 'Searching…'}
+                </div>
+                <div className={`lca-status ${step?.phase === 'done' ? 'ok' : ''}`}>{step?.message || 'Press Play to begin.'}</div>
+            </div>
+        </div>
+    )
+
+    const dockPanels = [
+        {
+            id: 'input',
+            title: 'Input Setup',
+            content: (
+                <div className="lca-input-panel">
+                    <div className="lca-examples">
+                        {EXAMPLES.map((ex) => (
+                            <button key={ex.label} className="lca-chip" onClick={() => applyExample(ex)}>{ex.label}</button>
+                        ))}
+                    </div>
+                    <div className="lca-inputs">
+                        <input className="lca-input wide" value={arrInput} onChange={(e) => { setArrInput(e.target.value); handleReset() }} placeholder="tree array" />
+                        <div className="lca-pq">
+                            <label>p=<input className="lca-input small" value={pInput} onChange={(e) => { setPInput(e.target.value); handleReset() }} /></label>
+                            <label>q=<input className="lca-input small" value={qInput} onChange={(e) => { setQInput(e.target.value); handleReset() }} /></label>
+                        </div>
+                    </div>
+                    {inputError && <span className="lca-error">{inputError}</span>}
+                </div>
+            ),
+        },
+        {
+            id: 'viz',
+            title: 'Tree Visualization',
+            content: <TreeVisualizationPanel />,
+        },
+        {
+            id: 'code',
+            title: 'Code Trace',
+            content: <CodeTracePanel step={step} codeLines={SOLUTION_CODE} autoScroll={autoScrollCode} onActiveLineDomChange={setActiveLineDom} />,
+        },
+    ]
+
+    return (
+        <div className="lca-shell">
+            <DockableWorkspace
+                title="BST LCA — Walk Toward Split"
+                panels={dockPanels}
+                initialLayout={{
+                    rows: [['input', 'viz'], ['code']],
+                    minimized: [],
+                }}
             />
-            {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
+
+            <FloatingPanel title="Playback Controls">
+                <PlaybackControls
+                    onReset={handleReset}
+                    onPrev={stepBack}
+                    onPlayToggle={togglePlay}
+                    onNext={stepForward}
+                    resetDisabled={steps.length === 0}
+                    prevDisabled={stepIndex <= 0}
+                    nextDisabled={steps.length === 0 || isDone}
+                    isPlaying={isPlaying}
+                    isDone={isDone}
+                    speed={speed}
+                    onSpeedChange={(event) => setSpeed(Number(event.target.value))}
+                    speedIndicator={`${speed}ms`}
+                    autoScroll={autoScrollCode}
+                    onAutoScrollChange={setAutoScrollCode}
+                    autoScrollLabel="Auto-scroll code"
+                    showAutoScroll
+                    showPatternOverlay={showPatternOverlay}
+                    onShowPatternOverlayChange={setShowPatternOverlay}
+                    patternOverlayLabel="Show pattern overlay"
+                    showPatternOverlayToggle
+                />
+            </FloatingPanel>
+
+            {showPatternOverlay && step && (
+                <PatternOverlay step={step} activeLineDom={activeLineDom} />
+            )}
         </div>
     )
 }

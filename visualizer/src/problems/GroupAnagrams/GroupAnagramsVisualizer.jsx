@@ -3,8 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion'
 import CodeTracePanel from '../../components/CodeTracePanel'
 import PlaybackControls from '../../components/PlaybackControls'
 import PatternOverlay from '../../components/PatternOverlay'
+import DockableWorkspace from '../../components/shared/DockableWorkspace'
+import FloatingPanel from '../../components/shared/FloatingPanel'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 import { usePatternOverlay } from '../../hooks/usePatternOverlay'
+import { useAutoScroll } from '../../hooks/useAutoScroll'
 import './GroupAnagramsVisualizer.css'
 
 const SOLUTION_CODE = [
@@ -114,6 +117,7 @@ const EXAMPLES = [
 export default function GroupAnagramsVisualizer() {
     const [input, setInput] = useState('["eat","tea","tan","ate","nat","bat"]')
     const { showPatternOverlay, setShowPatternOverlay, activeLineDom, setActiveLineDom } = usePatternOverlay()
+    const [autoScrollCode, setAutoScrollCode] = useAutoScroll()
 
     const { strs, inputError } = useMemo(() => {
         try {
@@ -141,13 +145,80 @@ export default function GroupAnagramsVisualizer() {
     const currentKey = step?.currentKey ?? null
     const currentWordIdx = step?.currentWordIdx ?? -1
 
-    return (
-        <div className="ga-shell">
-            <section className="ga-panel">
-                <header className="ga-head">
-                    <span>Group Anagrams · Hash Map</span>
-                    {inputError && <span className="ga-error">{inputError}</span>}
-                </header>
+    // Visualization component (words, keys, groups)
+    const VisualizationPanel = () => (
+        <div className="ga-body">
+            {/* Words row */}
+            <div className="ga-section-title">Input Words</div>
+            <div className="ga-words-row">
+                {strs.map((w, idx) => {
+                    const isCurrent = idx === currentWordIdx
+                    const groupKey = step?.anagramMap && step.currentWordIdx > idx
+                        ? Object.keys(step.anagramMap).find(k => step.anagramMap[k].includes(w))
+                        : (isCurrent ? currentKey : null)
+                    const col = groupKey ? keyToColor[groupKey] : null
+                    return (
+                        <motion.div
+                            key={idx}
+                            className={['ga-word', isCurrent ? 'active' : ''].filter(Boolean).join(' ')}
+                            style={col ? { borderColor: col, color: col, background: col + '22' } : {}}
+                            animate={{ y: isCurrent ? -6 : 0, scale: isCurrent ? 1.1 : 1 }}
+                            transition={{ type: 'spring', stiffness: 400, damping: 26 }}
+                        >
+                            {w}
+                            <span className="ga-word-idx">{idx}</span>
+                        </motion.div>
+                    )
+                })}
+            </div>
+
+            {/* Current key */}
+            {currentKey && (
+                <motion.div className="ga-key-box"
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                    style={{ borderColor: keyToColor[currentKey] ?? '#475569', color: keyToColor[currentKey] ?? 'var(--text)' }}>
+                    sorted key: <strong>"{currentKey}"</strong>
+                </motion.div>
+            )}
+
+            {/* Groups */}
+            <div className="ga-section-title">Hash Map Groups</div>
+            <div className="ga-groups">
+                <AnimatePresence>
+                    {Object.entries(anagramMap).map(([k, words]) => {
+                        const col = keyToColor[k] ?? '#475569'
+                        const isActive = k === currentKey
+                        return (
+                            <motion.div key={k} className={['ga-group', isActive ? 'active' : ''].filter(Boolean).join(' ')}
+                                initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
+                                style={{ borderColor: col + (isActive ? 'cc' : '55'), background: col + '11' }}>
+                                <span className="ga-group-key" style={{ color: col }}>"{k}"</span>
+                                <span className="ga-group-arrow">→</span>
+                                <div className="ga-group-words">
+                                    {words.map((w, i) => (
+                                        <span key={i} className="ga-group-word" style={{ borderColor: col + '88', color: col }}>{w}</span>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        )
+                    })}
+                </AnimatePresence>
+            </div>
+
+            {/* Status message */}
+            <div className={`ga-status${step?.phase === 'done' ? ' ok' : ''}`}>
+                {step?.message ?? 'Press Play or Step to begin.'}
+            </div>
+        </div>
+    )
+
+    const dockPanels = [
+        {
+            id: 'input',
+            title: 'Input Playground',
+            subtitle: inputError ? 'Fix the input to resume playback.' : 'Edit the array and replay the grouping.',
+            defaultZone: 'left',
+            content: (
                 <div className="ga-body">
                     {/* Controls */}
                     <div className="ga-top-row">
@@ -162,83 +233,82 @@ export default function GroupAnagramsVisualizer() {
                                 onChange={e => { setInput(e.target.value); handleReset() }} />
                         </div>
                     </div>
+                    {inputError && <div className="ga-error">{inputError}</div>}
+                </div>
+            ),
+        },
+        {
+            id: 'viz',
+            title: 'Hash Map Visualization',
+            subtitle: step ? `Step ${stepIndex + 1} of ${steps.length}` : 'Press play to start.',
+            defaultZone: 'right',
+            content: <VisualizationPanel />,
+        },
+        {
+            id: 'code',
+            title: 'Solution Code Trace',
+            subtitle: step ? `Active line ${step.activeLine}` : 'Line-by-line solution view.',
+            defaultZone: 'full',
+            content: (
+                <CodeTracePanel
+                    step={step}
+                    codeLines={SOLUTION_CODE}
+                    onActiveLineDomChange={setActiveLineDom}
+                    autoScroll={autoScrollCode}
+                />
+            ),
+        },
+    ]
 
-                    {/* Words row */}
-                    <div className="ga-section-title">Input Words</div>
-                    <div className="ga-words-row">
-                        {strs.map((w, idx) => {
-                            const isCurrent = idx === currentWordIdx
-                            const groupKey = step?.anagramMap && step.currentWordIdx > idx
-                                ? Object.keys(step.anagramMap).find(k => step.anagramMap[k].includes(w))
-                                : (isCurrent ? currentKey : null)
-                            const col = groupKey ? keyToColor[groupKey] : null
-                            return (
-                                <motion.div
-                                    key={idx}
-                                    className={['ga-word', isCurrent ? 'active' : ''].filter(Boolean).join(' ')}
-                                    style={col ? { borderColor: col, color: col, background: col + '22' } : {}}
-                                    animate={{ y: isCurrent ? -6 : 0, scale: isCurrent ? 1.1 : 1 }}
-                                    transition={{ type: 'spring', stiffness: 400, damping: 26 }}
-                                >
-                                    {w}
-                                    <span className="ga-word-idx">{idx}</span>
-                                </motion.div>
-                            )
-                        })}
-                    </div>
-
-                    {/* Current key */}
-                    {currentKey && (
-                        <motion.div className="ga-key-box"
-                            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                            style={{ borderColor: keyToColor[currentKey] ?? '#475569', color: keyToColor[currentKey] ?? 'var(--text)' }}>
-                            sorted key: <strong>"{currentKey}"</strong>
-                        </motion.div>
-                    )}
-
-                    {/* Groups */}
-                    <div className="ga-section-title">Hash Map Groups</div>
-                    <div className="ga-groups">
-                        <AnimatePresence>
-                            {Object.entries(anagramMap).map(([k, words]) => {
-                                const col = keyToColor[k] ?? '#475569'
-                                const isActive = k === currentKey
-                                return (
-                                    <motion.div key={k} className={['ga-group', isActive ? 'active' : ''].filter(Boolean).join(' ')}
-                                        initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
-                                        style={{ borderColor: col + (isActive ? 'cc' : '55'), background: col + '11' }}>
-                                        <span className="ga-group-key" style={{ color: col }}>"{k}"</span>
-                                        <span className="ga-group-arrow">→</span>
-                                        <div className="ga-group-words">
-                                            {words.map((w, i) => (
-                                                <span key={i} className="ga-group-word" style={{ borderColor: col + '88', color: col }}>{w}</span>
-                                            ))}
-                                        </div>
-                                    </motion.div>
-                                )
-                            })}
-                        </AnimatePresence>
-                    </div>
+    return (
+        <div className="ga-shell">
+            <section className="ga-hero-section">
+                <div className="ga-hero-copy">
+                    <span className="ga-kicker">Hash Map Algorithm</span>
+                    <h2>Group Anagrams Visualizer</h2>
+                    <p>
+                        See how a hash map sorts and groups strings by their character signatures.
+                        Watch as each word is processed and added to its anagram group.
+                    </p>
                 </div>
             </section>
 
-            <CodeTracePanel step={step} codeLines={SOLUTION_CODE} onActiveLineDomChange={setActiveLineDom} />
-
-            <div className={`ga-status${step?.phase === 'done' ? ' ok' : ''}`}>
-                {step?.message ?? 'Press Play or Step to begin.'}
-            </div>
-
-            <PlaybackControls
-                isPlaying={isPlaying} isDone={isDone} speed={speed}
-                onPlayToggle={togglePlay} onPrev={stepBack} onNext={stepForward}
-                onReset={handleReset} prevDisabled={stepIndex < 0}
-                nextDisabled={isDone} resetDisabled={stepIndex < 0}
-                onSpeedChange={e => setSpeed(Number(e.target.value))}
-                showPatternOverlay={showPatternOverlay}
-                onShowPatternOverlayChange={setShowPatternOverlay}
-                patternOverlayLabel="Show pattern overlay"
-                showPatternOverlayToggle
+            <DockableWorkspace
+                title="Group Anagrams Workspace"
+                panels={dockPanels}
+                initialLayout={{
+                    rows: [
+                        ["input", "viz"],
+                        ["code"],
+                    ],
+                    minimized: [],
+                }}
             />
+
+            <FloatingPanel title="Playback Controls">
+                <PlaybackControls
+                    onReset={handleReset}
+                    onPrev={stepBack}
+                    onPlayToggle={togglePlay}
+                    onNext={stepForward}
+                    resetDisabled={steps.length === 0}
+                    prevDisabled={stepIndex <= 0}
+                    nextDisabled={steps.length === 0 || isDone}
+                    isPlaying={isPlaying}
+                    isDone={isDone}
+                    speed={speed}
+                    onSpeedChange={(event) => setSpeed(Number(event.target.value))}
+                    speedIndicator={`${speed}ms`}
+                    autoScroll={autoScrollCode}
+                    onAutoScrollChange={setAutoScrollCode}
+                    autoScrollLabel="Auto-scroll code"
+                    showAutoScroll
+                    showPatternOverlay={showPatternOverlay}
+                    onShowPatternOverlayChange={setShowPatternOverlay}
+                    patternOverlayLabel="Show pattern overlay"
+                    showPatternOverlayToggle
+                />
+            </FloatingPanel>
 
             {showPatternOverlay && step && <PatternOverlay step={step} activeLineDom={activeLineDom} />}
         </div>
