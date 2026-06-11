@@ -5,6 +5,7 @@ import PlaybackControls from "../../components/PlaybackControls";
 import FloatingPanel from "../../components/shared/FloatingPanel";
 import { usePlaybackState } from "../../hooks/usePlaybackState";
 import { useAutoScroll } from "../../hooks/useAutoScroll";
+import { createPositionStep, createTreeDPStep, createDACStep, createContextualStepBuilder } from "../../utils/stepBuilder";
 import "./GameOnGrowingTreeVisualizer.css";
 import { Stack3D } from "../../components/viz3d";
 import PartialAnswersPanel from "../../components/PartialAnswersPanel";
@@ -144,15 +145,20 @@ function createParentParseSteps(raw) {
   raw.forEach((value, idx) => {
     const zeroBased = value - 1;
     parsed.push(zeroBased);
-    steps.push({
-      phase: "parse-parent",
-      activeLine: 2,
-      relatedLines: [2],
-      message: `Read parent ${value} for node ${idx + 1} and store ${zeroBased}.`,
-      parsedParents: [...parsed],
-      currentParentIndex: idx,
-      currentParentValue: zeroBased,
-    });
+    steps.push(
+      createPositionStep(
+        2, // activeLine
+        idx, // index
+        value, // value (1-based for display)
+        "read", // operation
+        `Read parent ${value} for node ${idx + 1} and store ${zeroBased}.`,
+        {
+          phase: "parse-parent",
+          parsedParents: [...parsed],
+          currentParentValue: zeroBased,
+        }
+      )
+    );
   });
 
   return steps;
@@ -165,7 +171,21 @@ function solveWithTrace(parentZeroBased, size, answersSnapshot) {
   const steps = [];
   const snapshotLimit = Math.min(size, MAX_TREE_NODES_TO_RENDER);
 
-  const capture = (
+  // Shared context for all DP steps
+  const dpContext = {
+    subproblemSize: size,
+    stackSize: 0,
+    answers: answersSnapshot,
+  };
+
+  const getDPSnapshot = () => ({
+    first: first.slice(0, snapshotLimit),
+    second: second.slice(0, snapshotLimit),
+    third: third.slice(0, snapshotLimit),
+  });
+
+  // Helper to create a basic DP step with shared context
+  const captureDP = (
     activeLine,
     message,
     relatedLines = [activeLine],
@@ -175,123 +195,117 @@ function solveWithTrace(parentZeroBased, size, answersSnapshot) {
       activeLine,
       relatedLines,
       message,
-      subproblemSize: size,
-      stackSize: 0,
+      ...dpContext,
       focus,
-      dpSnapshot: {
-        first: first.slice(0, snapshotLimit),
-        second: second.slice(0, snapshotLimit),
-        third: third.slice(0, snapshotLimit),
-      },
-      answers: answersSnapshot,
+      dpSnapshot: getDPSnapshot(),
     });
   };
 
-  capture(6, `Initialize top-3 arrays for size ${size}.`, [6, 7, 8]);
+  captureDP(6, `Initialize top-3 arrays for size ${size}.`, [6, 7, 8]);
 
   for (let node = size - 1; node >= 1; node -= 1) {
     const parent = parentZeroBased[node];
     const depth = second[node] + 1;
-    capture(
-      9,
-      `Bottom-up: node ${node} contributes depth ${depth} to parent ${parent}.`,
-      [9, 10, 11],
-      {
-        sourceNode: node,
-        targetNode: parent,
-        direction: "up",
-        phase: "bottom-up",
-      },
+
+    steps.push(
+      createTreeDPStep(
+        9,
+        "up",
+        node,
+        parent,
+        `Bottom-up: node ${node} contributes depth ${depth} to parent ${parent}.`,
+        getDPSnapshot(),
+        { sourceNode: node, targetNode: parent },
+        [9, 10, 11],
+      )
     );
+    Object.assign(steps[steps.length - 1], dpContext);
 
     const which = insertTop3(first, second, third, parent, depth);
+    let lineNo, msg, relLines;
+
     if (which === 1) {
-      capture(
-        12,
-        `depth ${depth} becomes first[${parent}] and shifts the previous values right.`,
-        [12, 13, 14],
-        {
-          sourceNode: node,
-          targetNode: parent,
-          direction: "up",
-          phase: "bottom-up",
-        },
-      );
+      lineNo = 12;
+      msg = `depth ${depth} becomes first[${parent}] and shifts the previous values right.`;
+      relLines = [12, 13, 14];
     } else if (which === 2) {
-      capture(
-        13,
-        `depth ${depth} becomes second[${parent}] and shifts third.`,
-        [13, 14],
-        {
-          sourceNode: node,
-          targetNode: parent,
-          direction: "up",
-          phase: "bottom-up",
-        },
-      );
-    } else if (which === 3) {
-      capture(14, `depth ${depth} becomes third[${parent}].`, [14], {
-        sourceNode: node,
-        targetNode: parent,
-        direction: "up",
-        phase: "bottom-up",
-      });
+      lineNo = 13;
+      msg = `depth ${depth} becomes second[${parent}] and shifts third.`;
+      relLines = [13, 14];
+    } else {
+      lineNo = 14;
+      msg = `depth ${depth} becomes third[${parent}].`;
+      relLines = [14];
     }
+
+    steps.push(
+      createTreeDPStep(
+        lineNo,
+        "up",
+        node,
+        parent,
+        msg,
+        getDPSnapshot(),
+        { sourceNode: node, targetNode: parent },
+        relLines,
+      )
+    );
+    Object.assign(steps[steps.length - 1], dpContext);
   }
 
   for (let node = 1; node < size; node += 1) {
     const parent = parentZeroBased[node];
     const useThird = second[parent] <= second[node] + 1;
     const depth = useThird ? third[parent] + 1 : second[parent] + 1;
-    capture(
-      15,
-      `Top-down: node ${node} receives depth ${depth} from parent ${parent}.`,
-      [15, 16, 17, 18, 19, 20],
-      {
-        sourceNode: parent,
-        targetNode: node,
-        direction: "down",
-        phase: "top-down",
-      },
+
+    steps.push(
+      createTreeDPStep(
+        15,
+        "down",
+        parent,
+        node,
+        `Top-down: node ${node} receives depth ${depth} from parent ${parent}.`,
+        getDPSnapshot(),
+        { sourceNode: parent, targetNode: node },
+        [15, 16, 17, 18, 19, 20],
+      )
     );
+    Object.assign(steps[steps.length - 1], dpContext);
 
     const which = insertTop3(first, second, third, node, depth);
+    let lineNo, msg, relLines;
+
     if (which === 1) {
-      capture(
-        21,
-        `depth ${depth} becomes first[${node}] and shifts the previous values right.`,
-        [21, 22, 23],
-        {
-          sourceNode: parent,
-          targetNode: node,
-          direction: "down",
-          phase: "top-down",
-        },
-      );
+      lineNo = 21;
+      msg = `depth ${depth} becomes first[${node}] and shifts the previous values right.`;
+      relLines = [21, 22, 23];
     } else if (which === 2) {
-      capture(
-        22,
-        `depth ${depth} becomes second[${node}] and shifts third.`,
-        [22, 23],
-        {
-          sourceNode: parent,
-          targetNode: node,
-          direction: "down",
-          phase: "top-down",
-        },
-      );
-    } else if (which === 3) {
-      capture(23, `depth ${depth} becomes third[${node}].`, [23], {
-        sourceNode: parent,
-        targetNode: node,
-        direction: "down",
-        phase: "top-down",
-      });
+      lineNo = 22;
+      msg = `depth ${depth} becomes second[${node}] and shifts third.`;
+      relLines = [22, 23];
+    } else {
+      lineNo = 23;
+      msg = `depth ${depth} becomes third[${node}].`;
+      relLines = [23];
     }
+
+    steps.push(
+      createTreeDPStep(
+        lineNo,
+        "down",
+        parent,
+        node,
+        msg,
+        getDPSnapshot(),
+        { sourceNode: parent, targetNode: node },
+        relLines,
+      )
+    );
+    Object.assign(steps[steps.length - 1], dpContext);
   }
 
   const value = Math.max(...second) + 1;
-  capture(24, `Return max(second) + 1 = ${value}.`, [24]);
+  captureDP(24, `Return max(second) + 1 = ${value}.`, [24]);
 
   return { value, steps };
 }
@@ -356,21 +370,8 @@ function solveAndBuildSteps(q, parentInput) {
 
   const stack = [[3, q + 2]];
 
-  steps.push({
-    activeLine: 26,
-    relatedLines: [26, 27, 28],
-    message:
-      "Initialize answer array, sentinel value, and divide-and-conquer stack.",
-    intervalLeft: 3,
-    intervalRight: q + 2,
-    midpoint: null,
-    computedValue: null,
-    stackSize: stack.length,
-    stack: stack.slice(),
-    answers: ans.slice(2, q + 2),
-  });
-
-  const capture = (
+  // Helper to create DAC step with shared context (stack and answers)
+  const captureDACStep = (
     activeLine,
     message,
     l,
@@ -379,23 +380,38 @@ function solveAndBuildSteps(q, parentInput) {
     c,
     relatedLines = [activeLine],
   ) => {
-    steps.push({
-      activeLine,
-      relatedLines,
-      message,
-      intervalLeft: l,
-      intervalRight: r,
-      midpoint: m,
-      computedValue: c,
-      stackSize: stack.length,
-      stack: stack.slice(),
-      answers: ans.slice(2, q + 2),
-    });
+    steps.push(
+      createDACStep(
+        activeLine,
+        m ? "conquer" : "divide",
+        l,
+        r,
+        message,
+        {
+          midpoint: m,
+          computedValue: c,
+          stackSize: stack.length,
+          stack: stack.slice(),
+          answers: ans.slice(2, q + 2),
+        },
+        relatedLines,
+      )
+    );
   };
+
+  captureDACStep(
+    26,
+    "Initialize answer array, sentinel value, and divide-and-conquer stack.",
+    3,
+    q + 2,
+    null,
+    null,
+    [26, 27, 28],
+  );
 
   while (stack.length > 0) {
     const [left, right] = stack.pop();
-    capture(
+    captureDACStep(
       29,
       `Pop interval [${left}, ${right}] from the stack.`,
       left,
@@ -406,9 +422,9 @@ function solveAndBuildSteps(q, parentInput) {
     );
 
     const mid = (left + right) >> 1;
-    capture(31, `Midpoint is ${mid}.`, left, right, mid, null, [31]);
+    captureDACStep(31, `Midpoint is ${mid}.`, left, right, mid, null, [31]);
 
-    capture(
+    captureDACStep(
       32,
       `Run solve(${mid}) and trace its two DP passes.`,
       left,
@@ -421,7 +437,7 @@ function solveAndBuildSteps(q, parentInput) {
     steps.push(...solved.steps);
 
     ans[mid] = solved.value;
-    capture(
+    captureDACStep(
       33,
       `ans[${mid}] = ${solved.value}.`,
       left,
@@ -433,7 +449,7 @@ function solveAndBuildSteps(q, parentInput) {
 
     if (ans[left] === ans[mid]) {
       for (let i = left + 1; i < mid; i += 1) ans[i] = solved.value;
-      capture(
+      captureDACStep(
         34,
         `Left endpoint matches midpoint, so fill [${left + 1}, ${mid - 1}] with ${solved.value}.`,
         left,
@@ -444,7 +460,7 @@ function solveAndBuildSteps(q, parentInput) {
       );
     } else if (left + 1 < mid) {
       stack.push([left, mid]);
-      capture(
+      captureDACStep(
         36,
         `Left half still needs work, push [${left}, ${mid}].`,
         left,
@@ -457,7 +473,7 @@ function solveAndBuildSteps(q, parentInput) {
 
     if (ans[mid] === ans[right]) {
       for (let i = mid + 1; i < right; i += 1) ans[i] = solved.value;
-      capture(
+      captureDACStep(
         38,
         `Midpoint matches right endpoint, so fill [${mid + 1}, ${right - 1}] with ${solved.value}.`,
         left,
@@ -468,7 +484,7 @@ function solveAndBuildSteps(q, parentInput) {
       );
     } else if (mid + 1 < right) {
       stack.push([mid, right]);
-      capture(
+      captureDACStep(
         40,
         `Right half still needs work, push [${mid}, ${right}].`,
         left,
@@ -480,7 +496,7 @@ function solveAndBuildSteps(q, parentInput) {
     }
   }
 
-  capture(
+  captureDACStep(
     42,
     "All intervals are resolved. Print the final answers from 2 to n + 1.",
     null,
